@@ -1,0 +1,27 @@
+{
+    "configurations": [
+        {
+            "name": "MinGW",
+            "includePath": [
+                "${workspaceFolder}/include/**",
+                "${workspaceFolder}/libs/**",
+                "C:/ProgramData/miniconda3/envs/huntmaster_engine_env/Library/mingw-w64/include/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "C:/ProgramData/miniconda3/envs/huntmaster_engine_env/Library/mingw-w64/bin/g++.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "windows-gcc-x64",
+            "compilerArgs": [
+                "-Wall",
+                "-Wextra",
+                "-pedantic"
+            ]
+        }
+    ],
+    "version": 4
+}
