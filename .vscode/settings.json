@@ -122,5 +122,8 @@
     "search.exclude": {
         "**/build": true,
         "**/libs/kissfft": true
-    }
+    },
+    "cSpell.words": [
+        "Huntmaster"
+    ]
 }
