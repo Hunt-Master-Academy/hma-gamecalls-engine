@@ -52,15 +52,6 @@
             },
             "problemMatcher": [],
             "dependsOn": ["Build"]
-        },
-        {
-            "label": "Setup Kiss FFT",
-            "type": "shell",
-            "command": "./setup_kissfft.bat",
-            "options": {
-                "cwd": "${workspaceFolder}"
-            },
-            "problemMatcher": []
         }
     ]
 }
