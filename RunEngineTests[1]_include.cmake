@@ -1,0 +1,5 @@
+if(EXISTS "E:/develop/Huntmaster/huntmaster-engine/RunEngineTests[1]_tests.cmake")
+  include("E:/develop/Huntmaster/huntmaster-engine/RunEngineTests[1]_tests.cmake")
+else()
+  add_test(RunEngineTests_NOT_BUILT RunEngineTests_NOT_BUILT)
+endif()

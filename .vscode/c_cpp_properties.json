@@ -5,12 +5,16 @@
             "includePath": [
                 "${workspaceFolder}/include/**",
                 "${workspaceFolder}/libs/**",
-                "C:/ProgramData/miniconda3/envs/huntmaster_engine_env/Library/mingw-w64/include/**"
+                "${workspaceFolder}/libs/kissfft",
+                "C:/ProgramData/miniconda3/envs/huntmaster_engine_env/Library/mingw-w64/include/**",
+                "C:/ProgramData/miniconda3/envs/huntmaster_engine_env/Library/mingw-w64/x86_64-w64-mingw32/include/**"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE"
+                "_UNICODE",
+                "__MINGW64__",
+                "_WIN64"
             ],
             "compilerPath": "C:/ProgramData/miniconda3/envs/huntmaster_engine_env/Library/mingw-w64/bin/g++.exe",
             "cStandard": "c11",
@@ -20,7 +24,16 @@
                 "-Wall",
                 "-Wextra",
                 "-pedantic"
-            ]
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/include/**",
+                    "${workspaceFolder}/src/**",
+                    "${workspaceFolder}/libs/**",
+                    "C:/ProgramData/miniconda3/envs/huntmaster_engine_env/Library/mingw-w64/include/**"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            }
         }
     ],
     "version": 4

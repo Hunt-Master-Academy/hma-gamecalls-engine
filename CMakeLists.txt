@@ -1,5 +1,5 @@
 # ==============================================================================
-# CMakeLists.txt for Huntmaster Audio Engine (v2.0)
+# CMakeLists.txt for Huntmaster Audio Engine (v2.1)
 #
 # This file defines the build system for the huntmaster-engine library,
 # integrating the MFCCProcessor and KissFFT dependency.
@@ -20,7 +20,6 @@ if(DEFINED ENV{CONDA_PREFIX})
         NAMES g++.exe g++ x86_64-w64-mingw32-g++
         HINTS "${CONDA_ENV_PATH}/Library/mingw-w64/bin"
               "${CONDA_ENV_PATH}/bin"
-              "${CONDA_ENV_PATH}/Scripts"
         NO_DEFAULT_PATH
     )
     if(CONDA_CXX_COMPILER)
@@ -33,12 +32,11 @@ else()
     message(STATUS "No active Conda environment detected. Using system default compilers.")
 endif()
 
-
 # Define the project name, version, and language.
 project(
     HuntmasterEngine
-    VERSION 2.0
-    LANGUAGES CXX
+    VERSION 2.1
+    LANGUAGES CXX C
 )
 
 # Set the C++ standard to C++17 and enforce it.
@@ -84,7 +82,7 @@ FetchContent_MakeAvailable(googletest)
 # --- Core Engine Library ---
 set(ENGINE_SOURCES
     "${PROJECT_SOURCE_DIR}/HuntmasterAudioEngine.cpp"
-    "${PROJECT_SOURCE_DIR}/MFCCProcessor.cpp" # <-- Add new MFCCProcessor source file
+    "${PROJECT_SOURCE_DIR}/MFCCProcessor.cpp"
 )
 
 add_library(
@@ -104,7 +102,7 @@ target_include_directories(
 target_link_libraries(
     HuntmasterEngine
     PUBLIC
-        kissfft # <-- Link against the KissFFT library
+        kissfft
 )
 
 
@@ -127,7 +125,7 @@ enable_testing()
 add_executable(
     RunEngineTests
     "${PROJECT_TESTS_DIR}/engine_tests.cpp"
-    "${PROJECT_TESTS_DIR}/mfcc_tests.cpp" # <-- Add new MFCC test file
+    "${PROJECT_TESTS_DIR}/mfcc_tests.cpp"
 )
 
 target_link_libraries(
@@ -142,4 +140,3 @@ gtest_discover_tests(RunEngineTests)
 # --- Build Output ---
 message(STATUS "Huntmaster Engine configured successfully.")
 message(STATUS "Available targets: HuntmasterEngine, TestHarness, RunEngineTests")
-

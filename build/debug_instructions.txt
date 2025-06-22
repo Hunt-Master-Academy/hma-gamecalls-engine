@@ -1,0 +1,24 @@
+#include <iostream>
+
+// Add this at the start of processFrame in MFCCProcessor.cpp
+std::cout << "processFrame: Starting" << std::endl;
+std::cout << "processFrame: frameCounter = " << frameCounter << std::endl;
+
+#ifdef HAVE_KISSFFT
+std::cout << "processFrame: HAVE_KISSFFT is defined" << std::endl;
+std::cout << "processFrame: Creating windowed frame" << std::endl;
+
+// After creating windowedFrame
+std::cout << "processFrame: Applying window" << std::endl;
+
+// Before kiss_fftr
+std::cout << "processFrame: About to call kiss_fftr" << std::endl;
+std::cout << "processFrame: fftConfig = " << fftConfig << std::endl;
+std::cout << "processFrame: windowedFrame size = " << windowedFrame.size() << std::endl;
+std::cout << "processFrame: fftOutput size = " << fftOutput.size() << std::endl;
+
+// After kiss_fftr
+std::cout << "processFrame: FFT complete" << std::endl;
+#else
+std::cout << "processFrame: HAVE_KISSFFT is NOT defined" << std::endl;
+#endif
