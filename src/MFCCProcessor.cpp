@@ -135,7 +135,7 @@ namespace huntmaster
                 // Rising edge
                 for (int bin = startBin; bin < centerBin; ++bin)
                 {
-                    if (bin >= 0 && bin < numBins)
+                    if (bin >= 0 && (size_t)bin < numBins)
                     {
                         float value = static_cast<float>(bin - startBin) / (centerBin - startBin);
                         melFilterBank[i * numBins + bin] = value;
@@ -145,7 +145,7 @@ namespace huntmaster
                 // Falling edge
                 for (int bin = centerBin; bin < endBin; ++bin)
                 {
-                    if (bin >= 0 && bin < numBins)
+                    if (bin >= 0 && (size_t)bin < numBins)
                     {
                         float value = static_cast<float>(endBin - bin) / (endBin - centerBin);
                         melFilterBank[i * numBins + bin] = value;
@@ -210,11 +210,14 @@ namespace huntmaster
             }
 
             // Apply DCT to get MFCCs
+            // --- FIX: Resize the output vector before use ---
+            result.coefficients.resize(config.numCoeffs);
             std::fill(result.coefficients.begin(), result.coefficients.end(), 0.0f);
             for (size_t i = 0; i < config.numCoeffs; ++i)
             {
                 for (size_t j = 0; j < config.numFilters; ++j)
                 {
+                    // This line was causing a crash because result.coefficients was empty.
                     result.coefficients[i] += dctMatrix[i * config.numFilters + j] * melEnergies[j];
                 }
             }
@@ -229,7 +232,7 @@ namespace huntmaster
 
 #else
             // No Kiss FFT available - return zeros
-            std::fill(result.coefficients.begin(), result.coefficients.end(), 0.0f);
+            result.coefficients.assign(config.numCoeffs, 0.0f);
             result.energy = 0.0f;
 #endif
 
@@ -239,9 +242,10 @@ namespace huntmaster
         std::vector<MFCCFrame> processBuffer(const float *audioBuffer, size_t bufferSize)
         {
             std::vector<MFCCFrame> frames;
+            reset(); // Reset frame counter before processing a new buffer.
 
             // Process overlapping frames
-            size_t numFrames = (bufferSize - config.frameSize) / config.hopSize + 1;
+            size_t numFrames = (bufferSize >= config.frameSize) ? (bufferSize - config.frameSize) / config.hopSize + 1 : 0;
 
             for (size_t i = 0; i < numFrames; ++i)
             {
@@ -253,6 +257,11 @@ namespace huntmaster
             }
 
             return frames;
+        }
+
+        void reset()
+        {
+            frameCounter = 0;
         }
     };
 
@@ -268,6 +277,10 @@ namespace huntmaster
     {
     }
     MFCCProcessor::~MFCCProcessor() = default;
+
+    // --- Move Semantics ---
+    MFCCProcessor::MFCCProcessor(MFCCProcessor &&other) noexcept = default;
+    MFCCProcessor &MFCCProcessor::operator=(MFCCProcessor &&other) noexcept = default;
 
     MFCCProcessor::MFCCFrame MFCCProcessor::processFrame(const float *audioFrame)
     {
@@ -287,7 +300,7 @@ namespace huntmaster
 
     void MFCCProcessor::reset()
     {
-        pImpl->frameCounter = 0;
+        pImpl->reset();
     }
 
 } // namespace huntmaster
