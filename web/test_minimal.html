@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Minimal WASM Test</title>
+  </head>
+  <body>
+    <h1>Minimal WASM Test</h1>
+    <div id="status">Loading...</div>
+    <pre id="output"></pre>
+
+    <script src="dist/huntmaster_engine.js"></script>
+    <script>
+      const output = document.getElementById("output");
+      const status = document.getElementById("status");
+
+      function log(msg) {
+        output.textContent += msg + "\n";
+        console.log(msg);
+      }
+
+      HuntmasterEngine()
+        .then((Module) => {
+          status.textContent = "Module loaded!";
+          log("Module loaded successfully");
+          log(
+            "Module object: " + JSON.stringify(Object.keys(Module).slice(0, 10))
+          );
+
+          // Test the functions
+          const engineId = Module._createEngine();
+          log("createEngine returned: " + engineId);
+
+          const sum = Module._testFunction(5, 7);
+          log("testFunction(5, 7) returned: " + sum);
+        })
+        .catch((err) => {
+          status.textContent = "Error loading module";
+          log("Error: " + err);
+        });
+    </script>
+  </body>
+</html>

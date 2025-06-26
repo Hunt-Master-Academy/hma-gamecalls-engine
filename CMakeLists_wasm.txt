@@ -1,0 +1,76 @@
+cmake_minimum_required(VERSION 3.10)
+project(HuntmasterEngineWASM)
+
+# Set C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Emscripten-specific settings
+set(CMAKE_EXECUTABLE_SUFFIX ".js")
+
+# Optimization flags for WASM
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -s WASM=1")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s ALLOW_MEMORY_GROWTH=1")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s MODULARIZE=1")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s EXPORT_NAME='HuntmasterEngine'")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s SINGLE_FILE=1") # Embed WASM in JS
+
+# Audio-specific flags
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s AUDIO_WORKLET=1")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s WASM_BIGINT=1")
+
+# Define paths
+set(PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+set(PROJECT_INCLUDE_DIR ${PROJECT_ROOT}/include/huntmaster_engine)
+set(PROJECT_SOURCE_DIR ${PROJECT_ROOT}/src)
+set(PROJECT_LIBS_DIR ${PROJECT_ROOT}/libs)
+
+# Include directories
+include_directories(
+    ${PROJECT_ROOT}/include
+    ${PROJECT_LIBS_DIR}
+    ${PROJECT_LIBS_DIR}/kissfft
+)
+
+# KissFFT library (simplified for WASM)
+file(GLOB KISSFFT_SOURCES ${PROJECT_LIBS_DIR}/kissfft/*.c)
+add_library(kissfft_wasm STATIC ${KISSFFT_SOURCES})
+
+# Core engine sources (minimal set for WASM)
+set(ENGINE_SOURCES_WASM
+    ${PROJECT_SOURCE_DIR}/MFCCProcessor.cpp
+    ${PROJECT_SOURCE_DIR}/DTWProcessor.cpp
+    ${PROJECT_SOURCE_DIR}/ThirdPartyLibs.cpp
+)
+
+# Create WASM module
+add_executable(huntmaster_wasm
+    ${PROJECT_SOURCE_DIR}/WASMInterface.cpp  # We'll create this
+    ${ENGINE_SOURCES_WASM}
+)
+
+# Link libraries
+target_link_libraries(huntmaster_wasm kissfft_wasm)
+
+# Export functions for JavaScript
+set(EXPORTED_FUNCTIONS 
+    "_malloc"
+    "_free"
+    "_createEngine"
+    "_destroyEngine"
+    "_loadMasterCall"
+    "_processAudioChunk"
+    "_getSimilarityScore"
+    "_startSession"
+    "_endSession"
+)
+
+string(REPLACE ";" "," EXPORTED_FUNCTIONS_STR "${EXPORTED_FUNCTIONS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s EXPORTED_FUNCTIONS='[${EXPORTED_FUNCTIONS_STR}]'")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap','getValue','setValue']")
+
+# Output files
+set_target_properties(huntmaster_wasm PROPERTIES
+    OUTPUT_NAME "huntmaster_engine"
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_ROOT}/web/dist"
+)

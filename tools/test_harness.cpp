@@ -7,7 +7,6 @@
 // library, so we only need to include the header files here for their declarations,
 // without the implementation macros. This resolves the "multiple definition" linker error.
 #include "dr_wav.h"
-#include "dr_mp3.h"
 
 // Helper function to load an audio file into a float vector
 std::vector<float> load_audio_file(const std::string &filePath, unsigned int &channels, unsigned int &sampleRate)
@@ -15,23 +14,8 @@ std::vector<float> load_audio_file(const std::string &filePath, unsigned int &ch
     drwav_uint64 totalPCMFrameCount = 0;
     float *pSampleData = nullptr;
 
-    // --- FIX: Check file extension to use the correct loader ---
-    std::string extension = filePath.substr(filePath.find_last_of(".") + 1);
-
-    if (extension == "wav")
-    {
-        pSampleData = drwav_open_file_and_read_pcm_frames_f32(filePath.c_str(), &channels, &sampleRate, &totalPCMFrameCount, nullptr);
-    }
-    else if (extension == "mp3")
-    {
-        drmp3_config mp3Config;
-        pSampleData = drmp3_open_file_and_read_pcm_frames_f32(filePath.c_str(), &mp3Config, &totalPCMFrameCount, nullptr);
-        if (pSampleData)
-        {
-            channels = mp3Config.channels;
-            sampleRate = mp3Config.sampleRate;
-        }
-    }
+    // Load WAV file
+    pSampleData = drwav_open_file_and_read_pcm_frames_f32(filePath.c_str(), &channels, &sampleRate, &totalPCMFrameCount, nullptr);
 
     if (pSampleData == nullptr)
     {
@@ -107,4 +91,3 @@ int main()
 
     return 0;
 }
-
