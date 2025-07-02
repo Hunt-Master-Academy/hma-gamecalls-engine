@@ -1,9 +1,17 @@
 #include <iostream>
 #include <thread>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <vector>
+#include <algorithm>
+#include <filesystem>
 #include <chrono>
 #include <iomanip>
 #include <cmath>
 #include "huntmaster_engine/HuntmasterAudioEngine.h"
+
+using namespace huntmaster;
 
 void showRecordingLevels(int durationSeconds = 10)
 {
@@ -106,7 +114,17 @@ void showRecordingLevels(int durationSeconds = 10)
     std::string filename;
     std::getline(std::cin, filename);
 
-    std::string savedPath = engine.saveRecording(recordingId, filename);
+    auto saveResult = engine.saveRecording(recordingId, filename);
+    if (!saveResult.isOk())
+    {
+        std::cerr << "Failed to save recording!" << std::endl;
+        // Handle error...
+    }
+    else
+    {
+        std::string savedPath = saveResult.value;
+        std::cout << "Recording saved to: " << savedPath << std::endl;
+    }
     std::cout << "Saved to: " << savedPath << std::endl;
 
     engine.shutdown();

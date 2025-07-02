@@ -2,14 +2,8 @@
 #include <iostream>
 #include <vector>
 #include <atomic>
-
-// This implementation uses the miniaudio library.
 #include "../libs/miniaudio.h"
-
-// The dr_wav implementation lives in HuntmasterAudioEngine.cpp.
-// We only include the header here for its function declarations.
 #include "../libs/dr_wav.h"
-#include "../libs/dr_mp3.h"
 
 namespace huntmaster
 {

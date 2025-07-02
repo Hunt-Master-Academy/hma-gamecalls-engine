@@ -1,39 +1,20 @@
 {
     "configurations": [
         {
-            "name": "MinGW",
+            "name": "GCC (huntmaster_final_env)",
             "includePath": [
-                "${workspaceFolder}/include/**",
-                "${workspaceFolder}/libs/**",
-                "${workspaceFolder}/libs/kissfft",
-                "C:/ProgramData/miniconda3/envs/huntmaster_engine_env/Library/mingw-w64/include/**",
-                "C:/ProgramData/miniconda3/envs/huntmaster_engine_env/Library/mingw-w64/x86_64-w64-mingw32/include/**"
+                "${workspaceFolder}/**"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE",
-                "__MINGW64__",
-                "_WIN64"
+                "_UNICODE"
             ],
-            "compilerPath": "C:/ProgramData/miniconda3/envs/huntmaster_engine_env/Library/mingw-w64/bin/g++.exe",
-            "cStandard": "c11",
-            "cppStandard": "c++17",
-            "intelliSenseMode": "windows-gcc-x64",
-            "compilerArgs": [
-                "-Wall",
-                "-Wextra",
-                "-pedantic"
-            ],
-            "browse": {
-                "path": [
-                    "${workspaceFolder}/include/**",
-                    "${workspaceFolder}/src/**",
-                    "${workspaceFolder}/libs/**",
-                    "C:/ProgramData/miniconda3/envs/huntmaster_engine_env/Library/mingw-w64/include/**"
-                ],
-                "limitSymbolsToIncludedHeaders": true
-            }
+            // FINAL FIX: Using the exact compiler name you found.
+            "compilerPath": "C:/ProgramData/miniconda3/envs/huntmaster_final_env/Library/bin/x86_64-w64-mingw32-g++.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "windows-gcc-x64"
         }
     ],
     "version": 4

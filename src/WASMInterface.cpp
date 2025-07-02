@@ -1,3 +1,22 @@
+// Optional: Add this comment to your WASMInterface.cpp to clarify the architecture
+
+/*
+ * WASMInterface.cpp - WebAssembly Interface for Huntmaster Engine
+ * 
+ * This file provides a simplified interface optimized for web browsers.
+ * It does NOT use the main HuntmasterAudioEngine class, but instead
+ * implements a lightweight WASMHuntmasterEngine that directly uses
+ * the core DSP components (MFCCProcessor and DTWProcessor).
+ * 
+ * This design choice is intentional to:
+ * - Minimize WASM binary size
+ * - Avoid features not needed in web (file I/O, recording to disk)
+ * - Optimize for single-threaded browser environment
+ * - Simplify memory management for JavaScript interop
+ * 
+ * For native applications, use HuntmasterAudioEngine instead.
+ */
+
 #include <emscripten/emscripten.h>
 #include <memory>
 #include <vector>

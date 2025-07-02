@@ -5,6 +5,8 @@
 #include <string>
 #include "huntmaster_engine/HuntmasterAudioEngine.h"
 
+using huntmaster::HuntmasterAudioEngine;
+
 void printLevel(float level)
 {
     int bars = static_cast<int>(level * 50);

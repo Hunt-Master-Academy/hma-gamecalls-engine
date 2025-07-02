@@ -1,9 +1,13 @@
 #include <iostream>
 #include <vector>
+#include <string_view> // Use string_view for consistency with the API
 #include "huntmaster_engine/HuntmasterAudioEngine.h"
 #include "dr_wav.h"
 
-// Helper function to load audio file
+// The 'using' declarations can be at the top level for clarity
+using huntmaster::HuntmasterAudioEngine;
+
+// Helper function to load an audio file into a float vector (This function is already well-written)
 std::vector<float> load_audio_file(const std::string &filePath, unsigned int &channels, unsigned int &sampleRate)
 {
     drwav_uint64 totalPCMFrameCount = 0;
@@ -46,16 +50,15 @@ int main(int argc, char *argv[])
     std::cout << "=== Huntmaster Recording Analyzer ===" << std::endl;
 
     std::string recordingPath = "../data/recordings/user_attempt_buck_grunt.wav";
-    std::string masterCallId = "buck_grunt"; // Add this line!
+    std::string masterCallId = "buck_grunt";
 
     if (argc > 1)
     {
         recordingPath = argv[1];
     }
-
     if (argc > 2)
     {
-        masterCallId = argv[2]; // Change this line (was trying to use undeclared variable)
+        masterCallId = argv[2];
     }
 
     std::cout << "\nAnalyzing: " << recordingPath << std::endl;
@@ -67,7 +70,13 @@ int main(int argc, char *argv[])
 
     // Load master call
     std::cout << "\n1. Loading master call..." << std::endl;
-    engine.loadMasterCall(masterCallId);
+    // UPDATED: Check the return status of the function call.
+    if (engine.loadMasterCall(masterCallId) != HuntmasterAudioEngine::EngineStatus::OK)
+    {
+        std::cerr << "Error: Failed to load master call '" << masterCallId << "'." << std::endl;
+        engine.shutdown();
+        return 1;
+    }
 
     // Load the recording
     std::cout << "\n2. Loading recording..." << std::endl;
@@ -83,7 +92,15 @@ int main(int argc, char *argv[])
 
     // Process through real-time session
     std::cout << "\n3. Starting analysis session..." << std::endl;
-    int sessionId = engine.startRealtimeSession(static_cast<float>(sampleRate), 1024);
+    // UPDATED: The function returns a Result object. We must check its status before using the value.
+    auto sessionResult = engine.startRealtimeSession(static_cast<float>(sampleRate), 1024);
+    if (!sessionResult.isOk())
+    {
+        std::cerr << "Error: Failed to start a realtime session." << std::endl;
+        engine.shutdown();
+        return 1;
+    }
+    int sessionId = sessionResult.value;
 
     // Process in chunks (simulating real-time)
     const int chunkSize = 1024;
@@ -93,10 +110,15 @@ int main(int argc, char *argv[])
         size_t remainingSamples = audioData.size() - i;
         size_t samplesToProcess = (remainingSamples < chunkSize) ? remainingSamples : chunkSize;
 
-        engine.processAudioChunk(sessionId, audioData.data() + i, samplesToProcess);
-        totalChunks++;
+        // UPDATED: Also check the status of chunk processing.
+        auto processStatus = engine.processAudioChunk(sessionId, audioData.data() + i, samplesToProcess);
+        if (processStatus != HuntmasterAudioEngine::EngineStatus::OK)
+        {
+            std::cerr << "\nError processing audio chunk. Aborting." << std::endl;
+            break; // Exit the loop if a chunk fails
+        }
 
-        // Show progress
+        totalChunks++;
         if (totalChunks % 10 == 0)
         {
             std::cout << ".";
@@ -107,7 +129,16 @@ int main(int argc, char *argv[])
 
     // Get final score
     std::cout << "\n4. Calculating similarity score..." << std::endl;
-    float score = engine.getSimilarityScore(sessionId);
+    // UPDATED: This also returns a Result object. Check status, then get value.
+    auto scoreResult = engine.getSimilarityScore(sessionId);
+    if (!scoreResult.isOk())
+    {
+        std::cerr << "Error: Could not calculate similarity score." << std::endl;
+        engine.endRealtimeSession(sessionId);
+        engine.shutdown();
+        return 1;
+    }
+    float score = scoreResult.value;
 
     std::cout << "\n========================================" << std::endl;
     std::cout << "Recording: " << recordingPath << std::endl;
@@ -116,19 +147,25 @@ int main(int argc, char *argv[])
     std::cout << "========================================" << std::endl;
 
     // Note: Higher scores = better match (score = 1/(1+distance))
-    if (score > 0.01)
+    // Bonus Tip: Using named constants makes this more readable than "magic numbers".
+    const float EXCELLENT_THRESHOLD = 0.01f;
+    const float GOOD_THRESHOLD = 0.005f;
+    const float FAIR_THRESHOLD = 0.002f;
+    const float SOME_SIMILARITY_THRESHOLD = 0.001f;
+
+    if (score > EXCELLENT_THRESHOLD)
     {
         std::cout << "Interpretation: EXCELLENT match to master call!" << std::endl;
     }
-    else if (score > 0.005)
+    else if (score > GOOD_THRESHOLD)
     {
         std::cout << "Interpretation: Good match to master call" << std::endl;
     }
-    else if (score > 0.002)
+    else if (score > FAIR_THRESHOLD)
     {
         std::cout << "Interpretation: Fair match to master call" << std::endl;
     }
-    else if (score > 0.001)
+    else if (score > SOME_SIMILARITY_THRESHOLD)
     {
         std::cout << "Interpretation: Some similarity to master call" << std::endl;
     }

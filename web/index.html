@@ -151,6 +151,9 @@
         <button id="loadMasterBtn" class="btn-secondary" disabled>
           Load Master Call
         </button>
+        <button id="playMasterCallBtn" onclick="playMasterCall()" disabled>
+          Play Master Call
+        </button>
       </div>
 
       <div class="controls">
@@ -176,8 +179,21 @@
       <canvas id="waveform"></canvas>
 
       <div>
-        <h3>Similarity Score</h3>
-        <div id="score">--%</div>
+        <!-- Add this for the similarity score display -->
+        <div
+          id="similarityScore"
+          style="
+            display: none;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+          "
+        >
+          0%
+        </div>
       </div>
 
       <div class="info-section">

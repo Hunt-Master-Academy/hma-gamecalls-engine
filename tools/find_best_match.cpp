@@ -5,7 +5,8 @@
 #include "huntmaster_engine/HuntmasterAudioEngine.h"
 #include "dr_wav.h"
 
-// Helper function to load audio file
+using huntmaster::HuntmasterAudioEngine;
+
 std::vector<float> load_audio_file(const std::string &filePath, unsigned int &channels, unsigned int &sampleRate)
 {
     drwav_uint64 totalPCMFrameCount = 0;
