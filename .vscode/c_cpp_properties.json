@@ -1,20 +1,47 @@
+// File: .vscode/c_cpp_properties.json
 {
     "configurations": [
         {
-            "name": "GCC (huntmaster_final_env)",
+            "name": "Windows-GCC",
             "includePath": [
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/include/huntmaster/**",
+                "${workspaceFolder}/libs",
+                "${workspaceFolder}/libs/kissfft",
+                "${workspaceFolder}/src"
             ],
             "defines": [
                 "_DEBUG",
                 "UNICODE",
-                "_UNICODE"
+                "_UNICODE",
+                "HAVE_KISSFFT",
+                "WIN32",
+                "_WIN32"
             ],
-            // FINAL FIX: Using the exact compiler name you found.
-            "compilerPath": "C:/ProgramData/miniconda3/envs/huntmaster_final_env/Library/bin/x86_64-w64-mingw32-g++.exe",
+            "compilerPath": "C:/ProgramData/miniconda3/envs/huntmaster_engine_env/Library/mingw-w64/bin/g++.exe",
             "cStandard": "c17",
             "cppStandard": "c++20",
-            "intelliSenseMode": "windows-gcc-x64"
+            "intelliSenseMode": "windows-gcc-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
+        },
+        {
+            "name": "Windows-WASM",
+            "includePath": [
+                "${workspaceFolder}/include",
+                "${workspaceFolder}/include/huntmaster/**",
+                "${workspaceFolder}/libs",
+                "${workspaceFolder}/libs/kissfft",
+                "${workspaceFolder}/src"
+            ],
+            "defines": [
+                "__EMSCRIPTEN__",
+                "HAVE_KISSFFT",
+                "_DEBUG"
+            ],
+            "compilerPath": "${env:EMSDK}/upstream/emscripten/em++.bat",
+            "cStandard": "c17",
+            "cppStandard": "c++20",
+            "intelliSenseMode": "clang-x64"
         }
     ],
     "version": 4

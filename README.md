@@ -70,7 +70,7 @@ cd huntmaster-engine
 (Windows with Conda) Activate your environment:
 Open a terminal and activate the Conda environment that contains your MinGW toolchain.
 
-conda activate huntmaster_engine_env
+conda activate huntmaster_final_env
 
 Create and navigate to the build directory:
 It is standard practice to perform an out-of-source build.
