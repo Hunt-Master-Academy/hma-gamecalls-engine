@@ -1,4 +1,9 @@
 {
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
   // The "settings" section allows you to define workspace-specific settings
   // that will only apply when this workspace is open.
   "settings": {
