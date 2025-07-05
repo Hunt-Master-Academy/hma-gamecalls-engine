@@ -16,6 +16,8 @@ CMakeUserPresets.json
 
 #IDE Files
 .vscode/
+.vscode-data/
+OLD-*
 
 # CLion
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can

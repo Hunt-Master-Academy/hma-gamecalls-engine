@@ -1,0 +1,43 @@
+# File: Dockerfile.dev
+# Final Version: Explicitly defines data and extension directories.
+
+# Start from a standard Ubuntu base image.
+FROM ubuntu:latest
+
+# Set an argument to prevent interactive prompts during package installation.
+ARG DEBIAN_FRONTEND=noninteractive
+
+# --- RUN ALL SYSTEM-LEVEL INSTALLATIONS AS ROOT ---
+
+# Update package lists and install all necessary development tools.
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    g++ \
+    gdb \
+    cmake \
+    git \
+    curl \
+    wget \
+    # Clean up the apt cache to reduce image size.
+    && rm -rf /var/lib/apt/lists/*
+
+# Download and install VS Code Server (code-server).
+RUN wget https://github.com/coder/code-server/releases/download/v4.22.1/code-server-4.22.1-linux-amd64.tar.gz \
+    && tar -xvzf code-server-4.22.1-linux-amd64.tar.gz \
+    && mv code-server-4.22.1-linux-amd64 /usr/local/lib/code-server \
+    && ln -s /usr/local/lib/code-server/bin/code-server /usr/local/bin/code-server \
+    && rm -rf code-server-4.22.1-linux-amd64.tar.gz
+
+# Create the workspace and dedicated data directories.
+RUN mkdir -p /workspaces/huntmaster && \
+    mkdir -p /data/user-data && \
+    mkdir -p /data/extensions
+
+# --- SET CONTAINER BEHAVIOR ---
+
+# Expose the port that code-server will run on.
+EXPOSE 8080
+
+# The command that will run when the container starts.
+# UPDATED: Explicitly set the user data and extensions directories.
+ENTRYPOINT ["code-server", "--bind-addr", "0.0.0.0:8080", "--auth", "none", "--user-data-dir", "/data/user-data", "--extensions-dir", "/data/extensions", "/workspaces/huntmaster"]
