@@ -1,0 +1,35 @@
+{
+  // The "settings" section allows you to define workspace-specific settings
+  // that will only apply when this workspace is open.
+  "settings": {
+    // Example: You could set a specific theme for this project
+    // "workbench.colorTheme": "One Dark Pro"
+  },
+
+  // The "extensions" section is where you can recommend extensions
+  // for anyone who opens this project.
+  "extensions": {
+    // VS Code will prompt users to install any extensions listed here.
+    "recommendations": [
+      // --- Core C++ Development ---
+      "ms-vscode.cpptools",       // C/C++ IntelliSense, debugging, and code browsing
+      "ms-vscode.cmake-tools",    // CMake language support and build/debug integration
+
+      // --- Quality of Life & Productivity ---
+      "eamodio.gitlens",          // Supercharges the Git capabilities built into VS Code
+      "oderwat.indent-rainbow",   // Makes indentation more readable
+      "matepek.vscode-catch2-test-adapter", // For running C++ unit tests (e.g., Google Test)
+      "ms-vscode.cpptools-extension-pack", // A collection of C++ tools for VS Code
+        "ms-vscode.makefile-tools", // Makefile support for building C++ projects
+        "ms-vscode.cmake-tools-extension-pack", // A collection of CMake tools for VS Code
+        "ms-vscode.cpptools-themes", // C++ specific themes for better visibility
+        "ms-vscode.cpptools-extensions", // Additional C++ extensions for enhanced functionality
+        "google.geminicodeassist",
+      "ms-vscode.cmake-tools",
+        "ms-vscode.makefile-tools",
+        "ms-vscode.cmake-format",    // CMake formatting support
+        "redhat.vscode-yaml",
+        "donjayamanne.python-extension-pack"
+    ]
+  }
+}
