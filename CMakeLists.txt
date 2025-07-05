@@ -30,7 +30,7 @@ FetchContent_Declare(
     googletest
     URL https://github.com/google/googletest/archive/v1.14.0.zip
 )
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+set(gtest_force_shared_crt ON CACHE BOOL "Use shared CRT for GoogleTest (required for MSVC projects)" FORCE)
 FetchContent_MakeAvailable(googletest)
 message(STATUS "Google Test configured.")
 
@@ -52,20 +52,36 @@ set(CORE_SOURCES
 
 # Platform-specific sources
 set(PLATFORM_SOURCES "")
-if(EMSCRIPTEN)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Emscripten")
+    # Only append WASMInterface.cpp for Emscripten builds
     list(APPEND PLATFORM_SOURCES "${PROJECT_SOURCE_DIR}/platform/wasm/WASMInterface.cpp")
+
+    # Create WASM-specific executable
+    add_executable(huntmaster_wasm
+        ${PROJECT_SOURCE_DIR}/platform/wasm/WASMInterface.cpp
+        ${CORE_SOURCES}
+    )
+
+    target_link_libraries(huntmaster_wasm PRIVATE HuntmasterEngine)
+
+    # Set output directory
+    set_target_properties(huntmaster_wasm PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/web/dist"
+        OUTPUT_NAME "huntmaster_engine"
+    )
 else()
     # Add native platform sources here when implemented
     # list(APPEND PLATFORM_SOURCES "${PROJECT_SOURCE_DIR}/platform/native/NativeInterface.cpp")
 endif()
-
+# Create the main library
 # Create the main library
 add_library(HuntmasterEngine STATIC ${CORE_SOURCES} ${PLATFORM_SOURCES})
 
 # Set include directories
 target_include_directories(HuntmasterEngine PUBLIC
     "$<BUILD_INTERFACE:${PROJECT_INCLUDE_DIR}>"
-    # This ensures that files like "kissfft/kiss_fftr.h" can be found
+    # Add the library directory to the include path so that third-party headers (e.g., "kissfft/kiss_fftr.h") are found.
+    # This also allows for easy inclusion of additional third-party libraries in the future.
     "$<BUILD_INTERFACE:${PROJECT_LIBS_DIR}>"
     "$<INSTALL_INTERFACE:include>"
 )
@@ -79,24 +95,32 @@ target_link_libraries(HuntmasterEngine PUBLIC kissfft)
 # Compile definitions
 target_compile_definitions(HuntmasterEngine PUBLIC HAVE_KISSFFT)
 
-# Platform-specific configurations
-if(EMSCRIPTEN)
+# Platform-specific configurations (consolidated)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Emscripten")
     target_compile_definitions(HuntmasterEngine PUBLIC __EMSCRIPTEN__)
     set_target_properties(HuntmasterEngine PROPERTIES
         COMPILE_FLAGS "-s USE_PTHREADS=0 -s ALLOW_MEMORY_GROWTH=1"
         LINK_FLAGS "-s WASM=1 -s MODULARIZE=1 -s EXPORT_NAME='HuntmasterModule' -lembind"
     )
+    target_compile_options(HuntmasterEngine PRIVATE
+        -O3
+        -s ALLOW_MEMORY_GROWTH=1
+        -s INITIAL_MEMORY=16MB
+        -s MAXIMUM_MEMORY=128MB
+    )
+    target_link_options(HuntmasterEngine PUBLIC
+        -s MODULARIZE=1
+        -s EXPORT_NAME='HuntmasterEngine'
+        -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap','getValue','setValue','HEAP8','HEAP16','HEAP32','HEAPU8','HEAPU16','HEAPU32','HEAPF32','HEAPF64']
+        -s ENVIRONMENT='web,worker'
+        -s SINGLE_FILE=0  # Keep WASM file separate for better caching
+    )
 endif()
-
 # --- Helper Function for Creating Test Tools ---
 function(add_huntmaster_tool tool_name file_name)
-    add_executable(${tool_name} "${PROJECT_TOOLS_DIR}/${file_name}")
-    target_link_libraries(${tool_name} PRIVATE HuntmasterEngine)
-    # The tools might need to include third-party headers directly (e.g., miniaudio.h)
-    target_include_directories(${tool_name} PRIVATE ${PROJECT_LIBS_DIR})
-endfunction()
-
-# --- Executable Targets (Tests and Tools) ---
+if(EMSCRIPTEN)
+    target_compile_definitions(HuntmasterEngine PUBLIC __EMSCRIPTEN__)
+endif()
 message(STATUS "Configuring tools and executables...")
 add_huntmaster_tool(TestHarness test_harness.cpp)
 add_huntmaster_tool(TestRecording test_recording.cpp)
@@ -147,10 +171,10 @@ if(EXISTS "${PROJECT_TESTS_DIR}/unit/DTWComparatorTest.cpp")
 endif()
 
 # Add WASM tests only if building for WASM
-if(EMSCRIPTEN AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test_wasm_minimal.cpp")
+# Add WASM tests only if building for WASM
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Emscripten" AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test_wasm_minimal.cpp")
     list(APPEND TEST_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/test_wasm_minimal.cpp")
 endif()
-
 add_executable(RunEngineTests ${TEST_SOURCES})
 target_link_libraries(RunEngineTests PRIVATE HuntmasterEngine GTest::gtest GTest::gtest_main)
 target_include_directories(RunEngineTests PRIVATE ${PROJECT_LIBS_DIR})
@@ -173,12 +197,12 @@ install(DIRECTORY ${PROJECT_INCLUDE_DIR}/huntmaster
 )
 
 # Install TypeScript definitions for WASM
-if(EMSCRIPTEN)
+# Install TypeScript definitions for WASM
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Emscripten")
     install(FILES ${PROJECT_BINDINGS_DIR}/wasm/huntmaster-engine.d.ts
         DESTINATION share/huntmaster/bindings
     )
 endif()
-
 # --- Export Configuration ---
 install(EXPORT HuntmasterEngineTargets
     FILE HuntmasterEngineTargets.cmake
@@ -193,9 +217,9 @@ message(STATUS "  Version: ${PROJECT_VERSION}")
 message(STATUS "  Build Type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "  C++ Standard: C++20")
 if(EMSCRIPTEN)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Emscripten")
     message(STATUS "  Platform: WebAssembly (Emscripten)")
 else()
     message(STATUS "  Platform: Native")
 endif()
-message(STATUS "=====================================")
 message(STATUS "Huntmaster Engine build configured successfully.")
