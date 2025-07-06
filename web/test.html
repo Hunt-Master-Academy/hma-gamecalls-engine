@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HuntmasterEngine WASM Test</title>
+</head>
+<body>
+    <h1>HuntmasterEngine WASM Test</h1>
+    <div id="status">Loading...</div>
+    <button id="initBtn" disabled>Initialize Engine</button>
+    <button id="testBtn" disabled>Run Test</button>
+    <pre id="output"></pre>
+
+    <script src="dist/huntmaster_engine.js"></script>
+    <script>
+        const statusEl = document.getElementById('status');
+        const outputEl = document.getElementById('output');
+        const initBtn = document.getElementById('initBtn');
+        const testBtn = document.getElementById('testBtn');
+        
+        function log(msg) {
+            outputEl.textContent += msg + '\n';
+            console.log(msg);
+        }
+        
+        // Load WASM module
+        HuntmasterEngine().then(Module => {
+            statusEl.textContent = 'WASM loaded successfully';
+            initBtn.disabled = false;
+            
+            window.Module = Module;
+            
+            initBtn.onclick = () => {
+                try {
+                    const engine = new Module.HuntmasterEngine();
+                    const result = engine.initialize(44100, 512, 13);
+                    
+                    if (result) {
+                        log('Engine initialized successfully');
+                        testBtn.disabled = false;
+                        window.engine = engine;
+                    } else {
+                        log('Engine initialization failed');
+                    }
+                } catch (e) {
+                    log('Error: ' + e.message);
+                }
+            };
+            
+            testBtn.onclick = () => {
+                try {
+                    // Create test audio data
+                    const testData = new Float32Array(512);
+                    for (let i = 0; i < 512; i++) {
+                        testData[i] = Math.sin(2 * Math.PI * 440 * i / 44100);
+                    }
+                    
+                    const result = window.engine.processAudioData(testData);
+                    log('Process result: ' + JSON.stringify(result));
+                } catch (e) {
+                    log('Error: ' + e.message);
+                }
+            };
+        }).catch(err => {
+            statusEl.textContent = 'Failed to load WASM: ' + err;
+        });
+    </script>
+</body>
+</html>

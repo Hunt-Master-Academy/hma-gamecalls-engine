@@ -67,7 +67,7 @@ namespace huntmaster
          * @brief Constructs a buffer pool with the specified configuration
          * @param config Pool configuration parameters
          */
-        explicit AudioBufferPool(const Config &config = {});
+        explicit AudioBufferPool(const Config &config);
 
         /**
          * @brief Alternative constructor for backward compatibility

@@ -37,7 +37,7 @@ namespace huntmaster
             size_t sample_rate{44100};
         };
 
-        explicit VoiceActivityDetector(const Config &config = {});
+        explicit VoiceActivityDetector(const Config &config);
         ~VoiceActivityDetector();
 
         VoiceActivityDetector(VoiceActivityDetector &&) noexcept;

@@ -1,9 +1,10 @@
 // File: AudioBufferPool.cpp
-#include "AudioBufferPool.h"
+#include "huntmaster/core/AudioBufferPool.h"
 
 #include <algorithm>
 #include <bit>
 #include <cstring>
+#include <utility> // For std::exchange
 #include <new>
 
 namespace huntmaster
@@ -21,7 +22,9 @@ namespace huntmaster
         // Memory management
         std::pmr::memory_resource *memory_resource_;
         std::vector<void *> buffers_;
-        std::vector<bool> in_use_;
+        // CRITICAL FIX: std::vector<bool> is not thread-safe for element-wise
+        // atomic operations. Use a vector of true atomic booleans instead.
+        std::vector<std::atomic<bool>> in_use_;
 
         // Synchronization using C++20 counting semaphore
         std::counting_semaphore<> available_semaphore_;
@@ -39,7 +42,10 @@ namespace huntmaster
             : config_(config), memory_resource_(config.memory_resource
                                                     ? config.memory_resource
                                                     : std::pmr::get_default_resource()),
-              buffers_(config.pool_size, nullptr), in_use_(config.pool_size, false), available_semaphore_(static_cast<std::ptrdiff_t>(config.pool_size))
+              buffers_(config.pool_size, nullptr),
+              // Initialize a vector of atomic<bool>. They are default-initialized to false.
+              in_use_(config.pool_size),
+              available_semaphore_(static_cast<std::ptrdiff_t>(config.pool_size))
         {
 
             // Validate configuration

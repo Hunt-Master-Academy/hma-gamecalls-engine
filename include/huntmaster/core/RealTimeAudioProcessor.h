@@ -60,7 +60,7 @@ namespace huntmaster
             size_t low_water_mark{256};  // 25% full
         };
 
-        explicit RealtimeAudioProcessor(const Config &config = {});
+        explicit RealtimeAudioProcessor(const Config &config);
         ~RealtimeAudioProcessor();
 
         RealtimeAudioProcessor(RealtimeAudioProcessor &&) noexcept;

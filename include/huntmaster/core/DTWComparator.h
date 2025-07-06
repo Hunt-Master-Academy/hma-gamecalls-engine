@@ -21,7 +21,7 @@ namespace huntmaster
             bool enable_simd{true};
         };
 
-        explicit DTWComparator(const Config &config = {});
+        explicit DTWComparator(const Config &config);
         ~DTWComparator();
 
         DTWComparator(DTWComparator &&) noexcept;

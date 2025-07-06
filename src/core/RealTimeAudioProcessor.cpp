@@ -1,7 +1,8 @@
 // File: RealtimeAudioProcessor.cpp
-#include "RealtimeAudioProcessor.h"
+#include "huntmaster/core/RealtimeAudioProcessor.h"
 #include <algorithm>
 #include <bit>
+#include <cmath>
 #include <numeric>
 #include <thread>
 
@@ -14,11 +15,15 @@ namespace huntmaster
         Config config_;
 
         // Lock-free ring buffer
-        alignas(64) std::array<std::atomic<AudioChunk>, 1024> ring_buffer_;
+        // The atomicity is handled by the read/write indices, not by making the
+        // large AudioChunk object itself atomic. This is much more efficient.
+        alignas(64) std::array<AudioChunk, 1024> ring_buffer_;
         alignas(64) std::atomic<size_t> write_index_{0};
         alignas(64) std::atomic<size_t> read_index_{0};
-        alignas(64) std::atomic<size_t> cached_write_index_{0};
-        alignas(64) std::atomic<size_t> cached_read_index_{0};
+        // alignas(64) std::atomic<size_t> cached_write_index_{0};
+        // alignas(64) std::atomic<size_t> cached_read_index_{0};
+        alignas(64) mutable std::atomic<size_t> cached_write_index_{0};
+        alignas(64) mutable std::atomic<size_t> cached_read_index_{0};
 
         size_t buffer_mask_;
 
@@ -48,11 +53,6 @@ namespace huntmaster
 
             buffer_mask_ = config.ring_buffer_size - 1;
 
-            // Initialize atomic chunks
-            for (auto &chunk : ring_buffer_)
-            {
-                chunk.store(AudioChunk{}, std::memory_order_relaxed);
-            }
         }
 
         [[nodiscard]] size_t distance(size_t from, size_t to) const noexcept
@@ -132,7 +132,8 @@ namespace huntmaster
 
             // Store in ring buffer
             auto write_idx = write_index_.load(std::memory_order_relaxed);
-            ring_buffer_[write_idx & buffer_mask_].store(chunk, std::memory_order_release);
+            // A simple assignment is sufficient now that the chunk is not atomic.
+            ring_buffer_[write_idx & buffer_mask_] = chunk;
 
             // Advance write index
             write_index_.store((write_idx + 1) & buffer_mask_, std::memory_order_release);
@@ -179,8 +180,7 @@ namespace huntmaster
             }
 
             auto read_idx = read_index_.load(std::memory_order_relaxed);
-            AudioChunk chunk = ring_buffer_[read_idx & buffer_mask_].load(
-                std::memory_order_acquire);
+            AudioChunk chunk = ring_buffer_[read_idx & buffer_mask_];
 
             // Advance read index
             read_index_.store((read_idx + 1) & buffer_mask_, std::memory_order_release);
@@ -315,5 +315,43 @@ namespace huntmaster
     {
         ProcessorStats stats;
 
-        stats.total_chunks_processed = pimpl_->total_chunks_.load(std::memory_order_relaxed);
-        stats.chunks_dropped = pimpl_->dropped_chunks_.l
+        // stats.total_chunks_processed = pimpl_->total_chunks_.load(std::memory_order_relaxed);
+        // stats.chunks_dropped = pimpl_->dropped_chunks_.l
+         stats.total_chunks_processed = pimpl_->total_chunks_.load(std::memory_order_relaxed);
+        stats.chunks_dropped = pimpl_->dropped_chunks_.load(std::memory_order_relaxed);
+        stats.buffer_overruns = pimpl_->overruns_.load(std::memory_order_relaxed);
+        stats.buffer_underruns = pimpl_->underruns_.load(std::memory_order_relaxed);
+        stats.total_processing_time = std::chrono::nanoseconds(pimpl_->total_processing_ns_.load(std::memory_order_relaxed));
+        stats.max_processing_time = std::chrono::nanoseconds(pimpl_->max_processing_ns_.load(std::memory_order_relaxed));
+        stats.current_buffer_usage = pimpl_->availableData();
+
+        if (stats.total_chunks_processed > 0) {
+            stats.average_latency_ms = static_cast<float>(stats.total_processing_time.count()) / stats.total_chunks_processed / 1e6f;
+        }
+
+        return stats;
+    }
+
+    void RealtimeAudioProcessor::resetStats() noexcept
+    {
+        pimpl_->total_chunks_.store(0, std::memory_order_relaxed);
+        pimpl_->dropped_chunks_.store(0, std::memory_order_relaxed);
+        pimpl_->overruns_.store(0, std::memory_order_relaxed);
+        pimpl_->underruns_.store(0, std::memory_order_relaxed);
+        pimpl_->total_processing_ns_.store(0, std::memory_order_relaxed);
+        pimpl_->max_processing_ns_.store(0, std::memory_order_relaxed);
+    }
+
+    void RealtimeAudioProcessor::waitForSpace(std::chrono::milliseconds timeout)
+    {
+        std::unique_lock lock(pimpl_->cv_mutex_);
+        pimpl_->cv_space_.wait_for(lock, timeout, [this] { return !isFull(); });
+    }
+
+    void RealtimeAudioProcessor::waitForData(std::chrono::milliseconds timeout)
+    {
+        std::unique_lock lock(pimpl_->cv_mutex_);
+        pimpl_->cv_data_.wait_for(lock, timeout, [this] { return !isEmpty(); });
+    }
+
+} // namespace huntmaster

@@ -1,5 +1,5 @@
 // File: DTWComparator.cpp
-#include "DTWComparator.h"
+#include "huntmaster/core/DTWComparator.h"
 #include <algorithm>
 #include <numeric>
 #include <limits>
@@ -86,7 +86,7 @@ namespace huntmaster
         [[nodiscard]] float computeDTW(
             const std::vector<std::vector<float>> &seq1,
             const std::vector<std::vector<float>> &seq2,
-            std::optional<std::vector<std::pair<size_t, size_t>> *> path_out = std::nullopt)
+            std::vector<std::pair<size_t, size_t>>* path_out = nullptr)
         {
 
             const size_t len1 = seq1.size();
@@ -164,9 +164,9 @@ namespace huntmaster
             }
 
             // Reconstruct path if requested
-            if (path_out && path_out->has_value())
+            if (path_out)
             {
-                auto &path = **path_out;
+                auto &path = *path_out;
                 path.clear();
 
                 size_t i = len1, j = len2;

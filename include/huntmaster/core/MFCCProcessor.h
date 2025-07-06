@@ -41,7 +41,7 @@ namespace huntmaster
         using FeatureVector = std::vector<float>;
         using FeatureMatrix = std::vector<FeatureVector>;
 
-        explicit MFCCProcessor(const Config &config = {});
+        explicit MFCCProcessor(const Config &config);
         ~MFCCProcessor();
 
         MFCCProcessor(MFCCProcessor &&) noexcept;
