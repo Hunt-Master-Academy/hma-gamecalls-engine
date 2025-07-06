@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include "huntmaster_engine/HuntmasterAudioEngine.h"
+#include "huntmaster/HuntmasterAudioEngine.h"
 
 using huntmaster::HuntmasterAudioEngine;
 
