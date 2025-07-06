@@ -181,6 +181,10 @@ else()
     include(GoogleTest)
     gtest_discover_tests(RunEngineTests)
 
+    # --- Benchmarking Suite ---
+    message(STATUS "Configuring benchmarks...")
+    add_subdirectory(${PROJECT_TESTS_DIR}/benchmarks)
+
 endif()
 
 # --- Final Configuration Message ---
