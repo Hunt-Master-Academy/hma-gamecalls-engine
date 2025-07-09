@@ -1,5 +1,11 @@
 # Huntmaster Audio Engine
 
+> ⚠️ **License: All Rights Reserved**
+>
+> The source code for this project is made available for **portfolio review and evaluation purposes only.** It is not licensed for use of any kind, commercial or non-commercial, without express written permission from the author. For licensing inquiries, please contact time@3dtechsolutions.us.
+
+---
+
 The Huntmaster Audio Engine is a cross-platform C++ audio analysis engine designed to be the core of the Huntmaster platform. Its primary function is to analyze and compare audio recordings of animal calls, such as deer grunts or turkey gobbles, by providing a similarity score. It is built to be a self-contained, high-performance static library that can be easily integrated into various client applications (desktop, mobile, etc.).
 
 ## 🚧 Project Status: In Development
