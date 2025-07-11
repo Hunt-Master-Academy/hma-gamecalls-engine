@@ -179,9 +179,9 @@ cat > /tmp/check_features.cpp << 'EOF'
 
 int main() {
     #ifdef __cpp_lib_expected
-    std::cout << "std::expected: supported" << std::endl;
+    std::cout << "huntmaster::expected: supported" << std::endl;
     #else
-    std::cout << "std::expected: NOT supported (need C++23)" << std::endl;
+    std::cout << "huntmaster::expected: NOT supported (need C++23)" << std::endl;
     #endif
     
     #ifdef __cpp_lib_semaphore

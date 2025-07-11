@@ -112,11 +112,11 @@ if(EMSCRIPTEN)
 
     # Add Emscripten-specific compiler options
     target_compile_options(huntmaster_wasm PRIVATE
-        -O3                     # Optimization level
-        -fno-exceptions         # Disable exceptions for smaller size
-        -fno-rtti              # Disable RTTI for smaller size
-        -Wall                  # Enable warnings
-        -Wextra                # Enable extra warnings
+    -O3                     # Optimization level
+    -fno-exceptions         # Disable exceptions for smaller size
+    # -fno-rtti removed - embind requires RTTI
+    -Wall                  # Enable warnings
+    -Wextra                # Enable extra warnings
     )
 
     # Add Emscripten-specific linker options
@@ -166,6 +166,8 @@ else()
     target_include_directories(HuntmasterEngine PUBLIC
         ${PROJECT_INCLUDE_DIR}
         ${PROJECT_LIBS_DIR}
+        ${CMAKE_SOURCE_DIR}/include/huntmaster/core
+        ${CMAKE_SOURCE_DIR}/include/huntmaster/platform/wasm
     )
 
     # Use C++20 for better compatibility across platforms

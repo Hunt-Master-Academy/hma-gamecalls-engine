@@ -118,9 +118,9 @@ VoiceActivityDetector::~VoiceActivityDetector() = default;
 VoiceActivityDetector::VoiceActivityDetector(VoiceActivityDetector&&) noexcept = default;
 VoiceActivityDetector& VoiceActivityDetector::operator=(VoiceActivityDetector&&) noexcept = default;
 
-std::expected<VADResult, VADError> VoiceActivityDetector::processWindow(std::span<const float> audio) {
+huntmaster::expected<VADResult, VADError> VoiceActivityDetector::processWindow(std::span<const float> audio) {
     if (audio.empty()) {
-        return std::unexpected(VADError::INVALID_INPUT);
+        return huntmaster::unexpected(VADError::INVALID_INPUT);
     }
     return pimpl_->process(audio);
 }

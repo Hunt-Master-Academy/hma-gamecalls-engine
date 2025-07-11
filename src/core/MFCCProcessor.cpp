@@ -133,9 +133,9 @@ public:
         }
     }
 
-    std::expected<FeatureVector, MFCCError> extractFeatures(std::span<const float> audio_frame) {
+    huntmaster::expected<FeatureVector, MFCCError> extractFeatures(std::span<const float> audio_frame) {
         if (audio_frame.size() != config.frame_size) {
-            return std::unexpected(MFCCError::INVALID_INPUT);
+            return huntmaster::unexpected(MFCCError::INVALID_INPUT);
         }
 
 #ifdef HAVE_KISSFFT
@@ -168,7 +168,7 @@ public:
         }
         return coefficients;
 #else
-        return std::unexpected(MFCCError::FFT_FAILED);
+        return huntmaster::unexpected(MFCCError::FFT_FAILED);
 #endif
     }
 };
@@ -179,12 +179,12 @@ MFCCProcessor::~MFCCProcessor() = default;
 MFCCProcessor::MFCCProcessor(MFCCProcessor&&) noexcept = default;
 MFCCProcessor& MFCCProcessor::operator=(MFCCProcessor&&) noexcept = default;
 
-std::expected<MFCCProcessor::FeatureVector, MFCCError> MFCCProcessor::extractFeatures(std::span<const float> audio_frame) {
+huntmaster::expected<MFCCProcessor::FeatureVector, MFCCError> MFCCProcessor::extractFeatures(std::span<const float> audio_frame) {
     return pimpl_->extractFeatures(audio_frame);
 }
 
-std::expected<MFCCProcessor::FeatureMatrix, MFCCError> MFCCProcessor::extractFeaturesFromBuffer(std::span<const float> audio_buffer, size_t hop_size) {
-    if (audio_buffer.empty()) return std::unexpected(MFCCError::INVALID_INPUT);
+huntmaster::expected<MFCCProcessor::FeatureMatrix, MFCCError> MFCCProcessor::extractFeaturesFromBuffer(std::span<const float> audio_buffer, size_t hop_size) {
+    if (audio_buffer.empty()) return huntmaster::unexpected(MFCCError::INVALID_INPUT);
 
     FeatureMatrix all_features;
     const size_t frame_size = pimpl_->config.frame_size;
@@ -197,7 +197,7 @@ std::expected<MFCCProcessor::FeatureMatrix, MFCCError> MFCCProcessor::extractFea
             all_features.push_back(std::move(*features_result));
         } else {
             // Propagate the first error encountered
-            return std::unexpected(features_result.error());
+            return huntmaster::unexpected(features_result.error());
         }
     }
     return all_features;

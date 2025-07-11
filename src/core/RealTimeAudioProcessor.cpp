@@ -36,15 +36,15 @@ namespace huntmaster
 
             explicit Impl(const Config& config) : config_(config) {}
 
-            [[nodiscard]] std::expected<void, ProcessorError> enqueue(std::span<const float> audio_data) {
+            [[nodiscard]] huntmaster::expected<void, ProcessorError> enqueue(std::span<const float> audio_data) {
                 if (audio_data.size() > AudioChunk::MAX_CHUNK_SIZE) {
-                    return std::unexpected(ProcessorError::INVALID_SIZE);
+                    return huntmaster::unexpected(ProcessorError::INVALID_SIZE);
                 }
 
                 std::unique_lock lock(mutex_);
                 if (queue_.size() >= config_.ring_buffer_size) {
                     overruns_.fetch_add(1, std::memory_order_relaxed);
-                    return std::unexpected(ProcessorError::BUFFER_FULL);
+                    return huntmaster::unexpected(ProcessorError::BUFFER_FULL);
                 }
 
                 AudioChunk& chunk = queue_.emplace(); // Create chunk in place
@@ -57,11 +57,11 @@ namespace huntmaster
                 return {};
             }
 
-            [[nodiscard]] std::expected<AudioChunk, ProcessorError> dequeue() {
+            [[nodiscard]] huntmaster::expected<AudioChunk, ProcessorError> dequeue() {
                 std::unique_lock lock(mutex_);
                 if (queue_.empty()) {
                     underruns_.fetch_add(1, std::memory_order_relaxed);
-                    return std::unexpected(ProcessorError::BUFFER_EMPTY);
+                    return huntmaster::unexpected(ProcessorError::BUFFER_EMPTY);
                 }
 
                 AudioChunk chunk = std::move(queue_.front());
@@ -157,13 +157,13 @@ namespace huntmaster
                 return read_idx != actual_write;
             }
 
-            [[nodiscard]] std::expected<void, ProcessorError> enqueue(std::span<const float> audio_data) {
+            [[nodiscard]] huntmaster::expected<void, ProcessorError> enqueue(std::span<const float> audio_data) {
                 if (audio_data.size() > AudioChunk::MAX_CHUNK_SIZE) {
-                    return std::unexpected(ProcessorError::INVALID_SIZE);
+                    return huntmaster::unexpected(ProcessorError::INVALID_SIZE);
                 }
                 if (!canWrite()) {
                     overruns_.fetch_add(1, std::memory_order_relaxed);
-                    return std::unexpected(ProcessorError::BUFFER_FULL);
+                    return huntmaster::unexpected(ProcessorError::BUFFER_FULL);
                 }
                 
                 auto write_idx = write_index_.load(std::memory_order_relaxed);
@@ -223,10 +223,10 @@ namespace huntmaster
                 return {};
             }
 
-            [[nodiscard]] std::expected<AudioChunk, ProcessorError> dequeue() {
+            [[nodiscard]] huntmaster::expected<AudioChunk, ProcessorError> dequeue() {
                 if (!canRead()) {
                     underruns_.fetch_add(1, std::memory_order_relaxed);
-                    return std::unexpected(ProcessorError::BUFFER_EMPTY);
+                    return huntmaster::unexpected(ProcessorError::BUFFER_EMPTY);
                 }
                 
                 auto read_idx = read_index_.load(std::memory_order_relaxed);
@@ -255,7 +255,7 @@ namespace huntmaster
     RealtimeAudioProcessor::RealtimeAudioProcessor(RealtimeAudioProcessor&&) noexcept = default;
     RealtimeAudioProcessor& RealtimeAudioProcessor::operator=(RealtimeAudioProcessor&&) noexcept = default;
 
-    std::expected<void, ProcessorError> RealtimeAudioProcessor::enqueueAudio(std::span<const float> audio_data) {
+    huntmaster::expected<void, ProcessorError> RealtimeAudioProcessor::enqueueAudio(std::span<const float> audio_data) {
         return pimpl_->enqueue(audio_data);
     }
 
@@ -263,7 +263,7 @@ namespace huntmaster
         return pimpl_->enqueue(audio_data).has_value();
     }
 
-    std::expected<AudioChunk, ProcessorError> RealtimeAudioProcessor::dequeueChunk() {
+    huntmaster::expected<AudioChunk, ProcessorError> RealtimeAudioProcessor::dequeueChunk() {
         return pimpl_->dequeue();
     }
 
@@ -323,14 +323,14 @@ namespace huntmaster
         // pimpl_->max_processing_ns_.store(0);
     }
 
-    void RealtimeAudioProcessor::waitForSpace(std::chrono::milliseconds timeout) {
+    void RealtimeAudioProcessor::waitForSpace([[maybe_unused]] std::chrono::milliseconds timeout) {
     #if !HUNTMASTER_SINGLE_THREADED
         std::unique_lock lock(pimpl_->cv_mutex_);
         pimpl_->cv_space_.wait_for(lock, timeout, [this] { return !isFull(); });
     #endif
     }
 
-    void RealtimeAudioProcessor::waitForData(std::chrono::milliseconds timeout) {
+    void RealtimeAudioProcessor::waitForData([[maybe_unused]] std::chrono::milliseconds timeout) {
     #if !HUNTMASTER_SINGLE_THREADED
         std::unique_lock lock(pimpl_->cv_mutex_);
         pimpl_->cv_data_.wait_for(lock, timeout, [this] { return !isEmpty(); });

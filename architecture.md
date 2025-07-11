@@ -7,8 +7,10 @@ The Huntmaster Audio Engine is a modern, cross-platform C++ library designed for
 ### Core Design Principles
 
 #### 1. **Modern C++ Standards (C++20/23)**
+
 The engine leverages cutting-edge C++ features for safety, performance, and expressiveness:
-- **`std::expected<T, E>`** - Type-safe error handling without exceptions
+
+- **`huntmaster::expected<T, E>`** - Type-safe error handling without exceptions
 - **`std::span<T>`** - Non-owning views of contiguous memory
 - **`std::concepts`** - Compile-time interface constraints
 - **`std::memory_resource`** - Custom memory allocation strategies
@@ -16,16 +18,19 @@ The engine leverages cutting-edge C++ features for safety, performance, and expr
 - **`std::atomic` & `std::semaphore`** - Lock-free concurrent programming
 
 #### 2. **Interface-Driven Architecture**
+
 - `IHuntmasterEngine.h` defines the contract that all platform implementations must fulfill
 - Enables testing with mock implementations
 - Facilitates platform-specific optimizations while maintaining API consistency
 
 #### 3. **Memory-Efficient Real-Time Processing**
+
 - **AudioBufferPool**: Pre-allocated memory pools to avoid allocation during audio processing
 - Zero-copy operations using `std::span` for audio data
 - Lock-free data structures for minimal latency
 
 #### 4. **Platform Abstraction Layer**
+
 ```
 Core Engine (Platform-Agnostic)
     ├── Audio Analysis (MFCC, DTW)
@@ -42,36 +47,42 @@ Platform Interfaces
 ### Component Responsibilities
 
 #### **HuntmasterEngine** (Orchestrator)
+
 - Session management with thread-safe containers
 - Coordinates the audio processing pipeline
 - Maintains master call reference data
 - Platform-agnostic core logic
 
 #### **VoiceActivityDetector** (VAD)
+
 - Identifies meaningful audio segments
 - Filters out silence and noise
 - Reduces unnecessary processing
 - Energy-based and statistical detection methods
 
 #### **MFCCProcessor** (Feature Extraction)
+
 - Converts raw audio to Mel-Frequency Cepstral Coefficients
 - Implements caching for repeated analysis
 - Optimized with SIMD when available
 - Consistent results across all platforms
 
 #### **DTWComparator** (Pattern Matching)
+
 - Dynamic Time Warping algorithm for audio comparison
 - Handles temporal variations in audio
 - Returns similarity scores
 - Configurable comparison parameters
 
 #### **RealtimeAudioProcessor** (Stream Handler)
+
 - Manages audio chunk queuing
 - Provides backpressure mechanisms
 - Adapts to platform threading models
 - Maintains timing and synchronization
 
 #### **AudioBufferPool** (Memory Manager)
+
 - Pre-allocated buffer management
 - Lock-free allocation in hot paths
 - Automatic buffer recycling
@@ -79,15 +90,17 @@ Platform Interfaces
 
 ### Error Handling Philosophy
 
-The engine uses `std::expected<T, Error>` throughout, providing:
+The engine uses `huntmaster::expected<T, Error>` throughout, providing:
+
 - No hidden control flow (no exceptions in audio path)
 - Explicit error propagation
 - Rich error information
 - Compile-time safety
 
 Example:
+
 ```cpp
-std::expected<FeatureVector, MFCCError> result = mfccProcessor.extractFeatures(audioSpan);
+huntmaster::expected<FeatureVector, MFCCError> result = mfccProcessor.extractFeatures(audioSpan);
 if (!result) {
     // Handle specific error
     switch (result.error()) {
@@ -102,6 +115,7 @@ if (!result) {
 The engine supports multiple threading models through conditional compilation:
 
 1. **Multi-threaded (Native platforms)**
+
    - Lock-free queues for audio chunks
    - Reader-writer locks for session data
    - Worker threads for parallel processing
@@ -114,6 +128,7 @@ The engine supports multiple threading models through conditional compilation:
 ### Testing Strategy
 
 The architecture facilitates comprehensive testing:
+
 - **Unit tests**: Each component in isolation
 - **Integration tests**: Complete audio pipeline
 - **Platform tests**: Platform-specific behavior
@@ -129,6 +144,7 @@ The architecture facilitates comprehensive testing:
 ### Future Extensibility
 
 The architecture supports future enhancements:
+
 - Additional audio analysis algorithms
 - New platform targets
 - Hardware acceleration (GPU/DSP)

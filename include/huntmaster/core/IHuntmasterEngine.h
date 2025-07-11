@@ -50,14 +50,16 @@ namespace huntmaster
 
     /**
      * @concept AudioEngine
+#else
+#define AudioEngine typename
+#endif
      * @brief C++20 concept defining requirements for audio engine implementations
      *
      * This concept ensures that any audio engine implementation provides the
      * required interface for processing audio chunks and managing master calls.
      */
     template <typename T>
-    concept AudioEngine = requires(T engine,
-                                   std::span<const float> audio_data,
+    concept AudioEngine = requires(T engine, std::span<const float> audio_data,
                                    std::string_view call_name,
                                    int session_id) {
         // Engine must be constructible

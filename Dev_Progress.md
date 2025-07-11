@@ -17,7 +17,7 @@
 - [x] Implemented AudioBufferPool with std::counting_semaphore
 - [x] Used std::pmr::memory_resource for custom allocators
 - [x] Added [[nodiscard]] to all allocation functions
-- [x] Implemented std::expected<T, Error> for error handling
+- [x] Implemented huntmaster::expected<T, Error> for error handling
 - [x] Added memory usage tracking with std::atomic<size_t>
 
 ### 1.3 Thread Safety Improvements ✅
@@ -257,7 +257,7 @@ The codebase now has excellent foundations:
 - Clean separation between interface and implementation
 - Consistent use of PIMPL pattern
 - Modern C++20 features throughout
-- Good error handling with std::expected
+- Good error handling with huntmaster::expected
 - Thread-safe design with appropriate synchronization
 
 The main challenge now is integration and testing rather than core implementation.

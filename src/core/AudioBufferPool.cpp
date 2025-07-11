@@ -290,13 +290,13 @@ namespace huntmaster
 
     AudioBufferPool &AudioBufferPool::operator=(AudioBufferPool &&) noexcept = default;
 
-    std::expected<AudioBufferPool::BufferHandle, BufferPoolError>
+    huntmaster::expected<AudioBufferPool::BufferHandle, BufferPoolError>
     AudioBufferPool::acquire()
     {
         return tryAcquireFor(pimpl_->config_.acquire_timeout);
     }
 
-    std::expected<AudioBufferPool::BufferHandle, BufferPoolError>
+    huntmaster::expected<AudioBufferPool::BufferHandle, BufferPoolError>
     AudioBufferPool::tryAcquireFor(std::chrono::milliseconds timeout)
     {
         // Update statistics
@@ -306,7 +306,7 @@ namespace huntmaster
         if (!pimpl_->available_semaphore_.try_acquire_for(timeout))
         {
             pimpl_->failed_allocations_.fetch_add(1, std::memory_order_relaxed);
-            return std::unexpected(BufferPoolError::POOL_EXHAUSTED);
+            return huntmaster::unexpected(BufferPoolError::POOL_EXHAUSTED);
         }
 
         // Find an available buffer

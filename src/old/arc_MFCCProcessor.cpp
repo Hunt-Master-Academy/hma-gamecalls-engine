@@ -296,7 +296,7 @@ namespace huntmaster
             }
         }
 
-        [[nodiscard]] std::expected<FeatureVector, MFCCError>
+        [[nodiscard]] huntmaster::expected<FeatureVector, MFCCError>
         processFrame(std::span<const float> frame)
         {
             if (frame.size() != config_.frame_size)
@@ -398,13 +398,13 @@ namespace huntmaster
 
     MFCCProcessor &MFCCProcessor::operator=(MFCCProcessor &&) noexcept = default;
 
-    std::expected<MFCCProcessor::FeatureVector, MFCCError>
+    huntmaster::expected<MFCCProcessor::FeatureVector, MFCCError>
     MFCCProcessor::extractFeatures(std::span<const float> audio_frame)
     {
         return pimpl_->processFrame(audio_frame);
     }
 
-    std::expected<MFCCProcessor::FeatureMatrix, MFCCError>
+    huntmaster::expected<MFCCProcessor::FeatureMatrix, MFCCError>
     MFCCProcessor::extractFeaturesFromBuffer(std::span<const float> audio_buffer,
                                              size_t hop_size)
     {

@@ -1,6 +1,10 @@
 // File: VoiceActivityDetector.h
 #pragma once
 
+#include "Platform.h"
+#include "Expected.h"
+
+
 #include <span>
 #include <expected>
 #include <chrono>
@@ -43,7 +47,7 @@ namespace huntmaster
         VoiceActivityDetector(VoiceActivityDetector &&) noexcept;
         VoiceActivityDetector &operator=(VoiceActivityDetector &&) noexcept;
 
-        [[nodiscard]] std::expected<VADResult, VADError>
+        [[nodiscard]] huntmaster::expected<VADResult, VADError>
         processWindow(std::span<const float> audio);
 
         void reset();

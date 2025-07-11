@@ -155,7 +155,7 @@ This section has been commented out.
     }
 
     // --- NEW, CORRECTED IMPLEMENTATION ---
-    std::expected<void, EngineError> loadMasterCall(std::string_view call_name) {
+    huntmaster::expected<void, EngineError> loadMasterCall(std::string_view call_name) {
         // This is a simplified loader. A real implementation would search
         // a known directory for the file.
         std::string filePath = "../data/master_calls/" + std::string(call_name) + ".wav";
@@ -189,7 +189,7 @@ This section has been commented out.
     }
 
     // --- NEW, CORRECTED IMPLEMENTATION ---
-    std::expected<ProcessingResult, EngineError> processAudioChunk(
+    huntmaster::expected<ProcessingResult, EngineError> processAudioChunk(
         std::span<const float> audio_data) {
         if (!initialized_.load(std::memory_order_acquire)) {
             return std::unexpected(
@@ -337,15 +337,15 @@ The block below has been commented out and replaced with the correct,
 functional implementations that properly delegate to the private Impl class.
 */
 #if 0  // Commenting out the entire block of old, broken implementations
-std::expected<void, EngineError> HuntmasterEngine::loadMasterCall(std::string_view call_name) {
+huntmaster::expected<void, EngineError> HuntmasterEngine::loadMasterCall(std::string_view call_name) {
     // Loads pre-computed MFCC features for the reference call identified by 'call_name'.
     // Expected input: call_name - the identifier or filename of the master call to load.
     // Expected output: On success, the master call features are loaded into the engine for
-    // similarity comparison. Returns: std::expected<void, EngineError> indicating success or
+    // similarity comparison. Returns: huntmaster::expected<void, EngineError> indicating success or
     // failure.
     // TODO: Implement master call loading logic here.
     return {};
-    std::expected<void, EngineError> HuntmasterEngine::startSession(int session_id) {
+    huntmaster::expected<void, EngineError> HuntmasterEngine::startSession(int session_id) {
         std::unique_lock lock(pimpl_->sessions_mutex_);
 
         auto [it, inserted] =
@@ -363,7 +363,7 @@ std::expected<void, EngineError> HuntmasterEngine::loadMasterCall(std::string_vi
     return {};
 }
 
-std::expected<void, EngineError> HuntmasterEngine::endSession(int session_id) {
+huntmaster::expected<void, EngineError> HuntmasterEngine::endSession(int session_id) {
     std::unique_lock lock(pimpl_->sessions_mutex_);
 
     auto it = pimpl_->sessions_.find(session_id);
@@ -389,16 +389,16 @@ return {};
 
 // --- NEW, CORRECTED PUBLIC API IMPLEMENTATIONS ---
 
-std::expected<ProcessingResult, EngineError> HuntmasterEngine::processChunk(
+huntmaster::expected<ProcessingResult, EngineError> HuntmasterEngine::processChunk(
     std::span<const float> audio_data) {
     return pimpl_->processAudioChunk(audio_data);
 }
 
-std::expected<void, EngineError> HuntmasterEngine::loadMasterCall(std::string_view call_name) {
+huntmaster::expected<void, EngineError> HuntmasterEngine::loadMasterCall(std::string_view call_name) {
     return pimpl_->loadMasterCall(call_name);
 }
 
-std::expected<void, EngineError> HuntmasterEngine::startSession(int session_id) {
+huntmaster::expected<void, EngineError> HuntmasterEngine::startSession(int session_id) {
     std::unique_lock lock(pimpl_->sessions_mutex_);
     if (pimpl_->sessions_.contains(session_id)) {
         return std::unexpected(
@@ -412,7 +412,7 @@ std::expected<void, EngineError> HuntmasterEngine::startSession(int session_id) 
     return {};
 }
 
-std::expected<void, EngineError> HuntmasterEngine::endSession(int session_id) {
+huntmaster::expected<void, EngineError> HuntmasterEngine::endSession(int session_id) {
     std::unique_lock lock(pimpl_->sessions_mutex_);
     if (pimpl_->sessions_.erase(session_id) == 0) {
         return std::unexpected(EngineError{EngineStatus::ERROR_INVALID_INPUT, "Session not found"});

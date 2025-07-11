@@ -1,6 +1,9 @@
 // File: MFCCProcessor.h
 #pragma once
 
+#include "Platform.h"
+#include "Expected.h"
+
 #include <span>
 #include <vector>
 #include <array>
@@ -47,10 +50,10 @@ namespace huntmaster
         MFCCProcessor(MFCCProcessor &&) noexcept;
         MFCCProcessor &operator=(MFCCProcessor &&) noexcept;
 
-        [[nodiscard]] std::expected<FeatureVector, MFCCError>
+        [[nodiscard]] huntmaster::expected<FeatureVector, MFCCError>
         extractFeatures(std::span<const float> audio_frame);
 
-        [[nodiscard]] std::expected<FeatureMatrix, MFCCError>
+        [[nodiscard]] huntmaster::expected<FeatureMatrix, MFCCError>
         extractFeaturesFromBuffer(std::span<const float> audio_buffer,
                                   size_t hop_size);
 

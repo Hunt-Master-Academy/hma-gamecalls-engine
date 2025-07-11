@@ -1,6 +1,10 @@
 // File: AudioBufferPool.h
 #pragma once
 
+#include "Platform.h"
+#include "Expected.h"
+
+
 #include <array>
 #include <atomic>
 #include <expected>
@@ -149,14 +153,14 @@ namespace huntmaster
          * @brief Acquire a buffer from the pool
          * @return Buffer handle or error
          */
-        [[nodiscard]] std::expected<BufferHandle, BufferPoolError> acquire();
+        [[nodiscard]] huntmaster::expected<BufferHandle, BufferPoolError> acquire();
 
         /**
          * @brief Try to acquire a buffer with timeout
          * @param timeout Maximum time to wait
          * @return Buffer handle or error
          */
-        [[nodiscard]] std::expected<BufferHandle, BufferPoolError>
+        [[nodiscard]] huntmaster::expected<BufferHandle, BufferPoolError>
         tryAcquireFor(std::chrono::milliseconds timeout);
 
         /**

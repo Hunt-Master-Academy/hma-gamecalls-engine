@@ -91,6 +91,6 @@ namespace huntmaster
     // Verify that HuntmasterEngine satisfies the AudioEngine concept
     #ifndef HUNTMASTER_PLATFORM_WASM
         static_assert(AudioEngine<HuntmasterEngine>);
-    #endif
+    #endif // HUNTMASTER_PLATFORM_WASM
 
 } // namespace huntmaster

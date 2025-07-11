@@ -1,6 +1,10 @@
 // File: RealtimeAudioProcessor.h
 #pragma once
 
+#include "Platform.h"
+#include "Expected.h"
+
+
 #include <atomic>
 #include <vector>
 #include <array>
@@ -69,13 +73,13 @@ namespace huntmaster
         RealtimeAudioProcessor &operator=(RealtimeAudioProcessor &&) noexcept;
 
         // Producer interface (audio input thread)
-        [[nodiscard]] std::expected<void, ProcessorError>
+        [[nodiscard]] huntmaster::expected<void, ProcessorError>
         enqueueAudio(std::span<const float> audio_data);
 
         [[nodiscard]] bool tryEnqueueAudio(std::span<const float> audio_data);
 
         // Consumer interface (processing thread)
-        [[nodiscard]] std::expected<AudioChunk, ProcessorError>
+        [[nodiscard]] huntmaster::expected<AudioChunk, ProcessorError>
         dequeueChunk();
 
         [[nodiscard]] std::optional<AudioChunk> tryDequeueChunk();
