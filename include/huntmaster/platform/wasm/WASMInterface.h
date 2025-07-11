@@ -2,7 +2,7 @@
 
 #ifdef __EMSCRIPTEN__
 
-#include "HuntmasterEngine.h"
+#include "huntmaster/core/HuntmasterEngine.h"
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
 #include <memory>

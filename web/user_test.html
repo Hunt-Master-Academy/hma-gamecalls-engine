@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Huntmaster Engine - User Test</title>
+    <!-- Using Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Custom font and minor style adjustments */
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      .status-dot {
+        height: 12px;
+        width: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-100 text-gray-800 flex items-center justify-center min-h-screen"
+  >
+    <div id="loading-screen" class="text-center">
+      <h1 class="text-2xl font-bold">Loading Huntmaster Engine...</h1>
+      <p class="text-gray-600 mt-2">Please wait a moment.</p>
+    </div>
+
+    <main
+      id="app-content"
+      class="hidden w-full max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8"
+    >
+      <!-- Header -->
+      <div class="text-center border-b pb-4 mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Huntmaster Game Calls</h1>
+        <p class="text-gray-600 mt-1">User Testing Interface</p>
+      </div>
+
+      <!-- Status Display -->
+      <div class="bg-gray-50 rounded-lg p-4 mb-6">
+        <h2 class="text-lg font-semibold mb-2">Engine Status</h2>
+        <div class="flex items-center">
+          <div id="status-dot" class="status-dot bg-yellow-400 mr-3"></div>
+          <span id="status-text" class="font-medium text-gray-700"
+            >Initializing...</span
+          >
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="text-center mb-6">
+        <button
+          id="start-btn"
+          class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none"
+          disabled
+        >
+          Start Recording
+        </button>
+        <button
+          id="stop-btn"
+          class="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-transform transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed disabled:transform-none"
+          disabled
+        >
+          Stop Recording
+        </button>
+      </div>
+
+      <!-- Results -->
+      <div class="bg-gray-50 rounded-lg p-4">
+        <h2 class="text-lg font-semibold mb-2">Last Result</h2>
+        <div
+          id="result-container"
+          class="text-center p-4 bg-white rounded-md border"
+        >
+          <p id="result-text" class="text-gray-500">Awaiting audio...</p>
+          <p id="score-text" class="text-sm text-gray-400 mt-1"></p>
+        </div>
+      </div>
+
+      <!-- Log for debugging -->
+      <div class="mt-6">
+        <h3 class="text-sm font-semibold text-gray-500">Log</h3>
+        <div
+          id="log"
+          class="w-full h-32 bg-gray-900 text-white text-xs font-mono p-2 rounded-md overflow-y-scroll"
+        ></div>
+      </div>
+    </main>
+
+    <!-- App Logic -->
+    <script>
+      // --- UI Elements ---
+      const loadingScreen = document.getElementById("loading-screen");
+      const appContent = document.getElementById("app-content");
+      const startBtn = document.getElementById("start-btn");
+      const stopBtn = document.getElementById("stop-btn");
+      const statusDot = document.getElementById("status-dot");
+      const statusText = document.getElementById("status-text");
+      const resultText = document.getElementById("result-text");
+      const scoreText = document.getElementById("score-text");
+      const logDiv = document.getElementById("log");
+
+      // --- App State ---
+      let engineInstance = null;
+      let isRecording = false;
+
+      // --- Utility Functions ---
+      function log(message) {
+        console.log(message);
+        const line = document.createElement("div");
+        // Sanitize message to prevent HTML injection
+        line.textContent = `> ${message}`;
+        logDiv.appendChild(line);
+        logDiv.scrollTop = logDiv.scrollHeight;
+      }
+
+      function setStatus(text, color) {
+        statusText.textContent = text;
+        statusDot.className = `status-dot mr-3 ${color}`;
+      }
+
+      function updateUI() {
+        startBtn.disabled = isRecording || !engineInstance;
+        stopBtn.disabled = !isRecording || !engineInstance;
+        if (isRecording) {
+          setStatus("Listening for audio...", "bg-red-500");
+        } else if (engineInstance) {
+          setStatus("Ready to record", "bg-green-500");
+        }
+      }
+
+      function handleMatchResult(match) {
+        log(`Match found: ${match.name} (Score: ${match.score})`);
+        if (match.score > 0.5) {
+          // Example threshold
+          resultText.textContent = `Detected: "${match.name}"`;
+          scoreText.textContent = `Confidence Score: ${match.score.toFixed(3)}`;
+          resultText.classList.remove("text-gray-500");
+          resultText.classList.add("text-green-600", "font-bold");
+        } else {
+          resultText.textContent = "No confident match found.";
+          scoreText.textContent = `Best attempt: "${
+            match.name
+          }" with score ${match.score.toFixed(3)}`;
+          resultText.classList.add("text-gray-500");
+          resultText.classList.remove("text-green-600", "font-bold");
+        }
+      }
+
+      // --- Engine Interaction ---
+      function initializeEngine() {
+        try {
+          engineInstance = new Module.HuntmasterEngine();
+          log("HuntmasterEngine instance created.");
+
+          // Load templates
+          // This is a placeholder. You'll need to fetch your templates and load them.
+          // Example: const response = await fetch('path/to/your/template.json');
+          // const templateData = await response.json();
+          // engineInstance.addTemplate(templateData.name, templateData.features);
+          log("Engine templates would be loaded here.");
+
+          // Show app and hide loading screen
+          loadingScreen.classList.add("hidden");
+          appContent.classList.remove("hidden");
+
+          setStatus("Ready to record", "bg-green-500");
+          updateUI();
+        } catch (error) {
+          console.error("Failed to initialize Huntmaster Engine:", error);
+          setStatus("Error initializing engine. See console.", "bg-red-500");
+          loadingScreen.innerHTML = `<h1 class="text-2xl font-bold text-red-500">Error</h1><p class="text-gray-600 mt-2">Could not load the engine. Please check the console.</p>`;
+        }
+      }
+
+      async function startRecording() {
+        if (!engineInstance || isRecording) return;
+        isRecording = true;
+        updateUI();
+        log("Starting recording...");
+        try {
+          // The C++ engine should handle the actual microphone interaction via the WASM interface
+          // The callback function needs to be registered with the Emscripten runtime to be callable from C++
+          const registeredCallback = Module.addFunction(
+            handleMatchResult,
+            "vi"
+          );
+          engineInstance.startRecording(registeredCallback);
+          log("Recording started via engine.");
+        } catch (error) {
+          console.error("Error starting recording:", error);
+          log(`Error: ${error.message}`);
+          setStatus(`Error: ${error.message}`, "bg-red-500");
+          isRecording = false;
+          updateUI();
+        }
+      }
+
+      function stopRecording() {
+        if (!engineInstance || !isRecording) return;
+        isRecording = false;
+        log("Stopping recording...");
+        engineInstance.stopRecording();
+        log("Recording stopped via engine.");
+        updateUI();
+      }
+
+      // --- Event Listeners ---
+      startBtn.addEventListener("click", startRecording);
+      stopBtn.addEventListener("click", stopRecording);
+
+      // --- Emscripten Module Setup ---
+      // This object is used by the Emscripten-generated JS. We define callbacks on it
+      // to hook into its lifecycle.
+      var Module = {
+        // This function is called when the WASM runtime is fully initialized
+        onRuntimeInitialized: function () {
+          log("Huntmaster WASM runtime initialized.");
+          initializeEngine();
+        },
+        // Handlers for stdout/stderr from the WASM module
+        print: (text) => log(`WASM stdout: ${text}`),
+        printErr: (text) => log(`WASM stderr: ${text}`),
+      };
+    </script>
+
+    <!-- 
+      Load the Emscripten-generated JavaScript. 
+      This script will look for the `Module` object we defined above.
+      The path 'dist/huntmaster_engine.js' assumes this HTML file is in the 'web' directory.
+    -->
+    <script async src="dist/huntmaster_engine.js"></script>
+  </body>
+</html>

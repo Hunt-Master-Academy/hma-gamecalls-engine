@@ -1,4 +1,7 @@
+//File: IHuntmasterEngine.h
 #pragma once
+
+#include "Platform.h"
 
 #include <span>
 #include <string_view>
@@ -61,10 +64,10 @@ namespace huntmaster
         { T{} } -> std::same_as<T>;
 
         // Core processing methods
-        { engine.processChunk(audio_data) } -> std::same_as<std::expected<ProcessingResult, EngineError>>;
-        { engine.loadMasterCall(call_name) } -> std::same_as<std::expected<void, EngineError>>;
-        { engine.startSession(session_id) } -> std::same_as<std::expected<void, EngineError>>;
-        { engine.endSession(session_id) } -> std::same_as<std::expected<void, EngineError>>;
+        { engine.processChunk(audio_data) } -> std::same_as<huntmaster::expected<ProcessingResult, EngineError>>;
+        { engine.loadMasterCall(call_name) } -> std::same_as<huntmaster::expected<void, EngineError>>;
+        { engine.startSession(session_id) } -> std::same_as<huntmaster::expected<void, EngineError>>;
+        { engine.endSession(session_id) } -> std::same_as<huntmaster::expected<void, EngineError>>;
 
         // State queries
         { engine.isInitialized() } -> std::same_as<bool>;

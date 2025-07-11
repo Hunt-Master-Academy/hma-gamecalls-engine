@@ -1,9 +1,10 @@
 # File: docker-compose.dev.yml
-# Corrected Version: Uses separate named volumes for data and extensions.
+# Updated to include a dedicated service for compiling WebAssembly.
 
 version: "3.8"
 
 services:
+  # This is your existing development service for writing code.
   cpp-dev:
     build:
       context: .
@@ -17,9 +18,29 @@ services:
       # UPDATED: Separate, persistent volumes for user data and extensions.
       - vscode-user-data:/data/user-data
       - vscode-extensions:/data/extensions
+    # Changed to sleep infinity to be compatible with the new builder service
     command: sleep infinity
 
-# UPDATED: This defines the separate named volumes.
+  # --- NEW SERVICE FOR BUILDING WASM ---
+  # This service uses the official Emscripten image and is pre-configured
+  # for compiling C++ to WebAssembly.
+  wasm-builder:
+    # This is the official, pre-configured image from the Emscripten team.
+    image: emscripten/emsdk:latest
+    container_name: huntmaster-wasm-builder
+    
+    # Mount the entire project directory into the '/src' folder inside the container.
+    volumes:
+      - .:/src
+      
+    # Set the default working directory to our project code.
+    working_dir: /src
+    
+    # This command just keeps the container running in the background
+    # so we can connect to it with 'exec'.
+    command: tail -f /dev/null
+
+# This defines the separate named volumes for your dev container.
 volumes:
   vscode-user-data: {}
   vscode-extensions: {}

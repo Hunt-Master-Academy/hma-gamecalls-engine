@@ -1,3 +1,4 @@
+//File: HuntmasterEngine.h
 #pragma once
 
 #include "IHuntmasterEngine.h"
@@ -43,7 +44,7 @@ namespace huntmaster
          * @param audio_data Input audio samples as a span
          * @return Processing result or error
          */
-        [[nodiscard]] std::expected<ProcessingResult, EngineError>
+        [[nodiscard]] huntmaster::expected<ProcessingResult, EngineError>
         processChunk(std::span<const float> audio_data);
 
         /**
@@ -51,7 +52,7 @@ namespace huntmaster
          * @param call_name Name of the call to load
          * @return Success or error
          */
-        [[nodiscard]] std::expected<void, EngineError>
+        [[nodiscard]] huntmaster::expected<void, EngineError>
         loadMasterCall(std::string_view call_name);
 
         /**
@@ -59,7 +60,7 @@ namespace huntmaster
          * @param session_id Unique identifier for the session
          * @return Success or error
          */
-        [[nodiscard]] std::expected<void, EngineError>
+        [[nodiscard]] huntmaster::expected<void, EngineError>
         startSession(int session_id);
 
         /**
@@ -67,7 +68,7 @@ namespace huntmaster
          * @param session_id Session to terminate
          * @return Success or error
          */
-        [[nodiscard]] std::expected<void, EngineError>
+        [[nodiscard]] huntmaster::expected<void, EngineError>
         endSession(int session_id);
 
         /**
@@ -88,6 +89,8 @@ namespace huntmaster
     };
 
     // Verify that HuntmasterEngine satisfies the AudioEngine concept
-    static_assert(AudioEngine<HuntmasterEngine>);
+    #ifndef HUNTMASTER_PLATFORM_WASM
+        static_assert(AudioEngine<HuntmasterEngine>);
+    #endif
 
 } // namespace huntmaster

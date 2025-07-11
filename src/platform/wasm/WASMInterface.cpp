@@ -1,12 +1,18 @@
 // File: WASMInterface.cpp
 #ifdef __EMSCRIPTEN__
 
-#include "WASMInterface.h"
-#include "RealtimeAudioProcessor.h"
+#include "huntmaster/platform/wasm/WASMInterface.h"
+#include "huntmaster/core/MFCCProcessor.h"
+#include "huntmaster/core/DTWComparator.h"
+#include "huntmaster/core/HuntmasterEngine.h"
+#include "huntmaster/core/AudioBufferPool.h"
+#include "huntmaster/core/VoiceActivityDetector.h"
+#include "huntmaster/core/RealtimeAudioProcessor.h"
 #include <emscripten.h>
 #include <emscripten/threading.h>
 #include <atomic>
 #include <chrono>
+#include <unordered_set>
 
 namespace huntmaster
 {

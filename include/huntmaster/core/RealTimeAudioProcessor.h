@@ -2,12 +2,14 @@
 #pragma once
 
 #include <atomic>
+#include <vector>
 #include <array>
 #include <span>
 #include <chrono>
 #include <memory>
 #include <expected>
 #include <optional>
+#include <queue>
 #include <condition_variable>
 
 namespace huntmaster

@@ -5,6 +5,8 @@
 #include <cmath>
 #include <numeric>
 #include <thread>
+#include <queue>
+#include <mutex> 
 
 namespace huntmaster
 {
@@ -13,24 +15,6 @@ namespace huntmaster
     {
     public:
         Config config_;
-
-        // Lock-free ring buffer
-        // The atomicity is handled by the read/write indices, not by making the
-        // large AudioChunk object itself atomic. This is much more efficient.
-        alignas(64) std::array<AudioChunk, 1024> ring_buffer_;
-        alignas(64) std::atomic<size_t> write_index_{0};
-        alignas(64) std::atomic<size_t> read_index_{0};
-        // alignas(64) std::atomic<size_t> cached_write_index_{0};
-        // alignas(64) std::atomic<size_t> cached_read_index_{0};
-        alignas(64) mutable std::atomic<size_t> cached_write_index_{0};
-        alignas(64) mutable std::atomic<size_t> cached_read_index_{0};
-
-        size_t buffer_mask_;
-
-        // Backpressure support
-        std::condition_variable_any cv_space_;
-        std::condition_variable_any cv_data_;
-        std::mutex cv_mutex_;
 
         // Performance metrics
         alignas(64) std::atomic<size_t> total_chunks_{0};
@@ -42,316 +26,315 @@ namespace huntmaster
 
         // Frame counter
         std::atomic<size_t> frame_counter_{0};
+        
+        #if HUNTMASTER_SINGLE_THREADED
+            // ========================================================================
+            // --- SINGLE-THREADED IMPLEMENTATION (Simpler, std::queue) ---
+            // ========================================================================
+            std::queue<AudioChunk> queue_;
+            mutable std::mutex mutex_; // A simple mutex for basic thread safety
 
-        explicit Impl(const Config &config) : config_(config)
-        {
-            // Ensure buffer size is power of 2
-            if (!std::has_single_bit(config.ring_buffer_size))
-            {
-                throw std::invalid_argument("Ring buffer size must be power of 2");
+            explicit Impl(const Config& config) : config_(config) {}
+
+            [[nodiscard]] std::expected<void, ProcessorError> enqueue(std::span<const float> audio_data) {
+                if (audio_data.size() > AudioChunk::MAX_CHUNK_SIZE) {
+                    return std::unexpected(ProcessorError::INVALID_SIZE);
+                }
+
+                std::unique_lock lock(mutex_);
+                if (queue_.size() >= config_.ring_buffer_size) {
+                    overruns_.fetch_add(1, std::memory_order_relaxed);
+                    return std::unexpected(ProcessorError::BUFFER_FULL);
+                }
+
+                AudioChunk& chunk = queue_.emplace(); // Create chunk in place
+                chunk.valid_samples = audio_data.size();
+                chunk.timestamp = std::chrono::steady_clock::now();
+                chunk.frame_index = frame_counter_.fetch_add(1, std::memory_order_relaxed);
+                std::copy(audio_data.begin(), audio_data.end(), chunk.data.begin());
+                
+                total_chunks_.fetch_add(1, std::memory_order_relaxed);
+                return {};
             }
+
+            [[nodiscard]] std::expected<AudioChunk, ProcessorError> dequeue() {
+                std::unique_lock lock(mutex_);
+                if (queue_.empty()) {
+                    underruns_.fetch_add(1, std::memory_order_relaxed);
+                    return std::unexpected(ProcessorError::BUFFER_EMPTY);
+                }
+
+                AudioChunk chunk = std::move(queue_.front());
+                queue_.pop();
+                return chunk;
+            }
+
+            [[nodiscard]] bool isEmpty() const noexcept {
+                std::unique_lock lock(mutex_);
+                return queue_.empty();
+            }
+
+            [[nodiscard]] bool isFull() const noexcept {
+                std::unique_lock lock(mutex_);
+                return queue_.size() >= config_.ring_buffer_size;
+            }
+
+            [[nodiscard]] size_t available() const noexcept {
+                std::unique_lock lock(mutex_);
+                return queue_.size();
+            }
+
+        #else
+            // ========================================================================
+            // --- MULTI-THREADED IMPLEMENTATION (Lock-Free Ring Buffer) ---
+            // ========================================================================
+            // The atomicity is handled by the read/write indices, not by making the
+            // large AudioChunk object itself atomic. This is much more efficient.
+
+            alignas(64) std::array<AudioChunk, 1024> ring_buffer_;
+            alignas(64) std::atomic<size_t> write_index_{0};
+            alignas(64) std::atomic<size_t> read_index_{0};
+            // alignas(64) std::atomic<size_t> cached_write_index_{0};
+            // alignas(64) std::atomic<size_t> cached_read_index_{0};
+            alignas(64) mutable std::atomic<size_t> cached_write_index_{0};
+            alignas(64) mutable std::atomic<size_t> cached_read_index_{0};
+
+            size_t buffer_mask_;
+
+            // Backpressure support
+            std::condition_variable_any cv_space_;
+            std::condition_variable_any cv_data_;
+            std::mutex cv_mutex_;
+
+            explicit Impl(const Config &config) : config_(config)
+            {
+                // Ensure buffer size is power of 2
+                if (!std::has_single_bit(config.ring_buffer_size))
+                {
+                    throw std::invalid_argument("Ring buffer size must be power of 2");
+                }
 
             buffer_mask_ = config.ring_buffer_size - 1;
 
-        }
-
-        [[nodiscard]] size_t distance(size_t from, size_t to) const noexcept
-        {
-            return (to - from) & buffer_mask_;
-        }
-
-        [[nodiscard]] bool canWrite() const noexcept
-        {
-            auto write_idx = write_index_.load(std::memory_order_relaxed);
-            auto cached_read = cached_read_index_.load(std::memory_order_relaxed);
-
-            if (distance(cached_read, write_idx) < buffer_mask_)
-            {
-                return true;
             }
 
-            // Update cached read index
-            auto actual_read = read_index_.load(std::memory_order_acquire);
-            cached_read_index_.store(actual_read, std::memory_order_relaxed);
-
-            return distance(actual_read, write_idx) < buffer_mask_;
-        }
-
-        [[nodiscard]] bool canRead() const noexcept
-        {
-            auto read_idx = read_index_.load(std::memory_order_relaxed);
-            auto cached_write = cached_write_index_.load(std::memory_order_relaxed);
-
-            if (read_idx != cached_write)
+            [[nodiscard]] size_t distance(size_t from, size_t to) const noexcept
             {
-                return true;
+                return (to - from) & buffer_mask_;
             }
 
-            // Update cached write index
-            auto actual_write = write_index_.load(std::memory_order_acquire);
-            cached_write_index_.store(actual_write, std::memory_order_relaxed);
-
-            return read_idx != actual_write;
-        }
-
-        [[nodiscard]] std::expected<void, ProcessorError>
-        enqueue(std::span<const float> audio_data)
-        {
-            if (audio_data.size() > AudioChunk::MAX_CHUNK_SIZE)
+            [[nodiscard]] bool canWrite() const noexcept
             {
-                return std::unexpected(ProcessorError::INVALID_SIZE);
-            }
+                auto write_idx = write_index_.load(std::memory_order_relaxed);
+                auto cached_read = cached_read_index_.load(std::memory_order_relaxed);
 
-            if (!canWrite())
-            {
-                overruns_.fetch_add(1, std::memory_order_relaxed);
-                return std::unexpected(ProcessorError::BUFFER_FULL);
-            }
-
-            auto start_time = config_.enable_metrics ? std::chrono::high_resolution_clock::now() : std::chrono::high_resolution_clock::time_point{};
-
-            // Create chunk
-            AudioChunk chunk;
-            chunk.valid_samples = audio_data.size();
-            chunk.timestamp = std::chrono::steady_clock::now();
-            chunk.frame_index = frame_counter_.fetch_add(1, std::memory_order_relaxed);
-
-            // Copy data
-            std::copy(audio_data.begin(), audio_data.end(), chunk.data.begin());
-
-            // Calculate energy
-            chunk.energy_level = std::sqrt(
-                std::transform_reduce(
-                    audio_data.begin(), audio_data.end(), 0.0f,
-                    std::plus{}, [](float x)
-                    { return x * x; }) /
-                audio_data.size());
-
-            // Simple voice detection
-            chunk.contains_voice = chunk.energy_level > 0.01f;
-
-            // Store in ring buffer
-            auto write_idx = write_index_.load(std::memory_order_relaxed);
-            // A simple assignment is sufficient now that the chunk is not atomic.
-            ring_buffer_[write_idx & buffer_mask_] = chunk;
-
-            // Advance write index
-            write_index_.store((write_idx + 1) & buffer_mask_, std::memory_order_release);
-
-            // Update metrics
-            if (config_.enable_metrics)
-            {
-                auto duration = std::chrono::high_resolution_clock::now() - start_time;
-                auto ns = duration.count();
-
-                total_processing_ns_.fetch_add(ns, std::memory_order_relaxed);
-
-                auto max_ns = max_processing_ns_.load(std::memory_order_relaxed);
-                while (ns > max_ns)
+                if (distance(cached_read, write_idx) < buffer_mask_)
                 {
-                    if (max_processing_ns_.compare_exchange_weak(
-                            max_ns, ns,
-                            std::memory_order_relaxed,
-                            std::memory_order_relaxed))
-                    {
-                        break;
-                    }
+                    return true;
                 }
+
+                // Update cached read index
+                auto actual_read = read_index_.load(std::memory_order_acquire);
+                cached_read_index_.store(actual_read, std::memory_order_relaxed);
+
+                return distance(actual_read, write_idx) < buffer_mask_;
             }
 
-            total_chunks_.fetch_add(1, std::memory_order_relaxed);
-
-            // Notify waiting consumers
-            if (config_.enable_backpressure)
+            [[nodiscard]] bool canRead() const noexcept
             {
-                cv_data_.notify_one();
+                auto read_idx = read_index_.load(std::memory_order_relaxed);
+                auto cached_write = cached_write_index_.load(std::memory_order_relaxed);
+
+                if (read_idx != cached_write)
+                {
+                    return true;
+                }
+
+                // Update cached write index
+                auto actual_write = write_index_.load(std::memory_order_acquire);
+                cached_write_index_.store(actual_write, std::memory_order_relaxed);
+
+                return read_idx != actual_write;
             }
 
-            return {};
-        }
+            [[nodiscard]] std::expected<void, ProcessorError> enqueue(std::span<const float> audio_data) {
+                if (audio_data.size() > AudioChunk::MAX_CHUNK_SIZE) {
+                    return std::unexpected(ProcessorError::INVALID_SIZE);
+                }
+                if (!canWrite()) {
+                    overruns_.fetch_add(1, std::memory_order_relaxed);
+                    return std::unexpected(ProcessorError::BUFFER_FULL);
+                }
+                
+                auto write_idx = write_index_.load(std::memory_order_relaxed);
+                AudioChunk& chunk = ring_buffer_[write_idx & buffer_mask_];
+                
+                chunk.valid_samples = audio_data.size();
+                chunk.timestamp = std::chrono::steady_clock::now();
+                chunk.frame_index = frame_counter_.fetch_add(1, std::memory_order_relaxed);
+                std::copy(audio_data.begin(), audio_data.end(), chunk.data.begin());
 
-        [[nodiscard]] std::expected<AudioChunk, ProcessorError>
-        dequeue()
-        {
-            if (!canRead())
-            {
-                underruns_.fetch_add(1, std::memory_order_relaxed);
-                return std::unexpected(ProcessorError::BUFFER_EMPTY);
+                /*
+                REVIEW: The following logic was removed to adhere to the Single Responsibility Principle.
+                The RealtimeAudioProcessor's only job is to be a thread-safe queue.
+                - The 'energy_level' and 'contains_voice' calculations are audio ANALYSIS, not queuing.
+                This responsibility was moved to the dedicated `VoiceActivityDetector` component.
+                - The detailed performance metrics (`total_processing_ns_`, etc.) were removed to make
+                this time-critical `enqueue` function as fast as possible. Its primary metrics are
+                overruns and underruns, which are still tracked.
+                */
+                #if 0 // Commenting out the old logic
+                    // Calculate energy
+                    chunk.energy_level = std::sqrt(
+                        std::transform_reduce(
+                            audio_data.begin(), audio_data.end(), 0.0f,
+                            std::plus{}, [](float x)
+                            { return x * x; }) /
+                        audio_data.size());
+
+                    // Simple voice detection
+                    chunk.contains_voice = chunk.energy_level > 0.01f;
+
+                    // Update metrics
+                    if (config_.enable_metrics)
+                    {
+                        auto duration = std::chrono::high_resolution_clock::now() - start_time;
+                        auto ns = duration.count();
+                        total_processing_ns_.fetch_add(ns, std::memory_order_relaxed);
+                        auto max_ns = max_processing_ns_.load(std::memory_order_relaxed);
+                        while (ns > max_ns)
+                        {
+                            if (max_processing_ns_.compare_exchange_weak(
+                                    max_ns, ns,
+                                    std::memory_order_relaxed,
+                                    std::memory_order_relaxed))
+                            {
+                                break;
+                            }
+                        }
+                    }
+                #endif
+
+                // Advance write index
+                write_index_.store((write_idx + 1) & buffer_mask_, std::memory_order_release);
+                
+                total_chunks_.fetch_add(1, std::memory_order_relaxed);
+                if (config_.enable_backpressure) cv_data_.notify_one();
+                return {};
             }
 
-            auto read_idx = read_index_.load(std::memory_order_relaxed);
-            AudioChunk chunk = ring_buffer_[read_idx & buffer_mask_];
-
-            // Advance read index
-            read_index_.store((read_idx + 1) & buffer_mask_, std::memory_order_release);
-
-            // Notify waiting producers
-            if (config_.enable_backpressure)
-            {
-                cv_space_.notify_one();
+            [[nodiscard]] std::expected<AudioChunk, ProcessorError> dequeue() {
+                if (!canRead()) {
+                    underruns_.fetch_add(1, std::memory_order_relaxed);
+                    return std::unexpected(ProcessorError::BUFFER_EMPTY);
+                }
+                
+                auto read_idx = read_index_.load(std::memory_order_relaxed);
+                AudioChunk chunk = ring_buffer_[read_idx & buffer_mask_];
+                read_index_.store((read_idx + 1) & buffer_mask_, std::memory_order_release);
+                
+                if (config_.enable_backpressure) cv_space_.notify_one();
+                return chunk;
             }
 
-            return chunk;
-        }
-
-        [[nodiscard]] size_t availableSpace() const noexcept
-        {
-            auto write_idx = write_index_.load(std::memory_order_acquire);
-            auto read_idx = read_index_.load(std::memory_order_acquire);
-
-            return buffer_mask_ - distance(read_idx, write_idx);
-        }
-
-        [[nodiscard]] size_t availableData() const noexcept
-        {
-            auto write_idx = write_index_.load(std::memory_order_acquire);
-            auto read_idx = read_index_.load(std::memory_order_acquire);
-
-            return distance(read_idx, write_idx);
-        }
+            [[nodiscard]] bool isEmpty() const noexcept { return !canRead(); }
+            [[nodiscard]] bool isFull() const noexcept { return !canWrite(); }
+            [[nodiscard]] size_t available() const noexcept {
+                return distance(read_index_.load(std::memory_order_acquire), write_index_.load(std::memory_order_acquire));
+            }
+        #endif
     };
 
-    // Public interface implementation
+    // ============================================================================
+    // --- PUBLIC INTERFACE IMPLEMENTATION ---
+    // ============================================================================
+    // This part remains the same, as it just delegates to the Pimpl.
 
-    RealtimeAudioProcessor::RealtimeAudioProcessor(const Config &config)
-        : pimpl_(std::make_unique<Impl>(config))
-    {
-    }
-
+    RealtimeAudioProcessor::RealtimeAudioProcessor(const Config& config) : pimpl_(std::make_unique<Impl>(config)) {}
     RealtimeAudioProcessor::~RealtimeAudioProcessor() = default;
+    RealtimeAudioProcessor::RealtimeAudioProcessor(RealtimeAudioProcessor&&) noexcept = default;
+    RealtimeAudioProcessor& RealtimeAudioProcessor::operator=(RealtimeAudioProcessor&&) noexcept = default;
 
-    RealtimeAudioProcessor::RealtimeAudioProcessor(RealtimeAudioProcessor &&) noexcept = default;
-
-    RealtimeAudioProcessor &
-    RealtimeAudioProcessor::operator=(RealtimeAudioProcessor &&) noexcept = default;
-
-    std::expected<void, ProcessorError>
-    RealtimeAudioProcessor::enqueueAudio(std::span<const float> audio_data)
-    {
+    std::expected<void, ProcessorError> RealtimeAudioProcessor::enqueueAudio(std::span<const float> audio_data) {
         return pimpl_->enqueue(audio_data);
     }
 
-    bool RealtimeAudioProcessor::tryEnqueueAudio(std::span<const float> audio_data)
-    {
-        auto result = enqueueAudio(audio_data);
-        return result.has_value();
+    bool RealtimeAudioProcessor::tryEnqueueAudio(std::span<const float> audio_data) {
+        return pimpl_->enqueue(audio_data).has_value();
     }
 
-    std::expected<AudioChunk, ProcessorError>
-    RealtimeAudioProcessor::dequeueChunk()
-    {
+    std::expected<AudioChunk, ProcessorError> RealtimeAudioProcessor::dequeueChunk() {
         return pimpl_->dequeue();
     }
 
-    std::optional<AudioChunk>
-    RealtimeAudioProcessor::tryDequeueChunk()
-    {
-        auto result = dequeueChunk();
-        if (result)
-        {
-            return std::move(result.value());
-        }
+    std::optional<AudioChunk> RealtimeAudioProcessor::tryDequeueChunk() {
+        auto result = pimpl_->dequeue();
+        if (result) return std::move(*result);
         return std::nullopt;
     }
 
-    size_t RealtimeAudioProcessor::enqueueBatch(
-        std::span<const std::span<const float>> audio_batches)
-    {
+    size_t RealtimeAudioProcessor::enqueueBatch(std::span<const std::span<const float>> audio_batches) {
         size_t enqueued = 0;
-
-        for (const auto &batch : audio_batches)
-        {
-            if (tryEnqueueAudio(batch))
-            {
-                ++enqueued;
-            }
-            else
-            {
-                break;
-            }
+        for (const auto& batch : audio_batches) {
+            if (tryEnqueueAudio(batch)) { ++enqueued; } 
+            else { break; }
         }
-
         return enqueued;
     }
 
-    std::vector<AudioChunk>
-    RealtimeAudioProcessor::dequeueBatch(size_t max_chunks)
-    {
+    std::vector<AudioChunk> RealtimeAudioProcessor::dequeueBatch(size_t max_chunks) {
         std::vector<AudioChunk> chunks;
         chunks.reserve(std::min(max_chunks, available()));
-
-        while (chunks.size() < max_chunks)
-        {
+        while (chunks.size() < max_chunks) {
             auto chunk = tryDequeueChunk();
-            if (!chunk)
-                break;
+            if (!chunk) break;
             chunks.push_back(std::move(*chunk));
         }
-
         return chunks;
     }
 
-    bool RealtimeAudioProcessor::isEmpty() const noexcept
-    {
-        return pimpl_->availableData() == 0;
-    }
+    bool RealtimeAudioProcessor::isEmpty() const noexcept { return pimpl_->isEmpty(); }
+    bool RealtimeAudioProcessor::isFull() const noexcept { return pimpl_->isFull(); }
+    size_t RealtimeAudioProcessor::available() const noexcept { return pimpl_->available(); }
+    size_t RealtimeAudioProcessor::capacity() const noexcept { return pimpl_->config_.ring_buffer_size; }
 
-    bool RealtimeAudioProcessor::isFull() const noexcept
-    {
-        return pimpl_->availableSpace() == 0;
-    }
-
-    size_t RealtimeAudioProcessor::available() const noexcept
-    {
-        return pimpl_->availableData();
-    }
-
-    size_t RealtimeAudioProcessor::capacity() const noexcept
-    {
-        return pimpl_->config_.ring_buffer_size;
-    }
-
-    ProcessorStats RealtimeAudioProcessor::getStats() const noexcept
-    {
+    ProcessorStats RealtimeAudioProcessor::getStats() const noexcept {
         ProcessorStats stats;
-
-        // stats.total_chunks_processed = pimpl_->total_chunks_.load(std::memory_order_relaxed);
-        // stats.chunks_dropped = pimpl_->dropped_chunks_.l
-         stats.total_chunks_processed = pimpl_->total_chunks_.load(std::memory_order_relaxed);
+        stats.total_chunks_processed = pimpl_->total_chunks_.load(std::memory_order_relaxed);
         stats.chunks_dropped = pimpl_->dropped_chunks_.load(std::memory_order_relaxed);
         stats.buffer_overruns = pimpl_->overruns_.load(std::memory_order_relaxed);
         stats.buffer_underruns = pimpl_->underruns_.load(std::memory_order_relaxed);
-        stats.total_processing_time = std::chrono::nanoseconds(pimpl_->total_processing_ns_.load(std::memory_order_relaxed));
-        stats.max_processing_time = std::chrono::nanoseconds(pimpl_->max_processing_ns_.load(std::memory_order_relaxed));
-        stats.current_buffer_usage = pimpl_->availableData();
-
-        if (stats.total_chunks_processed > 0) {
-            stats.average_latency_ms = static_cast<float>(stats.total_processing_time.count()) / stats.total_chunks_processed / 1e6f;
-        }
-
+        // These metrics are no longer calculated in the enqueue function
+        // stats.total_processing_time = std::chrono::nanoseconds(pimpl_->total_processing_ns_.load(std::memory_order_relaxed));
+        // stats.max_processing_time = std::chrono::nanoseconds(pimpl_->max_processing_ns_.load(std::memory_order_relaxed));
+        stats.current_buffer_usage = available();
+        // if (stats.total_chunks_processed > 0) {
+        //     stats.average_latency_ms = static_cast<float>(stats.total_processing_time.count()) / stats.total_chunks_processed / 1e6f;
+        // }
         return stats;
     }
 
-    void RealtimeAudioProcessor::resetStats() noexcept
-    {
-        pimpl_->total_chunks_.store(0, std::memory_order_relaxed);
-        pimpl_->dropped_chunks_.store(0, std::memory_order_relaxed);
-        pimpl_->overruns_.store(0, std::memory_order_relaxed);
-        pimpl_->underruns_.store(0, std::memory_order_relaxed);
-        pimpl_->total_processing_ns_.store(0, std::memory_order_relaxed);
-        pimpl_->max_processing_ns_.store(0, std::memory_order_relaxed);
+    void RealtimeAudioProcessor::resetStats() noexcept {
+        pimpl_->total_chunks_.store(0);
+        pimpl_->dropped_chunks_.store(0);
+        pimpl_->overruns_.store(0);
+        pimpl_->underruns_.store(0);
+        // pimpl_->total_processing_ns_.store(0);
+        // pimpl_->max_processing_ns_.store(0);
     }
 
-    void RealtimeAudioProcessor::waitForSpace(std::chrono::milliseconds timeout)
-    {
+    void RealtimeAudioProcessor::waitForSpace(std::chrono::milliseconds timeout) {
+    #if !HUNTMASTER_SINGLE_THREADED
         std::unique_lock lock(pimpl_->cv_mutex_);
         pimpl_->cv_space_.wait_for(lock, timeout, [this] { return !isFull(); });
+    #endif
     }
 
-    void RealtimeAudioProcessor::waitForData(std::chrono::milliseconds timeout)
-    {
+    void RealtimeAudioProcessor::waitForData(std::chrono::milliseconds timeout) {
+    #if !HUNTMASTER_SINGLE_THREADED
         std::unique_lock lock(pimpl_->cv_mutex_);
         pimpl_->cv_data_.wait_for(lock, timeout, [this] { return !isEmpty(); });
+    #endif
     }
 
 } // namespace huntmaster
