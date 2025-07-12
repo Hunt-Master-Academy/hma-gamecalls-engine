@@ -72,6 +72,20 @@ if(NOT EMSCRIPTEN) # Native build only
     endif()
 endif()
 
+# 3. Google Benchmark (Handled via submodule)
+# Note: Google Benchmark will only be built for native targets.
+if(NOT EMSCRIPTEN) # Native build only
+    set(BENCHMARK_DIR ${PROJECT_TESTS_DIR}/lib/benchmark)
+    if(EXISTS ${BENCHMARK_DIR}/CMakeLists.txt)
+        # Prevent benchmark from installing its own tests or being installed
+        set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Disable benchmark's tests" FORCE)
+        set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "Disable benchmark's install" FORCE)
+        message(STATUS "Google Benchmark configured.")
+    else()
+        message(WARNING "Google Benchmark not found at '${BENCHMARK_DIR}'. Benchmarks will not be built.")
+    endif()
+endif()
+
 # ==============================================================================
 # Build Logic: Switch between Native and WebAssembly
 # ==============================================================================
@@ -259,7 +273,8 @@ else()
     endif()
 
     # --- Benchmarking Suite ---
-    if(EXISTS ${PROJECT_TESTS_DIR}/benchmarks/CMakeLists.txt)
+    # Check if the benchmark library exists before configuring our benchmarks
+    if(EXISTS ${PROJECT_TESTS_DIR}/lib/benchmark/CMakeLists.txt AND EXISTS ${PROJECT_TESTS_DIR}/benchmarks/CMakeLists.txt)
         message(STATUS "Configuring benchmarks...")
         add_subdirectory(${PROJECT_TESTS_DIR}/benchmarks)
     endif()
