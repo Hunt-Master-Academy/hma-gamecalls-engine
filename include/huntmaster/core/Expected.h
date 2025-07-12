@@ -13,7 +13,7 @@
         using expected = huntmaster::expected<T, E>;
         
         template<typename E>
-        using unexpected = std::unexpected<E>;
+        using unexpected = huntmaster::unexpected<E>;
     }
 #else
     // Provide a simple alternative for platforms without huntmaster::expected

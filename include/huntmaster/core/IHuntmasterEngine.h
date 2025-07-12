@@ -2,6 +2,8 @@
 #pragma once
 
 #include "Platform.h"
+#include "Expected.h"
+
 
 #include <span>
 #include <string_view>

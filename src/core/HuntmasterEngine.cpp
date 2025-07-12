@@ -166,7 +166,7 @@ This section has been commented out.
             filePath.c_str(), &channels, &sampleRate, &totalFrames, nullptr);
 
         if (!pSampleData) {
-            return std::unexpected(EngineError{EngineStatus::ERROR_RESOURCE_UNAVAILABLE,
+            return huntmaster::unexpected(EngineError{EngineStatus::ERROR_RESOURCE_UNAVAILABLE,
                                                "Master call file not found: " + filePath});
         }
 
@@ -177,7 +177,7 @@ This section has been commented out.
         auto features_result =
             mfcc_processor_->extractFeaturesFromBuffer(audioData, config_.hop_size);
         if (!features_result) {
-            return std::unexpected(EngineError{EngineStatus::ERROR_PROCESSING_FAILED,
+            return huntmaster::unexpected(EngineError{EngineStatus::ERROR_PROCESSING_FAILED,
                                                "Failed to extract features from master call"});
         }
 
@@ -192,7 +192,7 @@ This section has been commented out.
     huntmaster::expected<ProcessingResult, EngineError> processAudioChunk(
         std::span<const float> audio_data) {
         if (!initialized_.load(std::memory_order_acquire)) {
-            return std::unexpected(
+            return huntmaster::unexpected(
                 EngineError{EngineStatus::ERROR_NOT_INITIALIZED, "Engine not initialized"});
         }
 
@@ -201,7 +201,7 @@ This section has been commented out.
         {
             std::shared_lock lock(sessions_mutex_);
             if (!sessions_.contains(current_session_id)) {
-                return std::unexpected(
+                return huntmaster::unexpected(
                     EngineError{EngineStatus::ERROR_INVALID_INPUT,
                                 "Session 0 not started. Call startSession(0) first."});
             }
@@ -210,7 +210,7 @@ This section has been commented out.
         // 1. Run VAD to check for active audio
         auto vad_result = vad_->processWindow(audio_data);
         if (!vad_result) {
-            return std::unexpected(
+            return huntmaster::unexpected(
                 EngineError{EngineStatus::ERROR_PROCESSING_FAILED, "VAD processing failed."});
         }
         if (!vad_result->is_active) {
@@ -220,7 +220,7 @@ This section has been commented out.
         // 2. Extract MFCCs from the active audio
         auto mfcc_result = mfcc_processor_->extractFeatures(audio_data);
         if (!mfcc_result) {
-            return std::unexpected(
+            return huntmaster::unexpected(
                 EngineError{EngineStatus::ERROR_PROCESSING_FAILED, "MFCC extraction failed"});
         }
 
@@ -351,7 +351,7 @@ huntmaster::expected<void, EngineError> HuntmasterEngine::loadMasterCall(std::st
         auto [it, inserted] =
             pimpl_->sessions_.try_emplace(session_id, std::make_unique<RealtimeSession>());
         if (!inserted) {
-            return std::unexpected(EngineError{.status = EngineStatus::ERROR_INVALID_INPUT,
+            return huntmaster::unexpected(EngineError{.status = EngineStatus::ERROR_INVALID_INPUT,
                                                .message = "Session already exists"});
         }
 
@@ -368,7 +368,7 @@ huntmaster::expected<void, EngineError> HuntmasterEngine::endSession(int session
 
     auto it = pimpl_->sessions_.find(session_id);
     if (it == pimpl_->sessions_.end()) {
-        return std::unexpected(EngineError{.status = EngineStatus::ERROR_INVALID_INPUT,
+        return huntmaster::unexpected(EngineError{.status = EngineStatus::ERROR_INVALID_INPUT,
                                            .message = "Session not found"});
     }
 
@@ -401,7 +401,7 @@ huntmaster::expected<void, EngineError> HuntmasterEngine::loadMasterCall(std::st
 huntmaster::expected<void, EngineError> HuntmasterEngine::startSession(int session_id) {
     std::unique_lock lock(pimpl_->sessions_mutex_);
     if (pimpl_->sessions_.contains(session_id)) {
-        return std::unexpected(
+        return huntmaster::unexpected(
             EngineError{EngineStatus::ERROR_INVALID_INPUT, "Session ID already exists"});
     }
     // Create a new session object
@@ -415,7 +415,7 @@ huntmaster::expected<void, EngineError> HuntmasterEngine::startSession(int sessi
 huntmaster::expected<void, EngineError> HuntmasterEngine::endSession(int session_id) {
     std::unique_lock lock(pimpl_->sessions_mutex_);
     if (pimpl_->sessions_.erase(session_id) == 0) {
-        return std::unexpected(EngineError{EngineStatus::ERROR_INVALID_INPUT, "Session not found"});
+        return huntmaster::unexpected(EngineError{EngineStatus::ERROR_INVALID_INPUT, "Session not found"});
     }
     return {};
 }

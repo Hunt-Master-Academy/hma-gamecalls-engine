@@ -301,7 +301,7 @@ namespace huntmaster
         {
             if (frame.size() != config_.frame_size)
             {
-                return std::unexpected(MFCCError::INVALID_INPUT);
+                return huntmaster::unexpected(MFCCError::INVALID_INPUT);
             }
 
             // Check cache
@@ -410,7 +410,7 @@ namespace huntmaster
     {
         if (audio_buffer.size() < pimpl_->config_.frame_size)
         {
-            return std::unexpected(MFCCError::INVALID_INPUT);
+            return huntmaster::unexpected(MFCCError::INVALID_INPUT);
         }
 
         FeatureMatrix features;
@@ -425,7 +425,7 @@ namespace huntmaster
             auto result = extractFeatures(frame);
             if (!result)
             {
-                return std::unexpected(result.error());
+                return huntmaster::unexpected(result.error());
             }
 
             features.push_back(std::move(result.value()));

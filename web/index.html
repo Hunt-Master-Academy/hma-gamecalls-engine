@@ -1,217 +1,346 @@
 <!DOCTYPE html>
-<pre
-  id="debugLog"
-  style="
-    height: 200px;
-    overflow-y: auto;
-    background: #111;
-    color: #0f0;
-    padding: 10px;
-  "
-></pre>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Huntmaster Audio Engine - Web Demo</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Huntmaster Audio Engine - Web Test</title>
     <style>
-      body {
-        font-family: Arial, sans-serif;
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-        background-color: #f5f5f5;
-      }
-
-      .container {
-        background: white;
-        padding: 30px;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      }
-
-      h1 {
-        color: #333;
-        text-align: center;
-      }
-
-      .controls {
-        display: flex;
-        gap: 10px;
-        margin: 20px 0;
-        flex-wrap: wrap;
-      }
-
-      button {
-        padding: 10px 20px;
-        font-size: 16px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-
-      button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-      }
-
-      .btn-primary {
-        background-color: #4caf50;
-        color: white;
-      }
-
-      .btn-primary:hover:not(:disabled) {
-        background-color: #45a049;
-      }
-
-      .btn-secondary {
-        background-color: #008cba;
-        color: white;
-      }
-
-      .btn-danger {
-        background-color: #f44336;
-        color: white;
-      }
-
-      #status {
-        padding: 10px;
-        background-color: #f0f0f0;
-        border-radius: 5px;
-        margin: 10px 0;
-        font-family: monospace;
-      }
-
-      #waveform {
-        width: 100%;
-        height: 200px;
-        border: 1px solid #ddd;
-        margin: 20px 0;
-      }
-
-      #score {
-        font-size: 48px;
-        text-align: center;
-        margin: 20px 0;
-        color: #4caf50;
-      }
-
-      #levelMeter {
-        width: 100%;
-        height: 30px;
-        background-color: #ddd;
-        border-radius: 15px;
-        overflow: hidden;
-        margin: 10px 0;
-      }
-
-      #levelBar {
-        height: 100%;
-        background-color: #4caf50;
-        width: 0%;
-        transition: width 0.1s;
-      }
-
-      .info-section {
-        margin: 20px 0;
-        padding: 15px;
-        background-color: #f9f9f9;
-        border-left: 4px solid #4caf50;
-      }
-
-      select {
-        padding: 8px;
-        font-size: 16px;
-        border-radius: 5px;
-        border: 1px solid #ddd;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h1>🦌 Huntmaster Audio Engine</h1>
-      <p>Web-based deer call training system</p>
-
-      <div class="info-section">
-        <strong>Status:</strong>
-        <span id="engineStatus">Loading WebAssembly module...</span>
-      </div>
-
-      <div class="controls">
-        <label>
-          Master Call:
-          <select id="masterCallSelect">
-            <option value="" disabled selected>Select a master call</option>
-            <option value="buck_grunt">Buck Grunt</option>
-            <option value="doe_grunt">Doe Grunt</option>
-            <option value="fawn_bleat">Fawn Bleat</option>
-          </select>
-        </label>
-        <button id="loadMasterBtn" class="btn-secondary" disabled>
-          Load Master Call
-        </button>
-        <button id="playMasterCallBtn" onclick="playMasterCall()" disabled>
-          Play Master Call
-        </button>
-      </div>
-
-      <div class="controls">
-        <button id="startBtn" class="btn-primary" disabled>
-          Start Recording
-        </button>
-        <button id="stopBtn" class="btn-danger" disabled>Stop Recording</button>
-        <button id="playbackBtn" class="btn-secondary" disabled>
-          Play Recording
-        </button>
-        <button id="resetBtn" class="btn-secondary">Reset</button>
-      </div>
-
-      <div id="status">Ready to record...</div>
-
-      <div>
-        <h3>Recording Level</h3>
-        <div id="levelMeter">
-          <div id="levelBar"></div>
-        </div>
-      </div>
-
-      <canvas id="waveform"></canvas>
-
-      <div>
-        <!-- Add this for the similarity score display -->
-        <div
-          id="similarityScore"
-          style="
-            display: none;
-            font-size: 24px;
-            font-weight: bold;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
             text-align: center;
-          "
-        >
-          0%
+        }
+        .control-group {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #status {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        #result {
+            margin: 20px 0;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .error {
+            background: #ffebee !important;
+            color: #c62828;
+        }
+        .success {
+            background: #e8f5e9 !important;
+            color: #2e7d32;
+        }
+        #audioVisualizer {
+            width: 100%;
+            height: 100px;
+            background: #000;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Huntmaster Audio Engine Test</h1>
+        
+        <div class="control-group">
+            <h3>1. Initialize Engine</h3>
+            <button id="initBtn">Initialize Engine</button>
+            <p>Sample Rate: <span id="sampleRate">44100</span> Hz</p>
         </div>
-      </div>
 
-      <div class="info-section">
-        <h3>Instructions:</h3>
-        <ol>
-          <li>Select a master call from the dropdown</li>
-          <li>Click "Load Master Call" to load the reference</li>
-          <li>Click "Start Recording" and make your deer call</li>
-          <li>Click "Stop Recording" to analyze</li>
-          <li>View your similarity score (higher is better)</li>
-        </ol>
-      </div>
+        <div class="control-group">
+            <h3>2. Load Master Call</h3>
+            <select id="masterCallSelect" disabled>
+                <option value="buck_grunt">Buck Grunt</option>
+                <option value="doe_bleat">Doe Bleat</option>
+                <option value="turkey_gobble">Turkey Gobble</option>
+            </select>
+            <button id="loadMasterBtn" disabled>Load Master Call</button>
+            <input type="file" id="masterFileInput" accept="audio/*" style="display:none;">
+            <button id="uploadMasterBtn" disabled>Upload Custom Master</button>
+        </div>
+
+        <div class="control-group">
+            <h3>3. Test Audio Processing</h3>
+            <button id="startMicBtn" disabled>Start Microphone</button>
+            <button id="stopMicBtn" disabled>Stop Microphone</button>
+            <button id="testToneBtn" disabled>Test with Tone</button>
+            <canvas id="audioVisualizer"></canvas>
+        </div>
+
+        <div id="status">Status: Not initialized</div>
+        <div id="result">Similarity Score: N/A</div>
+
+        <div class="control-group">
+            <h3>Performance Stats</h3>
+            <pre id="stats">No stats available</pre>
+        </div>
     </div>
 
-    <!-- Load the compiled WASM module -->
     <script src="dist/huntmaster_engine.js"></script>
+    <script>
+        let engine = null;
+        let audioContext = null;
+        let mediaStream = null;
+        let processor = null;
+        let isProcessing = false;
 
-    <!-- Main application logic -->
-    <script src="src/app.js"></script>
-  </body>
+        // UI Elements
+        const initBtn = document.getElementById('initBtn');
+        const loadMasterBtn = document.getElementById('loadMasterBtn');
+        const uploadMasterBtn = document.getElementById('uploadMasterBtn');
+        const startMicBtn = document.getElementById('startMicBtn');
+        const stopMicBtn = document.getElementById('stopMicBtn');
+        const testToneBtn = document.getElementById('testToneBtn');
+        const statusDiv = document.getElementById('status');
+        const resultDiv = document.getElementById('result');
+        const statsDiv = document.getElementById('stats');
+        const masterCallSelect = document.getElementById('masterCallSelect');
+        const masterFileInput = document.getElementById('masterFileInput');
+
+        // Update status
+        function updateStatus(message, isError = false) {
+            statusDiv.textContent = `Status: ${message}`;
+            statusDiv.className = isError ? 'error' : '';
+            console.log(`[Status] ${message}`);
+        }
+
+        // Update result
+        function updateResult(score) {
+            resultDiv.textContent = `Similarity Score: ${(score * 100).toFixed(2)}%`;
+            resultDiv.className = score > 0.7 ? 'success' : '';
+        }
+
+        // Initialize engine
+        async function initializeEngine() {
+            try {
+                updateStatus('Loading WASM module...');
+                
+                // Load the WASM module
+                const Module = await HuntmasterEngine();
+                
+                // Create engine instance
+                engine = new Module.HuntmasterEngine();
+                
+                // Initialize with parameters
+                const sampleRate = 44100;
+                const frameSize = 1024;
+                const mfccCoeffs = 13;
+                
+                const success = engine.initialize(sampleRate, frameSize, mfccCoeffs);
+                
+                if (success) {
+                    updateStatus('Engine initialized successfully');
+                    
+                    // Initialize Web Audio API
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)({
+                        sampleRate: sampleRate
+                    });
+                    
+                    // Enable controls
+                    loadMasterBtn.disabled = false;
+                    uploadMasterBtn.disabled = false;
+                    masterCallSelect.disabled = false;
+                } else {
+                    updateStatus('Failed to initialize engine', true);
+                }
+            } catch (error) {
+                updateStatus(`Error: ${error.message}`, true);
+                console.error('Initialization error:', error);
+            }
+        }
+
+        // Load master call
+        async function loadMasterCall() {
+            try {
+                const callName = masterCallSelect.value;
+                updateStatus(`Loading master call: ${callName}...`);
+                
+                // For demo, create synthetic audio data
+                const sampleRate = 44100;
+                const duration = 2; // seconds
+                const samples = sampleRate * duration;
+                const audioData = new Float32Array(samples);
+                
+                // Generate a simple tone pattern
+                for (let i = 0; i < samples; i++) {
+                    const t = i / sampleRate;
+                    audioData[i] = Math.sin(2 * Math.PI * 440 * t) * 0.5;
+                }
+                
+                // Load into engine
+                const success = engine.loadMasterCall(callName, audioData);
+                
+                if (success) {
+                    updateStatus(`Master call loaded: ${callName}`);
+                    startMicBtn.disabled = false;
+                    testToneBtn.disabled = false;
+                } else {
+                    updateStatus('Failed to load master call', true);
+                }
+            } catch (error) {
+                updateStatus(`Error: ${error.message}`, true);
+            }
+        }
+
+        // Start microphone
+        async function startMicrophone() {
+            try {
+                updateStatus('Requesting microphone access...');
+                
+                mediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        sampleRate: 44100
+                    }
+                });
+                
+                updateStatus('Microphone active - speak now!');
+                startMicBtn.disabled = true;
+                stopMicBtn.disabled = false;
+                isProcessing = true;
+                
+                // Create audio processor
+                const source = audioContext.createMediaStreamSource(mediaStream);
+                processor = audioContext.createScriptProcessor(1024, 1, 1);
+                
+                processor.onaudioprocess = (e) => {
+                    if (!isProcessing) return;
+                    
+                    const inputData = e.inputBuffer.getChannelData(0);
+                    const result = engine.processAudioArray(audioData);
+                    console.log('Process result:', result); // Add debugging
+
+                    if (result && result.success !== undefined) {
+                        if (result.success) {
+                            updateResult(result.score || 0);
+                            updateStatus('Test complete');
+                        } else {
+                            updateStatus(`Test failed: ${result.error || 'Unknown error'}`, true);
+                        }
+                    } else {
+                        // The result might be a direct score value
+                        console.log('Direct result:', result);
+                        updateResult(result || 0);
+                        updateStatus('Test complete');
+                    }
+                };
+                
+                source.connect(processor);
+                processor.connect(audioContext.destination);
+                
+            } catch (error) {
+                updateStatus(`Microphone error: ${error.message}`, true);
+            }
+        }
+
+        // Stop microphone
+        function stopMicrophone() {
+            isProcessing = false;
+            
+            if (processor) {
+                processor.disconnect();
+                processor = null;
+            }
+            
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+            
+            updateStatus('Microphone stopped');
+            startMicBtn.disabled = false;
+            stopMicBtn.disabled = true;
+        }
+
+        // Test with synthetic tone
+        function testWithTone() {
+            updateStatus('Testing with synthetic tone...');
+            
+            const sampleRate = 44100;
+            const duration = 1;
+            const samples = sampleRate * duration;
+            const audioData = new Float32Array(samples);
+            
+            // Generate test tone
+            for (let i = 0; i < samples; i++) {
+                const t = i / sampleRate;
+                audioData[i] = Math.sin(2 * Math.PI * 440 * t) * 0.5;
+            }
+            
+            const result = engine.processAudioArray(audioData);
+            
+            if (result.success) {
+                updateResult(result.score);
+                updateStatus('Test complete');
+                
+                // Update stats
+                const stats = engine.getPerformanceStats();
+                statsDiv.textContent = JSON.stringify(stats, null, 2);
+            } else {
+                updateStatus(`Test failed: ${result.error}`, true);
+            }
+        }
+
+        // Event listeners
+        initBtn.addEventListener('click', initializeEngine);
+        loadMasterBtn.addEventListener('click', loadMasterCall);
+        startMicBtn.addEventListener('click', startMicrophone);
+        stopMicBtn.addEventListener('click', stopMicrophone);
+        testToneBtn.addEventListener('click', testWithTone);
+        
+        uploadMasterBtn.addEventListener('click', () => {
+            masterFileInput.click();
+        });
+        
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            if (mediaStream) {
+                stopMicrophone();
+            }
+            if (engine) {
+                engine.shutdown();
+            }
+        });
+    </script>
+</body>
 </html>

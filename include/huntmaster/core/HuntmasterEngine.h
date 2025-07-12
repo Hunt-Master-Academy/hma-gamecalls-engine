@@ -1,5 +1,7 @@
 //File: HuntmasterEngine.h
 #pragma once
+#include "Platform.h"
+#include "Expected.h"
 
 #include "IHuntmasterEngine.h"
 #include <memory>

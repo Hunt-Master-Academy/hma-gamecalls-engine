@@ -1,5 +1,8 @@
 // File: DTWComparator.h
 #pragma once
+#include "Platform.h"
+#include "Expected.h"
+
 
 #include <vector>
 #include <span>

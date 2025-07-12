@@ -7,9 +7,12 @@
 #include <utility> // For std::exchange
 #include <new>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 namespace huntmaster
 {
-
     /**
      * @class AudioBufferPool::Impl
      * @brief Private implementation of the buffer pool
@@ -38,6 +41,11 @@ namespace huntmaster
         // Memory tracking
         std::atomic<size_t> total_memory_allocated_{0};
 
+        // Error state for WASM builds
+        #ifdef __EMSCRIPTEN__
+        bool initialization_failed_{false};
+        #endif
+
         explicit Impl(const Config &config)
             : config_(config), memory_resource_(config.memory_resource
                                                     ? config.memory_resource
@@ -47,7 +55,8 @@ namespace huntmaster
               in_use_(config.pool_size),
               available_semaphore_(static_cast<std::ptrdiff_t>(config.pool_size))
         {
-
+            // Validation moved to factory method for WASM
+            #ifndef __EMSCRIPTEN__
             // Validate configuration
             if (config.pool_size == 0 || config.buffer_size == 0)
             {
@@ -59,6 +68,7 @@ namespace huntmaster
             {
                 throw std::invalid_argument("Alignment must be power of 2");
             }
+            #endif
 
             // Allocate all buffers upfront
             allocateBuffers();
@@ -79,16 +89,19 @@ namespace huntmaster
 
             for (size_t i = 0; i < config_.pool_size; ++i)
             {
-                try
-                {
-                    // Allocate aligned memory
+                #ifdef __EMSCRIPTEN__
+                    // Direct allocation without exceptions for WASM
                     void *buffer = memory_resource_->allocate(
                         aligned_size,
                         config_.alignment);
 
                     if (!buffer)
                     {
-                        throw std::bad_alloc();
+                        EM_ASM({ console.error('AudioBufferPool: Failed to allocate buffer'); });
+                        // Clean up any allocated buffers
+                        deallocateBuffers();
+                        initialization_failed_ = true;
+                        return;
                     }
 
                     // Zero-initialize the buffer
@@ -96,13 +109,32 @@ namespace huntmaster
 
                     buffers_[i] = buffer;
                     total_memory_allocated_.fetch_add(aligned_size, std::memory_order_relaxed);
-                }
-                catch (...)
-                {
-                    // Clean up any allocated buffers
-                    deallocateBuffers();
-                    throw;
-                }
+                #else
+                    try
+                    {
+                        // Allocate aligned memory
+                        void *buffer = memory_resource_->allocate(
+                            aligned_size,
+                            config_.alignment);
+
+                        if (!buffer)
+                        {
+                            throw std::bad_alloc();
+                        }
+
+                        // Zero-initialize the buffer
+                        std::memset(buffer, 0, aligned_size);
+
+                        buffers_[i] = buffer;
+                        total_memory_allocated_.fetch_add(aligned_size, std::memory_order_relaxed);
+                    }
+                    catch (...)
+                    {
+                        // Clean up any allocated buffers
+                        deallocateBuffers();
+                        throw;
+                    }
+                #endif
             }
         }
 
@@ -170,6 +202,53 @@ namespace huntmaster
             return (size + alignment - 1) & ~(alignment - 1);
         }
     };
+
+    // Factory method for WASM-compatible creation
+    huntmaster::expected<std::unique_ptr<AudioBufferPool>, BufferPoolError>
+    AudioBufferPool::create(const Config& config)
+    {
+        // Validate configuration before construction
+        if (config.pool_size == 0 || config.buffer_size == 0)
+        {
+            #ifdef __EMSCRIPTEN__
+            EM_ASM({ console.error('AudioBufferPool: Invalid pool configuration'); });
+            #endif
+            return huntmaster::unexpected(BufferPoolError::INVALID_CONFIGURATION);
+        }
+
+        // Ensure alignment is power of 2
+        if (!std::has_single_bit(config.alignment))
+        {
+            #ifdef __EMSCRIPTEN__
+            EM_ASM({ console.error('AudioBufferPool: Alignment must be power of 2'); });
+            #endif
+            return huntmaster::unexpected(BufferPoolError::INVALID_ALIGNMENT);
+        }
+
+        #ifdef __EMSCRIPTEN__
+            // For WASM, create directly and check for initialization failure
+            auto pool = std::unique_ptr<AudioBufferPool>(new AudioBufferPool(config));
+            if (pool->pimpl_->initialization_failed_)
+            {
+                return huntmaster::unexpected(BufferPoolError::OUT_OF_MEMORY);
+            }
+            return pool;
+        #else
+            // For native builds, use exception handling
+            try
+            {
+                return std::make_unique<AudioBufferPool>(config);
+            }
+            catch (const std::bad_alloc&)
+            {
+                return huntmaster::unexpected(BufferPoolError::OUT_OF_MEMORY);
+            }
+            catch (const std::invalid_argument&)
+            {
+                return huntmaster::unexpected(BufferPoolError::INVALID_CONFIGURATION);
+            }
+        #endif
+    }
 
     // BufferHandle implementation
 
@@ -316,7 +395,7 @@ namespace huntmaster
             // This shouldn't happen if semaphore is working correctly
             pimpl_->available_semaphore_.release();
             pimpl_->failed_allocations_.fetch_add(1, std::memory_order_relaxed);
-            return std::unexpected(BufferPoolError::ALLOCATION_FAILED);
+            return huntmaster::unexpected(BufferPoolError::ALLOCATION_FAILED);
         }
 
         size_t index = *index_opt;

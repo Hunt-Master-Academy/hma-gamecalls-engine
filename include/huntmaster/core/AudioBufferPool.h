@@ -25,9 +25,10 @@ namespace huntmaster
     enum class BufferPoolError
     {
         POOL_EXHAUSTED,
-        INVALID_SIZE,
         ALLOCATION_FAILED,
-        INVALID_BUFFER
+        INVALID_CONFIGURATION,
+        INVALID_ALIGNMENT,
+        OUT_OF_MEMORY
     };
 
     /**
@@ -168,6 +169,14 @@ namespace huntmaster
          * @param handle Buffer to release
          */
         void release(BufferHandle &&handle);
+
+         /**
+         * @brief Factory method for creating an AudioBufferPool.
+         * This method handles platform-specific initialization and error reporting.
+         * @param config Pool configuration parameters
+         * @return An expected containing a unique_ptr to the created pool or a BufferPoolError.
+         */
+        [[nodiscard]] static huntmaster::expected<std::unique_ptr<AudioBufferPool>, BufferPoolError> create(const Config& config);
 
         /**
          * @brief Get current pool statistics
