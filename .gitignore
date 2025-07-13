@@ -129,6 +129,13 @@ callgrind.out.*
 massif.out.*
 cachegrind.out.*
 
+# === SUBMODULE MANAGEMENT ===
+# Don't ignore submodules themselves, but ignore their build artifacts
+/external/*/build/
+/libs/*/build/
+/tools/*/build/
+/tests/lib/*/build/
+
 # === EMSCRIPTEN SPECIFIC ===
 *.bc
 *.o.js

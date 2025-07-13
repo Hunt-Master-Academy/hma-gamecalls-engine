@@ -1,14 +1,14 @@
 [submodule "tests/lib/googletest"]
 	path = tests/lib/googletest
 	url = https://github.com/google/googletest.git
+	branch = main
 
 [submodule "libs/kissfft"]
 	path = libs/kissfft
-	url = https://github.com/tescolopio/kissfft.git
+	url = https://github.com/mborgerding/kissfft.git
+	branch = master
 
 [submodule "tools/emsdk"]
 	path = tools/emsdk
-	url = https://github.com/tescolopio/emsdk.git
-[submodule "external/googletest"]
-	path = external/googletest
-	url = https://github.com/google/googletest.git
+	url = https://github.com/emscripten-core/emsdk.git
+	branch = main
