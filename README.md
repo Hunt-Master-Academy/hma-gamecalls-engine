@@ -37,3 +37,20 @@ Audio Comparison: (In Progress) Will use Dynamic Time Warping (DTW) to compare t
 Cross-Platform: Built with CMake to support compilation across different operating systems.
 
 Static Library: Designed to be compiled into a .lib or .a file for easy integration with other projects.
+
+## Dependencies
+
+This project uses git submodules for external dependencies:
+
+- **KissFFT**: Fast Fourier Transform library (`libs/kissfft`)
+- **GoogleTest**: Testing framework (`tests/lib/googletest`)
+- **Emscripten SDK**: WebAssembly compilation (`tools/emsdk`)
+
+### Cloning with Submodules
+
+```bash
+git clone --recursive https://github.com/tescolopio/huntmaster-engine.git
+
+# Or if already cloned:
+git submodule update --init --recursive
+```
