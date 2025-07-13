@@ -1,24 +1,23 @@
 #include <iostream>
-#include <vector>
 #include <string>
-#include "huntmaster/HuntmasterAudioEngine.h"
+#include <vector>
+
+#include "huntmaster/core/HuntmasterAudioEngine.h"
 
 using huntmaster::HuntmasterAudioEngine;
 
-int main()
-{
+int main() {
     std::cout << "=== MFCC Feature Generator ===" << std::endl;
 
-    std::vector<std::string> calls = {
-        "breeding_bellow", "buck_grunt", "buck_rage_grunts",
-        "buck-bawl", "contact-bleatr", "doe-grunt", "doebleat",
-        "estrus_bleat", "fawn-bleat", "sparring_bucks", "tending_grunts"};
+    std::vector<std::string> calls = {"breeding_bellow", "buck_grunt",     "buck_rage_grunts",
+                                      "buck-bawl",       "contact-bleatr", "doe-grunt",
+                                      "doebleat",        "estrus_bleat",   "fawn-bleat",
+                                      "sparring_bucks",  "tending_grunts"};
 
     HuntmasterAudioEngine &engine = HuntmasterAudioEngine::getInstance();
     engine.initialize();
 
-    for (const auto &call : calls)
-    {
+    for (const auto &call : calls) {
         std::cout << "\nProcessing: " << call << std::endl;
         engine.loadMasterCall(call);
     }

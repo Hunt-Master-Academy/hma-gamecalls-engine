@@ -1,26 +1,26 @@
-#include <iostream>
-#include <thread>
+#include <gtest/gtest.h>
+
 #include <chrono>
 #include <iomanip>
-#include "huntmaster_engine/HuntmasterAudioEngine.h"
+#include <iostream>
+#include <thread>
+
+#include "huntmaster/core/HuntmasterAudioEngine.h"
 
 // Add this line to use HuntmasterAudioEngine without the namespace prefix
 using huntmaster::HuntmasterAudioEngine;
 
-void printLevel(float level)
-{
+void printLevel(float level) {
     int bars = static_cast<int>(level * 50);
     std::cout << "\rLevel: [";
-    for (int j = 0; j < bars; ++j)
-        std::cout << "=";
-    for (int j = bars; j < 50; ++j)
-        std::cout << " ";
+    for (int j = 0; j < bars; ++j) std::cout << "=";
+    for (int j = bars; j < 50; ++j) std::cout << " ";
     std::cout << "] " << std::fixed << std::setprecision(2) << level;
     std::cout.flush();
 }
 
-int main()
-{
+// Recording tests converted to Google Test format
+TEST(RecordingTest, BasicRecording) {
     std::cout << "=== Huntmaster Recording Test ===" << std::endl;
 
     // Initialize engine
@@ -32,16 +32,14 @@ int main()
     std::cout << "Speak into your microphone!" << std::endl;
 
     int recordingId = engine.startRecording(44100.0);
-    if (recordingId < 0)
-    {
+    if (recordingId < 0) {
         std::cerr << "Failed to start recording!" << std::endl;
-        return 1;
+        FAIL() << "Failed to start recording!";
     }
 
     // Monitor levels for 3 seconds
     auto start = std::chrono::steady_clock::now();
-    while (std::chrono::steady_clock::now() - start < std::chrono::seconds(3))
-    {
+    while (std::chrono::steady_clock::now() - start < std::chrono::seconds(3)) {
         float level = engine.getRecordingLevel();
         printLevel(level);
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -52,15 +50,17 @@ int main()
 
     // Save recording
     std::string savedPath = engine.saveRecording(recordingId, "test_grunt").value;
-    if (!savedPath.empty())
-    {
+    if (!savedPath.empty()) {
         std::cout << "Recording saved to: " << savedPath << std::endl;
     }
 
     // Test 2: Load and play master call
     std::cout << "\nTest 2: Loading and playing master call..." << std::endl;
-    engine.loadMasterCall("buck_grunt");
-    engine.playMasterCall("buck_grunt");
+    auto loadResult = engine.loadMasterCall("buck_grunt");
+    EXPECT_EQ(loadResult, HuntmasterAudioEngine::EngineStatus::OK);
+
+    auto playResult = engine.playMasterCall("buck_grunt");
+    EXPECT_EQ(playResult, HuntmasterAudioEngine::EngineStatus::OK);
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
@@ -78,8 +78,7 @@ int main()
 
     // Record for 3 seconds with level monitoring
     start = std::chrono::steady_clock::now();
-    while (std::chrono::steady_clock::now() - start < std::chrono::seconds(3))
-    {
+    while (std::chrono::steady_clock::now() - start < std::chrono::seconds(3)) {
         float level = engine.getRecordingLevel();
         printLevel(level);
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -92,12 +91,14 @@ int main()
 
     // Play back the user recording
     std::cout << "\nPlaying back your recording..." << std::endl;
-    engine.playRecording("user_buck_grunt_attempt.wav");
+    auto playbackResult = engine.playRecording("user_buck_grunt_attempt.wav");
+    EXPECT_EQ(playbackResult, HuntmasterAudioEngine::EngineStatus::OK);
 
     std::this_thread::sleep_for(std::chrono::seconds(3));
 
     engine.shutdown();
     std::cout << "\nAll tests completed!" << std::endl;
 
-    return 0;
+    // Google Test assertion
+    EXPECT_TRUE(true);  // Basic success assertion
 }

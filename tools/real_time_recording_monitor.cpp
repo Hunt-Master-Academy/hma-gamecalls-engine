@@ -1,20 +1,20 @@
-#include <iostream>
-#include <thread>
-#include <string>
-#include <sstream>
-#include <fstream>
-#include <vector>
 #include <algorithm>
-#include <filesystem>
 #include <chrono>
-#include <iomanip>
 #include <cmath>
-#include "huntmaster_engine/HuntmasterAudioEngine.h"
+#include <filesystem>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <thread>
+#include <vector>
+
+#include "huntmaster/core/HuntmasterAudioEngine.h"
 
 using namespace huntmaster;
 
-void showRecordingLevels(int durationSeconds = 10)
-{
+void showRecordingLevels(int durationSeconds = 10) {
     HuntmasterAudioEngine &engine = HuntmasterAudioEngine::getInstance();
     engine.initialize();
 
@@ -26,8 +26,7 @@ void showRecordingLevels(int durationSeconds = 10)
     std::this_thread::sleep_for(std::chrono::seconds(1));
     std::cout << "1..." << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    std::cout << "RECORDING!" << std::endl
-              << std::endl;
+    std::cout << "RECORDING!" << std::endl << std::endl;
 
     int recordingId = engine.startRecording(44100.0);
 
@@ -38,8 +37,7 @@ void showRecordingLevels(int durationSeconds = 10)
     float avgLevel = 0.0f;
     int samples = 0;
 
-    while (std::chrono::steady_clock::now() < endTime)
-    {
+    while (std::chrono::steady_clock::now() < endTime) {
         float level = engine.getRecordingLevel();
         peakLevel = std::max(peakLevel, level);
         avgLevel += level;
@@ -49,41 +47,29 @@ void showRecordingLevels(int durationSeconds = 10)
         int barLength = static_cast<int>(level * 50);
         std::cout << "\r[";
 
-        for (int i = 0; i < 50; ++i)
-        {
-            if (i < barLength)
-            {
+        for (int i = 0; i < 50; ++i) {
+            if (i < barLength) {
                 if (level > 0.9f)
-                    std::cout << "!"; // Clipping warning
+                    std::cout << "!";  // Clipping warning
                 else if (level > 0.7f)
                     std::cout << "=";
                 else
                     std::cout << "-";
-            }
-            else
-            {
+            } else {
                 std::cout << " ";
             }
         }
 
-        std::cout << "] " << std::fixed << std::setprecision(1)
-                  << (level * 100) << "%";
+        std::cout << "] " << std::fixed << std::setprecision(1) << (level * 100) << "%";
 
         // Show status
-        if (level < 0.05f)
-        {
+        if (level < 0.05f) {
             std::cout << " [Too Quiet]    ";
-        }
-        else if (level > 0.9f)
-        {
+        } else if (level > 0.9f) {
             std::cout << " [CLIPPING!]    ";
-        }
-        else if (level > 0.7f)
-        {
+        } else if (level > 0.7f) {
             std::cout << " [Loud]         ";
-        }
-        else
-        {
+        } else {
             std::cout << " [Good]         ";
         }
 
@@ -91,8 +77,7 @@ void showRecordingLevels(int durationSeconds = 10)
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
 
-    std::cout << std::endl
-              << std::endl;
+    std::cout << std::endl << std::endl;
     engine.stopRecording(recordingId);
 
     // Show summary
@@ -101,12 +86,10 @@ void showRecordingLevels(int durationSeconds = 10)
     std::cout << "  Peak Level: " << (peakLevel * 100) << "%" << std::endl;
     std::cout << "  Average Level: " << (avgLevel * 100) << "%" << std::endl;
 
-    if (avgLevel < 0.1f)
-    {
+    if (avgLevel < 0.1f) {
         std::cout << "  Warning: Recording may be too quiet!" << std::endl;
     }
-    if (peakLevel > 0.95f)
-    {
+    if (peakLevel > 0.95f) {
         std::cout << "  Warning: Recording may have clipping!" << std::endl;
     }
 
@@ -115,26 +98,21 @@ void showRecordingLevels(int durationSeconds = 10)
     std::getline(std::cin, filename);
 
     auto saveResult = engine.saveRecording(recordingId, filename);
-    if (!saveResult.isOk())
-    {
+    if (!saveResult.isOk()) {
         std::cerr << "Failed to save recording!" << std::endl;
         // Handle error...
-    }
-    else
-    {
+    } else {
         std::string savedPath = saveResult.value;
         std::cout << "Recording saved to: " << savedPath << std::endl;
+        std::cout << "Saved to: " << savedPath << std::endl;
     }
-    std::cout << "Saved to: " << savedPath << std::endl;
 
     engine.shutdown();
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     int duration = 10;
-    if (argc > 1)
-    {
+    if (argc > 1) {
         duration = std::atoi(argv[1]);
     }
 

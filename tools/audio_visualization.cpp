@@ -1,41 +1,37 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <cmath>
 #include <algorithm>
+#include <cmath>
+#include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
-#include "huntmaster_engine/HuntmasterAudioEngine.h"
+#include <vector>
+
 #include "dr_wav.h"
+#include "huntmaster/core/HuntmasterAudioEngine.h"
 
 using huntmaster::HuntmasterAudioEngine;
 
-std::vector<float> loadAudioFile(const std::string &filePath, unsigned int &channels, unsigned int &sampleRate)
-{
+std::vector<float> loadAudioFile(const std::string &filePath, unsigned int &channels,
+                                 unsigned int &sampleRate) {
     drwav_uint64 totalPCMFrameCount = 0;
-    float *pSampleData = drwav_open_file_and_read_pcm_frames_f32(filePath.c_str(), &channels, &sampleRate, &totalPCMFrameCount, nullptr);
+    float *pSampleData = drwav_open_file_and_read_pcm_frames_f32(
+        filePath.c_str(), &channels, &sampleRate, &totalPCMFrameCount, nullptr);
 
-    if (pSampleData == nullptr)
-    {
+    if (pSampleData == nullptr) {
         return {};
     }
 
     // Convert to mono if needed
     std::vector<float> monoSamples(totalPCMFrameCount);
-    if (channels > 1)
-    {
-        for (drwav_uint64 i = 0; i < totalPCMFrameCount; ++i)
-        {
+    if (channels > 1) {
+        for (drwav_uint64 i = 0; i < totalPCMFrameCount; ++i) {
             float monoSample = 0.0f;
-            for (unsigned int j = 0; j < channels; ++j)
-            {
+            for (unsigned int j = 0; j < channels; ++j) {
                 monoSample += pSampleData[i * channels + j];
             }
             monoSamples[i] = monoSample / channels;
         }
-    }
-    else
-    {
+    } else {
         monoSamples.assign(pSampleData, pSampleData + totalPCMFrameCount);
     }
 
@@ -44,13 +40,11 @@ std::vector<float> loadAudioFile(const std::string &filePath, unsigned int &chan
 }
 
 // Calculate RMS energy for a window
-float calculateRMS(const std::vector<float> &samples, size_t start, size_t windowSize)
-{
+float calculateRMS(const std::vector<float> &samples, size_t start, size_t windowSize) {
     float sum = 0.0f;
     size_t end = std::min(start + windowSize, samples.size());
 
-    for (size_t i = start; i < end; ++i)
-    {
+    for (size_t i = start; i < end; ++i) {
         sum += samples[i] * samples[i];
     }
 
@@ -58,45 +52,37 @@ float calculateRMS(const std::vector<float> &samples, size_t start, size_t windo
 }
 
 // Generate ASCII waveform visualization
-void visualizeWaveform(const std::vector<float> &samples, const std::string &label, int width = 80)
-{
-    if (samples.empty())
-        return;
+void visualizeWaveform(const std::vector<float> &samples, const std::string &label,
+                       int width = 80) {
+    if (samples.empty()) return;
 
-    std::cout << "\n"
-              << label << " (" << samples.size() << " samples)" << std::endl;
+    std::cout << "\n" << label << " (" << samples.size() << " samples)" << std::endl;
     std::cout << std::string(width, '-') << std::endl;
 
     // Downsample to fit width
     int samplesPerColumn = samples.size() / width;
-    if (samplesPerColumn < 1)
-        samplesPerColumn = 1;
+    if (samplesPerColumn < 1) samplesPerColumn = 1;
 
     // Find max amplitude for scaling
     float maxAmp = 0.0f;
-    for (const auto &s : samples)
-    {
+    for (const auto &s : samples) {
         maxAmp = std::max(maxAmp, std::abs(s));
     }
 
-    if (maxAmp == 0.0f)
-        maxAmp = 1.0f;
+    if (maxAmp == 0.0f) maxAmp = 1.0f;
 
     // Draw waveform
     const int height = 20;
-    for (int row = height / 2; row >= -height / 2; --row)
-    {
+    for (int row = height / 2; row >= -height / 2; --row) {
         std::cout << "|";
 
-        for (int col = 0; col < width; ++col)
-        {
+        for (int col = 0; col < width; ++col) {
             size_t sampleIdx = col * samplesPerColumn;
 
             // Get average amplitude for this column
             float sum = 0.0f;
             int count = 0;
-            for (int i = 0; i < samplesPerColumn && sampleIdx + i < samples.size(); ++i)
-            {
+            for (int i = 0; i < samplesPerColumn && sampleIdx + i < samples.size(); ++i) {
                 sum += samples[sampleIdx + i];
                 count++;
             }
@@ -105,16 +91,11 @@ void visualizeWaveform(const std::vector<float> &samples, const std::string &lab
             // Scale to display height
             int ampHeight = static_cast<int>((avgAmp / maxAmp) * (height / 2));
 
-            if (row == 0)
-            {
-                std::cout << "-"; // Center line
-            }
-            else if ((row > 0 && ampHeight >= row) || (row < 0 && ampHeight <= row))
-            {
+            if (row == 0) {
+                std::cout << "-";  // Center line
+            } else if ((row > 0 && ampHeight >= row) || (row < 0 && ampHeight <= row)) {
                 std::cout << "*";
-            }
-            else
-            {
+            } else {
                 std::cout << " ";
             }
         }
@@ -122,12 +103,9 @@ void visualizeWaveform(const std::vector<float> &samples, const std::string &lab
         std::cout << "|";
 
         // Add scale labels
-        if (row == height / 2)
-            std::cout << " +" << std::fixed << std::setprecision(2) << maxAmp;
-        if (row == 0)
-            std::cout << " 0.0";
-        if (row == -height / 2)
-            std::cout << " -" << std::fixed << std::setprecision(2) << maxAmp;
+        if (row == height / 2) std::cout << " +" << std::fixed << std::setprecision(2) << maxAmp;
+        if (row == 0) std::cout << " 0.0";
+        if (row == -height / 2) std::cout << " -" << std::fixed << std::setprecision(2) << maxAmp;
 
         std::cout << std::endl;
     }
@@ -136,30 +114,29 @@ void visualizeWaveform(const std::vector<float> &samples, const std::string &lab
 }
 
 // Analyze and display audio characteristics
-void analyzeAudioCharacteristics(const std::vector<float> &samples, float sampleRate, const std::string &label)
-{
-    if (samples.empty())
-        return;
+void analyzeAudioCharacteristics(const std::vector<float> &samples, float sampleRate,
+                                 const std::string &label) {
+    if (samples.empty()) return;
 
     std::cout << "\n=== " << label << " Analysis ===" << std::endl;
 
     // Duration
     float duration = samples.size() / sampleRate;
-    std::cout << "Duration: " << std::fixed << std::setprecision(3) << duration << " seconds" << std::endl;
+    std::cout << "Duration: " << std::fixed << std::setprecision(3) << duration << " seconds"
+              << std::endl;
 
     // Find peaks and calculate statistics
     float maxAmp = 0.0f;
     float avgAmp = 0.0f;
     int zeroCrossings = 0;
 
-    for (size_t i = 0; i < samples.size(); ++i)
-    {
+    for (size_t i = 0; i < samples.size(); ++i) {
         float absAmp = std::abs(samples[i]);
         maxAmp = std::max(maxAmp, absAmp);
         avgAmp += absAmp;
 
-        if (i > 0 && ((samples[i - 1] < 0 && samples[i] >= 0) || (samples[i - 1] >= 0 && samples[i] < 0)))
-        {
+        if (i > 0 &&
+            ((samples[i - 1] < 0 && samples[i] >= 0) || (samples[i - 1] >= 0 && samples[i] < 0))) {
             zeroCrossings++;
         }
     }
@@ -170,22 +147,20 @@ void analyzeAudioCharacteristics(const std::vector<float> &samples, float sample
     std::cout << "Estimated pitch: ~" << (zeroCrossings / 2.0f / duration) << " Hz" << std::endl;
 
     // Energy envelope (RMS over time)
-    int windowSize = sampleRate * 0.01f; // 10ms windows
-    int numWindows = 50;                 // Show 50 time points
+    int windowSize = sampleRate * 0.01f;  // 10ms windows
+    int numWindows = 50;                  // Show 50 time points
     int hopSize = samples.size() / numWindows;
 
     std::cout << "\nEnergy envelope:" << std::endl;
     std::cout << "Time:  ";
-    for (int i = 0; i < numWindows; i += 10)
-    {
+    for (int i = 0; i < numWindows; i += 10) {
         std::cout << std::setw(6) << std::fixed << std::setprecision(1)
                   << (i * hopSize / sampleRate) << "s   ";
     }
     std::cout << std::endl;
 
     std::cout << "Level: ";
-    for (int i = 0; i < numWindows; ++i)
-    {
+    for (int i = 0; i < numWindows; ++i) {
         float rms = calculateRMS(samples, i * hopSize, windowSize);
         int barHeight = static_cast<int>(rms * 10 / maxAmp);
 
@@ -207,22 +182,19 @@ void analyzeAudioCharacteristics(const std::vector<float> &samples, float sample
 
 // Generate comparison report
 void generateComparisonReport(const std::vector<float> &master, const std::vector<float> &user,
-                              float masterSR, float userSR)
-{
+                              float masterSR, float userSR) {
     std::cout << "\n=== COMPARISON REPORT ===" << std::endl;
 
     float masterDuration = master.size() / masterSR;
     float userDuration = user.size() / userSR;
 
-    std::cout << "Duration difference: " << std::abs(masterDuration - userDuration)
-              << " seconds (" << ((userDuration / masterDuration) * 100.0f) << "% of master)" << std::endl;
+    std::cout << "Duration difference: " << std::abs(masterDuration - userDuration) << " seconds ("
+              << ((userDuration / masterDuration) * 100.0f) << "% of master)" << std::endl;
 
     // Compare energy profiles
     float masterEnergy = 0.0f, userEnergy = 0.0f;
-    for (const auto &s : master)
-        masterEnergy += s * s;
-    for (const auto &s : user)
-        userEnergy += s * s;
+    for (const auto &s : master) masterEnergy += s * s;
+    for (const auto &s : user) userEnergy += s * s;
 
     masterEnergy = std::sqrt(masterEnergy / master.size());
     userEnergy = std::sqrt(userEnergy / user.size());
@@ -232,69 +204,65 @@ void generateComparisonReport(const std::vector<float> &master, const std::vecto
     // Coaching suggestions
     std::cout << "\n=== COACHING SUGGESTIONS ===" << std::endl;
 
-    if (userDuration > masterDuration * 1.2f)
-    {
-        std::cout << "• Your call is too long. Try to make it shorter and more concise." << std::endl;
-    }
-    else if (userDuration < masterDuration * 0.8f)
-    {
+    if (userDuration > masterDuration * 1.2f) {
+        std::cout << "• Your call is too long. Try to make it shorter and more concise."
+                  << std::endl;
+    } else if (userDuration < masterDuration * 0.8f) {
         std::cout << "• Your call is too short. Try to sustain it longer." << std::endl;
     }
 
-    if (userEnergy < masterEnergy * 0.5f)
-    {
+    if (userEnergy < masterEnergy * 0.5f) {
         std::cout << "• Your call is too quiet. Try to project more volume." << std::endl;
-    }
-    else if (userEnergy > masterEnergy * 1.5f)
-    {
-        std::cout << "• Your call might be too loud or distorted. Try a more controlled volume." << std::endl;
+    } else if (userEnergy > masterEnergy * 1.5f) {
+        std::cout << "• Your call might be too loud or distorted. Try a more controlled volume."
+                  << std::endl;
     }
 }
 
 // Export visualization data to HTML
-void exportToHTML(const std::vector<float> &master, const std::vector<float> &user,
-                  float masterSR, float userSR, const std::string &masterName, const std::string &userFile)
-{
+void exportToHTML(const std::vector<float> &master, const std::vector<float> &user, float masterSR,
+                  float userSR, const std::string &masterName, const std::string &userFile) {
     std::ofstream html("audio_comparison.html");
 
     html << "<!DOCTYPE html><html><head><title>Audio Comparison</title>" << std::endl;
     html << "<script src='https://cdn.plot.ly/plotly-latest.min.js'></script></head>" << std::endl;
-    html << "<body><h1>Audio Comparison: " << masterName << " vs " << userFile << "</h1>" << std::endl;
+    html << "<body><h1>Audio Comparison: " << masterName << " vs " << userFile << "</h1>"
+         << std::endl;
 
     // Generate time arrays
     html << "<div id='waveforms'></div><script>" << std::endl;
     html << "var masterTime = [";
-    for (size_t i = 0; i < master.size(); i += 100)
-    {
+    for (size_t i = 0; i < master.size(); i += 100) {
         html << (i / masterSR) << ",";
     }
     html << "];" << std::endl;
 
     html << "var masterData = [";
-    for (size_t i = 0; i < master.size(); i += 100)
-    {
+    for (size_t i = 0; i < master.size(); i += 100) {
         html << master[i] << ",";
     }
     html << "];" << std::endl;
 
     html << "var userTime = [";
-    for (size_t i = 0; i < user.size(); i += 100)
-    {
+    for (size_t i = 0; i < user.size(); i += 100) {
         html << (i / userSR) << ",";
     }
     html << "];" << std::endl;
 
     html << "var userData = [";
-    for (size_t i = 0; i < user.size(); i += 100)
-    {
+    for (size_t i = 0; i < user.size(); i += 100) {
         html << user[i] << ",";
     }
     html << "];" << std::endl;
 
-    html << "var trace1 = {x: masterTime, y: masterData, name: 'Master Call', type: 'scatter'};" << std::endl;
-    html << "var trace2 = {x: userTime, y: userData, name: 'Your Recording', type: 'scatter'};" << std::endl;
+    html << "var trace1 = {x: masterTime, y: masterData, name: 'Master Call', type: 'scatter'};"
+         << std::endl;
+    html << "var trace2 = {x: userTime, y: userData, name: 'Your Recording', type: 'scatter'};"
+         << std::endl;
     html << "var data = [trace1, trace2];" << std::endl;
-    html << "var layout = {title: 'Waveform Comparison', xaxis: {title: 'Time (s)'}, yaxis: {title: 'Amplitude'}};" << std::endl;
+    html << "var layout = {title: 'Waveform Comparison', xaxis: {title: 'Time (s)'}, yaxis: "
+            "{title: 'Amplitude'}};"
+         << std::endl;
     html << "Plotly.newPlot('waveforms', data, layout);" << std::endl;
     html << "</script></body></html>" << std::endl;
 
@@ -302,14 +270,14 @@ void exportToHTML(const std::vector<float> &master, const std::vector<float> &us
     std::cout << "\nVisualization exported to: audio_comparison.html" << std::endl;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     std::cout << "=== Huntmaster Audio Visualization Tool ===" << std::endl;
 
-    if (argc < 3)
-    {
-        std::cout << "Usage: " << argv[0] << " <master_call_name> <user_recording.wav>" << std::endl;
-        std::cout << "Example: " << argv[0] << " buck_grunt ../data/recordings/user_attempt.wav" << std::endl;
+    if (argc < 3) {
+        std::cout << "Usage: " << argv[0] << " <master_call_name> <user_recording.wav>"
+                  << std::endl;
+        std::cout << "Example: " << argv[0] << " buck_grunt ../data/recordings/user_attempt.wav"
+                  << std::endl;
         return 1;
     }
 
@@ -321,8 +289,7 @@ int main(int argc, char *argv[])
     unsigned int masterChannels, masterSR;
     std::vector<float> masterAudio = loadAudioFile(masterPath, masterChannels, masterSR);
 
-    if (masterAudio.empty())
-    {
+    if (masterAudio.empty()) {
         std::cerr << "Failed to load master call: " << masterPath << std::endl;
         return 1;
     }
@@ -331,8 +298,7 @@ int main(int argc, char *argv[])
     unsigned int userChannels, userSR;
     std::vector<float> userAudio = loadAudioFile(userRecordingPath, userChannels, userSR);
 
-    if (userAudio.empty())
-    {
+    if (userAudio.empty()) {
         std::cerr << "Failed to load user recording: " << userRecordingPath << std::endl;
         return 1;
     }
@@ -362,8 +328,7 @@ int main(int argc, char *argv[])
 
     // Process in chunks
     const int chunkSize = 1024;
-    for (size_t i = 0; i < userAudio.size(); i += chunkSize)
-    {
+    for (size_t i = 0; i < userAudio.size(); i += chunkSize) {
         size_t remaining = userAudio.size() - i;
         size_t toProcess = (remaining < chunkSize) ? remaining : chunkSize;
         engine.processAudioChunk(sessionId, userAudio.data() + i, toProcess);
@@ -372,20 +337,13 @@ int main(int argc, char *argv[])
     float score = engine.getSimilarityScore(sessionId);
     std::cout << "Similarity Score: " << score;
 
-    if (score > 0.01)
-    {
+    if (score > 0.01) {
         std::cout << " [EXCELLENT MATCH]" << std::endl;
-    }
-    else if (score > 0.005)
-    {
+    } else if (score > 0.005) {
         std::cout << " [Good match]" << std::endl;
-    }
-    else if (score > 0.002)
-    {
+    } else if (score > 0.002) {
         std::cout << " [Fair match]" << std::endl;
-    }
-    else
-    {
+    } else {
         std::cout << " [Needs improvement]" << std::endl;
     }
 

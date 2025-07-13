@@ -1,4 +1,5 @@
 #include <benchmark/benchmark.h>
+
 #include "huntmaster/core/RealtimeAudioProcessor.h"
 
 using namespace huntmaster;
@@ -20,7 +21,8 @@ static void BM_Enqueue(benchmark::State& state) {
         proc.resetStats();
         state.ResumeTiming();
 
-        while (proc.tryEnqueueAudio(data)) {}
+        while (proc.tryEnqueueAudio(data)) {
+        }
     }
 }
 

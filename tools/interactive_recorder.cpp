@@ -3,7 +3,7 @@
 #include <chrono>
 #include <iomanip>
 #include <string>
-#include "huntmaster_engine/HuntmasterAudioEngine.h"
+#include "huntmaster/core/HuntmasterAudioEngine.h"
 
 using huntmaster::HuntmasterAudioEngine;
 

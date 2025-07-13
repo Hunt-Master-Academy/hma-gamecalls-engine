@@ -129,7 +129,10 @@
         "__split_buffer": "cpp",
         "__tree": "cpp",
         "map": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "xstring": "cpp",
+        "filesystem": "cpp",
+        "*.inc": "cpp"
     },
 
 
@@ -150,6 +153,23 @@
 
     // Spell Checker
     "cSpell.words": [
-        "Huntmaster"
+        "ALSA",
+        "AUDIOUNIT",
+        "BINDIR",
+        "Coeffs",
+        "COREAUDIO",
+        "COREFOUNDATION",
+        "drwav",
+        "Emscripten",
+        "endforeach",
+        "fftr",
+        "gbenchmark",
+        "gtest",
+        "Huntmaster",
+        "INCLUDEDIR",
+        "KISSFFT",
+        "miniaudio",
+        "unex",
+        "winmm"
     ]
 }

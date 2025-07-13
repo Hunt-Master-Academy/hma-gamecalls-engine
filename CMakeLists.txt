@@ -1,38 +1,58 @@
 # ==============================================================================
-# CMakeLists.txt for Huntmaster Audio Engine (v4.0 - Modernized & Unified)
+# CMakeLists.txt for Huntmaster Audio Engine (v4.1 - Unified)
 #
 # This script handles both NATIVE builds (for testing tools) and
-# WEB ASSEMBLY builds (for the web app) using modern CMake practices.
+# WEB ASSEMBLY builds (for the web app) from a single, unified file.
 #
 # To build for NATIVE:
 #   cmake -B build
 #   cmake --build build
 #
-# To build for WEB ASSEMBLY:
+# To build for WEB ASSEMBLY (with Emscripten SDK):
 #   emcmake cmake -B build-wasm
 #   cmake --build build-wasm
 # ==============================================================================
 
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.16)
 
 project(
     HuntmasterEngine
-    VERSION 4.0
+    VERSION 4.1
     LANGUAGES CXX C
 )
 
+# --- Set C++ Standard Globally ---
+# Modern C++ is used across the project for both native and WASM builds.
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 # --- Project Structure Variables ---
-set(PROJECT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
-set(PROJECT_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
-set(PROJECT_LIBS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/libs)
-set(PROJECT_TESTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tests)
-set(PROJECT_TOOLS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tools)
+# Define paths to key directories to keep the script clean and maintainable.
+set(PROJECT_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+set(PROJECT_SOURCE_DIR ${PROJECT_ROOT_DIR}/src)
+set(PROJECT_INCLUDE_DIR ${PROJECT_ROOT_DIR}/include)
+set(PROJECT_LIBS_DIR ${PROJECT_ROOT_DIR}/libs)
+set(PROJECT_TESTS_DIR ${PROJECT_ROOT_DIR}/tests)
+set(PROJECT_TOOLS_DIR ${PROJECT_ROOT_DIR}/tools)
+set(PROJECT_WEB_DIR ${PROJECT_ROOT_DIR}/web)
+
+# --- Build Options ---
+# Provide options to controoption(HUNTMASTER_BUILD_TESTS "Enable building of unit tests and benchmarks" ON)
+option(HUNTMASTER_BUILD_TOOLS "Enable building of command-line tools" ON)
+
+# This is useful for faster configuration and builds when tools or tests are not needed.
+option(HUNTMASTER_BUILD_TESTS "Enable building of unit tests and benchmarks" ON)
+option(HUNTMASTER_BUILD_TOOLS "Enable building of command-line tools" ON)
+
 
 # --- Platform Detection and Configuration ---
+# Set preprocessor definitions based on the target platform.
 if(EMSCRIPTEN)
-    add_compile_definitions(HUNTMASTER_SINGLE_THREADED)
-    add_compile_definitions(HUNTMASTER_NO_DIRECT_AUDIO)
     add_compile_definitions(HUNTMASTER_PLATFORM_WASM)
+    # REPLACED: These definitions are now handled by specific configurations if needed.
+    # add_compile_definitions(HUNTMASTER_SINGLE_THREADED)
+    # add_compile_definitions(HUNTMASTER_NO_DIRECT_AUDIO)
 elseif(ANDROID)
     add_compile_definitions(HUNTMASTER_PLATFORM_ANDROID)
 elseif(IOS)
@@ -41,50 +61,119 @@ elseif(WIN32)
     add_compile_definitions(HUNTMASTER_PLATFORM_WINDOWS)
 elseif(APPLE)
     add_compile_definitions(HUNTMASTER_PLATFORM_MACOS)
-elseif(UNIX)
+elseif(UNIX AND NOT ANDROID)
     add_compile_definitions(HUNTMASTER_PLATFORM_LINUX)
 endif()
 
+
 # --- Third-Party Dependencies ---
-# 1. KissFFT (Vendored)
+include(FetchContent)
+
+# 1. KissFFT (Vendored Submodule)
+# KissFFT is a core dependency for FFT calculations.
 if(EMSCRIPTEN)
-    # For WASM, use KissFFT as header-only
+    # For WASM, we only need the headers. We create an INTERFACE library
+    # to propagate the include directory and definitions.
+    message(STATUS "Configuring KissFFT as header-only for WASM")
     add_library(kissfft INTERFACE)
     target_include_directories(kissfft INTERFACE ${PROJECT_LIBS_DIR}/kissfft)
     target_compile_definitions(kissfft INTERFACE kiss_fft_scalar=float)
-    message(STATUS "KissFFT configured as header-only for WASM")
 else()
-    # Use full KissFFT for native builds
-    add_subdirectory(${PROJECT_LIBS_DIR}/kissfft)
-    message(STATUS "KissFFT configured as library for native build")
+    # For native builds, we compile KissFFT as a static library.
+    # We disable its tools and tests to avoid pulling in extra dependencies.
+    add_library(kissfft STATIC
+        ${PROJECT_LIBS_DIR}/kissfft/kiss_fft.c
+        ${PROJECT_LIBS_DIR}/kissfft/tools/kiss_fftr.c
+        ${PROJECT_LIBS_DIR}/kissfft/kiss_fftnd.c
+        ${PROJECT_LIBS_DIR}/kissfft/kiss_fftndr.c
+    )
+    # The library needs its own include directory to find its headers.
+    # This is made PUBLIC so that targets linking to kissfft also get the path.
+    target_include_directories(kissfft PUBLIC
+        ${PROJECT_LIBS_DIR}/kissfft
+    )
+    # Set the data type for the FFT calculations. This only affects the compilation of kissfft.
+    target_compile_definitions(kissfft PRIVATE kiss_fft_scalar=float)
+endif()
+# 2. Google Test & Benchmark (Fetched at configure time for native builds)
+# These are only needed for native testing, not for the final WASM product.
+if(HUNTMASTER_BUILD_TESTS AND NOT EMSCRIPTEN)
+    message(STATUS "Configuring Google Test and Benchmark...")
+
+    # Google Test
+    FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY "https://github.com/google/googletest.git"
+        GIT_TAG        "v1.14.0" # Using a specific, stable tag
+        SOURCE_DIR     "${PROJECT_TESTS_DIR}/lib/googletest"
+    )
+    FetchContent_MakeAvailable(googletest)
+
+    # Google Benchmark
+    set(BENCHMARK_ENABLE_TESTING OFF) # Disable benchmark's own tests
+    set(BENCHMARK_ENABLE_INSTALL OFF) # Disable benchmark's install step
+    FetchContent_Declare(
+        benchmark
+        GIT_REPOSITORY "https://github.com/google/benchmark.git"
+        GIT_TAG        "v1.8.3"
+        SOURCE_DIR     "${PROJECT_TESTS_DIR}/lib/benchmark"
+    )
+    FetchContent_MakeAvailable(benchmark)
+else()
+    message(STATUS "Skipping Google Test and Benchmark configuration.")
 endif()
 
-# 2. Google Test (Fetched at configure time)
-# Note: Google Test will only be built for native targets.
-if(NOT EMSCRIPTEN) # Native build only
-    # Using a Git submodule for Google Test is more robust than FetchContent,
-    # especially in Docker environments, as it avoids filesystem permission issues.
-    if(EXISTS ${PROJECT_TESTS_DIR}/lib/googletest/CMakeLists.txt)
-        add_subdirectory(${PROJECT_TESTS_DIR}/lib/googletest)
-        message(STATUS "Google Test configured.")
-    else()
-        message(WARNING "Google Test not found. Unit tests will not be built.")
-    endif()
-endif()
 
-# 3. Google Benchmark (Handled via submodule)
-# Note: Google Benchmark will only be built for native targets.
-if(NOT EMSCRIPTEN) # Native build only
-    set(BENCHMARK_DIR ${PROJECT_TESTS_DIR}/lib/benchmark)
-    if(EXISTS ${BENCHMARK_DIR}/CMakeLists.txt)
-        # Prevent benchmark from installing its own tests or being installed
-        set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "Disable benchmark's tests" FORCE)
-        set(BENCHMARK_ENABLE_INSTALL OFF CACHE BOOL "Disable benchmark's install" FORCE)
-        message(STATUS "Google Benchmark configured.")
-    else()
-        message(WARNING "Google Benchmark not found at '${BENCHMARK_DIR}'. Benchmarks will not be built.")
-    endif()
-endif()
+# ==============================================================================
+# Core Engine Library
+# This target contains all platform-agnostic engine code and is shared
+# between the native and WASM builds.
+# ==============================================================================
+message(STATUS "Configuring core HuntmasterEngine library...")
+
+# Define the list of core source files once to avoid duplication.
+# set(HUNTMASTER_CORE_SOURCES
+#     "${PROJECT_SOURCE_DIR}/core/HuntmasterEngine.cpp"
+#     "${PROJECT_SOURCE_DIR}/core/AudioBufferPool.cpp"
+#     "${PROJECT_SOURCE_DIR}/core/VoiceActivityDetector.cpp"
+#     "${PROJECT_SOURCE_DIR}/core/MFCCProcessor.cpp"
+#     "${PROJECT_SOURCE_DIR}/core/DTWComparator.cpp"
+#     "${PROJECT_SOURCE_DIR}/core/RealtimeAudioProcessor.cpp"
+#     # This file seems to handle third-party library inclusion details.
+#     "${PROJECT_SOURCE_DIR}/core/ThirdPartyLibs.cpp"
+#     # NOTE: The files AudioPlayer.cpp, AudioRecorder.cpp, and DTWProcessor.cpp
+#     # are in the top-level src dir. Decide if they belong in the core library
+#     # or are part of the native tools/platform implementation.
+#     # For now, adding them to the core library.
+#     "${PROJECT_SOURCE_DIR}/core/AudioPlayer.cpp"
+#     "${PROJECT_SOURCE_DIR}/core/AudioRecorder.cpp"
+#     "${PROJECT_SOURCE_DIR}/core/DTWProcessor.cpp"
+# )
+
+# This will find all .cpp files in the src/core directory and add them to the variable.
+file(GLOB HUNTMASTER_CORE_SOURCES
+    "${PROJECT_SOURCE_DIR}/core/*.cpp"
+)
+
+
+# Create the static library for the engine core.
+add_library(HuntmasterEngine STATIC ${HUNTMASTER_CORE_SOURCES})
+
+# Set public include directories. Any target linking to HuntmasterEngine will inherit these.
+target_include_directories(HuntmasterEngine PUBLIC
+    ${PROJECT_INCLUDE_DIR}
+    # Add libs dir for header-only libraries like dr_wav.h and miniaudio.h
+    ${PROJECT_LIBS_DIR}/kissfft
+    ${PROJECT_LIBS_DIR}/dr_wav
+    ${PROJECT_LIBS_DIR}/miniaudio
+    ${PROJECT_TESTS_DIR}/lib/googletest
+    ${PROJECT_LIBS_DIR}
+)
+
+# Link core dependencies.
+target_link_libraries(HuntmasterEngine PUBLIC kissfft)
+target_compile_definitions(HuntmasterEngine PUBLIC HAVE_KISSFFT)
+
 
 # ==============================================================================
 # Build Logic: Switch between Native and WebAssembly
@@ -96,66 +185,46 @@ if(EMSCRIPTEN)
     # --------------------------------------------------------------------------
     message(STATUS "Configuring for WebAssembly (Emscripten) build.")
 
-    # Define the sources needed for the WASM module.
-    set(WASM_SOURCES
-        "${PROJECT_SOURCE_DIR}/platform/wasm/WASMInterface.cpp"
-        "${PROJECT_SOURCE_DIR}/core/MFCCProcessor.cpp"
-        "${PROJECT_SOURCE_DIR}/core/DTWComparator.cpp"
-        "${PROJECT_SOURCE_DIR}/core/RealtimeAudioProcessor.cpp"
-        "${PROJECT_SOURCE_DIR}/core/VoiceActivityDetector.cpp"
-        "${PROJECT_SOURCE_DIR}/core/AudioBufferPool.cpp"
-        "${PROJECT_SOURCE_DIR}/core/HuntmasterEngine.cpp"
-        "${PROJECT_SOURCE_DIR}/ThirdPartyLibs.cpp"
+    # Define the sources needed specifically for the WASM module.
+    # This primarily includes the Embind interface file.
+    set(WASM_INTERFACE_SOURCES
+        "${PROJECT_SOURCE_DIR}/platform/wasm/WASMInterface.cpp" # Assuming this is the correct path
     )
 
     # Create the final WASM executable (which produces .js and .wasm files)
-    add_executable(huntmaster_wasm ${WASM_SOURCES})
+    add_executable(huntmaster_wasm ${WASM_INTERFACE_SOURCES})
 
-    # Set include directories for the WASM target
-    target_include_directories(huntmaster_wasm PRIVATE
-        ${PROJECT_INCLUDE_DIR}
-        ${PROJECT_LIBS_DIR}
-    )
-
-    # Set C++ standard - use C++20 for better compatibility with Emscripten
-    target_compile_features(huntmaster_wasm PRIVATE cxx_std_20)
-
-    # Link against KissFFT
-    target_link_libraries(huntmaster_wasm PRIVATE kissfft)
-    target_compile_definitions(huntmaster_wasm PRIVATE HAVE_KISSFFT)
+    # Link the WASM executable against the core engine library.
+    # This pulls in all the core source files and their dependencies.
+    target_link_libraries(huntmaster_wasm PRIVATE HuntmasterEngine)
 
     # Add Emscripten-specific compiler options
     target_compile_options(huntmaster_wasm PRIVATE
-    -O3                     # Optimization level
-    -fno-exceptions         # Disable exceptions for smaller size
-    # -fno-rtti removed - embind requires RTTI
-    -Wall                  # Enable warnings
-    -Wextra                # Enable extra warnings
+        -O3                 # Optimization level
+        -fno-exceptions     # Disable exceptions for smaller size
+        # -fno-rtti was correctly removed, as embind requires it.
+        -Wall
+        -Wextra
     )
 
     # Add Emscripten-specific linker options
     target_link_options(huntmaster_wasm PRIVATE
         -O3
         -sALLOW_MEMORY_GROWTH=1
-        -sINITIAL_MEMORY=16777216              # 16MB initial memory
-        -sMAXIMUM_MEMORY=268435456             # 256MB max memory
+        -sINITIAL_MEMORY=16777216      # 16MB initial memory
+        -sMAXIMUM_MEMORY=268435456     # 256MB max memory
         -sMODULARIZE=1
         -sEXPORT_NAME=HuntmasterEngine
         "-sEXPORTED_RUNTIME_METHODS=['ccall','cwrap','getValue','setValue']"
         -sENVIRONMENT=web
-        -sSINGLE_FILE=0                        # Separate .wasm file
-        --bind                                 # Enable embind
+        -sSINGLE_FILE=0                # Separate .wasm file is good practice
+        --bind                         # Enable embind
     )
 
-    # Create output directory if it doesn't exist
-    add_custom_command(TARGET huntmaster_wasm PRE_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_SOURCE_DIR}/web/dist
-    )
-
-    # Set the final output name and directory
+    # Set the final output name and directory for the WASM files.
     set_target_properties(huntmaster_wasm PROPERTIES
         OUTPUT_NAME "huntmaster_engine"
-        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/web/dist"
+        RUNTIME_OUTPUT_DIRECTORY "${PROJECT_WEB_DIR}/dist"
     )
 
 else()
@@ -164,150 +233,96 @@ else()
     # --------------------------------------------------------------------------
     message(STATUS "Configuring for Native build.")
 
-    # Define the core library with all platform-agnostic C++ code.
-    add_library(
-        HuntmasterEngine STATIC
-        "${PROJECT_SOURCE_DIR}/core/HuntmasterEngine.cpp"
-        "${PROJECT_SOURCE_DIR}/core/AudioBufferPool.cpp"
-        "${PROJECT_SOURCE_DIR}/core/VoiceActivityDetector.cpp"
-        "${PROJECT_SOURCE_DIR}/core/MFCCProcessor.cpp"
-        "${PROJECT_SOURCE_DIR}/core/DTWComparator.cpp"
-        "${PROJECT_SOURCE_DIR}/core/RealtimeAudioProcessor.cpp"
-        "${PROJECT_SOURCE_DIR}/ThirdPartyLibs.cpp"
-    )
-
-    # Set public include directories for the library and any targets that link to it.
-    target_include_directories(HuntmasterEngine PUBLIC
-        ${PROJECT_INCLUDE_DIR}
-        ${PROJECT_LIBS_DIR}
-        ${CMAKE_SOURCE_DIR}/include/huntmaster/core
-        ${CMAKE_SOURCE_DIR}/include/huntmaster/platform/wasm
-    )
-
-    # Use C++20 for better compatibility across platforms
-    target_compile_features(HuntmasterEngine PUBLIC cxx_std_20)
-    
-    # Link libraries
-    target_link_libraries(HuntmasterEngine PUBLIC kissfft)
-    target_compile_definitions(HuntmasterEngine PUBLIC HAVE_KISSFFT)
-
-    # Platform-specific libraries
+    # Link platform-specific libraries for native audio, threading, etc.
     if(WIN32)
-        target_link_libraries(HuntmasterEngine PUBLIC winmm)  # For Windows audio
+        target_link_libraries(HuntmasterEngine PUBLIC winmm)
     elseif(APPLE)
-        find_library(COREAUDIO_LIBRARY CoreAudio)
-        find_library(AUDIOUNIT_LIBRARY AudioUnit)
-        find_library(COREFOUNDATION_LIBRARY CoreFoundation)
-        target_link_libraries(HuntmasterEngine PUBLIC 
-            ${COREAUDIO_LIBRARY} 
-            ${AUDIOUNIT_LIBRARY} 
+        find_library(COREAUDIO_LIBRARY CoreAudio REQUIRED)
+        find_library(AUDIOUNIT_LIBRARY AudioUnit REQUIRED)
+        find_library(COREFOUNDATION_LIBRARY CoreFoundation REQUIRED)
+        target_link_libraries(HuntmasterEngine PUBLIC
+            ${COREAUDIO_LIBRARY}
+            ${AUDIOUNIT_LIBRARY}
             ${COREFOUNDATION_LIBRARY}
         )
-    elseif(UNIX)
+    elseif(UNIX AND NOT ANDROID)
         find_package(Threads REQUIRED)
         target_link_libraries(HuntmasterEngine PUBLIC Threads::Threads)
-        # Add ALSA or PulseAudio if needed
+        # For audio, you might need to find and link ALSA or PulseAudio here.
+        # find_package(ALSA)
+        # if(ALSA_FOUND)
+        #   target_link_libraries(HuntmasterEngine PUBLIC ${ALSA_LIBRARIES})
+        # endif()
     endif()
 
-    # Note: The following is for IDE organization and does not affect the build.
-    source_group("Source Files/Core" FILES
-        "${PROJECT_SOURCE_DIR}/core/HuntmasterEngine.cpp"
-        "${PROJECT_SOURCE_DIR}/core/AudioBufferPool.cpp"
-        "${PROJECT_SOURCE_DIR}/core/VoiceActivityDetector.cpp"
-        "${PROJECT_SOURCE_DIR}/core/MFCCProcessor.cpp"
-        "${PROJECT_SOURCE_DIR}/core/DTWComparator.cpp"
-        "${PROJECT_SOURCE_DIR}/core/RealtimeAudioProcessor.cpp"
-    )
-    source_group("Source Files/Common" FILES "${PROJECT_SOURCE_DIR}/ThirdPartyLibs.cpp")
-
-    # Helper function to create all our command-line test tools
-    function(add_huntmaster_tool tool_name file_name)
-        if(EXISTS "${PROJECT_TOOLS_DIR}/${file_name}")
-            add_executable(${tool_name} "${PROJECT_TOOLS_DIR}/${file_name}")
-            target_link_libraries(${tool_name} PRIVATE HuntmasterEngine)
-        else()
-            message(WARNING "Tool source not found: ${file_name}")
-        endif()
-    endfunction()
-    
     # --- Executable Targets (Tools) ---
-    message(STATUS "Configuring native tools and executables...")
-    add_huntmaster_tool(GenerateFeatures generate_features.cpp)
-    add_huntmaster_tool(AnalyzeRecording analyze_recording.cpp)
-    add_huntmaster_tool(AudioTrimmer audio_trimmer.cpp)
-    add_huntmaster_tool(InteractiveRecorder interactive_recorder.cpp)
-    add_huntmaster_tool(FindBestMatch find_best_match.cpp)
-    add_huntmaster_tool(AudioVisualization audio_visualization.cpp)
-    add_huntmaster_tool(RealTimeMonitor real_time_recording_monitor.cpp)
-    add_huntmaster_tool(DetailedAnalysis detailed_analysis.cpp)
-
-    # --- Unit Testing Suite ---
-    if(TARGET GTest::gtest_main)
-        message(STATUS "Configuring unit tests...")
-        enable_testing()
-        
-        set(TEST_SOURCES
-            "${PROJECT_TESTS_DIR}/unit/AudioBufferPoolTest.cpp"
-            "${PROJECT_TESTS_DIR}/unit/DTWComparatorTest.cpp"
-            "${PROJECT_TESTS_DIR}/unit/RealTimeAudioProcessorTest.cpp"
-            "${PROJECT_TESTS_DIR}/unit/VoiceActivityDetectorTest.cpp"
-            "${PROJECT_TESTS_DIR}/integration/EndToEndTest.cpp"
-        )
-        
-        # Only add test files that exist
-        set(EXISTING_TEST_SOURCES)
-        foreach(test_file ${TEST_SOURCES})
-            if(EXISTS ${test_file})
-                list(APPEND EXISTING_TEST_SOURCES ${test_file})
-            else()
-                message(WARNING "Test file not found: ${test_file}")
-            endif()
+    if(HUNTMASTER_BUILD_TOOLS)
+        message(STATUS "Configuring native tools...")
+        # Loop over a list of tool source files to create executables.
+        file(GLOB TOOL_SOURCES "${PROJECT_TOOLS_DIR}/*.cpp")
+        foreach(tool_source_path ${TOOL_SOURCES})
+            get_filename_component(tool_name ${tool_source_path} NAME_WE)
+            add_executable(${tool_name} ${tool_source_path})
+            target_link_libraries(${tool_name} PRIVATE HuntmasterEngine)
+            message(STATUS "  -- Added tool: ${tool_name}")
         endforeach()
-        
-        if(EXISTING_TEST_SOURCES)
-            add_executable(RunEngineTests ${EXISTING_TEST_SOURCES})
-            target_link_libraries(RunEngineTests PRIVATE HuntmasterEngine GTest::gtest_main)
+    endif()
+
+    # --- Unit Testing and Benchmarking Suite ---
+    if(HUNTMASTER_BUILD_TESTS)
+        message(STATUS "Configuring unit tests and benchmarks...")
+        enable_testing()
+
+        # Unit Tests (gtest)
+        # Find all test files and create a single test runner executable.
+        file(GLOB_RECURSE TEST_SOURCES
+            "${PROJECT_TESTS_DIR}/unit/*.cpp"
+            "${PROJECT_TESTS_DIR}/integration/*.cpp"
+        )
+
+        if(TEST_SOURCES)
+            add_executable(RunEngineTests ${TEST_SOURCES})
+            target_link_libraries(RunEngineTests PRIVATE HuntmasterEngine gtest gtest_main)
             include(GoogleTest)
             gtest_discover_tests(RunEngineTests)
+            message(STATUS "  -- Unit test runner 'RunEngineTests' configured.")
+        endif()
+
+        # Benchmarks (gbenchmark)
+        # The benchmarks have their own CMakeLists.txt, so we just add the directory.
+        if(EXISTS "${PROJECT_TESTS_DIR}/benchmarks/CMakeLists.txt")
+            add_subdirectory(${PROJECT_TESTS_DIR}/benchmarks)
+            message(STATUS "  -- Benchmarks configured.")
         endif()
     endif()
 
-    # --- Benchmarking Suite ---
-    # Check if the benchmark library exists before configuring our benchmarks
-    if(EXISTS ${PROJECT_TESTS_DIR}/lib/benchmark/CMakeLists.txt AND EXISTS ${PROJECT_TESTS_DIR}/benchmarks/CMakeLists.txt)
-        message(STATUS "Configuring benchmarks...")
-        add_subdirectory(${PROJECT_TESTS_DIR}/benchmarks)
-    endif()
-
-endif()
-
-# --- Installation Rules (Optional) ---
-if(NOT EMSCRIPTEN)
+    # --- Installation Rules ---
+    # REPLACED: This whole section is now more robust.
+    # The old install rules were okay, but using GNUInstallDirs is standard practice.
     include(GNUInstallDirs)
-    
-    # Install the library
     install(TARGETS HuntmasterEngine
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
-    
-    # Install headers
     install(DIRECTORY ${PROJECT_INCLUDE_DIR}/huntmaster
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
+
 endif()
 
 # --- Final Configuration Message ---
-message(STATUS "=====================================")
-message(STATUS "Huntmaster Engine Configuration:")
-message(STATUS "  Version: ${PROJECT_VERSION}")
-message(STATUS "  C++ Standard: C++20")
+message(STATUS "==================================================")
+message(STATUS "Huntmaster Engine Configuration Summary:")
+message(STATUS "  Version:      ${PROJECT_VERSION}")
+message(STATUS "  C++ Standard: ${CMAKE_CXX_STANDARD}")
 if(EMSCRIPTEN)
-    message(STATUS "  Platform: WebAssembly (Emscripten)")
-    message(STATUS "  Output: web/dist/")
+    message(STATUS "  Platform:     WebAssembly (Emscripten)")
+    message(STATUS "  Output:       ${PROJECT_WEB_DIR}/dist/")
 else()
-    message(STATUS "  Platform: Native")
-    message(STATUS "  Build Type: ${CMAKE_BUILD_TYPE}")
+    message(STATUS "  Platform:     Native")
+    message(STATUS "  Build Type:   ${CMAKE_BUILD_TYPE}")
+    message(STATUS "  Build Tools:  ${HUNTMASTER_BUILD_TOOLS}")
+    message(STATUS "  Build Tests:  ${HUNTMASTER_BUILD_TESTS}")
 endif()
-message(STATUS "=====================================")
+message(STATUS "==================================================")

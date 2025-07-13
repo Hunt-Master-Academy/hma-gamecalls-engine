@@ -1,22 +1,28 @@
+#include <gtest/gtest.h>
+
+#include <chrono>
 #include <iostream>
 #include <thread>
-#include <chrono>
-#include "huntmaster_engine/AudioRecorder.h"
 
-int main() {
+#include "huntmaster/core/AudioRecorder.h"
+
+using namespace huntmaster;
+
+// Audio Recording tests converted to Google Test format
+TEST(AudioRecorderTest, BasicRecording) {
     std::cout << "=== Audio Recording Test ===" << std::endl;
-    
-    huntmaster::AudioRecorder recorder;
-    huntmaster::AudioRecorder::Config config;
+
+    AudioRecorder recorder;
+    AudioRecorder::Config config;
     config.sampleRate = 44100;
     config.channels = 1;
-    
+
     std::cout << "Starting recording for 3 seconds..." << std::endl;
     if (!recorder.startRecording(config)) {
         std::cerr << "Failed to start recording!" << std::endl;
-        return 1;
+        FAIL() << "Failed to start recording!";
     }
-    
+
     // Record for 3 seconds, showing levels
     for (int i = 0; i < 30; ++i) {
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -29,16 +35,16 @@ int main() {
         std::cout.flush();
     }
     std::cout << std::endl;
-    
+
     recorder.stopRecording();
-    
+
     std::cout << "Saving to test_recording.wav..." << std::endl;
     if (recorder.saveToWav("test_recording.wav")) {
         std::cout << "Recording saved successfully!" << std::endl;
         std::cout << "Duration: " << recorder.getDuration() << " seconds" << std::endl;
+        EXPECT_TRUE(true);  // Recording successful
     } else {
         std::cerr << "Failed to save recording!" << std::endl;
+        EXPECT_TRUE(false);  // Recording failed
     }
-    
-    return 0;
 }

@@ -2,11 +2,11 @@
 #include "huntmaster/core/MFCCProcessor.h"
 
 #ifdef HAVE_KISSFFT
-#include "kiss_fftr.h"
+#include "../kissfft/tools/kiss_fftr.h"
 #endif
 
-#include <cmath>
 #include <algorithm>
+#include <cmath>
 #include <numeric>
 
 // Define M_PI if not defined (common issue with some compilers)
@@ -14,13 +14,11 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-namespace huntmaster
-{
+namespace huntmaster {
 
 // Private implementation class
-class MFCCProcessor::Impl
-{
-public:
+class MFCCProcessor::Impl {
+   public:
     Config config;
 
 #ifdef HAVE_KISSFFT
@@ -35,8 +33,7 @@ public:
     std::vector<float> powerSpectrum;
     std::vector<float> melEnergies;
 
-    Impl(const Config& cfg) : config(cfg)
-    {
+    Impl(const Config& cfg) : config(cfg) {
         if (config.high_freq == 0.0f) {
             config.high_freq = config.sample_rate / 2.0f;
         }
@@ -58,8 +55,7 @@ public:
         melEnergies.resize(config.num_filters);
     }
 
-    ~Impl()
-    {
+    ~Impl() {
 #ifdef HAVE_KISSFFT
         if (fftConfig) {
             kiss_fftr_free(fftConfig);
@@ -101,7 +97,7 @@ public:
 
             // Add check to prevent division by zero
             float left_slope_denom = static_cast<float>(centerBin - startBin);
-            if (left_slope_denom > 1e-6f) { // Use epsilon for float comparison
+            if (left_slope_denom > 1e-6f) {  // Use epsilon for float comparison
                 for (int bin = startBin; bin < centerBin; ++bin) {
                     if (bin >= 0 && (size_t)bin < numBins) {
                         melFilterBank[i * numBins + bin] = (bin - startBin) / left_slope_denom;
@@ -133,7 +129,8 @@ public:
         }
     }
 
-    huntmaster::expected<FeatureVector, MFCCError> extractFeatures(std::span<const float> audio_frame) {
+    huntmaster::expected<FeatureVector, MFCCError> extractFeatures(
+        std::span<const float> audio_frame) {
         if (audio_frame.size() != config.frame_size) {
             return huntmaster::unexpected(MFCCError::INVALID_INPUT);
         }
@@ -153,11 +150,10 @@ public:
         for (size_t i = 0; i < config.num_filters; ++i) {
             // Use std::inner_product for a clearer and more robust dot product calculation.
             auto filter_row_start = melFilterBank.begin() + i * powerSpectrum.size();
-            melEnergies[i] = logf(std::inner_product(
-                filter_row_start, 
-                filter_row_start + powerSpectrum.size(),
-                powerSpectrum.begin(), 
-                0.0f) + 1e-10f);
+            melEnergies[i] =
+                logf(std::inner_product(filter_row_start, filter_row_start + powerSpectrum.size(),
+                                        powerSpectrum.begin(), 0.0f) +
+                     1e-10f);
         }
 
         FeatureVector coefficients(config.num_coefficients, 0.0f);
@@ -179,16 +175,18 @@ MFCCProcessor::~MFCCProcessor() = default;
 MFCCProcessor::MFCCProcessor(MFCCProcessor&&) noexcept = default;
 MFCCProcessor& MFCCProcessor::operator=(MFCCProcessor&&) noexcept = default;
 
-huntmaster::expected<MFCCProcessor::FeatureVector, MFCCError> MFCCProcessor::extractFeatures(std::span<const float> audio_frame) {
+huntmaster::expected<MFCCProcessor::FeatureVector, MFCCError> MFCCProcessor::extractFeatures(
+    std::span<const float> audio_frame) {
     return pimpl_->extractFeatures(audio_frame);
 }
 
-huntmaster::expected<MFCCProcessor::FeatureMatrix, MFCCError> MFCCProcessor::extractFeaturesFromBuffer(std::span<const float> audio_buffer, size_t hop_size) {
+huntmaster::expected<MFCCProcessor::FeatureMatrix, MFCCError>
+MFCCProcessor::extractFeaturesFromBuffer(std::span<const float> audio_buffer, size_t hop_size) {
     if (audio_buffer.empty()) return huntmaster::unexpected(MFCCError::INVALID_INPUT);
 
     FeatureMatrix all_features;
     const size_t frame_size = pimpl_->config.frame_size;
-    all_features.reserve(audio_buffer.size() / hop_size); // Reserve an approximate size
+    all_features.reserve(audio_buffer.size() / hop_size);  // Reserve an approximate size
 
     for (size_t offset = 0; offset + frame_size <= audio_buffer.size(); offset += hop_size) {
         auto frame_span = audio_buffer.subspan(offset, frame_size);
@@ -206,4 +204,4 @@ huntmaster::expected<MFCCProcessor::FeatureMatrix, MFCCError> MFCCProcessor::ext
 void MFCCProcessor::clearCache() { /* Caching logic to be implemented */ }
 size_t MFCCProcessor::getCacheSize() const noexcept { return 0; }
 
-} // namespace huntmaster
+}  // namespace huntmaster
