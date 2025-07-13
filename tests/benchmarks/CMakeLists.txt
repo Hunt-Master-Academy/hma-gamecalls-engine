@@ -15,4 +15,5 @@ target_link_libraries(
     PRIVATE
     HuntmasterEngine
     benchmark::benchmark
+    benchmark::benchmark_main
 )

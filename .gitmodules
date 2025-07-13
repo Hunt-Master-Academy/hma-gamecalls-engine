@@ -3,6 +3,11 @@
 	url = https://github.com/google/googletest.git
 	branch = main
 
+[submodule "tests/lib/benchmark"]
+	path = tests/lib/benchmark
+	url = https://github.com/google/benchmark.git
+	branch = main
+
 [submodule "libs/kissfft"]
 	path = libs/kissfft
 	url = https://github.com/mborgerding/kissfft.git

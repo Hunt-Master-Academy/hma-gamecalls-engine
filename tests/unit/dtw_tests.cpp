@@ -81,8 +81,9 @@ TEST_F(CoreValidationTest, DTWSelfSimilarity) {
     for (size_t i = 0; i < audioData.size(); i += chunkSize) {
         size_t remainingSamples = audioData.size() - i;
         size_t samplesToProcess = (remainingSamples < chunkSize) ? remainingSamples : chunkSize;
-        engine->processAudioChunk(sessionId, audioData.data() + i,
-                                  static_cast<int>(samplesToProcess));
+        auto chunkResult = engine->processAudioChunk(sessionId, audioData.data() + i,
+                                                     static_cast<int>(samplesToProcess));
+        EXPECT_EQ(chunkResult, huntmaster::HuntmasterAudioEngine::EngineStatus::OK);
     }
 
     auto scoreResult = engine->getSimilarityScore(sessionId);

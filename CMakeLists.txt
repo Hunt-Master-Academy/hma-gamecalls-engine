@@ -91,6 +91,7 @@ else()
     # This is made PUBLIC so that targets linking to kissfft also get the path.
     target_include_directories(kissfft PUBLIC
         ${PROJECT_LIBS_DIR}/kissfft
+        ${PROJECT_LIBS_DIR}/kissfft/tools
     )
     # Set the data type for the FFT calculations. This only affects the compilation of kissfft.
     target_compile_definitions(kissfft PRIVATE kiss_fft_scalar=float)
