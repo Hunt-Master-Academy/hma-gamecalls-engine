@@ -1,27 +1,170 @@
+# === CMAKE BUILD SYSTEM ===
 CMakeLists.txt.user
 CMakeCache.txt
-CMakeFiles
-CMakeScripts
-Testing
+CMakeFiles/
+CMakeScripts/
+Testing/
 Makefile
 cmake_install.cmake
-install_manifest.txt
+install_manifest.cmake
 compile_commands.json
 CTestTestfile.cmake
-_deps
+_deps/
 CMakeUserPresets.json
+CMakePresets.json
 
-#build output
+# === BUILD DIRECTORIES ===
 /build/
+/build-*/
+/cmake-build-*/
+/out/
+/Release/
+/Debug/
+/RelWithDebInfo/
+/MinSizeRel/
 
-#IDE Files
+# === COMPILED BINARIES ===
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+*.pdb
+*.ilk
+*.exp
+
+# === WEBASSEMBLY BUILD OUTPUT ===
+*.wasm
+*.js.mem
+*.wast
+*.wat
+/web/dist/
+/web/build/
+/emsdk/
+/emscripten/
+
+# === AUDIO FILES ===
+# Test audio files (keep master calls but ignore generated test files)
+/data/test_audio/
+/data/recordings/test_*
+/data/recordings/user_*
+*.tmp.wav
+*_temp.wav
+*_test.wav
+test_recording.wav
+user_recording.wav
+
+# === FEATURE FILES ===
+# Generated feature files during testing
+/data/features/test_*
+*.mfc.tmp
+*.tmp.mfc
+
+# === TEST OUTPUT ===
+# Test artifacts and temporary files
+/tests/temp/
+/tests/output/
+gtest_output.xml
+test_results.xml
+*.gcov
+*.gcda
+*.gcno
+coverage.info
+coverage/
+
+# === IDE AND EDITOR FILES ===
 .vscode/
 .vscode-data/
-OLD-*
+.vs/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
 
-# CLion
-#  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
-#cmake-build-*
+# === DEVELOPMENT ARTIFACTS ===
+OLD-*
+BACKUP-*
+*.orig
+*.bak
+*.tmp
+
+# === LOGS AND DEBUGGING ===
+*.log
+debug.txt
+core
+core.*
+vgcore.*
+*.dmp
+
+# === PACKAGE MANAGERS ===
+# vcpkg
+vcpkg_installed/
+.vcpkg-root
+
+# Conan
+conaninfo.txt
+conanbuildinfo.*
+conandata.yml
+
+# === PYTHON (for scripts) ===
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+
+# === DOCUMENTATION ===
+/docs/build/
+/docs/_build/
+*.pdf
+*.docx
+
+# === PROFILING AND ANALYSIS ===
+*.prof
+*.perf
+callgrind.out.*
+massif.out.*
+cachegrind.out.*
+
+# === EMSCRIPTEN SPECIFIC ===
+*.bc
+*.o.js
+*.wasm.pre
+*.js.symbols
+*.js.temp
+
+# === SYSTEM FILES ===
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# === AUDIO PROCESSING TEMP FILES ===
+*.pcm
+*.raw
+*.f32
+fftwf_wisdom
+fftw_wisdom
+
+# === CONFIGURATION FILES (keep templates, ignore local configs) ===
+config_local.json
+settings_local.ini
+user_preferences.json
+
+# === BENCHMARKING AND PERFORMANCE ===
+benchmark_results.json
+performance_*.txt
+*.benchmark
+
+# === SECURITY AND KEYS ===
+*.key
+*.pem
+*.p12
+.env
+.env.local
