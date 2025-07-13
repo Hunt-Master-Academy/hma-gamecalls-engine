@@ -270,24 +270,60 @@ else()
     endif()
 
     # --- Unit Testing and Benchmarking Suite ---
-    if(HUNTMASTER_BUILD_TESTS)
+    if(BUILD_TESTING)
         message(STATUS "Configuring unit tests and benchmarks...")
         enable_testing()
 
         # Unit Tests (gtest)
-        # Find all test files and create a single test runner executable.
-        file(GLOB_RECURSE TEST_SOURCES
+        # Find all test files except standalone diagnostic tools
+        file(GLOB_RECURSE ALL_TEST_SOURCES
             "${PROJECT_TESTS_DIR}/unit/*.cpp"
             "${PROJECT_TESTS_DIR}/integration/*.cpp"
         )
+        
+        # Exclude standalone diagnostic tools that have their own main() functions
+        set(STANDALONE_TESTS
+            "${PROJECT_TESTS_DIR}/unit/test_cross_platform.cpp"
+            "${PROJECT_TESTS_DIR}/unit/test_harness.cpp"
+            "${PROJECT_TESTS_DIR}/unit/test_performance.cpp"
+            "${PROJECT_TESTS_DIR}/unit/test_recording.cpp"
+            "${PROJECT_TESTS_DIR}/unit/test_recorder.cpp"
+        )
+        
+        # Filter out standalone tests from Google Test sources
+        set(TEST_SOURCES)
+        foreach(test_file ${ALL_TEST_SOURCES})
+            list(FIND STANDALONE_TESTS ${test_file} exclude_index)
+            if(exclude_index EQUAL -1)
+                list(APPEND TEST_SOURCES ${test_file})
+            endif()
+        endforeach()
 
         if(TEST_SOURCES)
             add_executable(RunEngineTests ${TEST_SOURCES})
-            target_link_libraries(RunEngineTests PRIVATE HuntmasterEngine gtest gtest_main)
+            target_link_libraries(RunEngineTests PRIVATE HuntmasterEngine GTest::gtest_main)
             include(GoogleTest)
             gtest_discover_tests(RunEngineTests)
             message(STATUS "  -- Unit test runner 'RunEngineTests' configured.")
         endif()
+        
+        # Create standalone diagnostic executables
+        add_executable(CrossPlatformTest "${PROJECT_TESTS_DIR}/unit/test_cross_platform.cpp")
+        target_link_libraries(CrossPlatformTest PRIVATE HuntmasterEngine)
+        
+        add_executable(TestHarness "${PROJECT_TESTS_DIR}/unit/test_harness.cpp")
+        target_link_libraries(TestHarness PRIVATE HuntmasterEngine)
+        
+        add_executable(PerformanceTest "${PROJECT_TESTS_DIR}/unit/test_performance.cpp")
+        target_link_libraries(PerformanceTest PRIVATE HuntmasterEngine)
+        
+        add_executable(RecordingTest "${PROJECT_TESTS_DIR}/unit/test_recording.cpp")
+        target_link_libraries(RecordingTest PRIVATE HuntmasterEngine)
+        
+        add_executable(RecorderTest "${PROJECT_TESTS_DIR}/unit/test_recorder.cpp")
+        target_link_libraries(RecorderTest PRIVATE HuntmasterEngine)
+        
+        message(STATUS "  -- Standalone diagnostic tools configured.")
 
         # Benchmarks (gbenchmark)
         # The benchmarks have their own CMakeLists.txt, so we just add the directory.

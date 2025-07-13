@@ -14,6 +14,5 @@ target_link_libraries(
     RunBenchmarks
     PRIVATE
     HuntmasterEngine
-    benchmark::benchmark
     benchmark::benchmark_main
 )

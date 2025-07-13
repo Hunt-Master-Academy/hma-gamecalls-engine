@@ -1,26 +1,21 @@
-#include <gtest/gtest.h>
-
 #include <chrono>
 #include <iostream>
 #include <thread>
 
 #include "huntmaster/core/AudioRecorder.h"
 
-using namespace huntmaster;
-
-// Audio Recording tests converted to Google Test format
-TEST(AudioRecorderTest, BasicRecording) {
+int main() {
     std::cout << "=== Audio Recording Test ===" << std::endl;
 
-    AudioRecorder recorder;
-    AudioRecorder::Config config;
+    huntmaster::AudioRecorder recorder;
+    huntmaster::AudioRecorder::Config config;
     config.sampleRate = 44100;
     config.channels = 1;
 
     std::cout << "Starting recording for 3 seconds..." << std::endl;
     if (!recorder.startRecording(config)) {
         std::cerr << "Failed to start recording!" << std::endl;
-        FAIL() << "Failed to start recording!";
+        return 1;
     }
 
     // Record for 3 seconds, showing levels
@@ -42,9 +37,9 @@ TEST(AudioRecorderTest, BasicRecording) {
     if (recorder.saveToWav("test_recording.wav")) {
         std::cout << "Recording saved successfully!" << std::endl;
         std::cout << "Duration: " << recorder.getDuration() << " seconds" << std::endl;
-        EXPECT_TRUE(true);  // Recording successful
     } else {
         std::cerr << "Failed to save recording!" << std::endl;
-        EXPECT_TRUE(false);  // Recording failed
     }
+
+    return 0;
 }

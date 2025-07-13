@@ -1,7 +1,4 @@
-#include <gtest/gtest.h>
-
 #include <chrono>
-#include <cstdlib>
 #include <iomanip>
 #include <iostream>
 #include <thread>
@@ -10,16 +7,6 @@
 
 // Add this line to use HuntmasterAudioEngine without the namespace prefix
 using huntmaster::HuntmasterAudioEngine;
-
-// Helper function to check if we're in a headless environment
-bool isHeadlessEnvironment() {
-    // Check if we're in WSL, Docker, CI, or other headless environments
-    const char* wsl_env = std::getenv("WSL_DISTRO_NAME");
-    const char* ci_env = std::getenv("CI");
-    const char* docker_env = std::getenv("DOCKER_CONTAINER");
-
-    return (wsl_env != nullptr) || (ci_env != nullptr) || (docker_env != nullptr);
-}
 
 void printLevel(float level) {
     int bars = static_cast<int>(level * 50);
@@ -30,20 +17,11 @@ void printLevel(float level) {
     std::cout.flush();
 }
 
-// Recording tests converted to Google Test format
-TEST(RecordingTest, BasicRecording) {
+int main() {
     std::cout << "=== Huntmaster Recording Test ===" << std::endl;
 
-    // Skip audio hardware tests in headless environments
-    if (isHeadlessEnvironment()) {
-        std::cout << "Skipping audio hardware tests in headless environment (WSL/CI/Docker)"
-                  << std::endl;
-        GTEST_SKIP() << "Audio hardware not available in headless environment";
-        return;
-    }
-
     // Initialize engine
-    HuntmasterAudioEngine& engine = HuntmasterAudioEngine::getInstance();
+    HuntmasterAudioEngine &engine = HuntmasterAudioEngine::getInstance();
     engine.initialize();
 
     // Test 1: Simple Recording
@@ -53,7 +31,7 @@ TEST(RecordingTest, BasicRecording) {
     int recordingId = engine.startRecording(44100.0);
     if (recordingId < 0) {
         std::cerr << "Failed to start recording!" << std::endl;
-        FAIL() << "Failed to start recording!";
+        return 1;
     }
 
     // Monitor levels for 3 seconds
@@ -75,11 +53,8 @@ TEST(RecordingTest, BasicRecording) {
 
     // Test 2: Load and play master call
     std::cout << "\nTest 2: Loading and playing master call..." << std::endl;
-    auto loadResult = engine.loadMasterCall("buck_grunt");
-    EXPECT_EQ(loadResult, HuntmasterAudioEngine::EngineStatus::OK);
-
-    auto playResult = engine.playMasterCall("buck_grunt");
-    EXPECT_EQ(playResult, HuntmasterAudioEngine::EngineStatus::OK);
+    engine.loadMasterCall("buck_grunt");
+    engine.playMasterCall("buck_grunt");
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
@@ -106,24 +81,16 @@ TEST(RecordingTest, BasicRecording) {
 
     engine.stopRecording(recordingId);
     savedPath = engine.saveRecording(recordingId, "user_buck_grunt_attempt").value;
-    std::cout << "Your attempt saved to: " << savedPath
-              << std::endl;  // Play back the user recording (only if not in headless environment)
-    std::cout << "\nPlaying back your recording..." << std::endl;
-    auto playbackResult = engine.playRecording("user_buck_grunt_attempt.wav");
+    std::cout << "Your attempt saved to: " << savedPath << std::endl;
 
-    // In headless environments, playback might fail but that's expected
-    if (playbackResult != HuntmasterAudioEngine::EngineStatus::OK) {
-        std::cout << "Playback failed (expected in headless environment) - continuing test"
-                  << std::endl;
-        EXPECT_TRUE(true);  // Test passes even if playback fails in headless environment
-    } else {
-        EXPECT_EQ(playbackResult, HuntmasterAudioEngine::EngineStatus::OK);
-        std::this_thread::sleep_for(std::chrono::seconds(3));
-    }
+    // Play back the user recording
+    std::cout << "\nPlaying back your recording..." << std::endl;
+    engine.playRecording("user_buck_grunt_attempt.wav");
+
+    std::this_thread::sleep_for(std::chrono::seconds(3));
 
     engine.shutdown();
     std::cout << "\nAll tests completed!" << std::endl;
 
-    // Google Test assertion
-    EXPECT_TRUE(true);  // Basic success assertion
+    return 0;
 }

@@ -40,8 +40,7 @@ static void BM_Dequeue(benchmark::State& state) {
         // Pre-fill the buffer so we always have something to dequeue.
         // This setup work is done with timing paused.
         state.PauseTiming();
-        bool enqueued = proc.tryEnqueueAudio(data);
-        benchmark::DoNotOptimize(enqueued);
+        proc.tryEnqueueAudio(data);
         state.ResumeTiming();
 
         // The operation we are timing.
@@ -64,9 +63,8 @@ static void BM_RoundTrip(benchmark::State& state) {
     std::vector<float> data(512, 1.0f);
 
     for (auto _ : state) {
-        bool enqueued = proc.tryEnqueueAudio(data);
+        proc.tryEnqueueAudio(data);
         auto chunk = proc.tryDequeueChunk();
-        benchmark::DoNotOptimize(enqueued);
         benchmark::DoNotOptimize(chunk);
     }
 

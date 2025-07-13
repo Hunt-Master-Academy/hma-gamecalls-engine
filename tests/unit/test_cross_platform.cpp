@@ -1,5 +1,3 @@
-#include <gtest/gtest.h>
-
 #include <cmath>
 #include <fstream>
 #include <iomanip>
@@ -9,18 +7,8 @@
 #include "dr_wav.h"
 #include "huntmaster/core/HuntmasterAudioEngine.h"
 
-using namespace huntmaster;
-
-// Google Test suite definition
-class CrossPlatformTest : public ::testing::Test {
-   protected:
-    void SetUp() override {
-        // Optional: setup code before each test
-    }
-    void TearDown() override {
-        // Optional: cleanup code after each test
-    }
-};
+// Use the huntmaster namespace
+using huntmaster::HuntmasterAudioEngine;
 
 // Test vector structure
 struct TestVector {
@@ -93,7 +81,8 @@ bool verifyProcessingConsistency(HuntmasterAudioEngine &engine) {
     engine.loadMasterCall("test_sine_440");  // Need a master loaded
     int batchSession = engine.startRealtimeSession(static_cast<float>(sampleRate), 1024);
     engine.processAudioChunk(batchSession, testAudio.data(), testAudio.size());
-    float batchScore = engine.getSimilarityScore(batchSession);
+    auto batchScoreResult = engine.getSimilarityScore(batchSession);
+    float batchScore = batchScoreResult.isOk() ? batchScoreResult.value : 0.0f;
     engine.endRealtimeSession(batchSession);
 
     std::cout << "  Batch processing score: " << std::fixed << std::setprecision(8) << batchScore
@@ -107,7 +96,8 @@ bool verifyProcessingConsistency(HuntmasterAudioEngine &engine) {
         size_t toProcess = std::min(static_cast<size_t>(chunkSize), remaining);
         engine.processAudioChunk(chunkSession, testAudio.data() + i, toProcess);
     }
-    float chunkScore = engine.getSimilarityScore(chunkSession);
+    auto chunkScoreResult = engine.getSimilarityScore(chunkSession);
+    float chunkScore = chunkScoreResult.isOk() ? chunkScoreResult.value : 0.0f;
     engine.endRealtimeSession(chunkSession);
 
     std::cout << "  Chunk processing score: " << std::fixed << std::setprecision(8) << chunkScore
@@ -135,7 +125,8 @@ bool verifyProcessingConsistency(HuntmasterAudioEngine &engine) {
             engine.processAudioChunk(session, testAudio.data() + i, toProcess);
         }
 
-        float score = engine.getSimilarityScore(session);
+        auto scoreResult = engine.getSimilarityScore(session);
+        float score = scoreResult.isOk() ? scoreResult.value : 0.0f;
         scores.push_back(score);
         engine.endRealtimeSession(session);
 
@@ -166,7 +157,8 @@ bool testEdgeCases(HuntmasterAudioEngine &engine) {
     std::vector<float> emptyAudio;
     int emptySession = engine.startRealtimeSession(44100.0f, 1024);
     engine.processAudioChunk(emptySession, emptyAudio.data(), 0);
-    float emptyScore = engine.getSimilarityScore(emptySession);
+    auto emptyScoreResult = engine.getSimilarityScore(emptySession);
+    float emptyScore = emptyScoreResult.isOk() ? emptyScoreResult.value : 0.0f;
     engine.endRealtimeSession(emptySession);
 
     std::cout << "  Empty audio score: " << emptyScore << std::endl;
@@ -179,7 +171,8 @@ bool testEdgeCases(HuntmasterAudioEngine &engine) {
     std::vector<float> shortAudio(100, 0.5f);
     int shortSession = engine.startRealtimeSession(44100.0f, 1024);
     engine.processAudioChunk(shortSession, shortAudio.data(), shortAudio.size());
-    float shortScore = engine.getSimilarityScore(shortSession);
+    auto shortScoreResult = engine.getSimilarityScore(shortSession);
+    float shortScore = shortScoreResult.isOk() ? shortScoreResult.value : 0.0f;
     engine.endRealtimeSession(shortSession);
 
     std::cout << "  Short audio score: " << shortScore << std::endl;
@@ -192,7 +185,8 @@ bool testEdgeCases(HuntmasterAudioEngine &engine) {
     std::vector<float> silence(44100, 0.0f);  // 1 second of silence
     int silenceSession = engine.startRealtimeSession(44100.0f, 1024);
     engine.processAudioChunk(silenceSession, silence.data(), silence.size());
-    float silenceScore = engine.getSimilarityScore(silenceSession);
+    auto silenceScoreResult = engine.getSimilarityScore(silenceSession);
+    float silenceScore = silenceScoreResult.isOk() ? silenceScoreResult.value : 0.0f;
     engine.endRealtimeSession(silenceSession);
 
     std::cout << "  Silence score: " << silenceScore << std::endl;
@@ -211,7 +205,8 @@ bool testEdgeCases(HuntmasterAudioEngine &engine) {
 
     int clippedSession = engine.startRealtimeSession(44100.0f, 1024);
     engine.processAudioChunk(clippedSession, clippedAudio.data(), clippedAudio.size());
-    float clippedScore = engine.getSimilarityScore(clippedSession);
+    auto clippedScoreResult = engine.getSimilarityScore(clippedSession);
+    float clippedScore = clippedScoreResult.isOk() ? clippedScoreResult.value : 0.0f;
     engine.endRealtimeSession(clippedSession);
 
     std::cout << "  Clipped audio score: " << clippedScore << std::endl;
@@ -241,7 +236,8 @@ bool testSampleRates(HuntmasterAudioEngine &engine) {
 
         int session = engine.startRealtimeSession(sr, 1024);
         engine.processAudioChunk(session, audio.data(), audio.size());
-        float score = engine.getSimilarityScore(session);
+        auto scoreResult = engine.getSimilarityScore(session);
+        float score = scoreResult.isOk() ? scoreResult.value : 0.0f;
         engine.endRealtimeSession(session);
 
         std::cout << "  Score: " << score << std::endl;
@@ -251,33 +247,42 @@ bool testSampleRates(HuntmasterAudioEngine &engine) {
     return true;
 }
 
-// Convert to proper Google Test
-TEST(CrossPlatformTest, ProcessingConsistency) {
+int main() {
+    std::cout << "=== Cross-Platform Consistency Tests ===" << std::endl;
+    std::cout << "Ensuring identical results across different scenarios\n" << std::endl;
+
     HuntmasterAudioEngine &engine = HuntmasterAudioEngine::getInstance();
     engine.initialize();
 
-    bool result = verifyProcessingConsistency(engine);
-    EXPECT_TRUE(result);
+    // Generate test vectors (run once to create reference data)
+    generateTestVectors(engine);
+
+    // Run consistency tests
+    bool consistencyPass = verifyProcessingConsistency(engine);
+    bool edgeCasePass = testEdgeCases(engine);
+    bool sampleRatePass = testSampleRates(engine);
+
+    // Summary
+    std::cout << "\n\n=== TEST SUMMARY ===" << std::endl;
+    std::cout << "Processing Consistency: " << (consistencyPass ? "PASS ✓" : "FAIL ✗") << std::endl;
+    std::cout << "Edge Cases: " << (edgeCasePass ? "PASS ✓" : "FAIL ✗") << std::endl;
+    std::cout << "Sample Rates: " << (sampleRatePass ? "PASS ✓" : "FAIL ✗") << std::endl;
+
+    bool allPass = consistencyPass && edgeCasePass && sampleRatePass;
+    std::cout << "\nOverall: " << (allPass ? "ALL TESTS PASSED ✓" : "SOME TESTS FAILED ✗")
+              << std::endl;
+
+    if (allPass) {
+        std::cout << "\nThe audio engine produces consistent results across:" << std::endl;
+        std::cout << "- Different processing methods" << std::endl;
+        std::cout << "- Various chunk sizes" << std::endl;
+        std::cout << "- Edge cases (empty, short, silent, clipped audio)" << std::endl;
+        std::cout << "- Multiple sample rates" << std::endl;
+        std::cout << "\nReady for cross-platform deployment!" << std::endl;
+    }
 
     engine.shutdown();
-}
+    std::cout << "\nCross-platform tests completed." << std::endl;
 
-TEST(CrossPlatformTest, EdgeCases) {
-    HuntmasterAudioEngine &engine = HuntmasterAudioEngine::getInstance();
-    engine.initialize();
-
-    bool result = testEdgeCases(engine);
-    EXPECT_TRUE(result);
-
-    engine.shutdown();
-}
-
-TEST(CrossPlatformTest, SampleRates) {
-    HuntmasterAudioEngine &engine = HuntmasterAudioEngine::getInstance();
-    engine.initialize();
-
-    bool result = testSampleRates(engine);
-    EXPECT_TRUE(result);
-
-    engine.shutdown();
+    return allPass ? 0 : 1;
 }

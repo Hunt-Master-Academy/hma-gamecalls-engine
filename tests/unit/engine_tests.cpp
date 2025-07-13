@@ -2,7 +2,7 @@
 
 #include "huntmaster/core/HuntmasterAudioEngine.h"
 
-using namespace huntmaster;
+using huntmaster::HuntmasterAudioEngine;
 
 // A simple test fixture for the main engine.
 class HuntmasterEngineTest : public ::testing::Test {
@@ -23,16 +23,18 @@ TEST_F(HuntmasterEngineTest, CanInitializeAndShutdown) {
 
 // Test case to check the dummy scoring functionality.
 TEST_F(HuntmasterEngineTest, EmptySessionReturnsZeroScore) {
-    auto sessionResult = engine.startRealtimeSession(44100.0f, 1024);
+    auto sessionResult = engine.startRealtimeSession(44100.0, 1024);
     ASSERT_TRUE(sessionResult.isOk());
 
     int sessionId = sessionResult.value;
     auto scoreResult = engine.getSimilarityScore(sessionId);
+    ASSERT_TRUE(scoreResult.isOk());
+
+    float score = scoreResult.value;
     engine.endRealtimeSession(sessionId);
 
     // Without processing audio, score should be 0
-    ASSERT_TRUE(scoreResult.isOk());
-    ASSERT_EQ(scoreResult.value, 0.0f);
+    ASSERT_EQ(score, 0.0f);
 }
 
 // NOTE: This test remains our target for completing Sprint 2.
