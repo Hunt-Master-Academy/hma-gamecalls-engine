@@ -9,3 +9,6 @@
 [submodule "tools/emsdk"]
 	path = tools/emsdk
 	url = https://github.com/tescolopio/emsdk.git
+[submodule "external/googletest"]
+	path = external/googletest
+	url = https://github.com/google/googletest.git
