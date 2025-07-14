@@ -101,19 +101,14 @@ class RealtimeScorer {
         INTERNAL_ERROR          ///< Internal processing error
     };
 
-    using Result = huntmaster::expected<SimilarityScore, Error>;
-    using FeedbackResult = huntmaster::expected<RealtimeFeedback, Error>;
+    using Result = Expected<SimilarityScore, Error>;
+    using FeedbackResult = Expected<RealtimeFeedback, Error>;
 
     /**
      * @brief Construct RealtimeScorer with configuration
      * @param config Scoring configuration parameters
      */
-    explicit RealtimeScorer(const Config& config);
-
-    /**
-     * @brief Construct RealtimeScorer with default configuration
-     */
-    RealtimeScorer();
+    explicit RealtimeScorer(const Config& config = Config{});
 
     /**
      * @brief Destructor

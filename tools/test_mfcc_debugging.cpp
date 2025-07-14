@@ -8,14 +8,9 @@
 
 #include <huntmaster/core/MFCCProcessor.h>
 
-#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <vector>
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 // Simple WAV reader for testing (minimal implementation)
 struct WAVData {

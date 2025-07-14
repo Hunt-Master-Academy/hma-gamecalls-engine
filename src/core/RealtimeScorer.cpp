@@ -60,9 +60,10 @@ class RealtimeScorer::Impl {
     void initializeComponents() {
         // Initialize MFCC processor with appropriate settings
         MFCCProcessor::Config mfccConfig;
-        mfccConfig.sample_rate = config_.sampleRate;
-        mfccConfig.frame_size = 1024;
-        mfccConfig.num_coefficients = 13;
+        mfccConfig.sampleRate = config_.sampleRate;
+        mfccConfig.frameSize = 1024;
+        mfccConfig.hopSize = 512;
+        mfccConfig.numMfccCoeffs = 13;
         mfccProcessor_ = std::make_unique<MFCCProcessor>(mfccConfig);
 
         // Initialize DTW comparator
@@ -206,19 +207,19 @@ bool RealtimeScorer::setMasterCall(const std::string& masterCallPath) noexcept {
 RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> samples,
                                                     int numChannels) noexcept {
     if (!impl_->initialized_.load()) {
-        return huntmaster::unexpected(Error::INITIALIZATION_FAILED);
+        return makeUnexpected(Error::INITIALIZATION_FAILED);
     }
 
     if (!impl_->hasMasterCall_) {
-        return huntmaster::unexpected(Error::NO_MASTER_CALL);
+        return makeUnexpected(Error::NO_MASTER_CALL);
     }
 
     if (samples.empty()) {
-        return huntmaster::unexpected(Error::INVALID_AUDIO_DATA);
+        return makeUnexpected(Error::INVALID_AUDIO_DATA);
     }
 
     if (numChannels <= 0 || numChannels > 8) {
-        return huntmaster::unexpected(Error::INVALID_AUDIO_DATA);
+        return makeUnexpected(Error::INVALID_AUDIO_DATA);
     }
 
     try {
@@ -246,8 +247,8 @@ RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> sampl
 
         // Process audio through level processor for volume analysis
         auto levelResult = impl_->levelProcessor_->processAudio(monoSamples, 1);
-        if (!levelResult.has_value()) {
-            return huntmaster::unexpected(Error::COMPONENT_ERROR);
+        if (!levelResult.isOk()) {
+            return makeUnexpected(Error::COMPONENT_ERROR);
         }
 
         auto levelMeasurement = *levelResult;
@@ -255,10 +256,10 @@ RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> sampl
         // Extract MFCC features if we have enough audio
         if (impl_->liveAudioBuffer_.size() >= 1024) {  // Minimum frame size
             auto mfccResult = impl_->mfccProcessor_->extractFeatures(impl_->liveAudioBuffer_);
-            if (mfccResult.has_value()) {
+            if (mfccResult.isOk()) {
                 auto features = *mfccResult;
                 if (!features.empty()) {
-                    impl_->liveMfccFeatures_.push_back(std::move(features));
+                    impl_->liveMfccFeatures_ = std::move(features);
                 }
             }
         }
@@ -270,10 +271,14 @@ RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> sampl
 
         // 1. MFCC Similarity (using DTW)
         if (!impl_->liveMfccFeatures_.empty() && !impl_->masterMfccFeatures_.empty()) {
-            float dtwDistance = impl_->dtwComparator_->compare(impl_->liveMfccFeatures_,
-                                                               impl_->masterMfccFeatures_);
-            // Convert DTW distance to similarity (lower distance = higher similarity)
-            score.mfcc = std::max(0.0f, 1.0f / (1.0f + dtwDistance * 100.0f));
+            auto dtwResult = impl_->dtwComparator_->computeDistance(impl_->liveMfccFeatures_,
+                                                                    impl_->masterMfccFeatures_);
+
+            if (dtwResult.isOk()) {
+                const float dtwDistance = *dtwResult;
+                // Convert DTW distance to similarity (lower distance = higher similarity)
+                score.mfcc = std::max(0.0f, 1.0f / (1.0f + dtwDistance * 100.0f));
+            }
         }
 
         // 2. Volume Similarity
@@ -325,7 +330,7 @@ RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> sampl
         return score;
 
     } catch (...) {
-        return huntmaster::unexpected(Error::INTERNAL_ERROR);
+        return makeUnexpected(Error::INTERNAL_ERROR);
     }
 }
 
@@ -339,7 +344,7 @@ RealtimeScorer::FeedbackResult RealtimeScorer::getRealtimeFeedback() const noexc
         std::lock_guard<std::mutex> lock(impl_->mutex_);
 
         if (!impl_->hasMasterCall_) {
-            return huntmaster::unexpected(Error::NO_MASTER_CALL);
+            return makeUnexpected(Error::NO_MASTER_CALL);
         }
 
         RealtimeFeedback feedback;
@@ -361,18 +366,15 @@ RealtimeScorer::FeedbackResult RealtimeScorer::getRealtimeFeedback() const noexc
         }
 
         // Generate quality assessment and recommendations
-        if (feedback.currentScore.overall >= impl_->config_.minScoreForMatch) {
-            feedback.qualityAssessment = "Good match - keep practicing!";
-        } else {
-            feedback.qualityAssessment = "Keep working on your technique";
-        }
+        feedback.qualityAssessment =
+            feedback.currentScore.getQualityDescription(feedback.currentScore.overall);
         feedback.recommendation = impl_->generateRecommendation(feedback.currentScore);
         feedback.isImproving = impl_->isScoreTrendingUp();
 
         return feedback;
 
     } catch (...) {
-        return huntmaster::unexpected(Error::INTERNAL_ERROR);
+        return makeUnexpected(Error::INTERNAL_ERROR);
     }
 }
 
@@ -419,7 +421,7 @@ std::string RealtimeScorer::exportScoreToJson() const {
 
 std::string RealtimeScorer::exportFeedbackToJson() const {
     auto feedbackResult = getRealtimeFeedback();
-    if (!feedbackResult.has_value()) {
+    if (!feedbackResult.isOk()) {
         return "{\"error\":\"No feedback available\"}";
     }
 
