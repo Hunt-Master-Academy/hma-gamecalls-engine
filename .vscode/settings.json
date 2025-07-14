@@ -139,7 +139,8 @@
         "set": "cpp",
         "xstring": "cpp",
         "filesystem": "cpp",
-        "*.inc": "cpp"
+        "*.inc": "cpp",
+        "expected": "cpp"
     },
 
 

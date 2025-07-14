@@ -64,18 +64,22 @@ class AudioLevelProcessor::Impl {
 AudioLevelProcessor::AudioLevelProcessor(const Config& config)
     : impl_(std::make_unique<Impl>(config)) {}
 
+AudioLevelProcessor::AudioLevelProcessor() : impl_(std::make_unique<Impl>(Config{})) {}
+
+AudioLevelProcessor::~AudioLevelProcessor() = default;
+
 AudioLevelProcessor::Result AudioLevelProcessor::processAudio(std::span<const float> samples,
                                                               int numChannels) noexcept {
     if (!impl_->initialized_.load()) {
-        return makeUnexpected(Error::INITIALIZATION_FAILED);
+        return huntmaster::unexpected(Error::INITIALIZATION_FAILED);
     }
 
     if (samples.empty()) {
-        return makeUnexpected(Error::INVALID_AUDIO_DATA);
+        return huntmaster::unexpected(Error::INVALID_AUDIO_DATA);
     }
 
     if (numChannels <= 0 || numChannels > 8) {
-        return makeUnexpected(Error::INVALID_AUDIO_DATA);
+        return huntmaster::unexpected(Error::INVALID_AUDIO_DATA);
     }
 
     try {
@@ -159,7 +163,7 @@ AudioLevelProcessor::Result AudioLevelProcessor::processAudio(std::span<const fl
         return measurement;
 
     } catch (...) {
-        return makeUnexpected(Error::INTERNAL_ERROR);
+        return huntmaster::unexpected(Error::INTERNAL_ERROR);
     }
 }
 
@@ -284,7 +288,7 @@ float linearToDb(float linear, float floor, float ceiling) noexcept {
         return floor;
     }
 
-    const float db = 20.0f * std::log10f(linear);
+    const float db = 20.0f * log10f(linear);
     return std::clamp(db, floor, ceiling);
 }
 

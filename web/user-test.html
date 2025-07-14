@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Huntmaster Engine - User Testing Interface</title>
+    <link rel="stylesheet" href="styles/main.css" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>"
+    />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-content">
+          <h1>🎯 Huntmaster Engine</h1>
+          <p class="subtitle">
+            Real-time Wildlife Call Analysis - User Testing
+          </p>
+          <div class="status-indicator" id="engineStatus">
+            <span class="status-dot"></span>
+            <span class="status-text">Initializing...</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="app-main">
+        <!-- Setup Section -->
+        <section class="setup-section" id="setupSection">
+          <div class="card">
+            <h2>🚀 Getting Started</h2>
+            <div class="setup-steps">
+              <div class="step" id="step1">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                  <h3>Initialize Engine</h3>
+                  <p>
+                    Load the Huntmaster WASM engine and prepare for audio
+                    processing.
+                  </p>
+                  <button id="initEngine" class="btn btn-primary">
+                    Initialize Engine
+                  </button>
+                </div>
+              </div>
+
+              <div class="step" id="step2">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                  <h3>Load Master Calls</h3>
+                  <p>Choose from pre-loaded deer calls or upload your own.</p>
+                  <div class="master-call-selection">
+                    <select id="masterCallSelect" disabled>
+                      <option value="">Loading master calls...</option>
+                    </select>
+                    <button
+                      id="loadMasterCall"
+                      class="btn btn-secondary"
+                      disabled
+                    >
+                      Load Call
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="step" id="step3">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                  <h3>Start Testing</h3>
+                  <p>
+                    Begin real-time audio analysis or test with sample files.
+                  </p>
+                  <div class="test-mode-selection">
+                    <button id="startLiveTest" class="btn btn-success" disabled>
+                      Live Microphone
+                    </button>
+                    <button id="startFileTest" class="btn btn-info" disabled>
+                      Test Audio Files
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Testing Interface -->
+        <section
+          class="testing-section"
+          id="testingSection"
+          style="display: none"
+        >
+          <!-- Live Audio Testing -->
+          <div class="test-panel" id="liveTestPanel">
+            <div class="card">
+              <h2>🎤 Live Audio Analysis</h2>
+
+              <!-- Audio Controls -->
+              <div class="audio-controls">
+                <button id="startRecording" class="btn btn-success">
+                  Start Recording
+                </button>
+                <button id="stopRecording" class="btn btn-danger" disabled>
+                  Stop Recording
+                </button>
+                <button id="clearResults" class="btn btn-secondary">
+                  Clear Results
+                </button>
+              </div>
+
+              <!-- Real-time Visualization -->
+              <div class="visualization-container">
+                <div class="audio-levels">
+                  <div class="level-meter">
+                    <label>Input Level:</label>
+                    <div class="meter-bar">
+                      <div class="meter-fill" id="inputLevelMeter"></div>
+                    </div>
+                    <span id="inputLevelText">-∞ dB</span>
+                  </div>
+                </div>
+
+                <div class="waveform-display">
+                  <canvas id="waveformCanvas" width="800" height="200"></canvas>
+                </div>
+
+                <div class="similarity-display">
+                  <div class="similarity-score" id="similarityScore">
+                    <div class="score-circle">
+                      <div class="score-value">0%</div>
+                      <div class="score-label">Similarity</div>
+                    </div>
+                  </div>
+                  <div class="confidence-indicator" id="confidenceIndicator">
+                    <div class="confidence-bar">
+                      <div class="confidence-fill"></div>
+                    </div>
+                    <span class="confidence-text">Confidence: --</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- File Testing -->
+          <div class="test-panel" id="fileTestPanel" style="display: none">
+            <div class="card">
+              <h2>📁 Audio File Testing</h2>
+
+              <!-- File Selection -->
+              <div class="file-controls">
+                <div class="file-input-group">
+                  <input
+                    type="file"
+                    id="audioFileInput"
+                    accept=".wav,.mp3,.ogg"
+                    multiple
+                  />
+                  <label for="audioFileInput" class="btn btn-outline">
+                    📁 Upload Audio Files
+                  </label>
+                </div>
+
+                <div class="preset-files">
+                  <h4>Pre-loaded Test Files:</h4>
+                  <div id="presetFilesList" class="file-list">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- File Analysis Results -->
+              <div class="analysis-results" id="fileAnalysisResults">
+                <!-- Results populated dynamically -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Results and Analytics -->
+        <section class="results-section" id="resultsSection">
+          <div class="card">
+            <h2>📊 Analysis Results</h2>
+
+            <!-- Results Summary -->
+            <div class="results-summary">
+              <div class="stat-card">
+                <div class="stat-value" id="totalTests">0</div>
+                <div class="stat-label">Tests Run</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="avgSimilarity">0%</div>
+                <div class="stat-label">Avg Similarity</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="processingTime">0ms</div>
+                <div class="stat-label">Avg Processing</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value" id="engineUptime">0s</div>
+                <div class="stat-label">Engine Uptime</div>
+              </div>
+            </div>
+
+            <!-- Detailed Results -->
+            <div class="results-log">
+              <h3>Test Results Log</h3>
+              <div class="log-controls">
+                <button id="exportResults" class="btn btn-outline">
+                  📄 Export Results
+                </button>
+                <button id="clearLog" class="btn btn-outline">
+                  🗑️ Clear Log
+                </button>
+              </div>
+              <div id="resultsLog" class="log-container">
+                <p class="log-empty">
+                  No test results yet. Start testing to see analysis data here.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Performance Monitoring -->
+        <section class="performance-section">
+          <div class="card">
+            <h2>⚡ Performance Monitor</h2>
+
+            <div class="performance-grid">
+              <div class="perf-metric">
+                <label>Memory Usage:</label>
+                <div class="metric-bar">
+                  <div class="metric-fill" id="memoryUsage"></div>
+                </div>
+                <span id="memoryText">-- MB</span>
+              </div>
+
+              <div class="perf-metric">
+                <label>CPU Usage:</label>
+                <div class="metric-bar">
+                  <div class="metric-fill" id="cpuUsage"></div>
+                </div>
+                <span id="cpuText">--%</span>
+              </div>
+
+              <div class="perf-metric">
+                <label>Audio Latency:</label>
+                <span id="audioLatency">-- ms</span>
+              </div>
+
+              <div class="perf-metric">
+                <label>Buffer Health:</label>
+                <div class="metric-bar">
+                  <div class="metric-fill good" id="bufferHealth"></div>
+                </div>
+                <span id="bufferText">Good</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Footer -->
+      <footer class="app-footer">
+        <div class="footer-content">
+          <p>&copy; 2025 Huntmaster Engine - User Testing Interface</p>
+          <div class="footer-links">
+            <a href="/web/diagnostic.html">🔧 Diagnostics</a>
+            <a href="/api/status" target="_blank">📡 API Status</a>
+            <a
+              href="https://github.com/tescolopio/huntmaster-engine"
+              target="_blank"
+              >📖 Documentation</a
+            >
+          </div>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Error/Success Messages -->
+    <div id="messageContainer" class="message-container"></div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+      <div class="loading-spinner"></div>
+      <div class="loading-text">Loading Huntmaster Engine...</div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/audio-utils.js"></script>
+    <script src="js/visualization.js"></script>
+    <script src="js/performance-monitor.js"></script>
+    <script src="js/test-manager.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

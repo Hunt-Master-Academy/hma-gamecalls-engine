@@ -1,6 +1,7 @@
 #include "huntmaster/core/WaveformGenerator.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cmath>
 #include <deque>
 #include <iomanip>
@@ -75,18 +76,20 @@ class WaveformGenerator::Impl {
 WaveformGenerator::WaveformGenerator(const Config& config)
     : impl_(std::make_unique<Impl>(config)) {}
 
+WaveformGenerator::WaveformGenerator() : impl_(std::make_unique<Impl>(Config{})) {}
+
 WaveformGenerator::Result WaveformGenerator::processAudio(std::span<const float> samples,
                                                           int numChannels) noexcept {
     if (!impl_->initialized_.load()) {
-        return makeUnexpected(Error::INITIALIZATION_FAILED);
+        return huntmaster::unexpected(Error::INITIALIZATION_FAILED);
     }
 
     if (samples.empty()) {
-        return makeUnexpected(Error::INVALID_AUDIO_DATA);
+        return huntmaster::unexpected(Error::INVALID_AUDIO_DATA);
     }
 
     if (numChannels <= 0 || numChannels > 8) {
-        return makeUnexpected(Error::INVALID_AUDIO_DATA);
+        return huntmaster::unexpected(Error::INVALID_AUDIO_DATA);
     }
 
     try {
@@ -227,7 +230,7 @@ WaveformGenerator::Result WaveformGenerator::processAudio(std::span<const float>
         return result;
 
     } catch (...) {
-        return makeUnexpected(Error::INTERNAL_ERROR);
+        return huntmaster::unexpected(Error::INTERNAL_ERROR);
     }
 }
 

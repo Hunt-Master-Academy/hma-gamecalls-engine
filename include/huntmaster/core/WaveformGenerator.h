@@ -67,13 +67,18 @@ class WaveformGenerator {
         INTERNAL_ERROR          ///< Internal processing error
     };
 
-    using Result = Expected<WaveformData, Error>;
+    using Result = huntmaster::expected<WaveformData, Error>;
 
     /**
      * @brief Construct WaveformGenerator with configuration
      * @param config Waveform generation configuration parameters
      */
-    explicit WaveformGenerator(const Config& config = Config{});
+    explicit WaveformGenerator(const Config& config);
+
+    /**
+     * @brief Construct WaveformGenerator with default configuration
+     */
+    WaveformGenerator();
 
     /**
      * @brief Destructor
