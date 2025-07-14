@@ -10,8 +10,8 @@
 
 // Include the C files directly for WASM
 extern "C" {
-#include "kissfft/kiss_fft.c"
-#include "kissfft/kiss_fftr.c"
+#include "kiss_fft.c"
+#include "kiss_fftr.c"
 }
 #endif
 
@@ -21,9 +21,9 @@ extern "C" {
 
 // Platform-specific defines for miniaudio
 #ifdef __EMSCRIPTEN__
-    #define MA_NO_PTHREAD_IN_HEADER
-    #define MA_NO_GENERATION
-    #define MA_NO_DEVICE_IO  // WASM doesn't have direct device access
+#define MA_NO_PTHREAD_IN_HEADER
+#define MA_NO_GENERATION
+#define MA_NO_DEVICE_IO  // WASM doesn't have direct device access
 #endif
 
 // Include the single-header libraries

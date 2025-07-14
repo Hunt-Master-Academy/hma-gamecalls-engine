@@ -3,14 +3,15 @@
 #include <chrono>
 #include <memory>
 #include <span>
-#include <string>
 #include <vector>
 
-#include "Expected.h"
+#include "huntmaster/core/Expected.h"
 
 namespace huntmaster {
 
 /**
+ * @class WaveformGenerator
+ *
  * @brief Real-time waveform generator for visualization data
  *
  * Provides decimated time-domain visualization data with configurable resolution,
@@ -67,18 +68,23 @@ class WaveformGenerator {
         INTERNAL_ERROR          ///< Internal processing error
     };
 
-    using Result = Expected<WaveformData, Error>;
+    using Result = huntmaster::expected<WaveformData, Error>;
 
     /**
-     * @brief Construct WaveformGenerator with configuration
-     * @param config Waveform generation configuration parameters
+     * @brief Default constructor.
      */
-    explicit WaveformGenerator(const Config& config = Config{});
+    WaveformGenerator();
 
     /**
-     * @brief Destructor
+     * @brief Construct with a specific configuration.
+     * @param config The configuration settings.
      */
-    ~WaveformGenerator() = default;
+    explicit WaveformGenerator(const Config& config);
+
+    /**
+     * @brief Destructor.
+     */
+    ~WaveformGenerator();
 
     // Non-copyable, movable
     WaveformGenerator(const WaveformGenerator&) = delete;
@@ -160,42 +166,27 @@ class WaveformGenerator {
     void reset() noexcept;
 
     /**
-     * @brief Update configuration parameters
+     * @brief Update the generator's configuration
      *
-     * Updates generator configuration and adjusts internal buffers.
-     * Thread-safe operation.
-     *
-     * @param newConfig New configuration parameters
-     * @return true if configuration was updated successfully
+     * @param newConfig The new configuration to apply
+     * @return True if the configuration was valid and applied, false otherwise
      */
     bool updateConfig(const Config& newConfig) noexcept;
 
     /**
-     * @brief Get current configuration
-     * @return Current generator configuration
-     */
-    [[nodiscard]] Config getConfig() const noexcept;
-
-    /**
-     * @brief Check if generator is properly initialized
-     * @return true if generator is ready for audio processing
-     */
-    [[nodiscard]] bool isInitialized() const noexcept;
-
-    /**
-     * @brief Get buffer utilization statistics
+     * @brief Get statistics about the internal buffer usage
      *
-     * @return Pair of (used samples, total capacity)
+     * @return A pair containing used and total capacity of the buffer
      */
     [[nodiscard]] std::pair<size_t, size_t> getBufferStats() const noexcept;
 
     /**
-     * @brief Set zoom level for dynamic resolution adjustment
+     * @brief Set the zoom level for the waveform display
      *
-     * Adjusts the downsampling ratio dynamically for different zoom levels.
-     * Higher zoom = more detail = lower downsampling ratio.
+     * Adjusts the downsampling ratio based on a zoom factor.
+     * A zoom factor > 1.0 zooms in, < 1.0 zooms out.
      *
-     * @param zoomLevel Zoom level (1.0 = normal, 2.0 = 2x zoom, 0.5 = 2x zoom out)
+     * @param zoomLevel The zoom factor to apply
      */
     void setZoomLevel(float zoomLevel) noexcept;
 

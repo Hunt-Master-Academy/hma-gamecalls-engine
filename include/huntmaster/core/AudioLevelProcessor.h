@@ -67,18 +67,23 @@ class AudioLevelProcessor {
         INTERNAL_ERROR          ///< Internal processing error
     };
 
-    using Result = Expected<LevelMeasurement, Error>;
+    using Result = huntmaster::expected<LevelMeasurement, Error>;
+
+    /**
+     * @brief Default constructor with default configuration
+     */
+    AudioLevelProcessor();
 
     /**
      * @brief Construct AudioLevelProcessor with configuration
      * @param config Processing configuration parameters
      */
-    explicit AudioLevelProcessor(const Config& config = Config{});
+    explicit AudioLevelProcessor(const Config& config);
 
     /**
      * @brief Destructor
      */
-    ~AudioLevelProcessor() = default;
+    ~AudioLevelProcessor();
 
     // Non-copyable, movable
     AudioLevelProcessor(const AudioLevelProcessor&) = delete;

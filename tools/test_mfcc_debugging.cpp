@@ -6,8 +6,10 @@
  * step by step to identify why we might be getting 0 features extracted.
  */
 
+#define _USE_MATH_DEFINES
 #include <huntmaster/core/MFCCProcessor.h>
 
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <vector>

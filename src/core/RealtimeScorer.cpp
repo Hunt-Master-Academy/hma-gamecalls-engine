@@ -1,13 +1,19 @@
 #include "huntmaster/core/RealtimeScorer.h"
 
 #include <algorithm>
+#include <atomic>
+#include <chrono>
 #include <cmath>
 #include <deque>
 #include <fstream>
-#include <iomanip>
+#include <memory>
 #include <mutex>
+#include <numeric>
 #include <sstream>
+#include <stdexcept>
+#include <vector>
 
+#include "dr_wav.h"
 #include "huntmaster/core/AudioLevelProcessor.h"
 #include "huntmaster/core/DTWComparator.h"
 #include "huntmaster/core/MFCCProcessor.h"
@@ -48,102 +54,146 @@ class RealtimeScorer::Impl {
     std::atomic<size_t> totalSamplesProcessed_{0};
     std::atomic<float> averageSignalLevel_{0.0f};
 
-    explicit Impl(const Config& config) : config_(config) {
-        if (config_.isValid()) {
-            initializeComponents();
-            sessionStartTime_ = std::chrono::steady_clock::now();
-            lastUpdateTime_ = sessionStartTime_;
-            initialized_.store(true);
-        }
-    }
+    explicit Impl(const Config& config);
 
-    void initializeComponents() {
-        // Initialize MFCC processor with appropriate settings
-        MFCCProcessor::Config mfccConfig;
-        mfccConfig.sampleRate = config_.sampleRate;
-        mfccConfig.frameSize = 1024;
-        mfccConfig.hopSize = 512;
-        mfccConfig.numMfccCoeffs = 13;
-        mfccProcessor_ = std::make_unique<MFCCProcessor>(mfccConfig);
-
-        // Initialize DTW comparator
-        DTWComparator::Config dtwConfig;
-        dtwComparator_ = std::make_unique<DTWComparator>(dtwConfig);
-
-        // Initialize audio level processor for volume analysis
-        AudioLevelProcessor::Config levelConfig;
-        levelConfig.sampleRate = config_.sampleRate;
-        levelConfig.updateRateMs = config_.updateRateMs;
-        levelProcessor_ = std::make_unique<AudioLevelProcessor>(levelConfig);
-    }
-
-    float calculateWeightedScore(float mfcc, float volume, float timing, float pitch) const {
-        return config_.mfccWeight * mfcc + config_.volumeWeight * volume +
-               config_.timingWeight * timing + config_.pitchWeight * pitch;
-    }
-
-    float calculateProgressRatio() const {
-        if (!hasMasterCall_ || masterCallDuration_ <= 0.0f) {
-            return 0.0f;
-        }
-
-        return std::min(1.0f, liveAudioDuration_ / masterCallDuration_);
-    }
-
-    std::string generateRecommendation(const SimilarityScore& score) const {
-        if (score.overall >= config_.minScoreForMatch) {
-            if (score.mfcc < score.volume) {
-                return "Good volume matching! Focus on call pattern and timing.";
-            } else if (score.volume < score.mfcc) {
-                return "Good call pattern! Adjust your volume level.";
-            } else {
-                return "Excellent technique! Keep it consistent.";
-            }
-        } else {
-            if (score.mfcc < 0.002f) {
-                return "Focus on matching the call pattern and pitch contour.";
-            } else if (score.volume < 0.5f) {
-                return "Adjust your volume to better match the master call.";
-            } else {
-                return "Work on timing and overall consistency.";
-            }
-        }
-    }
-
-    bool isScoreTrendingUp() const {
-        if (scoringHistory_.size() < 3) return false;
-
-        // Compare recent scores with older ones
-        const size_t recentCount = std::min(size_t(3), scoringHistory_.size());
-        const size_t olderCount = std::min(size_t(3), scoringHistory_.size() - recentCount);
-
-        if (olderCount == 0) return false;
-
-        float recentAvg = 0.0f;
-        float olderAvg = 0.0f;
-
-        for (size_t i = 0; i < recentCount; ++i) {
-            recentAvg += scoringHistory_[i].overall;
-        }
-        recentAvg /= recentCount;
-
-        for (size_t i = recentCount; i < recentCount + olderCount; ++i) {
-            olderAvg += scoringHistory_[i].overall;
-        }
-        olderAvg /= olderCount;
-
-        return recentAvg > olderAvg * 1.1f;  // 10% improvement threshold
-    }
+    void initializeComponents();
+    float calculateWeightedScore(float mfcc, float volume, float timing, float pitch) const;
+    float calculateProgressRatio() const;
+    std::string generateRecommendation(const SimilarityScore& score) const;
+    bool isScoreTrendingUp() const;
 };
 
+// Helper functions for scoring logic, scoped to this file.
+static float calculateVolumeSimilarity(float liveRms, float masterRms,
+                                       float tolerance = 0.3f) noexcept {
+    if (masterRms < 1e-6f) {
+        return (liveRms < 1e-6f) ? 1.0f : 0.0f;
+    }
+    const float ratio = liveRms / masterRms;
+    const float error = std::abs(1.0f - ratio);
+    return std::max(0.0f, 1.0f - (error / tolerance));
+}
+
+static float calculateTimingAccuracy(float liveDuration, float masterDuration) noexcept {
+    if (masterDuration <= 0.0f) return 0.5f;  // Neutral score if master duration is unknown
+    const float ratio = liveDuration / masterDuration;
+    // Penalize for being too short or too long
+    if (ratio < 1.0f) {
+        return ratio;  // Linearly increases as live duration approaches master duration
+    }
+    // Slower penalty for going over time
+    return std::max(0.0f, 1.0f - (ratio - 1.0f) * 0.5f);
+}
+
+static float calculateConfidence(size_t samplesAnalyzed, float signalQuality,
+                                 size_t minSamplesForConfidence) noexcept {
+    if (samplesAnalyzed < minSamplesForConfidence) {
+        return static_cast<float>(samplesAnalyzed) / static_cast<float>(minSamplesForConfidence) *
+               signalQuality;
+    }
+    return signalQuality;
+}
+
+RealtimeScorer::RealtimeScorer() : impl_(std::make_unique<Impl>(Config{})) {}
+
 RealtimeScorer::RealtimeScorer(const Config& config) : impl_(std::make_unique<Impl>(config)) {}
+
+RealtimeScorer::~RealtimeScorer() = default;
+
+RealtimeScorer::Impl::Impl(const Config& config) : config_(config) {
+    if (config_.isValid()) {
+        initializeComponents();
+        sessionStartTime_ = std::chrono::steady_clock::now();
+        lastUpdateTime_ = sessionStartTime_;
+        initialized_.store(true);
+    }
+}
+
+void RealtimeScorer::Impl::initializeComponents() {
+    // Initialize MFCC processor with appropriate settings
+    MFCCProcessor::Config mfccConfig;
+    mfccConfig.sample_rate = static_cast<size_t>(config_.sampleRate);
+    mfccConfig.frame_size = 1024;
+    mfccConfig.num_coefficients = 13;
+    mfccProcessor_ = std::make_unique<MFCCProcessor>(mfccConfig);
+
+    // Initialize DTW comparator
+    DTWComparator::Config dtwConfig;
+    dtwComparator_ = std::make_unique<DTWComparator>(dtwConfig);
+
+    // Initialize audio level processor for volume analysis
+    AudioLevelProcessor::Config levelConfig;
+    levelConfig.sampleRate = config_.sampleRate;
+    levelConfig.updateRateMs = config_.updateRateMs;
+    levelProcessor_ = std::make_unique<AudioLevelProcessor>(levelConfig);
+}
+
+float RealtimeScorer::Impl::calculateWeightedScore(float mfcc, float volume, float timing,
+                                                   float pitch) const {
+    return config_.mfccWeight * mfcc + config_.volumeWeight * volume +
+           config_.timingWeight * timing + config_.pitchWeight * pitch;
+}
+
+float RealtimeScorer::Impl::calculateProgressRatio() const {
+    if (!hasMasterCall_ || masterCallDuration_ <= 0.0f) {
+        return 0.0f;
+    }
+
+    return std::min(1.0f, liveAudioDuration_ / masterCallDuration_);
+}
+
+std::string RealtimeScorer::Impl::generateRecommendation(const SimilarityScore& score) const {
+    if (score.overall >= config_.minScoreForMatch) {
+        if (score.mfcc < score.volume) {
+            return "Good volume matching! Focus on call pattern and timing.";
+        } else if (score.volume < score.mfcc) {
+            return "Good call pattern! Adjust your volume level.";
+        } else {
+            return "Excellent technique! Keep it consistent.";
+        }
+    } else {
+        if (score.mfcc < 0.002f) {
+            return "Focus on matching the call pattern and pitch contour.";
+        } else if (score.volume < 0.5f) {
+            return "Adjust your volume to better match the master call.";
+        } else {
+            return "Work on timing and overall consistency.";
+        }
+    }
+}
+
+bool RealtimeScorer::Impl::isScoreTrendingUp() const {
+    // Require at least 6 scores to compare 3 recent and 3 older
+    if (scoringHistory_.size() < 6) return false;
+
+    const size_t recentCount = 3;
+    const size_t olderCount = 3;
+
+    float recentAvg = 0.0f;
+    float olderAvg = 0.0f;
+
+    // Most recent scores: [0, 1, 2]
+    for (size_t i = 0; i < recentCount; ++i) {
+        recentAvg += scoringHistory_[i].overall;
+    }
+    recentAvg /= recentCount;
+
+    // Older scores: [3, 4, 5]
+    for (size_t i = recentCount; i < recentCount + olderCount; ++i) {
+        olderAvg += scoringHistory_[i].overall;
+    }
+    olderAvg /= olderCount;
+
+    return recentAvg > olderAvg * 1.1f;  // 10% improvement threshold
+}
 
 bool RealtimeScorer::setMasterCall(const std::string& masterCallPath) noexcept {
     try {
         std::lock_guard<std::mutex> lock(impl_->mutex_);
 
         // Try to load as feature file first (.mfc)
-        if (masterCallPath.ends_with(".mfc")) {
+        if (masterCallPath.size() >= 4 &&
+            masterCallPath.compare(masterCallPath.size() - 4, 4, ".mfc") == 0) {
             std::ifstream file(masterCallPath, std::ios::binary);
             if (!file.is_open()) {
                 return false;
@@ -179,20 +229,62 @@ bool RealtimeScorer::setMasterCall(const std::string& masterCallPath) noexcept {
                 512.0f / impl_->config_.sampleRate * 1000.0f;                // Hop size based
             impl_->masterCallDuration_ = numFrames * frameRateMs / 1000.0f;  // Convert to seconds
 
-            // Calculate approximate RMS from MFCC energy (first coefficient)
+            // Calculate approximate RMS from MFCC energy (using first coefficient as proxy).
+            // Note: The first MFCC coefficient may or may not represent true signal energy,
+            // depending on the MFCC implementation. Adjust this if your MFCCs are computed
+            // differently.
             float energySum = 0.0f;
             for (const auto& frame : impl_->masterMfccFeatures_) {
                 if (!frame.empty()) {
-                    energySum += frame[0];  // First MFCC coefficient relates to energy
+                    energySum += frame[0];  // Using first MFCC coefficient as energy proxy
                 }
             }
             impl_->masterCallRms_ = energySum / impl_->masterMfccFeatures_.size();
 
         } else {
-            // Try to load as audio file and extract features
-            // For now, return false as we focus on .mfc files
-            // TODO: Implement audio file loading with dr_wav
-            return false;
+            // Load from audio file
+            unsigned int channels;
+            unsigned int sampleRate;
+            drwav_uint64 totalFrameCount;
+            float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(
+                masterCallPath.c_str(), &channels, &sampleRate, &totalFrameCount, nullptr);
+
+            if (pSampleData == nullptr) {
+                return false;  // Failed to load WAV file
+            }
+
+            std::vector<float> audioData(pSampleData, pSampleData + totalFrameCount * channels);
+            drwav_free(pSampleData, nullptr);
+
+            // Convert to mono if necessary
+            std::vector<float> monoData;
+            if (channels > 1) {
+                monoData.reserve(totalFrameCount);
+                for (drwav_uint64 i = 0; i < totalFrameCount; ++i) {
+                    float frameSum = 0.0f;
+                    for (unsigned int c = 0; c < channels; ++c) {
+                        frameSum += audioData[i * channels + c];
+                    }
+                    monoData.push_back(frameSum / channels);
+                }
+            } else {
+                monoData = std::move(audioData);
+            }
+
+            // Extract features
+            auto featuresResult = impl_->mfccProcessor_->extractFeaturesFromBuffer(monoData, 512);
+            if (!featuresResult.has_value()) {
+                return false;
+            }
+            impl_->masterMfccFeatures_ = std::move(*featuresResult);
+
+            // Calculate RMS and duration
+            float rms = 0.0f;
+            for (const auto& sample : monoData) {
+                rms += sample * sample;
+            }
+            impl_->masterCallRms_ = std::sqrt(rms / monoData.size());
+            impl_->masterCallDuration_ = static_cast<float>(totalFrameCount) / sampleRate;
         }
 
         impl_->hasMasterCall_ = true;
@@ -207,19 +299,19 @@ bool RealtimeScorer::setMasterCall(const std::string& masterCallPath) noexcept {
 RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> samples,
                                                     int numChannels) noexcept {
     if (!impl_->initialized_.load()) {
-        return makeUnexpected(Error::INITIALIZATION_FAILED);
+        return huntmaster::unexpected(Error::INITIALIZATION_FAILED);
     }
 
     if (!impl_->hasMasterCall_) {
-        return makeUnexpected(Error::NO_MASTER_CALL);
+        return huntmaster::unexpected(Error::NO_MASTER_CALL);
     }
 
     if (samples.empty()) {
-        return makeUnexpected(Error::INVALID_AUDIO_DATA);
+        return huntmaster::unexpected(Error::INVALID_AUDIO_DATA);
     }
 
     if (numChannels <= 0 || numChannels > 8) {
-        return makeUnexpected(Error::INVALID_AUDIO_DATA);
+        return huntmaster::unexpected(Error::INVALID_AUDIO_DATA);
     }
 
     try {
@@ -247,16 +339,17 @@ RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> sampl
 
         // Process audio through level processor for volume analysis
         auto levelResult = impl_->levelProcessor_->processAudio(monoSamples, 1);
-        if (!levelResult.isOk()) {
-            return makeUnexpected(Error::COMPONENT_ERROR);
+        if (!levelResult.has_value()) {
+            return huntmaster::unexpected(Error::COMPONENT_ERROR);
         }
 
         auto levelMeasurement = *levelResult;
 
         // Extract MFCC features if we have enough audio
         if (impl_->liveAudioBuffer_.size() >= 1024) {  // Minimum frame size
-            auto mfccResult = impl_->mfccProcessor_->extractFeatures(impl_->liveAudioBuffer_);
-            if (mfccResult.isOk()) {
+            auto mfccResult =
+                impl_->mfccProcessor_->extractFeaturesFromBuffer(impl_->liveAudioBuffer_, 512);
+            if (mfccResult.has_value()) {
                 auto features = *mfccResult;
                 if (!features.empty()) {
                     impl_->liveMfccFeatures_ = std::move(features);
@@ -267,18 +360,16 @@ RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> sampl
         // Calculate similarity scores
         SimilarityScore score;
         score.timestamp = std::chrono::steady_clock::now();
-        score.samplesAnalyzed = impl_->liveAudioBuffer_.size();
+        score.samplesAnalyzed = frameCount;
 
         // 1. MFCC Similarity (using DTW)
         if (!impl_->liveMfccFeatures_.empty() && !impl_->masterMfccFeatures_.empty()) {
-            auto dtwResult = impl_->dtwComparator_->computeDistance(impl_->liveMfccFeatures_,
-                                                                    impl_->masterMfccFeatures_);
+            float dtwDistance = impl_->dtwComparator_->compare(impl_->liveMfccFeatures_,
+                                                               impl_->masterMfccFeatures_);
 
-            if (dtwResult.isOk()) {
-                const float dtwDistance = *dtwResult;
-                // Convert DTW distance to similarity (lower distance = higher similarity)
-                score.mfcc = std::max(0.0f, 1.0f / (1.0f + dtwDistance * 100.0f));
-            }
+            // Convert DTW distance to similarity (lower distance = higher similarity)
+            float scaling = impl_->config_.dtwDistanceScaling;
+            score.mfcc = std::max(0.0f, 1.0f / (1.0f + dtwDistance * scaling));
         }
 
         // 2. Volume Similarity
@@ -287,14 +378,12 @@ RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> sampl
                 calculateVolumeSimilarity(levelMeasurement.rmsLinear, impl_->masterCallRms_, 0.3f);
         }
 
-        // 3. Timing Accuracy (based on feature alignment quality)
-        if (!impl_->liveMfccFeatures_.empty() && !impl_->masterMfccFeatures_.empty()) {
-            score.timing = calculateTimingAccuracy(std::span<const float>{},
-                                                   std::span<const float>{});  // Simplified for now
-        }
+        // 3. Timing Accuracy (placeholder)
+        score.timing =
+            calculateTimingAccuracy(impl_->liveAudioDuration_, impl_->masterCallDuration_);
 
-        // 4. Pitch Similarity (placeholder - not implemented yet)
-        score.pitch = 0.5f;  // Neutral score until pitch analysis is implemented
+        // 4. Pitch Similarity (placeholder)
+        score.pitch = 0.5f;  // Placeholder value for pitch similarity
 
         // Calculate overall weighted score
         score.overall =
@@ -302,7 +391,8 @@ RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> sampl
 
         // Calculate confidence based on data quantity and quality
         const float signalQuality = std::min(1.0f, levelMeasurement.rmsLinear * 10.0f);
-        score.confidence = calculateConfidence(score.samplesAnalyzed, signalQuality);
+        score.confidence = calculateConfidence(impl_->totalSamplesProcessed_.load(), signalQuality,
+                                               impl_->config_.minSamplesForConfidence);
 
         // Determine reliability and match status
         score.isReliable = score.confidence >= impl_->config_.confidenceThreshold;
@@ -330,7 +420,7 @@ RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> sampl
         return score;
 
     } catch (...) {
-        return makeUnexpected(Error::INTERNAL_ERROR);
+        return huntmaster::unexpected(Error::INTERNAL_ERROR);
     }
 }
 
@@ -344,7 +434,7 @@ RealtimeScorer::FeedbackResult RealtimeScorer::getRealtimeFeedback() const noexc
         std::lock_guard<std::mutex> lock(impl_->mutex_);
 
         if (!impl_->hasMasterCall_) {
-            return makeUnexpected(Error::NO_MASTER_CALL);
+            return huntmaster::unexpected(Error::NO_MASTER_CALL);
         }
 
         RealtimeFeedback feedback;
@@ -360,77 +450,70 @@ RealtimeScorer::FeedbackResult RealtimeScorer::getRealtimeFeedback() const noexc
             for (size_t i = 0; i < trendCount; ++i) {
                 trendSum += impl_->scoringHistory_[i].overall;
             }
-
-            feedback.trendingScore = impl_->currentScore_;
             feedback.trendingScore.overall = trendSum / trendCount;
         }
 
         // Generate quality assessment and recommendations
-        feedback.qualityAssessment =
-            feedback.currentScore.getQualityDescription(feedback.currentScore.overall);
+        feedback.qualityAssessment = feedback.getQualityDescription(feedback.currentScore.overall);
         feedback.recommendation = impl_->generateRecommendation(feedback.currentScore);
         feedback.isImproving = impl_->isScoreTrendingUp();
 
         return feedback;
 
     } catch (...) {
-        return makeUnexpected(Error::INTERNAL_ERROR);
+        return huntmaster::unexpected(Error::INTERNAL_ERROR);
     }
 }
 
 std::vector<RealtimeScorer::SimilarityScore> RealtimeScorer::getScoringHistory(
-    size_t maxCount) const {
-    std::lock_guard<std::mutex> lock(impl_->mutex_);
-
-    const size_t count = (maxCount > 0) ? std::min(maxCount, impl_->scoringHistory_.size())
-                                        : impl_->scoringHistory_.size();
-
-    std::vector<SimilarityScore> result;
-    result.reserve(count);
-
-    auto it = impl_->scoringHistory_.begin();
-    for (size_t i = 0; i < count && it != impl_->scoringHistory_.end(); ++i, ++it) {
-        result.push_back(*it);
+    size_t count) const noexcept {
+    try {
+        std::lock_guard<std::mutex> lock(impl_->mutex_);
+        std::vector<SimilarityScore> history;
+        size_t numToCopy = std::min(count, impl_->scoringHistory_.size());
+        history.reserve(numToCopy);
+        for (size_t i = 0; i < numToCopy; ++i) {
+            history.push_back(impl_->scoringHistory_[i]);
+        }
+        return history;
+    } catch (...) {
+        return {};
     }
-
-    return result;
 }
 
-std::string RealtimeScorer::exportScoreToJson() const {
-    const auto score = getCurrentScore();
+std::string RealtimeScorer::exportScoresToJson() const {
+    std::stringstream ss;
+    ss << "{\n";
+    ss << "  \"overall\": " << impl_->currentScore_.overall << ",\n";
+    ss << "  \"mfcc\": " << impl_->currentScore_.mfcc << ",\n";
+    ss << "  \"volume\": " << impl_->currentScore_.volume << ",\n";
+    ss << "  \"timing\": " << impl_->currentScore_.timing << ",\n";
+    ss << "  \"pitch\": " << impl_->currentScore_.pitch << ",\n";
+    ss << "  \"confidence\": " << impl_->currentScore_.confidence << ",\n";
+    ss << "  \"isReliable\": " << (impl_->currentScore_.isReliable ? "true" : "false") << ",\n";
+    ss << "  \"isMatch\": " << (impl_->currentScore_.isMatch ? "true" : "false") << ",\n";
+    ss << "  \"samplesAnalyzed\": " << impl_->currentScore_.samplesAnalyzed << ",\n";
+    ss << "  \"timestamp\": "
+       << std::chrono::duration_cast<std::chrono::milliseconds>(
+              impl_->currentScore_.timestamp.time_since_epoch())
+              .count()
+       << "\n";
+    ss << "}";
 
-    const auto epoch = score.timestamp.time_since_epoch();
-    const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(epoch).count();
-
-    std::ostringstream oss;
-    oss << std::fixed << std::setprecision(6);
-    oss << "{"
-        << "\"overall\":" << score.overall << ","
-        << "\"mfcc\":" << score.mfcc << ","
-        << "\"volume\":" << score.volume << ","
-        << "\"timing\":" << score.timing << ","
-        << "\"pitch\":" << score.pitch << ","
-        << "\"confidence\":" << score.confidence << ","
-        << "\"isReliable\":" << (score.isReliable ? "true" : "false") << ","
-        << "\"isMatch\":" << (score.isMatch ? "true" : "false") << ","
-        << "\"samplesAnalyzed\":" << score.samplesAnalyzed << ","
-        << "\"timestamp\":" << millis << "}";
-
-    return oss.str();
+    return ss.str();
 }
 
 std::string RealtimeScorer::exportFeedbackToJson() const {
     auto feedbackResult = getRealtimeFeedback();
-    if (!feedbackResult.isOk()) {
-        return "{\"error\":\"No feedback available\"}";
+    if (!feedbackResult.has_value()) {
+        return "{\"error\": \"Failed to get feedback\"}";
     }
-
-    const auto feedback = *feedbackResult;
+    auto& feedback = *feedbackResult;
 
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(6);
     oss << "{"
-        << "\"currentScore\":" << exportScoreToJson() << ","
+        << "\"currentScore\":" << exportScoresToJson() << ","
         << "\"trendingScore\":" << feedback.trendingScore.overall << ","
         << "\"peakScore\":" << feedback.peakScore.overall << ","
         << "\"progressRatio\":" << feedback.progressRatio << ","
@@ -542,47 +625,4 @@ float RealtimeScorer::getAnalysisProgress() const noexcept {
 }
 
 // Utility functions
-float calculateConfidence(size_t samplesAnalyzed, float signalQuality, size_t minSamples) noexcept {
-    if (samplesAnalyzed == 0) return 0.0f;
-
-    // Data quantity factor (0.0-1.0)
-    const float quantityFactor = std::min(1.0f, static_cast<float>(samplesAnalyzed) / minSamples);
-
-    // Signal quality factor (0.0-1.0)
-    const float qualityFactor = std::clamp(signalQuality, 0.0f, 1.0f);
-
-    // Combined confidence with exponential growth for better user experience
-    const float baseConfidence = quantityFactor * qualityFactor;
-    return std::sqrt(baseConfidence);  // Square root for smoother progression
-}
-
-float calculateVolumeSimilarity(float liveRms, float masterRms, float tolerance) noexcept {
-    if (masterRms <= 0.0f) return 0.0f;
-
-    const float ratio = liveRms / masterRms;
-    const float difference = std::abs(1.0f - ratio);
-
-    if (difference <= tolerance) {
-        return 1.0f - (difference / tolerance);
-    } else {
-        // Exponential decay for large differences
-        return std::exp(-(difference - tolerance) * 2.0f);
-    }
-}
-
-float calculateTimingAccuracy(std::span<const float> liveFeatures,
-                              std::span<const float> masterFeatures) noexcept {
-    // Simplified timing analysis - can be enhanced with more sophisticated algorithms
-    // For now, return a placeholder that considers feature vector lengths
-
-    if (liveFeatures.empty() || masterFeatures.empty()) {
-        return 0.5f;  // Neutral score
-    }
-
-    const float lengthRatio = static_cast<float>(liveFeatures.size()) / masterFeatures.size();
-    const float lengthSimilarity = 1.0f - std::abs(1.0f - lengthRatio);
-
-    return std::clamp(lengthSimilarity, 0.0f, 1.0f);
-}
-
 }  // namespace huntmaster

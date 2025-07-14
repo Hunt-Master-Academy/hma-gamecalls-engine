@@ -9,7 +9,6 @@
 #include "Expected.h"
 
 namespace huntmaster {
-
 // Forward declarations
 class MFCCProcessor;
 class DTWComparator;
@@ -33,24 +32,28 @@ class RealtimeScorer {
    public:
     /// Configuration parameters for realtime scoring
     struct Config {
-        float sampleRate = 44100.0f;       ///< Audio sample rate in Hz
-        float updateRateMs = 100.0f;       ///< Score update rate in milliseconds
-        float mfccWeight = 0.5f;           ///< Weight for MFCC similarity (0.0-1.0)
-        float volumeWeight = 0.2f;         ///< Weight for volume matching (0.0-1.0)
-        float timingWeight = 0.2f;         ///< Weight for timing accuracy (0.0-1.0)
-        float pitchWeight = 0.1f;          ///< Weight for pitch similarity (0.0-1.0)
-        float confidenceThreshold = 0.7f;  ///< Minimum confidence for reliable score
-        float minScoreForMatch = 0.005f;   ///< Minimum similarity score for match
-        bool enablePitchAnalysis = false;  ///< Enable pitch-based scoring (future feature)
-        size_t scoringHistorySize = 50;    ///< Number of historical scores to retain
+        float sampleRate = 44100.0f;             ///< Audio sample rate in Hz
+        float updateRateMs = 100.0f;             ///< Score update rate in milliseconds
+        float mfccWeight = 0.5f;                 ///< Weight for MFCC similarity (0.0-1.0)
+        float volumeWeight = 0.2f;               ///< Weight for volume matching (0.0-1.0)
+        float timingWeight = 0.2f;               ///< Weight for timing accuracy (0.0-1.0)
+        float pitchWeight = 0.1f;                ///< Weight for pitch similarity (0.0-1.0)
+        float confidenceThreshold = 0.7f;        ///< Minimum confidence for reliable score
+        float minScoreForMatch = 0.005f;         ///< Minimum similarity score for match
+        bool enablePitchAnalysis = false;        ///< Enable pitch-based scoring (future feature)
+        size_t scoringHistorySize = 50;          ///< Number of historical scores to retain
+        float dtwDistanceScaling = 100.0f;       ///< Scaling factor for DTW distance to similarity
+        size_t minSamplesForConfidence = 22050;  ///< Min samples for confident score (0.5s)
 
         /// Validate configuration parameters
         [[nodiscard]] bool isValid() const noexcept {
             const float totalWeight = mfccWeight + volumeWeight + timingWeight + pitchWeight;
             return sampleRate > 0.0f && updateRateMs > 0.0f &&
-                   std::abs(totalWeight - 1.0f) < 0.01f &&  // Weights should sum to ~1.0
-                   confidenceThreshold >= 0.0f && confidenceThreshold <= 1.0f &&
-                   minScoreForMatch >= 0.0f && scoringHistorySize > 0;
+                   std::abs(totalWeight - 1.0f) <
+                       0.01f &&  // Weights should sum to 1.0 within a tolerance of 0.01
+                   confidenceThreshold >= 0.0f &&
+                   confidenceThreshold <= 1.0f && minScoreForMatch >= 0.0f &&
+                   scoringHistorySize > 0;
         }
     };
 
@@ -81,7 +84,7 @@ class RealtimeScorer {
         bool isImproving = false;       ///< Whether score is trending upward
 
         /// Get quality assessment based on score
-        [[nodiscard]] std::string getQualityDescription(float score) const noexcept {
+        [[nodiscard]] static std::string getQualityDescription(float score) noexcept {
             if (score >= 0.020f) return "Excellent match";
             if (score >= 0.010f) return "Very good match";
             if (score >= 0.005f) return "Good match";
@@ -101,19 +104,24 @@ class RealtimeScorer {
         INTERNAL_ERROR          ///< Internal processing error
     };
 
-    using Result = Expected<SimilarityScore, Error>;
-    using FeedbackResult = Expected<RealtimeFeedback, Error>;
+    using Result = huntmaster::expected<SimilarityScore, Error>;
+    using FeedbackResult = huntmaster::expected<RealtimeFeedback, Error>;
+
+    /**
+     * @brief Default constructor with default configuration
+     */
+    RealtimeScorer();
 
     /**
      * @brief Construct RealtimeScorer with configuration
      * @param config Scoring configuration parameters
      */
-    explicit RealtimeScorer(const Config& config = Config{});
+    explicit RealtimeScorer(const Config& config);
 
     /**
      * @brief Destructor
      */
-    ~RealtimeScorer() = default;
+    ~RealtimeScorer();
 
     // Non-copyable, movable
     RealtimeScorer(const RealtimeScorer&) = delete;
@@ -160,11 +168,17 @@ class RealtimeScorer {
     [[nodiscard]] FeedbackResult getRealtimeFeedback() const noexcept;
 
     /**
-     * @brief Get scoring history
-     * @param maxCount Maximum number of historical scores to return
-     * @return Vector of historical similarity scores (newest first)
+     * @brief Exports the current scoring history and feedback to a JSON string.
+     * @return A string containing the JSON representation of the scores.
      */
-    [[nodiscard]] std::vector<SimilarityScore> getScoringHistory(size_t maxCount = 0) const;
+    std::string exportScoresToJson() const;
+
+    /**
+     * @brief Retrieves the last N scores from the scoring history.
+     * @param count The maximum number of scores to retrieve.
+     * @return A vector of the most recent SimilarityScore objects.
+     */
+    std::vector<SimilarityScore> getScoringHistory(size_t count) const noexcept;
 
     /**
      * @brief Export current score as JSON string
@@ -264,45 +278,5 @@ class RealtimeScorer {
     class Impl;
     std::unique_ptr<Impl> impl_;
 };
-
-/**
- * @brief Calculate confidence score based on data quality and quantity
- *
- * Helper function to calculate confidence in similarity scores based on
- * the amount of data analyzed and signal quality metrics.
- *
- * @param samplesAnalyzed Number of samples used for analysis
- * @param signalQuality Signal quality metric (0.0-1.0)
- * @param minSamples Minimum samples needed for confident analysis
- * @return Confidence score (0.0-1.0)
- */
-[[nodiscard]] float calculateConfidence(size_t samplesAnalyzed, float signalQuality,
-                                        size_t minSamples = 8192) noexcept;
-
-/**
- * @brief Calculate volume similarity between two audio signals
- *
- * Compares RMS levels and dynamic range characteristics between
- * live audio and master call reference.
- *
- * @param liveRms RMS level of live audio
- * @param masterRms RMS level of master call
- * @param tolerance Acceptable difference threshold
- * @return Volume similarity score (0.0-1.0)
- */
-[[nodiscard]] float calculateVolumeSimilarity(float liveRms, float masterRms,
-                                              float tolerance = 0.2f) noexcept;
-
-/**
- * @brief Calculate timing accuracy score
- *
- * Analyzes timing patterns and rhythm consistency compared to master call.
- *
- * @param liveFeatures Live audio feature vector
- * @param masterFeatures Master call feature vector
- * @return Timing accuracy score (0.0-1.0)
- */
-[[nodiscard]] float calculateTimingAccuracy(std::span<const float> liveFeatures,
-                                            std::span<const float> masterFeatures) noexcept;
 
 }  // namespace huntmaster

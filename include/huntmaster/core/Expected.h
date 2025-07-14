@@ -7,15 +7,15 @@
 
 #include "Platform.h"
 
-// Check if huntmaster::expected is available
+// Check if std::expected is available
 #if defined(__cpp_lib_expected) && __cpp_lib_expected >= 202202L
 #include <expected>
 namespace huntmaster {
 template <typename T, typename E>
-using expected = huntmaster::expected<T, E>;
+using expected = std::expected<T, E>;
 
 template <typename E>
-using unexpected = huntmaster::unexpected<E>;
+using unexpected = std::unexpected<E>;
 }  // namespace huntmaster
 #else
 // Provide a simple alternative for platforms without huntmaster::expected

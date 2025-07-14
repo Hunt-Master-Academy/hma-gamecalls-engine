@@ -22,16 +22,34 @@
         .then((Module) => {
           status.textContent = "Module loaded!";
           log("Module loaded successfully");
-          log(
-            "Module object: " + JSON.stringify(Object.keys(Module).slice(0, 10))
-          );
+          log("Module object keys: " + JSON.stringify(Object.keys(Module)));
 
-          // Test the functions
-          const engineId = Module._createEngine();
-          log("createEngine returned: " + engineId);
+          try {
+            log("Attempting to create WASMInterface...");
+            // Correctly instantiate the class exposed via embind
+            const wasmInterface = new Module.WASMInterface();
+            log("WASMInterface instance created successfully.");
 
-          const sum = Module._testFunction(5, 7);
-          log("testFunction(5, 7) returned: " + sum);
+            log("Attempting to initialize engine...");
+            // Call the initialize method on the instance
+            const initialized = wasmInterface.initialize(44100, 1024, 13);
+            log("initialize(44100, 1024, 13) returned: " + initialized);
+
+            if (initialized) {
+              log("Engine initialized successfully!");
+            } else {
+              log("Engine initialization failed.");
+            }
+
+            // Clean up the C++ object to avoid memory leaks
+            wasmInterface.delete();
+            log("WASMInterface instance deleted.");
+          } catch (e) {
+            log("Caught an error during WASM execution: " + e);
+            if (e.stack) {
+              log("Stack trace: " + e.stack);
+            }
+          }
         })
         .catch((err) => {
           status.textContent = "Error loading module";

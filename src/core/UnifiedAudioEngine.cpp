@@ -264,7 +264,7 @@ UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::loadMasterCall(SessionId se
     const std::string masterCallIdStr(masterCallId);
 
     // Try to load cached features first
-    if (loadFeaturesFromFile(*session, masterCallIdStr)) {
+    if (loadFeaturesFromFile(*session, masterCallIdStr) == Status::OK) {
         session->masterCallId = masterCallIdStr;
         return Status::OK;
     }

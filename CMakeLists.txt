@@ -76,7 +76,10 @@ if(EMSCRIPTEN)
     # to propagate the include directory and definitions.
     message(STATUS "Configuring KissFFT as header-only for WASM")
     add_library(kissfft INTERFACE)
-    target_include_directories(kissfft INTERFACE ${PROJECT_LIBS_DIR}/kissfft)
+    target_include_directories(kissfft INTERFACE 
+        ${PROJECT_LIBS_DIR}/kissfft
+        ${PROJECT_LIBS_DIR}/kissfft/tools
+    )
     target_compile_definitions(kissfft INTERFACE kiss_fft_scalar=float)
 else()
     # For native builds, we compile KissFFT as a static library.

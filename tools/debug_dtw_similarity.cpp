@@ -20,11 +20,7 @@ int main() {
     std::cout << "=== DTW Similarity Debugging Tool ===" << std::endl;
 
     HuntmasterAudioEngine& engine = HuntmasterAudioEngine::getInstance();
-    auto initResult = engine.initialize();
-    if (initResult != HuntmasterAudioEngine::EngineStatus::OK) {
-        std::cerr << "Failed to initialize engine" << std::endl;
-        return 1;
-    }
+    engine.initialize();
 
     // Load master call
     std::cout << "Loading master call..." << std::endl;
