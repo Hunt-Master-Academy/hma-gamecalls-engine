@@ -18,9 +18,9 @@
                 "_WIN32"
             ],
             "compilerPath": "C:/ProgramData/miniconda3/envs/huntmaster_final_env/Library/x86_64-w64-mingw32/bin/g++.exe",
-            "cStandard": "c17",
+            "cStandard": "c11",
             "cppStandard": "c++20",
-            "intelliSenseMode": "windows-gcc-x64",
+            "intelliSenseMode": "windows-gcc-x64", // Note: GCC uses 'windows-gcc-x64' and WASM uses 'clang-x64' for IntelliSense. Code analysis results may differ between these modes.
             "configurationProvider": "ms-vscode.cmake-tools"
         },
         {
@@ -40,7 +40,8 @@
             "compilerPath": "${env:EMSDK}/upstream/emscripten/em++.bat",
             "cStandard": "c17",
             "cppStandard": "c++20",
-            "intelliSenseMode": "clang-x64"
+            "intelliSenseMode": "clang-x64",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ],
     "version": 4

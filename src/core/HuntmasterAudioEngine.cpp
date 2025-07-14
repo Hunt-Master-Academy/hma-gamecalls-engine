@@ -142,8 +142,9 @@ void HuntmasterAudioEngine::Impl::initialize() {
     VoiceActivityDetector::Config vad_config;
     vad_ = std::make_unique<VoiceActivityDetector>(vad_config);
 
-    masterCallsPath_ = "../data/master_calls/";
-    featuresPath_ = "../data/features/";
+    // Initialize paths relative to the executable working directory
+    masterCallsPath_ = "data/master_calls/";
+    featuresPath_ = "data/features/";
     recordingsPath_ = "../data/recordings/";
     std::cout << "[HuntmasterEngine] Initialized successfully." << std::endl;
 }
@@ -186,8 +187,12 @@ HuntmasterAudioEngine::EngineStatus HuntmasterAudioEngine::Impl::loadMasterCall(
     }
     DrWavRAII audioData(rawData);
 
+    // Use consistent MFCC configuration
     MFCCProcessor::Config mfcc_config;
     mfcc_config.sample_rate = static_cast<float>(sampleRate);
+    mfcc_config.frame_size = 512;  // Standard frame size
+    mfcc_config.num_coefficients = 13;
+    mfcc_config.num_filters = 26;
     mfccProcessor_ = std::make_unique<MFCCProcessor>(mfcc_config);
 
     std::vector<float> monoSamples(totalPCMFrameCount);
@@ -203,8 +208,8 @@ HuntmasterAudioEngine::EngineStatus HuntmasterAudioEngine::Impl::loadMasterCall(
         std::copy(rawData, rawData + totalPCMFrameCount, monoSamples.begin());
     }
 
-    auto features_result =
-        mfccProcessor_->extractFeaturesFromBuffer(monoSamples, mfcc_config.frame_size / 2);
+    // Use 50% overlap (256 samples hop size for 512 frame size)
+    auto features_result = mfccProcessor_->extractFeaturesFromBuffer(monoSamples, 256);
     if (!features_result) {
         return EngineStatus::PROCESSING_ERROR;
     }
@@ -228,9 +233,12 @@ HuntmasterAudioEngine::Result<int> HuntmasterAudioEngine::Impl::startRealtimeSes
     session.sampleRate = sampleRate;
     session.startTime = std::chrono::steady_clock::now();
 
+    // Use standard MFCC configuration instead of buffer-size dependent
     MFCCProcessor::Config mfcc_config;
     mfcc_config.sample_rate = sampleRate;
-    mfcc_config.frame_size = bufferSize;
+    mfcc_config.frame_size = 512;  // Standard 512-sample frame (11.6ms at 44.1kHz)
+    mfcc_config.num_coefficients = 13;
+    mfcc_config.num_filters = 26;
     mfccProcessor_ = std::make_unique<MFCCProcessor>(mfcc_config);
 
     return {sessionId, EngineStatus::OK};
@@ -246,29 +254,30 @@ HuntmasterAudioEngine::EngineStatus HuntmasterAudioEngine::Impl::processAudioChu
     auto &session = it->second;
     lock.unlock();
 
-    if (!vad_) return EngineStatus::PROCESSING_ERROR;
+    // Directly extract MFCC features from the audio chunk instead of relying on VAD
+    // This fixes the "0 features extracted" issue that was blocking similarity scoring
+    if (!mfccProcessor_) return EngineStatus::PROCESSING_ERROR;
 
-    // Use a fixed window size or retrieve from VAD config if available
-    const size_t windowSamples = 512;  // Set this to the correct window size used by your VAD
-    if (windowSamples == 0) return EngineStatus::OK;
+    // Store the audio for feature extraction
+    session.currentSegmentBuffer.insert(session.currentSegmentBuffer.end(), audioBuffer.begin(),
+                                        audioBuffer.end());
 
-    for (size_t i = 0; i + windowSamples <= audioBuffer.size(); i += windowSamples) {
-        auto window = audioBuffer.subspan(i, windowSamples);
-        auto vad_result = vad_->processWindow(window);
+    // Process features from accumulated buffer
+    extractMFCCFeatures(session);
 
-        if (vad_result) {
-            bool wasInSoundSegment = session.isInSoundSegment;
-            session.isInSoundSegment = vad_result->is_active;
-
-            if (session.isInSoundSegment) {
-                session.currentSegmentBuffer.insert(session.currentSegmentBuffer.end(),
-                                                    window.begin(), window.end());
-            } else if (wasInSoundSegment) {
-                extractMFCCFeatures(session);
-                session.currentSegmentBuffer.clear();
+    // Optional: Keep VAD for future enhancements, but don't gate feature extraction
+    if (vad_) {
+        const size_t windowSamples = 512;
+        for (size_t i = 0; i + windowSamples <= audioBuffer.size(); i += windowSamples) {
+            auto window = audioBuffer.subspan(i, windowSamples);
+            auto vad_result = vad_->processWindow(window);
+            if (vad_result) {
+                session.isInSoundSegment = vad_result->is_active;
+                // VAD result available for future use, but not blocking feature extraction
             }
         }
     }
+
     return EngineStatus::OK;
 }
 
@@ -276,12 +285,24 @@ void HuntmasterAudioEngine::Impl::extractMFCCFeatures(RealtimeSessionState &sess
     if (!mfccProcessor_ || session.currentSegmentBuffer.empty()) {
         return;
     }
-    auto features_result = mfccProcessor_->extractFeaturesFromBuffer(
-        session.currentSegmentBuffer,
-        static_cast<int>(session.sampleRate) / 50);  // e.g., 20ms frames
+
+    // Use hop size that's compatible with frame size (50% overlap is standard)
+    size_t frameSize = 512;          // Standard MFCC frame size
+    size_t hopSize = frameSize / 2;  // 50% overlap (256 samples)
+
+    auto features_result =
+        mfccProcessor_->extractFeaturesFromBuffer(session.currentSegmentBuffer, hopSize);
     if (features_result) {
         session.features.insert(session.features.end(), features_result->begin(),
                                 features_result->end());
+    }
+
+    // Clear the buffer to prevent unbounded memory growth
+    // Keep only the last frame for continuity in streaming processing
+    if (session.currentSegmentBuffer.size() > frameSize) {
+        std::vector<float> overlap(session.currentSegmentBuffer.end() - frameSize,
+                                   session.currentSegmentBuffer.end());
+        session.currentSegmentBuffer = std::move(overlap);
     }
 }
 

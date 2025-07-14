@@ -54,9 +54,11 @@ float DTWProcessor::calculateDistance(const std::vector<std::vector<float>> &seq
     }
 
     // The final value at the end of the matrix is the total cost of the optimal path.
-    // We return the square root to get the true Euclidean distance, though for relative
-    // comparisons, the squared distance is often sufficient.
-    return std::sqrt(currentRow[m]);
+    // For meaningful similarity comparison, normalize by the sequence length
+    float totalDistance = std::sqrt(currentRow[m]);
+    float normalizedDistance = totalDistance / std::sqrt(static_cast<float>(n * m));
+
+    return normalizedDistance;
 }
 
 }  // namespace huntmaster

@@ -156,6 +156,11 @@ file(GLOB HUNTMASTER_CORE_SOURCES
     "${PROJECT_SOURCE_DIR}/core/*.cpp"
 )
 
+# Ensure UnifiedAudioEngine is included (should be covered by glob but making explicit)
+list(APPEND HUNTMASTER_CORE_SOURCES 
+    "${PROJECT_SOURCE_DIR}/core/UnifiedAudioEngine.cpp"
+)
+
 
 # Create the static library for the engine core.
 add_library(HuntmasterEngine STATIC ${HUNTMASTER_CORE_SOURCES})
@@ -322,6 +327,10 @@ else()
         
         add_executable(RecorderTest "${PROJECT_TESTS_DIR}/unit/test_recorder.cpp")
         target_link_libraries(RecorderTest PRIVATE HuntmasterEngine)
+        
+        # Add UnifiedAudioEngine test
+        add_executable(UnifiedEngineTest "${PROJECT_TESTS_DIR}/unit/test_unified_engine.cpp")
+        target_link_libraries(UnifiedEngineTest PRIVATE HuntmasterEngine gtest gtest_main)
         
         message(STATUS "  -- Standalone diagnostic tools configured.")
 

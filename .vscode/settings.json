@@ -1,7 +1,13 @@
 {
     // Terminal Configuration - Auto-activate conda environment
-    "terminal.integrated.defaultProfile.windows": "Command Prompt with Conda",
+    "terminal.integrated.defaultProfile.windows": "Ubuntu (WSL)",
     "terminal.integrated.profiles.windows": {
+        "Ubuntu (WSL)": {
+            "path": "wsl.exe",
+            "args": ["-d", "Ubuntu"],
+            "icon": "terminal-ubuntu",
+            "overrideName": true
+        },
         "Command Prompt with Conda": {
             "path": "C:\\Windows\\System32\\cmd.exe",
             "args": ["/k", "C:\\ProgramData\\miniconda3\\Scripts\\activate.bat && conda activate huntmaster_final_env"],
@@ -18,6 +24,7 @@
             "icon": "terminal-bash"
         }
     },
+    "github.copilot.editor.enableAutoCompletions": true,
 
     // Python Configuration
     "python.defaultInterpreterPath": "C:\\ProgramData\\miniconda3\\envs\\huntmaster_final_env\\python.exe",
