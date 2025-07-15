@@ -99,8 +99,8 @@ AudioLevelProcessor::Result AudioLevelProcessor::processAudio(std::span<const fl
             for (int ch = 0; ch < numChannels; ++ch) {
                 const size_t index = frame * numChannels + ch;
                 if (index < numSamples) {
-                    const float sample = std::abs(samples[index]);
-                    framePeak = std::max(framePeak, sample);
+                    const float sample = samples[index];
+                    framePeak = std::max(framePeak, std::abs(sample));
                     frameSum += sample;
                 }
             }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="1" failures="1" disabled="0" errors="0" time="0." timestamp="2025-07-14T20:28:20.562" name="AllTests">
+  <testsuite name="VoiceActivityDetectorTest" tests="1" failures="1" disabled="0" skipped="0" errors="0" time="0." timestamp="2025-07-14T20:28:20.562">
+    <testcase name="VoiceIsDetectedAfterMinDuration" file="/mnt/e/develop/Huntmaster/huntmaster-engine/tests/unit/VoiceActivityDetectorTest.cpp" line="41" status="run" result="completed" time="0." timestamp="2025-07-14T20:28:20.562" classname="VoiceActivityDetectorTest">
+      <failure message="/mnt/e/develop/Huntmaster/huntmaster-engine/tests/unit/VoiceActivityDetectorTest.cpp:50&#x0A;Value of: result1-&gt;is_active&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/mnt/e/develop/Huntmaster/huntmaster-engine/tests/unit/VoiceActivityDetectorTest.cpp:50
+Value of: result1->is_active
+  Actual: false
+Expected: true
+]]></failure>
+      <failure message="/mnt/e/develop/Huntmaster/huntmaster-engine/tests/unit/VoiceActivityDetectorTest.cpp:55&#x0A;Value of: result2-&gt;is_active&#x0A;  Actual: false&#x0A;Expected: true&#x0A;" type=""><![CDATA[/mnt/e/develop/Huntmaster/huntmaster-engine/tests/unit/VoiceActivityDetectorTest.cpp:55
+Value of: result2->is_active
+  Actual: false
+Expected: true
+]]></failure>
+    </testcase>
+  </testsuite>
+</testsuites>

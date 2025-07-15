@@ -15,6 +15,11 @@ class AudioLevelProcessorTest : public ::testing::Test {
         config_.sampleRate = 44100.0f;
         config_.updateRateMs = 50.0f;
         config_.historySize = 10;
+        // Use very fast attack/release times for testing (almost no smoothing)
+        config_.rmsAttackTimeMs = 0.001f;
+        config_.rmsReleaseTimeMs = 0.001f;
+        config_.peakAttackTimeMs = 0.001f;
+        config_.peakReleaseTimeMs = 0.001f;
         processor_ = std::make_unique<AudioLevelProcessor>(config_);
     }
 

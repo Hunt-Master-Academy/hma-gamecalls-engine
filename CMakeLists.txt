@@ -38,10 +38,7 @@ set(PROJECT_TOOLS_DIR ${PROJECT_ROOT_DIR}/tools)
 set(PROJECT_WEB_DIR ${PROJECT_ROOT_DIR}/web)
 
 # --- Build Options ---
-# Provide options to controoption(HUNTMASTER_BUILD_TESTS "Enable building of unit tests and benchmarks" ON)
-option(HUNTMASTER_BUILD_TOOLS "Enable building of command-line tools" ON)
-
-# This is useful for faster configuration and builds when tools or tests are not needed.
+# Provide options to control the build process.
 option(HUNTMASTER_BUILD_TESTS "Enable building of unit tests and benchmarks" ON)
 option(HUNTMASTER_BUILD_TOOLS "Enable building of command-line tools" ON)
 
@@ -278,7 +275,7 @@ else()
     endif()
 
     # --- Unit Testing and Benchmarking Suite ---
-    if(BUILD_TESTING)
+    if(HUNTMASTER_BUILD_TESTS)
         message(STATUS "Configuring unit tests and benchmarks...")
         enable_testing()
 

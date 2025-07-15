@@ -10,7 +10,7 @@ using namespace huntmaster;
 
 // Use a test fixture for better structure and to avoid code duplication.
 class VoiceActivityDetectorTest : public ::testing::Test {
-protected:
+   protected:
     void SetUp() override {
         // This configuration is used by default for all tests in this fixture.
         config_.energy_threshold = 0.01f;
@@ -22,9 +22,7 @@ protected:
         vad_ = std::make_unique<VoiceActivityDetector>(config_);
     }
 
-    std::vector<float> MakeAudio(size_t n, float value) {
-        return std::vector<float>(n, value);
-    }
+    std::vector<float> MakeAudio(size_t n, float value) { return std::vector<float>(n, value); }
 
     VoiceActivityDetector::Config config_;
     std::unique_ptr<VoiceActivityDetector> vad_;
@@ -47,11 +45,15 @@ TEST_F(VoiceActivityDetectorTest, VoiceIsDetectedAfterMinDuration) {
     // so the VAD should become active on the very first voice frame.
     auto result1 = vad_->processWindow(voice);
     ASSERT_TRUE(result1.has_value());
+    std::cout << "TEST DEBUG: result1->energy_level = " << result1->energy_level
+              << ", is_active = " << result1->is_active << std::endl;
     EXPECT_TRUE(result1->is_active);
 
     // Processing a second window should keep the state active.
     auto result2 = vad_->processWindow(voice);
     ASSERT_TRUE(result2.has_value());
+    std::cout << "TEST DEBUG: result2->energy_level = " << result2->energy_level
+              << ", is_active = " << result2->is_active << std::endl;
     EXPECT_TRUE(result2->is_active);
     EXPECT_GT(result2->energy_level, 0.01f);
 }
@@ -66,9 +68,11 @@ TEST_F(VoiceActivityDetectorTest, PreAndPostBuffering) {
     ASSERT_TRUE(vad_->processWindow(voice).has_value()) << "First voice frame processing failed";
     ASSERT_TRUE(vad_->processWindow(voice).has_value()) << "Second voice frame processing failed";
     // Voice offset (back to silence)
-    ASSERT_TRUE(vad_->processWindow(silence).has_value()) << "Post-buffer window 1 processing failed";
+    ASSERT_TRUE(vad_->processWindow(silence).has_value())
+        << "Post-buffer window 1 processing failed";
     EXPECT_TRUE(vad_->isVoiceActive());
-    ASSERT_TRUE(vad_->processWindow(silence).has_value()) << "Post-buffer window 2 processing failed";
+    ASSERT_TRUE(vad_->processWindow(silence).has_value())
+        << "Post-buffer window 2 processing failed";
     EXPECT_TRUE(vad_->isVoiceActive());
 
     // Post-buffer period (40ms) has now elapsed after 2 windows (20ms each).
