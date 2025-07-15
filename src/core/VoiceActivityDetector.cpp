@@ -5,8 +5,6 @@
 #include <cassert>
 #include <cmath>
 #include <deque>
-#include <fstream>
-#include <iostream>
 #include <numeric>
 #include <stdexcept>
 
@@ -128,37 +126,15 @@ VoiceActivityDetector& VoiceActivityDetector::operator=(VoiceActivityDetector&&)
 
 huntmaster::expected<VADResult, VADError> VoiceActivityDetector::processWindow(
     std::span<const float> audio) {
-    // Add diagnostic at the start
-    // printf("PUBLIC processWindow called with %zu samples\n", audio.size());
-    // fflush(stdout);
-
-    // Write to a file to debug
-    // std::ofstream debug_file("/tmp/vad_debug.txt", std::ios::app);
-    // debug_file << "PUBLIC processWindow called with " << audio.size() << " samples" << std::endl;
-    // debug_file.close();
-
     if (audio.empty()) {
-        // printf("Audio is empty, returning error\n");
         return huntmaster::unexpected(VADError::INVALID_INPUT);
     }
 
-    // Check if pImpl exists
     if (!pimpl_) {
-        // printf("ERROR: pimpl_ is null!\n");
-        // fflush(stdout);
         return huntmaster::unexpected(VADError::NOT_INITIALIZED);
     }
 
-    // printf("About to call pimpl_->process()\n");
-    // fflush(stdout);
-
-    // Call the implementation
     auto result = pimpl_->process(audio);
-
-    // printf("PUBLIC processWindow returning: energy=%f, is_active=%d\n", result.energy_level,
-    //        result.is_active);
-    // fflush(stdout);
-
     return result;
 }
 

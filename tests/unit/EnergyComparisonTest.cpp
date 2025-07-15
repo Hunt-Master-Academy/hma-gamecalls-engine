@@ -13,7 +13,7 @@
 using namespace huntmaster;
 using namespace std::chrono_literals;
 
-TEST(EnergyComparisonTest, DebugEnergyComparison) {
+TEST(EnergyComparisonTest, ComprehensiveEnergyAndStateValidation) {
     std::cout << "=== Starting EnergyComparisonTest ===" << std::endl;
 
     // Create VAD with specific configuration

@@ -31,7 +31,7 @@ TEST_F(VADThresholdTest, CheckThresholdValues) {
     ASSERT_TRUE(result.has_value());
 
     // The energy should be 0.04 (0.2 * 0.2 = 0.04)
-    EXPECT_EQ(result.value().energy_level, 0.04f);
+    EXPECT_NEAR(result.value().energy_level, 0.04f, 1e-6f);
 
     // Print the actual values for debugging
     std::cout << "Energy: " << result.value().energy_level << std::endl;

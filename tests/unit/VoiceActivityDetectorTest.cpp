@@ -45,15 +45,11 @@ TEST_F(VoiceActivityDetectorTest, VoiceIsDetectedAfterMinDuration) {
     // so the VAD should become active on the very first voice frame.
     auto result1 = vad_->processWindow(voice);
     ASSERT_TRUE(result1.has_value());
-    std::cout << "TEST DEBUG: result1->energy_level = " << result1->energy_level
-              << ", is_active = " << result1->is_active << std::endl;
     EXPECT_TRUE(result1->is_active);
 
     // Processing a second window should keep the state active.
     auto result2 = vad_->processWindow(voice);
     ASSERT_TRUE(result2.has_value());
-    std::cout << "TEST DEBUG: result2->energy_level = " << result2->energy_level
-              << ", is_active = " << result2->is_active << std::endl;
     EXPECT_TRUE(result2->is_active);
     EXPECT_GT(result2->energy_level, 0.01f);
 }
