@@ -37,9 +37,6 @@ class VoiceActivityDetector::Impl {
         const auto now = std::chrono::steady_clock::now();
         state_change_time_ = now;
         current_time_ = now;
-        std::cout << "VoiceActivityDetector::Impl constructed with threshold: "
-                  << config.energy_threshold << std::endl;
-        std::cout.flush();
     }
 
     float computeEnergy(std::span<const float> audio) {
@@ -55,13 +52,9 @@ class VoiceActivityDetector::Impl {
         // For testing and initial implementation, use the configured threshold
         // In production, this could be enhanced with adaptive behavior
         adaptive_threshold_ = config_.energy_threshold;
-        std::cout << "updateAdaptiveThreshold: set to " << adaptive_threshold_ << std::endl;
-        std::cout.flush();
     }
 
     VADResult process(std::span<const float> audio) {
-        printf("process() called with audio size: %zu\n", audio.size());
-        fflush(stdout);
         using namespace std::chrono;
 
         // Advance internal time by the duration of the audio window
@@ -69,18 +62,10 @@ class VoiceActivityDetector::Impl {
         const auto now = current_time_;
 
         const float energy = computeEnergy(audio);
-        printf("energy computed: %f\n", energy);
-        fflush(stdout);
         updateAdaptiveThreshold(energy);
 
         bool is_currently_active = energy > adaptive_threshold_;
         VADResult result{.energy_level = energy};
-
-        // Debug output for test failures
-        printf("VAD Debug: energy=%f, threshold=%f, active=%d, state=%d, energy>threshold=%d\n",
-               energy, adaptive_threshold_, is_currently_active, static_cast<int>(state_),
-               (energy > adaptive_threshold_));
-        fflush(stdout);
 
         switch (state_) {
             case VADState::SILENCE:
@@ -97,14 +82,7 @@ class VoiceActivityDetector::Impl {
                     // Calculate total duration of consecutive voice frames
                     const auto candidate_duration =
                         frames_in_candidate_state_ * config_.window_duration;
-                    std::cout << "VOICE_CANDIDATE: frames=" << frames_in_candidate_state_
-                              << ", candidate_duration=" << candidate_duration.count() << "ms"
-                              << ", min_sound_duration=" << config_.min_sound_duration.count()
-                              << "ms" << std::endl;
-                    std::cout.flush();
                     if (candidate_duration >= config_.min_sound_duration) {
-                        std::cout << "Transitioning to VOICE_ACTIVE!" << std::endl;
-                        std::cout.flush();
                         state_ = VADState::VOICE_ACTIVE;
                     }
                 } else {
@@ -150,40 +128,36 @@ VoiceActivityDetector& VoiceActivityDetector::operator=(VoiceActivityDetector&&)
 
 huntmaster::expected<VADResult, VADError> VoiceActivityDetector::processWindow(
     std::span<const float> audio) {
-    // This should definitely cause a crash if called!
-    throw std::runtime_error("processWindow DEFINITELY CALLED!");
+    // Add diagnostic at the start
+    // printf("PUBLIC processWindow called with %zu samples\n", audio.size());
+    // fflush(stdout);
 
     // Write to a file to debug
-    std::ofstream debug_file("/tmp/vad_debug.txt", std::ios::app);
-    debug_file << "processWindow called with " << audio.size() << " samples" << std::endl;
-    debug_file.close();
-
-    printf("processWindow called with %zu samples\n", audio.size());
-    fflush(stdout);
+    // std::ofstream debug_file("/tmp/vad_debug.txt", std::ios::app);
+    // debug_file << "PUBLIC processWindow called with " << audio.size() << " samples" << std::endl;
+    // debug_file.close();
 
     if (audio.empty()) {
-        printf("Audio is empty, returning error\n");
+        // printf("Audio is empty, returning error\n");
         return huntmaster::unexpected(VADError::INVALID_INPUT);
     }
 
-    printf("Audio not empty, pimpl_ is %s\n", (pimpl_ ? "valid" : "null"));
-    fflush(stdout);
-
+    // Check if pImpl exists
     if (!pimpl_) {
-        printf("ERROR: pimpl_ is null!\n");
-        return huntmaster::unexpected(VADError::INVALID_INPUT);
+        // printf("ERROR: pimpl_ is null!\n");
+        // fflush(stdout);
+        return huntmaster::unexpected(VADError::NOT_INITIALIZED);
     }
 
-    printf("About to call pimpl_->process()\n");
-    fflush(stdout);
+    // printf("About to call pimpl_->process()\n");
+    // fflush(stdout);
 
+    // Call the implementation
     auto result = pimpl_->process(audio);
 
-    printf("pimpl_->process() returned: energy=%f, is_active=%d\n", result.energy_level,
-           result.is_active);
-    printf("Result details - energy: %f, is_active: %s\n", result.energy_level,
-           (result.is_active ? "true" : "false"));
-    fflush(stdout);
+    // printf("PUBLIC processWindow returning: energy=%f, is_active=%d\n", result.energy_level,
+    //        result.is_active);
+    // fflush(stdout);
 
     return result;
 }
