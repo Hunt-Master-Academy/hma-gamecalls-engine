@@ -41,7 +41,7 @@ TEST_F(AudioLevelProcessorTest, SilenceProcessingTest) {
 
     auto result = processor_->processAudio(silentAudio, 1);
 
-    ASSERT_TRUE(result.isOk());
+    ASSERT_TRUE(result.has_value());
 
     auto measurement = *result;
     EXPECT_EQ(measurement.rmsLinear, 0.0f);
@@ -64,7 +64,7 @@ TEST_F(AudioLevelProcessorTest, SineWaveProcessingTest) {
 
     auto result = processor_->processAudio(sineWave, 1);
 
-    ASSERT_TRUE(result.isOk());
+    ASSERT_TRUE(result.has_value());
 
     auto measurement = *result;
 
@@ -97,7 +97,7 @@ TEST_F(AudioLevelProcessorTest, MultiChannelProcessingTest) {
 
     auto result = processor_->processAudio(stereoAudio, numChannels);
 
-    ASSERT_TRUE(result.isOk());
+    ASSERT_TRUE(result.has_value());
 
     auto measurement = *result;
 
@@ -137,7 +137,7 @@ TEST_F(AudioLevelProcessorTest, JsonExportTest) {
     // Process some audio
     std::vector<float> audio(512, 0.5f);
     auto result = processor_->processAudio(audio, 1);
-    ASSERT_TRUE(result.isOk());
+    ASSERT_TRUE(result.has_value());
 
     // Test current level JSON export
     std::string json = processor_->exportToJson();
@@ -206,26 +206,26 @@ TEST_F(AudioLevelProcessorTest, ErrorHandlingTest) {
     // Test empty audio data
     std::vector<float> emptyAudio;
     auto result = processor_->processAudio(emptyAudio, 1);
-    EXPECT_FALSE(result.isOk());
+    EXPECT_FALSE(result.has_value());
     EXPECT_EQ(result.error(), AudioLevelProcessor::Error::INVALID_AUDIO_DATA);
 
     // Test invalid number of channels
     std::vector<float> audio(512, 0.5f);
     result = processor_->processAudio(audio, 0);
-    EXPECT_FALSE(result.isOk());
+    EXPECT_FALSE(result.has_value());
     EXPECT_EQ(result.error(), AudioLevelProcessor::Error::INVALID_AUDIO_DATA);
 
     result = processor_->processAudio(audio, 10);  // Too many channels
-    EXPECT_FALSE(result.isOk());
+    EXPECT_FALSE(result.has_value());
     EXPECT_EQ(result.error(), AudioLevelProcessor::Error::INVALID_AUDIO_DATA);
 }
 
 // Test utility functions
 TEST(AudioLevelUtilityTest, LinearToDbConversionTest) {
     // Test known conversions
-    EXPECT_FLOAT_EQ(linearToDb(1.0f), 0.0f);                       // Full scale = 0 dB
-    EXPECT_FLOAT_EQ(linearToDb(0.5f), 20.0f * std::log10f(0.5f));  // Half amplitude
-    EXPECT_FLOAT_EQ(linearToDb(0.0f), -60.0f);                     // Silence = floor
+    EXPECT_FLOAT_EQ(linearToDb(1.0f), 0.0f);                      // Full scale = 0 dB
+    EXPECT_FLOAT_EQ(linearToDb(0.5f), 20.0f * std::log10(0.5f));  // Half amplitude
+    EXPECT_FLOAT_EQ(linearToDb(0.0f), -60.0f);                    // Silence = floor
 
     // Test clamping
     EXPECT_FLOAT_EQ(linearToDb(2.0f, -60.0f, 6.0f), 6.0f);     // Clamp to ceiling

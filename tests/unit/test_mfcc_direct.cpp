@@ -9,7 +9,7 @@
 using huntmaster::HuntmasterAudioEngine;
 
 // Generate a test sine wave (same as in existing test)
-std::vector<float> generateSineWave(float frequency, float duration, float sampleRate) {
+static std::vector<float> generateSineWave(float frequency, float duration, float sampleRate) {
     int numSamples = static_cast<int>(duration * sampleRate);
     std::vector<float> samples(numSamples);
 
