@@ -1,6 +1,8 @@
 // File: MFCCProcessor.cpp
 #include "huntmaster/core/MFCCProcessor.h"
 
+#include "huntmaster/core/DebugLogger.h"
+
 #ifdef HAVE_KISSFFT
 #include "../kissfft/tools/kiss_fftr.h"
 #endif
@@ -12,6 +14,22 @@
 // Define M_PI if not defined (common issue with some compilers)
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
+#endif
+
+// Enable debug output for MFCCProcessor
+#define DEBUG_MFCC_PROCESSOR 0
+
+// Debug logging macros
+#if DEBUG_MFCC_PROCESSOR
+#define MFCC_LOG_DEBUG(msg) std::cout << "[MFCC DEBUG] " << msg << std::endl
+#define MFCC_LOG_ERROR(msg) std::cerr << "[MFCC ERROR] " << msg << std::endl
+#else
+#define MFCC_LOG_DEBUG(msg) \
+    do {                    \
+    } while (0)
+#define MFCC_LOG_ERROR(msg) \
+    do {                    \
+    } while (0)
 #endif
 
 namespace huntmaster {
@@ -177,12 +195,25 @@ MFCCProcessor& MFCCProcessor::operator=(MFCCProcessor&&) noexcept = default;
 
 huntmaster::expected<MFCCProcessor::FeatureVector, MFCCError> MFCCProcessor::extractFeatures(
     std::span<const float> audio_frame) {
-    return pimpl_->extractFeatures(audio_frame);
+    MFCC_LOG_DEBUG("extractFeatures called with frame size: " + std::to_string(audio_frame.size()));
+    auto result = pimpl_->extractFeatures(audio_frame);
+    if (result.has_value()) {
+        MFCC_LOG_DEBUG("extractFeatures successful, feature vector size: " +
+                       std::to_string(result->size()));
+    } else {
+        MFCC_LOG_ERROR("extractFeatures failed with error");
+    }
+    return result;
 }
 
 huntmaster::expected<MFCCProcessor::FeatureMatrix, MFCCError>
 MFCCProcessor::extractFeaturesFromBuffer(std::span<const float> audio_buffer, size_t hop_size) {
-    if (audio_buffer.empty()) return huntmaster::unexpected(MFCCError::INVALID_INPUT);
+    MFCC_LOG_DEBUG("extractFeaturesFromBuffer called with buffer size: " +
+                   std::to_string(audio_buffer.size()) + ", hop_size: " + std::to_string(hop_size));
+    if (audio_buffer.empty()) {
+        MFCC_LOG_ERROR("extractFeaturesFromBuffer: empty buffer provided");
+        return huntmaster::unexpected(MFCCError::INVALID_INPUT);
+    }
 
     FeatureMatrix all_features;
     const size_t frame_size = pimpl_->config.frame_size;

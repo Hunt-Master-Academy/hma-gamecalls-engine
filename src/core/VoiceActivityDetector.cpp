@@ -8,6 +8,11 @@
 #include <numeric>
 #include <stdexcept>
 
+#include "huntmaster/core/DebugLogger.h"
+
+// Enable debug output for VoiceActivityDetector
+#define DEBUG_VAD 0
+
 namespace huntmaster {
 
 // Internal state machine for VAD logic

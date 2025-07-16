@@ -26,17 +26,79 @@ This engine is currently under active development for its Minimum Viable Product
 
 ## ✨ Features
 
-MFCC Extraction: Converts raw audio signals into Mel-Frequency Cepstral Coefficients, a standard representation for audio feature analysis.
+**MFCC Extraction**: Converts raw audio signals into Mel-Frequency Cepstral Coefficients, a standard representation for audio feature analysis.
 
-Offline Processing: Designed to pre-process and store feature data from master call audio files.
+**Offline Processing**: Designed to pre-process and store feature data from master call audio files.
 
-Real-time Analysis: (In Progress) Will support processing live audio chunks from a microphone.
+**Real-time Analysis**: (In Progress) Will support processing live audio chunks from a microphone.
 
-Audio Comparison: (In Progress) Will use Dynamic Time Warping (DTW) to compare the features of a user's call against a master call.
+**Audio Comparison**: (In Progress) Will use Dynamic Time Warping (DTW) to compare the features of a user's call against a master call.
 
-Cross-Platform: Built with CMake to support compilation across different operating systems.
+**Cross-Platform**: Built with CMake to support compilation across different operating systems.
 
-Static Library: Designed to be compiled into a .lib or .a file for easy integration with other projects.
+**Static Library**: Designed to be compiled into a .lib or .a file for easy integration with other projects.
+
+**Comprehensive Debugging Infrastructure**: Thread-safe, component-specific debugging system with 5 log levels and performance monitoring across all tools.
+
+## 🔧 Debugging & Development Tools
+
+The Huntmaster Engine includes a comprehensive debugging infrastructure with 10 enhanced tools, each supporting detailed debugging capabilities:
+
+### Debug Features
+
+- **Thread-safe logging** with component-specific levels
+- **5 Debug levels**: ERROR, WARN, INFO, DEBUG, TRACE
+- **14 Component categories** for targeted debugging
+- **Performance monitoring** with timing metrics
+- **Console and file output** options
+- **Configurable timestamps** and thread IDs
+
+### Available Tools
+
+1. **interactive_recorder** - Interactive audio recording with live monitoring
+2. **debug_dtw_similarity** - DTW similarity analysis debugging
+3. **simple_unified_test** - Core engine functionality testing
+4. **test_mfcc_debugging** - MFCC feature extraction analysis
+5. **analyze_recording** - Audio file analysis tool
+6. **audio_trimmer** - Audio preprocessing utility
+7. **audio_visualization** - Audio data visualization
+8. **detailed_analysis** - Comprehensive audio analysis
+9. **generate_features** - Feature extraction tool
+10. **real_time_recording_monitor** - Real-time audio monitoring
+
+### Debug Usage Examples
+
+```bash
+# Basic debugging
+./interactive_recorder --debug
+
+# Trace-level debugging with performance metrics
+./interactive_recorder --trace --performance
+
+# Component-specific debugging
+./interactive_recorder --engine-debug --recording-debug
+
+# Help for any tool
+./interactive_recorder --help
+```
+
+### Debug Components
+
+- **GENERAL** - General system operations
+- **UNIFIED_ENGINE** - Core engine functionality
+- **MFCC_PROCESSOR** - MFCC feature extraction
+- **DTW_COMPARATOR** - Dynamic Time Warping comparison
+- **VAD** - Voice Activity Detection
+- **REALTIME_PROCESSOR** - Real-time processing
+- **AUDIO_BUFFER_POOL** - Audio buffer management
+- **AUDIO_LEVEL_PROCESSOR** - Audio level processing
+- **WAVEFORM_GENERATOR** - Audio waveform generation
+- **REALTIME_SCORER** - Real-time scoring
+- **TOOLS** - Development tools
+- **AUDIO_ENGINE** - Audio engine operations
+- **FEATURE_EXTRACTION** - Feature extraction processes
+- **SIMILARITY_ANALYSIS** - Similarity analysis algorithms
+- **PERFORMANCE** - Performance monitoring and metrics
 
 ## Dependencies
 

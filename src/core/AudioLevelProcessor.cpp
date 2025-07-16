@@ -7,6 +7,11 @@
 #include <mutex>
 #include <sstream>
 
+#include "huntmaster/core/DebugLogger.h"
+
+// Enable debug output for AudioLevelProcessor
+#define DEBUG_AUDIO_LEVEL_PROCESSOR 0
+
 namespace huntmaster {
 
 /// Implementation details for AudioLevelProcessor
@@ -70,15 +75,21 @@ AudioLevelProcessor::~AudioLevelProcessor() = default;
 
 AudioLevelProcessor::Result AudioLevelProcessor::processAudio(std::span<const float> samples,
                                                               int numChannels) noexcept {
+    // AUDIO_LOG_DEBUG("processAudio called with " + std::to_string(samples.size()) + " samples, " +
+    //                 std::to_string(numChannels) + " channels");
+
     if (!impl_->initialized_.load()) {
+        // AUDIO_LOG_ERROR("processAudio: processor not initialized");
         return huntmaster::unexpected(Error::INITIALIZATION_FAILED);
     }
 
     if (samples.empty()) {
+        // AUDIO_LOG_ERROR("processAudio: empty samples provided");
         return huntmaster::unexpected(Error::INVALID_AUDIO_DATA);
     }
 
     if (numChannels <= 0 || numChannels > 8) {
+        // AUDIO_LOG_ERROR("processAudio: invalid channel count: " + std::to_string(numChannels));
         return huntmaster::unexpected(Error::INVALID_AUDIO_DATA);
     }
 
@@ -241,10 +252,12 @@ std::string AudioLevelProcessor::exportHistoryToJson(size_t maxCount) const {
 }
 
 void AudioLevelProcessor::reset() noexcept {
+    // AUDIO_LOG_DEBUG("reset called - clearing all audio level data");
     impl_->currentRmsLinear_.store(0.0f);
     impl_->currentPeakLinear_.store(0.0f);
     impl_->currentRmsDb_.store(impl_->config_.dbFloor);
     impl_->currentPeakDb_.store(impl_->config_.dbFloor);
+    // AUDIO_LOG_DEBUG("reset - atomic values reset");
 
     {
         std::lock_guard<std::mutex> lock(impl_->mutex_);

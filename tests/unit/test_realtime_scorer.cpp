@@ -5,6 +5,7 @@
 #include <fstream>
 #include <vector>
 
+#include "huntmaster/core/DebugLogger.h"
 #include "huntmaster/core/RealtimeScorer.h"
 
 namespace huntmaster {
@@ -306,35 +307,71 @@ TEST_F(RealtimeScorerTest, JsonExportTest) {
 */
 
 TEST_F(RealtimeScorerTest, ResetFunctionalityTest) {
+    // Set debug level to see detailed logging
+    huntmaster::DebugLogger::setLogLevel(huntmaster::LogLevel::DEBUG);
+
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Starting test");
+
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Setting master call");
     ASSERT_TRUE(scorer_->setMasterCall(testMasterCallPath_));
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Master call set successfully");
 
     // Process some audio and generate history
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Processing audio to generate history");
     for (int i = 0; i < 3; ++i) {
+        TEST_LOG_DEBUG("ResetFunctionalityTest: Processing audio chunk " + std::to_string(i));
         std::vector<float> audio(1024, 0.5f);
-        scorer_->processAudio(audio, 1);
+        auto result = scorer_->processAudio(audio, 1);
+        TEST_LOG_DEBUG("ResetFunctionalityTest: Audio chunk " + std::to_string(i) + " processed");
     }
+    TEST_LOG_DEBUG("ResetFunctionalityTest: All audio chunks processed");
 
     // Verify we have history and progress
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Getting scoring history before reset");
     auto historyBefore = scorer_->getScoringHistory(3);
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Got " + std::to_string(historyBefore.size()) +
+                   " history items");
+
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Getting analysis progress before reset");
     float progressBefore = scorer_->getAnalysisProgress();
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Progress before reset: " +
+                   std::to_string(progressBefore));
 
     EXPECT_GT(historyBefore.size(), 0);
     EXPECT_GT(progressBefore, 0.0f);
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Pre-reset verification complete");
 
     // Reset scorer (but keep master call)
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Calling reset()");
     scorer_->reset();
+    TEST_LOG_DEBUG("ResetFunctionalityTest: reset() completed");
 
     // Verify state is reset but master call is preserved
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Getting scoring history after reset");
     auto historyAfter = scorer_->getScoringHistory(1);
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Got " + std::to_string(historyAfter.size()) +
+                   " history items after reset");
+
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Getting analysis progress after reset");
     float progressAfter = scorer_->getAnalysisProgress();
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Progress after reset: " +
+                   std::to_string(progressAfter));
 
     EXPECT_EQ(historyAfter.size(), 0);
     EXPECT_EQ(progressAfter, 0.0f);
+
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Checking if master call is preserved");
     EXPECT_TRUE(scorer_->hasMasterCall());  // Master call should be preserved
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Master call preservation verified");
 
     // Test session reset (clears everything)
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Calling resetSession()");
     scorer_->resetSession();
+    TEST_LOG_DEBUG("ResetFunctionalityTest: resetSession() completed");
+
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Verifying master call is cleared");
     EXPECT_FALSE(scorer_->hasMasterCall());
+    TEST_LOG_DEBUG("ResetFunctionalityTest: Test completed successfully");
 }
 
 TEST_F(RealtimeScorerTest, ConfigUpdateTest) {
@@ -363,6 +400,9 @@ TEST_F(RealtimeScorerTest, ConfigUpdateTest) {
 }
 
 TEST_F(RealtimeScorerTest, ErrorHandlingTest) {
+    // Load master call first so we can test audio data validation
+    ASSERT_TRUE(scorer_->setMasterCall(testMasterCallPath_));
+
     // Test empty audio data
     std::vector<float> emptyAudio;
     auto result = scorer_->processAudio(emptyAudio, 1);

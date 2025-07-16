@@ -6,6 +6,7 @@
 #include <cmath>
 #include <deque>
 #include <fstream>
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <numeric>
@@ -16,7 +17,24 @@
 #include "dr_wav.h"
 #include "huntmaster/core/AudioLevelProcessor.h"
 #include "huntmaster/core/DTWComparator.h"
+#include "huntmaster/core/DebugLogger.h"
 #include "huntmaster/core/MFCCProcessor.h"
+
+// Enable debug output for RealtimeScorer
+#define DEBUG_REALTIME_SCORER 0
+
+// Debug logging macros
+#if DEBUG_REALTIME_SCORER
+#define SCORER_LOG_DEBUG(msg) std::cout << "[SCORER DEBUG] " << msg << std::endl
+#define SCORER_LOG_ERROR(msg) std::cerr << "[SCORER ERROR] " << msg << std::endl
+#else
+#define SCORER_LOG_DEBUG(msg) \
+    do {                      \
+    } while (0)
+#define SCORER_LOG_ERROR(msg) \
+    do {                      \
+    } while (0)
+#endif
 
 namespace huntmaster {
 
@@ -71,7 +89,15 @@ static float calculateVolumeSimilarity(float liveRms, float masterRms,
     }
     const float ratio = liveRms / masterRms;
     const float error = std::abs(1.0f - ratio);
-    return std::max(0.0f, 1.0f - (error / tolerance));
+    float result = std::max(0.0f, 1.0f - (error / tolerance));
+
+#if DEBUG_REALTIME_SCORER
+    std::cout << "[DEBUG] calculateVolumeSimilarity: liveRms=" << liveRms
+              << ", masterRms=" << masterRms << ", ratio=" << ratio << ", error=" << error
+              << ", tolerance=" << tolerance << ", result=" << result << std::endl;
+#endif
+
+    return result;
 }
 
 static float calculateTimingAccuracy(float liveDuration, float masterDuration) noexcept {
@@ -241,6 +267,12 @@ bool RealtimeScorer::setMasterCall(const std::string& masterCallPath) noexcept {
             }
             impl_->masterCallRms_ = energySum / impl_->masterMfccFeatures_.size();
 
+#if DEBUG_REALTIME_SCORER
+            std::cout
+                << "[DEBUG] RealtimeScorer setMasterCall: loaded from .mfc file, masterCallRms_="
+                << impl_->masterCallRms_ << std::endl;
+#endif
+
         } else {
             // Load from audio file
             unsigned int channels;
@@ -285,6 +317,13 @@ bool RealtimeScorer::setMasterCall(const std::string& masterCallPath) noexcept {
             }
             impl_->masterCallRms_ = std::sqrt(rms / monoData.size());
             impl_->masterCallDuration_ = static_cast<float>(totalFrameCount) / sampleRate;
+
+#if DEBUG_REALTIME_SCORER
+            std::cout
+                << "[DEBUG] RealtimeScorer setMasterCall: loaded from audio file, masterCallRms_="
+                << impl_->masterCallRms_ << ", duration=" << impl_->masterCallDuration_
+                << std::endl;
+#endif
         }
 
         impl_->hasMasterCall_ = true;
@@ -322,6 +361,11 @@ RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> sampl
         const size_t frameCount = samples.size() / numChannels;
         monoSamples.reserve(frameCount);
 
+#if DEBUG_REALTIME_SCORER
+        std::cout << "[DEBUG] RealtimeScorer processAudio: samples.size()=" << samples.size()
+                  << ", numChannels=" << numChannels << ", frameCount=" << frameCount << std::endl;
+#endif
+
         for (size_t frame = 0; frame < frameCount; ++frame) {
             float frameSum = 0.0f;
             for (int ch = 0; ch < numChannels; ++ch) {
@@ -340,10 +384,19 @@ RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> sampl
         // Process audio through level processor for volume analysis
         auto levelResult = impl_->levelProcessor_->processAudio(monoSamples, 1);
         if (!levelResult.has_value()) {
+#if DEBUG_REALTIME_SCORER
+            std::cout << "[DEBUG] RealtimeScorer processAudio: levelProcessor failed" << std::endl;
+#endif
             return huntmaster::unexpected(Error::COMPONENT_ERROR);
         }
 
         auto levelMeasurement = *levelResult;
+
+#if DEBUG_REALTIME_SCORER
+        std::cout << "[DEBUG] RealtimeScorer processAudio: levelMeasurement.rmsLinear="
+                  << levelMeasurement.rmsLinear << ", masterCallRms_=" << impl_->masterCallRms_
+                  << std::endl;
+#endif
 
         // Extract MFCC features if we have enough audio
         if (impl_->liveAudioBuffer_.size() >= 1024) {  // Minimum frame size
@@ -360,7 +413,12 @@ RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> sampl
         // Calculate similarity scores
         SimilarityScore score;
         score.timestamp = std::chrono::steady_clock::now();
-        score.samplesAnalyzed = frameCount;
+        score.samplesAnalyzed = samples.size();  // Use total input samples for tracking
+
+#if DEBUG_REALTIME_SCORER
+        std::cout << "[DEBUG] RealtimeScorer processAudio: samplesAnalyzed set to samples.size()="
+                  << score.samplesAnalyzed << " (frameCount=" << frameCount << ")" << std::endl;
+#endif
 
         // 1. MFCC Similarity (using DTW)
         if (!impl_->liveMfccFeatures_.empty() && !impl_->masterMfccFeatures_.empty()) {
@@ -375,7 +433,17 @@ RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> sampl
         // 2. Volume Similarity
         if (impl_->masterCallRms_ > 0.0f) {
             score.volume =
-                calculateVolumeSimilarity(levelMeasurement.rmsLinear, impl_->masterCallRms_, 0.3f);
+                calculateVolumeSimilarity(levelMeasurement.rmsLinear, impl_->masterCallRms_, 2.0f);
+#if DEBUG_REALTIME_SCORER
+            std::cout << "[DEBUG] RealtimeScorer processAudio: volume similarity calculated="
+                      << score.volume << std::endl;
+#endif
+        } else {
+#if DEBUG_REALTIME_SCORER
+            std::cout << "[DEBUG] RealtimeScorer processAudio: masterCallRms_ is 0, volume score "
+                         "not calculated"
+                      << std::endl;
+#endif
         }
 
         // 3. Timing Accuracy (placeholder)
@@ -467,16 +535,30 @@ RealtimeScorer::FeedbackResult RealtimeScorer::getRealtimeFeedback() const noexc
 
 std::vector<RealtimeScorer::SimilarityScore> RealtimeScorer::getScoringHistory(
     size_t count) const noexcept {
+    SCORER_LOG_DEBUG("getScoringHistory() called with count=" + std::to_string(count));
     try {
+        SCORER_LOG_DEBUG("getScoringHistory() acquiring lock");
         std::lock_guard<std::mutex> lock(impl_->mutex_);
+        SCORER_LOG_DEBUG("getScoringHistory() lock acquired");
+
         std::vector<SimilarityScore> history;
         size_t numToCopy = std::min(count, impl_->scoringHistory_.size());
+        SCORER_LOG_DEBUG("getScoringHistory() numToCopy=" + std::to_string(numToCopy) +
+                         ", history size=" + std::to_string(impl_->scoringHistory_.size()));
+
         history.reserve(numToCopy);
         for (size_t i = 0; i < numToCopy; ++i) {
             history.push_back(impl_->scoringHistory_[i]);
         }
+
+        SCORER_LOG_DEBUG("getScoringHistory() returning " + std::to_string(history.size()) +
+                         " items");
         return history;
+    } catch (const std::exception& e) {
+        SCORER_LOG_ERROR("getScoringHistory() exception: " + std::string(e.what()));
+        return {};
     } catch (...) {
+        SCORER_LOG_ERROR("getScoringHistory() unknown exception");
         return {};
     }
 }
@@ -553,35 +635,101 @@ std::string RealtimeScorer::exportHistoryToJson(size_t maxCount) const {
 }
 
 void RealtimeScorer::reset() noexcept {
+    SCORER_LOG_DEBUG("reset() called - acquiring lock");
     std::lock_guard<std::mutex> lock(impl_->mutex_);
+    SCORER_LOG_DEBUG("reset() lock acquired - clearing data structures");
 
     impl_->liveAudioBuffer_.clear();
+    SCORER_LOG_DEBUG("reset() liveAudioBuffer_ cleared");
+
     impl_->liveMfccFeatures_.clear();
+    SCORER_LOG_DEBUG("reset() liveMfccFeatures_ cleared");
+
     impl_->scoringHistory_.clear();
+    SCORER_LOG_DEBUG("reset() scoringHistory_ cleared");
+
     impl_->liveAudioDuration_ = 0.0f;
+    SCORER_LOG_DEBUG("reset() liveAudioDuration_ reset");
 
     impl_->currentScore_ = SimilarityScore{};
+    SCORER_LOG_DEBUG("reset() currentScore_ reset");
+
     impl_->peakScore_ = SimilarityScore{};
+    SCORER_LOG_DEBUG("reset() peakScore_ reset");
 
     impl_->totalSamplesProcessed_.store(0);
+    SCORER_LOG_DEBUG("reset() totalSamplesProcessed_ reset");
+
     impl_->averageSignalLevel_.store(0.0f);
+    SCORER_LOG_DEBUG("reset() averageSignalLevel_ reset");
 
     if (impl_->levelProcessor_) {
+        SCORER_LOG_DEBUG("reset() calling levelProcessor_->reset()");
         impl_->levelProcessor_->reset();
+        SCORER_LOG_DEBUG("reset() levelProcessor_->reset() completed");
+    } else {
+        SCORER_LOG_DEBUG("reset() levelProcessor_ is null, skipping");
     }
 
     impl_->sessionStartTime_ = std::chrono::steady_clock::now();
     impl_->lastUpdateTime_ = impl_->sessionStartTime_;
+    SCORER_LOG_DEBUG("reset() timestamps updated - method completed");
 }
 
 void RealtimeScorer::resetSession() noexcept {
+    SCORER_LOG_DEBUG("resetSession() called - acquiring lock");
     std::lock_guard<std::mutex> lock(impl_->mutex_);
+    SCORER_LOG_DEBUG("resetSession() lock acquired - performing reset operations");
 
-    reset();
+    // Perform reset operations inline since we already hold the lock
+    impl_->liveAudioBuffer_.clear();
+    SCORER_LOG_DEBUG("resetSession() liveAudioBuffer_ cleared");
+
+    impl_->liveMfccFeatures_.clear();
+    SCORER_LOG_DEBUG("resetSession() liveMfccFeatures_ cleared");
+
+    impl_->scoringHistory_.clear();
+    SCORER_LOG_DEBUG("resetSession() scoringHistory_ cleared");
+
+    impl_->liveAudioDuration_ = 0.0f;
+    SCORER_LOG_DEBUG("resetSession() liveAudioDuration_ reset");
+
+    impl_->currentScore_ = SimilarityScore{};
+    SCORER_LOG_DEBUG("resetSession() currentScore_ reset");
+
+    impl_->peakScore_ = SimilarityScore{};
+    SCORER_LOG_DEBUG("resetSession() peakScore_ reset");
+
+    impl_->totalSamplesProcessed_.store(0);
+    SCORER_LOG_DEBUG("resetSession() totalSamplesProcessed_ reset");
+
+    impl_->averageSignalLevel_.store(0.0f);
+    SCORER_LOG_DEBUG("resetSession() averageSignalLevel_ reset");
+
+    if (impl_->levelProcessor_) {
+        SCORER_LOG_DEBUG("resetSession() calling levelProcessor_->reset()");
+        impl_->levelProcessor_->reset();
+        SCORER_LOG_DEBUG("resetSession() levelProcessor_->reset() completed");
+    } else {
+        SCORER_LOG_DEBUG("resetSession() levelProcessor_ is null, skipping");
+    }
+
+    impl_->sessionStartTime_ = std::chrono::steady_clock::now();
+    impl_->lastUpdateTime_ = impl_->sessionStartTime_;
+    SCORER_LOG_DEBUG("resetSession() timestamps updated");
+
+    // Clear master call data
     impl_->masterMfccFeatures_.clear();
+    SCORER_LOG_DEBUG("resetSession() masterMfccFeatures_ cleared");
+
     impl_->masterCallRms_ = 0.0f;
+    SCORER_LOG_DEBUG("resetSession() masterCallRms_ reset");
+
     impl_->masterCallDuration_ = 0.0f;
+    SCORER_LOG_DEBUG("resetSession() masterCallDuration_ reset");
+
     impl_->hasMasterCall_ = false;
+    SCORER_LOG_DEBUG("resetSession() hasMasterCall_ set to false - method completed");
 }
 
 bool RealtimeScorer::updateConfig(const Config& newConfig) noexcept {
@@ -615,13 +763,22 @@ RealtimeScorer::Config RealtimeScorer::getConfig() const noexcept {
 bool RealtimeScorer::isInitialized() const noexcept { return impl_->initialized_.load(); }
 
 bool RealtimeScorer::hasMasterCall() const noexcept {
+    SCORER_LOG_DEBUG("hasMasterCall() called - acquiring lock");
     std::lock_guard<std::mutex> lock(impl_->mutex_);
+    SCORER_LOG_DEBUG("hasMasterCall() lock acquired - returning " +
+                     std::to_string(impl_->hasMasterCall_));
     return impl_->hasMasterCall_;
 }
 
 float RealtimeScorer::getAnalysisProgress() const noexcept {
+    SCORER_LOG_DEBUG("getAnalysisProgress() called - acquiring lock");
     std::lock_guard<std::mutex> lock(impl_->mutex_);
-    return impl_->calculateProgressRatio();
+    SCORER_LOG_DEBUG("getAnalysisProgress() lock acquired - calling calculateProgressRatio()");
+
+    float progress = impl_->calculateProgressRatio();
+    SCORER_LOG_DEBUG("getAnalysisProgress() progress=" + std::to_string(progress));
+
+    return progress;
 }
 
 // Utility functions

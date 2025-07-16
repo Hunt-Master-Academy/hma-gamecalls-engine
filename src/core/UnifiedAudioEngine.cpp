@@ -13,6 +13,11 @@
 #include <span>
 #include <unordered_map>
 
+#include "huntmaster/core/DebugLogger.h"
+
+// Enable debug output for UnifiedAudioEngine
+#define DEBUG_UNIFIED_AUDIO_ENGINE 0
+
 // Include existing components
 #include "dr_wav.h"
 #include "huntmaster/core/DTWProcessor.h"
@@ -313,11 +318,10 @@ UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::processAudioChunk(
     SessionState* session = getSession(sessionId);
     if (!session) return Status::SESSION_NOT_FOUND;
 
-    // Store audio for feature extraction
+    // Temporarily disable VAD filtering to debug similarity scoring
+    // TODO: Re-enable with proper VAD configuration once scoring works
     session->currentSegmentBuffer.insert(session->currentSegmentBuffer.end(), audioBuffer.begin(),
                                          audioBuffer.end());
-
-    // Extract features immediately (no VAD gating)
     extractMFCCFeatures(*session);
 
     return Status::OK;
