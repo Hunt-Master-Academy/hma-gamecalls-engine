@@ -158,7 +158,11 @@ class FeatureGenerator {
         try {
             // Load master call - this will generate features
             std::cout << "Processing: " << callName << std::endl;
-            engine.loadMasterCall(callName);
+            auto loadResult = engine.loadMasterCall(callName);
+            if (loadResult != huntmaster::HuntmasterAudioEngine::EngineStatus::OK) {
+                std::cerr << "Failed to load master call: " << callName << std::endl;
+                return false;
+            }
 
             if (options.enableFeatureDebug) {
                 DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
@@ -217,20 +221,21 @@ int main(int argc, char* argv[]) {
     }
 
     // Configure component-specific debug levels
-    auto& logger = DebugLogger::getInstance();
+    auto& logger = huntmaster::DebugLogger::getInstance();
     if (debugOptions.enableEngineDebug) {
-        logger.setComponentLevel(huntmaster::DebugComponent::ENGINE, huntmaster::DebugLevel::DEBUG);
+        logger.setComponentLogLevel(huntmaster::Component::AUDIO_ENGINE,
+                                    huntmaster::LogLevel::DEBUG);
     }
     if (debugOptions.enableFeatureDebug) {
-        logger.setComponentLevel(huntmaster::DebugComponent::FEATURE_EXTRACTION,
-                                 huntmaster::DebugLevel::DEBUG);
+        logger.setComponentLogLevel(huntmaster::Component::FEATURE_EXTRACTION,
+                                    huntmaster::LogLevel::DEBUG);
     }
     if (debugOptions.enableBatchDebug) {
-        logger.setComponentLevel(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::TRACE);
+        logger.setComponentLogLevel(huntmaster::Component::TOOLS, huntmaster::LogLevel::TRACE);
     }
     if (debugOptions.enablePerformanceMetrics) {
-        logger.setComponentLevel(huntmaster::DebugComponent::PERFORMANCE,
-                                 huntmaster::DebugLevel::DEBUG);
+        logger.setComponentLogLevel(huntmaster::Component::PERFORMANCE,
+                                    huntmaster::LogLevel::DEBUG);
     }
 
     DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,

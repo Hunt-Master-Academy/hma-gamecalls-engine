@@ -64,8 +64,8 @@
     },
 
     "files.associations": {
-        "*.yml": "yaml",
         "MLTable": "yaml",
+        "*.yml": "yaml",
         "*.h": "cpp",
         "*.hpp": "cpp",
         "*.cpp": "cpp",
@@ -141,7 +141,10 @@
         "filesystem": "cpp",
         "*.inc": "cpp",
         "expected": "cpp",
-        "__locale": "cpp"
+        "__locale": "cpp",
+        "codecvt": "cpp",
+        "xlocale": "cpp",
+        "future": "cpp"
     },
 
 

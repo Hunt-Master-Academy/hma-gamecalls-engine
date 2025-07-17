@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <chrono>
+
 #include "huntmaster/core/HuntmasterAudioEngine.h"
 
 using huntmaster::HuntmasterAudioEngine;
@@ -23,8 +25,16 @@ TEST_F(HuntmasterEngineTest, CanInitializeAndShutdown) {
 
 // Test case to check the dummy scoring functionality.
 TEST_F(HuntmasterEngineTest, EmptySessionReturnsZeroScore) {
+    // Set a timeout for this test to prevent hanging
+    const auto timeout = std::chrono::seconds(5);
+    const auto start_time = std::chrono::steady_clock::now();
+
     auto sessionResult = engine.startRealtimeSession(44100.0, 1024);
     ASSERT_TRUE(sessionResult.isOk());
+
+    // Check timeout during processing
+    ASSERT_LT(std::chrono::steady_clock::now() - start_time, timeout)
+        << "Test timed out during session operations";
 
     int sessionId = sessionResult.value;
     auto scoreResult = engine.getSimilarityScore(sessionId);

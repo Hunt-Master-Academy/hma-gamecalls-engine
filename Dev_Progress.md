@@ -97,6 +97,42 @@
 - [x] Performance benchmarking infrastructure
 - [x] Unified test runner (RunEngineTests)
 
+#### 📋 Unit Test Case Documentation (July 2025)
+
+**AudioBufferPoolTest**
+
+- `BasicAcquireRelease`: Tests buffer acquisition and release, checks pool stats.
+- `ExhaustPool`: Ensures pool exhaustion is handled and stats are correct.
+- `ThreadSafety`: Verifies thread-safe buffer acquisition under concurrency.
+
+**BinaryCompatibilityTest**
+
+- `BasicEngineOperations`: Verifies engine can start and stop sessions.
+- `RecordingOperations`: Checks audio recording start/stop functionality.
+
+**MFCCConsistencyTest**
+
+- `ExistingMasterCallTest`: Loads a real master call, processes audio, checks for successful feature extraction and scoring.
+- `SineWaveConsistency`: Generates a sine wave, processes it multiple times, checks for score consistency.
+- `ComplexWaveformConsistency`: Generates a complex waveform, processes in chunks, checks for reproducibility.
+- `RealAudioFileConsistency`: Loads a real audio file, processes it, checks for consistent scoring.
+- `SelfSimilarityTest`: Compares a master call to itself, expects high similarity.
+
+**RealtimeScorerTest**
+
+- `InitializationTest`: Validates scorer initialization and config.
+- `MasterCallLoadingTest`: Tests loading valid/invalid master call files.
+- `AudioProcessingWithoutMasterCallTest`: Ensures error is returned if no master call is loaded.
+- `AudioProcessingWithMasterCallTest`: Processes audio and checks score fields.
+- `VaryingSignalQualityTest`: Compares scoring for high/low amplitude signals.
+- `MultiChannelProcessingTest`: Tests stereo audio processing.
+- `ProgressTrackingTest`: Checks progress tracking after audio processing.
+- `ScoringHistoryTest`: Verifies scoring history is tracked and ordered.
+- `RealtimeFeedbackTest`: Checks real-time feedback structure and values.
+- `ResetFunctionalityTest`: Ensures reset clears state but preserves master call, and resetSession clears all.
+- `ConfigUpdateTest`: Tests updating config and error on invalid config.
+- `ErrorHandlingTest`: Validates error handling for invalid audio data.
+
 **Test Results Summary:**
 
 - ✅ **AudioBufferPoolTest**: 3/3 tests passing

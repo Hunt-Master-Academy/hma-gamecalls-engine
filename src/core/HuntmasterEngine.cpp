@@ -2,16 +2,18 @@
 #include "huntmaster/core/HuntmasterEngine.h"
 
 #include <algorithm>
+#include <fstream>
+#include <string>
 #include <thread>
 #include <vector>
 
 // Include all the component headers
+#include "dr_wav.h"  // For loading master calls
 #include "huntmaster/core/AudioBufferPool.h"
 #include "huntmaster/core/DTWComparator.h"
 #include "huntmaster/core/MFCCProcessor.h"
 #include "huntmaster/core/RealtimeAudioProcessor.h"
 #include "huntmaster/core/VoiceActivityDetector.h"
-#include "dr_wav.h"  // For loading master calls
 
 // These headers are not used in the final implementation but were in the original.
 // They are more suited for advanced threading models that can be added later.
@@ -156,36 +158,71 @@ This section has been commented out.
 
     // --- NEW, CORRECTED IMPLEMENTATION ---
     huntmaster::expected<void, EngineError> loadMasterCall(std::string_view call_name) {
-        // This is a simplified loader. A real implementation would search
-        // a known directory for the file.
-        std::string filePath = "../data/master_calls/" + std::string(call_name) + ".wav";
+        // Try multiple possible paths for the master call file
+        std::vector<std::string> possiblePaths = {
+            "../data/master_calls/" + std::string(call_name) + ".wav",
+            "data/master_calls/" + std::string(call_name) + ".wav",
+            "../data/features/" + std::string(call_name) + ".mfc",
+            "data/features/" + std::string(call_name) + ".mfc"};
 
-        unsigned int channels, sampleRate;
-        drwav_uint64 totalFrames;
-        float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(
-            filePath.c_str(), &channels, &sampleRate, &totalFrames, nullptr);
+        for (const auto& filePath : possiblePaths) {
+            // Check if it's an MFC file
+            if (filePath.size() >= 4 && filePath.substr(filePath.size() - 4) == ".mfc") {
+                std::ifstream file(filePath, std::ios::binary);
+                if (file.is_open()) {
+                    // Read MFC feature file
+                    uint32_t numFrames, numCoeffs;
+                    file.read(reinterpret_cast<char*>(&numFrames), sizeof(numFrames));
+                    file.read(reinterpret_cast<char*>(&numCoeffs), sizeof(numCoeffs));
 
-        if (!pSampleData) {
-            return huntmaster::unexpected(EngineError{EngineStatus::ERROR_RESOURCE_UNAVAILABLE,
-                                               "Master call file not found: " + filePath});
+                    if (file && numFrames > 0 && numCoeffs > 0) {
+                        std::vector<std::vector<float>> features;
+                        features.reserve(numFrames);
+
+                        for (uint32_t frame = 0; frame < numFrames; ++frame) {
+                            std::vector<float> frameFeatures(numCoeffs);
+                            file.read(reinterpret_cast<char*>(frameFeatures.data()),
+                                      numCoeffs * sizeof(float));
+                            if (file) {
+                                features.push_back(std::move(frameFeatures));
+                            }
+                        }
+
+                        if (features.size() == numFrames) {
+                            // Store the features
+                            std::unique_lock lock(master_call_mutex_);
+                            master_call_features_ = std::move(features);
+                            return {};
+                        }
+                    }
+                }
+            } else {
+                // Try to load as WAV file
+                unsigned int channels, sampleRate;
+                drwav_uint64 totalFrames;
+                float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(
+                    filePath.c_str(), &channels, &sampleRate, &totalFrames, nullptr);
+
+                if (pSampleData) {
+                    std::vector<float> audioData(pSampleData, pSampleData + totalFrames);
+                    drwav_free(pSampleData, nullptr);
+
+                    // Process the entire file to get its features
+                    auto features_result =
+                        mfcc_processor_->extractFeaturesFromBuffer(audioData, config_.hop_size);
+                    if (features_result) {
+                        // Store the features
+                        std::unique_lock lock(master_call_mutex_);
+                        master_call_features_ = std::move(*features_result);
+                        return {};
+                    }
+                }
+            }
         }
 
-        std::vector<float> audioData(pSampleData, pSampleData + totalFrames);
-        drwav_free(pSampleData, nullptr);
-
-        // Process the entire file to get its features
-        auto features_result =
-            mfcc_processor_->extractFeaturesFromBuffer(audioData, config_.hop_size);
-        if (!features_result) {
-            return huntmaster::unexpected(EngineError{EngineStatus::ERROR_PROCESSING_FAILED,
-                                               "Failed to extract features from master call"});
-        }
-
-        // Store the features
-        std::unique_lock lock(master_call_mutex_);
-        master_call_features_ = std::move(*features_result);
-
-        return {};
+        return huntmaster::unexpected(
+            EngineError{EngineStatus::ERROR_RESOURCE_UNAVAILABLE,
+                        "Master call file not found for: " + std::string(call_name)});
     }
 
     // --- NEW, CORRECTED IMPLEMENTATION ---
@@ -338,29 +375,7 @@ functional implementations that properly delegate to the private Impl class.
 */
 #if 0  // Commenting out the entire block of old, broken implementations
 huntmaster::expected<void, EngineError> HuntmasterEngine::loadMasterCall(std::string_view call_name) {
-    // Loads pre-computed MFCC features for the reference call identified by 'call_name'.
-    // Expected input: call_name - the identifier or filename of the master call to load.
-    // Expected output: On success, the master call features are loaded into the engine for
-    // similarity comparison. Returns: huntmaster::expected<void, EngineError> indicating success or
-    // failure.
-    // TODO: Implement master call loading logic here.
-    return {};
-    huntmaster::expected<void, EngineError> HuntmasterEngine::startSession(int session_id) {
-        std::unique_lock lock(pimpl_->sessions_mutex_);
-
-        auto [it, inserted] =
-            pimpl_->sessions_.try_emplace(session_id, std::make_unique<RealtimeSession>());
-        if (!inserted) {
-            return huntmaster::unexpected(EngineError{.status = EngineStatus::ERROR_INVALID_INPUT,
-                                               .message = "Session already exists"});
-        }
-
-        it->second->id = session_id;
-        it->second->start_time = std::chrono::steady_clock::now();
-
-        return {};
-    }
-    return {};
+    return pimpl_->loadMasterCall(call_name);
 }
 
 huntmaster::expected<void, EngineError> HuntmasterEngine::endSession(int session_id) {
@@ -394,7 +409,8 @@ huntmaster::expected<ProcessingResult, EngineError> HuntmasterEngine::processChu
     return pimpl_->processAudioChunk(audio_data);
 }
 
-huntmaster::expected<void, EngineError> HuntmasterEngine::loadMasterCall(std::string_view call_name) {
+huntmaster::expected<void, EngineError> HuntmasterEngine::loadMasterCall(
+    std::string_view call_name) {
     return pimpl_->loadMasterCall(call_name);
 }
 
@@ -415,7 +431,8 @@ huntmaster::expected<void, EngineError> HuntmasterEngine::startSession(int sessi
 huntmaster::expected<void, EngineError> HuntmasterEngine::endSession(int session_id) {
     std::unique_lock lock(pimpl_->sessions_mutex_);
     if (pimpl_->sessions_.erase(session_id) == 0) {
-        return huntmaster::unexpected(EngineError{EngineStatus::ERROR_INVALID_INPUT, "Session not found"});
+        return huntmaster::unexpected(
+            EngineError{EngineStatus::ERROR_INVALID_INPUT, "Session not found"});
     }
     return {};
 }

@@ -656,7 +656,7 @@ bool processAudioFile(const std::string &inputPath, const std::string &outputPat
     if (enableDebug) {
         DebugLogger::getInstance().log(
             huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-            "Audio processing " + (success ? "completed successfully" : "failed"));
+            std::string("Audio processing ") + (success ? "completed successfully" : "failed"));
     }
 
     return success;
@@ -682,15 +682,14 @@ int main(int argc, char *argv[]) {
     // Configure component-specific debug levels
     auto &logger = DebugLogger::getInstance();
     if (debugOptions.enableVADDebug) {
-        logger.setComponentLevel(huntmaster::DebugComponent::AUDIO_PROCESSING,
-                                 huntmaster::DebugLevel::DEBUG);
+        logger.setComponentLogLevel(huntmaster::Component::VAD, huntmaster::LogLevel::DEBUG);
     }
     if (debugOptions.enableTrimDebug) {
-        logger.setComponentLevel(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::TRACE);
+        logger.setComponentLogLevel(huntmaster::Component::TOOLS, huntmaster::LogLevel::TRACE);
     }
     if (debugOptions.enablePerformanceMetrics) {
-        logger.setComponentLevel(huntmaster::DebugComponent::PERFORMANCE,
-                                 huntmaster::DebugLevel::DEBUG);
+        logger.setComponentLogLevel(huntmaster::Component::PERFORMANCE,
+                                    huntmaster::LogLevel::DEBUG);
     }
 
     DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,

@@ -332,6 +332,19 @@ else()
         add_executable(UnifiedEngineTest "${PROJECT_TESTS_DIR}/unit/test_unified_engine.cpp")
         target_link_libraries(UnifiedEngineTest PRIVATE HuntmasterEngine gtest gtest_main)
         
+        # Add new unified test executables
+        add_executable(MFCCConsistencyUnifiedTest "${PROJECT_TESTS_DIR}/unit/test_mfcc_consistency_unified.cpp")
+        target_link_libraries(MFCCConsistencyUnifiedTest PRIVATE HuntmasterEngine gtest gtest_main)
+        
+        add_executable(DTWUnifiedTest "${PROJECT_TESTS_DIR}/unit/dtw_tests_unified.cpp")
+        target_link_libraries(DTWUnifiedTest PRIVATE HuntmasterEngine gtest gtest_main)
+        
+        add_executable(MFCCDirectUnifiedTest "${PROJECT_TESTS_DIR}/unit/test_mfcc_direct_unified.cpp")
+        target_link_libraries(MFCCDirectUnifiedTest PRIVATE HuntmasterEngine gtest gtest_main)
+        
+        add_executable(ValidationUnifiedTest "${PROJECT_TESTS_DIR}/unit/test_validation_unified.cpp")
+        target_link_libraries(ValidationUnifiedTest PRIVATE HuntmasterEngine gtest gtest_main)
+        
         message(STATUS "  -- Standalone diagnostic tools configured.")
 
         # Benchmarks (gbenchmark)

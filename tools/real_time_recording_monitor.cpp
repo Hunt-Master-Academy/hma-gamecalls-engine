@@ -369,7 +369,7 @@ class RealTimeRecordingMonitor {
             return;
         }
 
-        std::string savedPath = saveResult.value();
+        std::string savedPath = saveResult.value;
         LOG_INFO(Component::TOOLS, "✅ Recording saved successfully to: " + savedPath);
 
         // Additional file information
@@ -471,15 +471,5 @@ int main(int argc, char* argv[]) {
     monitor.showRecordingLevels(duration);
 
     LOG_INFO(Component::TOOLS, "✅ Recording monitoring session completed");
-    return 0;
-}
-
-int main(int argc, char* argv[]) {
-    int duration = 10;
-    if (argc > 1) {
-        duration = std::atoi(argv[1]);
-    }
-
-    showRecordingLevels(duration);
     return 0;
 }

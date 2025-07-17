@@ -35,7 +35,9 @@ void generateTestVectors(HuntmasterAudioEngine &engine) {
         std::cout << "\nGenerating vector for: " << test.name << std::endl;
 
         // Load as master
-        engine.loadMasterCall(test.inputFile.substr(0, test.inputFile.find_last_of('.')));
+        auto loadResult =
+            engine.loadMasterCall(test.inputFile.substr(0, test.inputFile.find_last_of('.')));
+        (void)loadResult;  // Suppress unused variable warning
 
         // Save the current state as test vector
         std::string vectorPath = "../data/test_vectors/" + test.outputFile;
@@ -78,9 +80,12 @@ bool verifyProcessingConsistency(HuntmasterAudioEngine &engine) {
     }
 
     // Process as batch (all at once)
-    engine.loadMasterCall("test_sine_440");  // Need a master loaded
+    auto loadResult = engine.loadMasterCall("test_sine_440");  // Need a master loaded
+    (void)loadResult;                                          // Suppress unused variable warning
     int batchSession = engine.startRealtimeSession(static_cast<float>(sampleRate), 1024);
-    engine.processAudioChunk(batchSession, testAudio.data(), testAudio.size());
+    auto batchProcessResult =
+        engine.processAudioChunk(batchSession, testAudio.data(), testAudio.size());
+    (void)batchProcessResult;  // Suppress unused variable warning
     auto batchScoreResult = engine.getSimilarityScore(batchSession);
     float batchScore = batchScoreResult.isOk() ? batchScoreResult.value : 0.0f;
     engine.endRealtimeSession(batchSession);
@@ -94,7 +99,9 @@ bool verifyProcessingConsistency(HuntmasterAudioEngine &engine) {
     for (size_t i = 0; i < testAudio.size(); i += chunkSize) {
         size_t remaining = testAudio.size() - i;
         size_t toProcess = std::min(static_cast<size_t>(chunkSize), remaining);
-        engine.processAudioChunk(chunkSession, testAudio.data() + i, toProcess);
+        auto chunkProcessResult =
+            engine.processAudioChunk(chunkSession, testAudio.data() + i, toProcess);
+        (void)chunkProcessResult;  // Suppress unused variable warning
     }
     auto chunkScoreResult = engine.getSimilarityScore(chunkSession);
     float chunkScore = chunkScoreResult.isOk() ? chunkScoreResult.value : 0.0f;
@@ -122,7 +129,8 @@ bool verifyProcessingConsistency(HuntmasterAudioEngine &engine) {
         for (size_t i = 0; i < testAudio.size(); i += size) {
             size_t remaining = testAudio.size() - i;
             size_t toProcess = std::min(static_cast<size_t>(size), remaining);
-            engine.processAudioChunk(session, testAudio.data() + i, toProcess);
+            auto processResult = engine.processAudioChunk(session, testAudio.data() + i, toProcess);
+            (void)processResult;  // Suppress unused variable warning
         }
 
         auto scoreResult = engine.getSimilarityScore(session);
@@ -156,7 +164,8 @@ bool testEdgeCases(HuntmasterAudioEngine &engine) {
 
     std::vector<float> emptyAudio;
     int emptySession = engine.startRealtimeSession(44100.0f, 1024);
-    engine.processAudioChunk(emptySession, emptyAudio.data(), 0);
+    auto emptyProcessResult = engine.processAudioChunk(emptySession, emptyAudio.data(), 0);
+    (void)emptyProcessResult;  // Suppress unused variable warning
     auto emptyScoreResult = engine.getSimilarityScore(emptySession);
     float emptyScore = emptyScoreResult.isOk() ? emptyScoreResult.value : 0.0f;
     engine.endRealtimeSession(emptySession);
@@ -170,7 +179,9 @@ bool testEdgeCases(HuntmasterAudioEngine &engine) {
 
     std::vector<float> shortAudio(100, 0.5f);
     int shortSession = engine.startRealtimeSession(44100.0f, 1024);
-    engine.processAudioChunk(shortSession, shortAudio.data(), shortAudio.size());
+    auto shortProcessResult =
+        engine.processAudioChunk(shortSession, shortAudio.data(), shortAudio.size());
+    (void)shortProcessResult;  // Suppress unused variable warning
     auto shortScoreResult = engine.getSimilarityScore(shortSession);
     float shortScore = shortScoreResult.isOk() ? shortScoreResult.value : 0.0f;
     engine.endRealtimeSession(shortSession);
@@ -184,7 +195,9 @@ bool testEdgeCases(HuntmasterAudioEngine &engine) {
 
     std::vector<float> silence(44100, 0.0f);  // 1 second of silence
     int silenceSession = engine.startRealtimeSession(44100.0f, 1024);
-    engine.processAudioChunk(silenceSession, silence.data(), silence.size());
+    auto silenceProcessResult =
+        engine.processAudioChunk(silenceSession, silence.data(), silence.size());
+    (void)silenceProcessResult;  // Suppress unused variable warning
     auto silenceScoreResult = engine.getSimilarityScore(silenceSession);
     float silenceScore = silenceScoreResult.isOk() ? silenceScoreResult.value : 0.0f;
     engine.endRealtimeSession(silenceSession);
@@ -204,7 +217,9 @@ bool testEdgeCases(HuntmasterAudioEngine &engine) {
     }
 
     int clippedSession = engine.startRealtimeSession(44100.0f, 1024);
-    engine.processAudioChunk(clippedSession, clippedAudio.data(), clippedAudio.size());
+    auto clippedProcessResult =
+        engine.processAudioChunk(clippedSession, clippedAudio.data(), clippedAudio.size());
+    (void)clippedProcessResult;  // Suppress unused variable warning
     auto clippedScoreResult = engine.getSimilarityScore(clippedSession);
     float clippedScore = clippedScoreResult.isOk() ? clippedScoreResult.value : 0.0f;
     engine.endRealtimeSession(clippedSession);
@@ -235,7 +250,8 @@ bool testSampleRates(HuntmasterAudioEngine &engine) {
         }
 
         int session = engine.startRealtimeSession(sr, 1024);
-        engine.processAudioChunk(session, audio.data(), audio.size());
+        auto processResult = engine.processAudioChunk(session, audio.data(), audio.size());
+        (void)processResult;  // Suppress unused variable warning
         auto scoreResult = engine.getSimilarityScore(session);
         float score = scoreResult.isOk() ? scoreResult.value : 0.0f;
         engine.endRealtimeSession(session);

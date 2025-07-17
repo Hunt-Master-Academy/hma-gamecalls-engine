@@ -514,14 +514,14 @@ int main(int argc, char* argv[]) {
     // Configure component-specific debug levels
     auto& logger = DebugLogger::getInstance();
     if (debugOptions.enableMFCCDebug) {
-        logger.setComponentLevel(huntmaster::DebugComponent::FEATURE_EXTRACTION,
+        logger.setComponentLogLevel(huntmaster::DebugComponent::FEATURE_EXTRACTION,
                                  huntmaster::DebugLevel::DEBUG);
     }
     if (debugOptions.enableFrameDebug) {
-        logger.setComponentLevel(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::TRACE);
+        logger.setComponentLogLevel(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::TRACE);
     }
     if (debugOptions.enablePerformanceMetrics) {
-        logger.setComponentLevel(huntmaster::DebugComponent::PERFORMANCE,
+        logger.setComponentLogLevel(huntmaster::DebugComponent::PERFORMANCE,
                                  huntmaster::DebugLevel::DEBUG);
     }
 

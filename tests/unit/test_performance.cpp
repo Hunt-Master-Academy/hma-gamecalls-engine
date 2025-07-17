@@ -65,7 +65,8 @@ int main() {
         auto testAudio = generateTestAudio(duration, sampleRate);
 
         // Load a dummy master call (use the test file we created)
-        engine.loadMasterCall("test_sine_440");
+        auto loadResult = engine.loadMasterCall("test_sine_440");
+        (void)loadResult;  // Suppress unused variable warning
 
         // Start timing
         auto startTime = std::chrono::high_resolution_clock::now();
@@ -79,7 +80,9 @@ int main() {
             size_t remaining = testAudio.size() - i;
             size_t toProcess = std::min(static_cast<size_t>(chunkSize), remaining);
 
-            engine.processAudioChunk(sessionId, testAudio.data() + i, toProcess);
+            auto processResult =
+                engine.processAudioChunk(sessionId, testAudio.data() + i, toProcess);
+            (void)processResult;  // Suppress unused variable warning
             chunksProcessed++;
         }
 
@@ -167,7 +170,8 @@ int main() {
         std::vector<double> latencies;
         for (int i = 0; i < 100; ++i) {
             auto start = std::chrono::high_resolution_clock::now();
-            engine.processAudioChunk(sessionId, testChunk.data(), size);
+            auto processResult = engine.processAudioChunk(sessionId, testChunk.data(), size);
+            (void)processResult;  // Suppress unused variable warning
             auto end = std::chrono::high_resolution_clock::now();
 
             auto latency = std::chrono::duration_cast<std::chrono::microseconds>(end - start);

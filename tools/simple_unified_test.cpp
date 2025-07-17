@@ -6,6 +6,7 @@
  * that the UnifiedAudioEngine is working correctly.
  */
 
+#include <huntmaster/core/DebugConfig.h>
 #include <huntmaster/core/DebugLogger.h>
 #include <huntmaster/core/UnifiedAudioEngine.h>
 
@@ -74,8 +75,9 @@ class PerformanceMonitor {
         : name(testName), enabled(enable) {
         if (enabled) {
             startTime = std::chrono::high_resolution_clock::now();
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::PERFORMANCE,
-                                           huntmaster::DebugLevel::INFO, "Starting: " + name);
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::PERFORMANCE,
+                                                       huntmaster::DebugLevel::INFO,
+                                                       "Starting: " + name);
         }
     }
 
@@ -84,7 +86,7 @@ class PerformanceMonitor {
             auto endTime = std::chrono::high_resolution_clock::now();
             auto duration =
                 std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-            DebugLogger::getInstance().log(
+            huntmaster::DebugLogger::getInstance().log(
                 huntmaster::DebugComponent::PERFORMANCE, huntmaster::DebugLevel::INFO,
                 "Completed: " + name + " in " + std::to_string(duration.count()) + " μs");
         }
@@ -95,10 +97,10 @@ class PerformanceMonitor {
             auto currentTime = std::chrono::high_resolution_clock::now();
             auto duration =
                 std::chrono::duration_cast<std::chrono::microseconds>(currentTime - startTime);
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::PERFORMANCE,
-                                           huntmaster::DebugLevel::DEBUG,
-                                           name + " checkpoint: " + message + " at " +
-                                               std::to_string(duration.count()) + " μs");
+            huntmaster::DebugLogger::getInstance().log(
+                huntmaster::DebugComponent::PERFORMANCE, huntmaster::DebugLevel::DEBUG,
+                name + " checkpoint: " + message + " at " + std::to_string(duration.count()) +
+                    " μs");
         }
     }
 };
@@ -122,9 +124,9 @@ class UnifiedEngineTestSuite {
     void runAllTests() {
         PerformanceMonitor totalMonitor("Complete test suite", options.enablePerformanceMetrics);
 
-        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                       huntmaster::DebugLevel::INFO,
-                                       "Starting UnifiedAudioEngine test suite");
+        huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                   huntmaster::DebugLevel::INFO,
+                                                   "Starting UnifiedAudioEngine test suite");
 
         std::cout << "=== UnifiedAudioEngine Test Suite ===" << std::endl;
 
@@ -140,13 +142,14 @@ class UnifiedEngineTestSuite {
 
         if (allPassed) {
             std::cout << "\n✅ All tests passed!" << std::endl;
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::INFO,
-                                           "All tests passed successfully");
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                       huntmaster::DebugLevel::INFO,
+                                                       "All tests passed successfully");
         } else {
             std::cout << "\n❌ Some tests failed!" << std::endl;
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::ERROR, "Some tests failed");
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                       huntmaster::DebugLevel::ERROR,
+                                                       "Some tests failed");
         }
     }
 
@@ -158,9 +161,9 @@ class UnifiedEngineTestSuite {
         std::cout << "\n--- Testing Single Session Lifecycle ---" << std::endl;
 
         if (options.enableSessionDebug) {
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::DEBUG,
-                                           "Starting single session lifecycle test");
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                       huntmaster::DebugLevel::DEBUG,
+                                                       "Starting single session lifecycle test");
         }
 
         auto engineResult = UnifiedAudioEngine::create();
@@ -169,7 +172,7 @@ class UnifiedEngineTestSuite {
                       << std::endl;
 
             if (options.enableEngineDebug) {
-                DebugLogger::getInstance().log(
+                huntmaster::DebugLogger::getInstance().log(
                     huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
                     "Failed to create UnifiedAudioEngine: " +
                         std::to_string(static_cast<int>(engineResult.error())));
@@ -181,9 +184,9 @@ class UnifiedEngineTestSuite {
         monitor.checkpoint("Engine created");
 
         if (options.enableEngineDebug) {
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
-                                           huntmaster::DebugLevel::INFO,
-                                           "UnifiedAudioEngine created successfully");
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                                       huntmaster::DebugLevel::INFO,
+                                                       "UnifiedAudioEngine created successfully");
         }
 
         // 1. Create Session
@@ -197,7 +200,7 @@ class UnifiedEngineTestSuite {
                       << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(
+                huntmaster::DebugLogger::getInstance().log(
                     huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
                     "Failed to create session: " +
                         std::to_string(static_cast<int>(sessionResult.error())));
@@ -210,7 +213,7 @@ class UnifiedEngineTestSuite {
         monitor.checkpoint("Session created");
 
         if (options.enableSessionDebug) {
-            DebugLogger::getInstance().log(
+            huntmaster::DebugLogger::getInstance().log(
                 huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::INFO,
                 "Session created successfully with ID: " + std::to_string(sessionId));
         }
@@ -224,7 +227,7 @@ class UnifiedEngineTestSuite {
             std::cerr << "✗ Session " << sessionId << " should be active but is not." << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(
+                huntmaster::DebugLogger::getInstance().log(
                     huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
                     "Session " + std::to_string(sessionId) + " should be active but is not");
             }
@@ -233,7 +236,7 @@ class UnifiedEngineTestSuite {
             std::cout << "✓ Session " << sessionId << " is active." << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(
+                huntmaster::DebugLogger::getInstance().log(
                     huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::DEBUG,
                     "Session " + std::to_string(sessionId) + " is active as expected");
             }
@@ -252,7 +255,7 @@ class UnifiedEngineTestSuite {
                       << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(
+                huntmaster::DebugLogger::getInstance().log(
                     huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
                     "Failed to destroy session " + std::to_string(sessionId) + ": " +
                         std::to_string(static_cast<int>(destroyResult)));
@@ -262,7 +265,7 @@ class UnifiedEngineTestSuite {
             std::cout << "✓ Session destroyed." << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(
+                huntmaster::DebugLogger::getInstance().log(
                     huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::INFO,
                     "Session " + std::to_string(sessionId) + " destroyed successfully");
             }
@@ -280,17 +283,17 @@ class UnifiedEngineTestSuite {
                       << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
-                                               huntmaster::DebugLevel::ERROR,
-                                               "Session " + std::to_string(sessionId) +
-                                                   " should be inactive but is still active");
+                huntmaster::DebugLogger::getInstance().log(
+                    huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
+                    "Session " + std::to_string(sessionId) +
+                        " should be inactive but is still active");
             }
             return false;
         } else {
             std::cout << "✓ Session " << sessionId << " is inactive as expected." << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(
+                huntmaster::DebugLogger::getInstance().log(
                     huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::DEBUG,
                     "Session " + std::to_string(sessionId) + " is inactive as expected");
             }
@@ -299,9 +302,9 @@ class UnifiedEngineTestSuite {
         monitor.checkpoint("Session verified inactive");
 
         if (options.enableSessionDebug) {
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::INFO,
-                                           "Single session lifecycle test completed successfully");
+            huntmaster::DebugLogger::getInstance().log(
+                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+                "Single session lifecycle test completed successfully");
         }
 
         return true;
@@ -313,15 +316,15 @@ class UnifiedEngineTestSuite {
         std::cout << "\n--- Testing Multiple Sessions ---" << std::endl;
 
         if (options.enableSessionDebug) {
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::DEBUG,
-                                           "Starting multiple sessions test");
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                       huntmaster::DebugLevel::DEBUG,
+                                                       "Starting multiple sessions test");
         }
 
         auto engineResult = UnifiedAudioEngine::create();
         if (!engineResult) {
             if (options.enableEngineDebug) {
-                DebugLogger::getInstance().log(
+                huntmaster::DebugLogger::getInstance().log(
                     huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
                     "Failed to create engine for multiple sessions test");
             }
@@ -344,11 +347,11 @@ class UnifiedEngineTestSuite {
             std::cerr << "✗ Failed to create one or more sessions." << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(
+                huntmaster::DebugLogger::getInstance().log(
                     huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
                     "Failed to create one or more sessions - Session1: " +
-                        std::to_string(session1Result.has_value()) +
-                        ", Session2: " + std::to_string(session2Result.has_value()));
+                        std::to_string(session1Result.isOk()) +
+                        ", Session2: " + std::to_string(session2Result.isOk()));
             }
             return false;
         }
@@ -359,7 +362,7 @@ class UnifiedEngineTestSuite {
                   << std::endl;
 
         if (options.enableSessionDebug) {
-            DebugLogger::getInstance().log(
+            huntmaster::DebugLogger::getInstance().log(
                 huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::INFO,
                 "Created two sessions - ID1: " + std::to_string(session1) +
                     ", ID2: " + std::to_string(session2));
@@ -376,16 +379,16 @@ class UnifiedEngineTestSuite {
             std::cout << "✓ getActiveSessions reports 2 sessions." << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
-                                               huntmaster::DebugLevel::DEBUG,
-                                               "getActiveSessions correctly reports 2 sessions");
+                huntmaster::DebugLogger::getInstance().log(
+                    huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::DEBUG,
+                    "getActiveSessions correctly reports 2 sessions");
             }
         } else {
             std::cerr << "✗ getActiveSessions reports " << activeSessions.size()
                       << " sessions, expected 2." << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(
+                huntmaster::DebugLogger::getInstance().log(
                     huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
                     "getActiveSessions reports " + std::to_string(activeSessions.size()) +
                         " sessions, expected 2");
@@ -397,22 +400,22 @@ class UnifiedEngineTestSuite {
             std::cout << "  Destroying both sessions..." << std::endl;
         }
 
-        engine->destroySession(session1);
-        engine->destroySession(session2);
+        auto destroyResult1 = engine->destroySession(session1);
+        auto destroyResult2 = engine->destroySession(session2);
         std::cout << "✓ Destroyed both sessions." << std::endl;
 
         monitor.checkpoint("Sessions destroyed");
 
         if (options.enableSessionDebug) {
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
-                                           huntmaster::DebugLevel::INFO,
-                                           "Both sessions destroyed successfully");
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                                       huntmaster::DebugLevel::INFO,
+                                                       "Both sessions destroyed successfully");
         }
 
         if (options.enableSessionDebug) {
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::INFO,
-                                           "Multiple sessions test completed successfully");
+            huntmaster::DebugLogger::getInstance().log(
+                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+                "Multiple sessions test completed successfully");
         }
 
         return true;
@@ -424,17 +427,17 @@ class UnifiedEngineTestSuite {
         std::cout << "\n--- Testing Invalid Session ---" << std::endl;
 
         if (options.enableSessionDebug) {
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::DEBUG,
-                                           "Starting invalid session test");
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                       huntmaster::DebugLevel::DEBUG,
+                                                       "Starting invalid session test");
         }
 
         auto engineResult = UnifiedAudioEngine::create();
         if (!engineResult) {
             if (options.enableEngineDebug) {
-                DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
-                                               huntmaster::DebugLevel::ERROR,
-                                               "Failed to create engine for invalid session test");
+                huntmaster::DebugLogger::getInstance().log(
+                    huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
+                    "Failed to create engine for invalid session test");
             }
             return false;
         }
@@ -455,17 +458,17 @@ class UnifiedEngineTestSuite {
             std::cout << "✓ Correctly failed to destroy non-existent session." << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
-                                               huntmaster::DebugLevel::DEBUG,
-                                               "Correctly failed to destroy non-existent session " +
-                                                   std::to_string(invalidSessionId));
+                huntmaster::DebugLogger::getInstance().log(
+                    huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::DEBUG,
+                    "Correctly failed to destroy non-existent session " +
+                        std::to_string(invalidSessionId));
             }
         } else {
             std::cerr << "✗ Incorrect status when destroying non-existent session: "
                       << static_cast<int>(invalidResult) << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(
+                huntmaster::DebugLogger::getInstance().log(
                     huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
                     "Incorrect status when destroying non-existent session: " +
                         std::to_string(static_cast<int>(invalidResult)));
@@ -482,7 +485,7 @@ class UnifiedEngineTestSuite {
             std::cout << "✓ Correctly reports invalid session as inactive." << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(
+                huntmaster::DebugLogger::getInstance().log(
                     huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::DEBUG,
                     "Correctly reports invalid session " + std::to_string(invalidSessionId) +
                         " as inactive");
@@ -491,10 +494,10 @@ class UnifiedEngineTestSuite {
             std::cerr << "✗ Incorrectly reports invalid session as active." << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
-                                               huntmaster::DebugLevel::ERROR,
-                                               "Incorrectly reports invalid session " +
-                                                   std::to_string(invalidSessionId) + " as active");
+                huntmaster::DebugLogger::getInstance().log(
+                    huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
+                    "Incorrectly reports invalid session " + std::to_string(invalidSessionId) +
+                        " as active");
             }
             return false;
         }
@@ -502,9 +505,9 @@ class UnifiedEngineTestSuite {
         monitor.checkpoint("Invalid session activity checked");
 
         if (options.enableSessionDebug) {
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::INFO,
-                                           "Invalid session test completed successfully");
+            huntmaster::DebugLogger::getInstance().log(
+                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+                "Invalid session test completed successfully");
         }
 
         return true;
@@ -516,9 +519,9 @@ class UnifiedEngineTestSuite {
         std::cout << "\n--- Testing Engine Creation ---" << std::endl;
 
         if (options.enableEngineDebug) {
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::DEBUG,
-                                           "Starting engine creation test");
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                       huntmaster::DebugLevel::DEBUG,
+                                                       "Starting engine creation test");
         }
 
         // Test multiple engine creation
@@ -535,11 +538,11 @@ class UnifiedEngineTestSuite {
             std::cerr << "✗ Failed to create multiple engines." << std::endl;
 
             if (options.enableEngineDebug) {
-                DebugLogger::getInstance().log(
+                huntmaster::DebugLogger::getInstance().log(
                     huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
                     "Failed to create multiple engines - Engine1: " +
-                        std::to_string(engine1Result.has_value()) +
-                        ", Engine2: " + std::to_string(engine2Result.has_value()));
+                        std::to_string(engine1Result.isOk()) +
+                        ", Engine2: " + std::to_string(engine2Result.isOk()));
             }
             return false;
         }
@@ -547,9 +550,9 @@ class UnifiedEngineTestSuite {
         std::cout << "✓ Successfully created multiple engines." << std::endl;
 
         if (options.enableEngineDebug) {
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
-                                           huntmaster::DebugLevel::INFO,
-                                           "Successfully created multiple engines");
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                                       huntmaster::DebugLevel::INFO,
+                                                       "Successfully created multiple engines");
         }
 
         // Test engine destruction (automatic via RAII)
@@ -558,9 +561,9 @@ class UnifiedEngineTestSuite {
         }
 
         if (options.enableEngineDebug) {
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::INFO,
-                                           "Engine creation test completed successfully");
+            huntmaster::DebugLogger::getInstance().log(
+                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+                "Engine creation test completed successfully");
         }
 
         return true;
@@ -572,17 +575,17 @@ class UnifiedEngineTestSuite {
         std::cout << "\n--- Testing Session Queries ---" << std::endl;
 
         if (options.enableSessionDebug) {
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::DEBUG,
-                                           "Starting session queries test");
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                       huntmaster::DebugLevel::DEBUG,
+                                                       "Starting session queries test");
         }
 
         auto engineResult = UnifiedAudioEngine::create();
         if (!engineResult) {
             if (options.enableEngineDebug) {
-                DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
-                                               huntmaster::DebugLevel::ERROR,
-                                               "Failed to create engine for session queries test");
+                huntmaster::DebugLogger::getInstance().log(
+                    huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
+                    "Failed to create engine for session queries test");
             }
             return false;
         }
@@ -600,16 +603,16 @@ class UnifiedEngineTestSuite {
             std::cout << "✓ getActiveSessions correctly returns empty list." << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
-                                               huntmaster::DebugLevel::DEBUG,
-                                               "getActiveSessions correctly returns empty list");
+                huntmaster::DebugLogger::getInstance().log(
+                    huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::DEBUG,
+                    "getActiveSessions correctly returns empty list");
             }
         } else {
             std::cerr << "✗ getActiveSessions should return empty list but returned "
                       << emptySessions.size() << " sessions." << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(
+                huntmaster::DebugLogger::getInstance().log(
                     huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
                     "getActiveSessions should return empty list but returned " +
                         std::to_string(emptySessions.size()) + " sessions");
@@ -638,19 +641,19 @@ class UnifiedEngineTestSuite {
             std::cout << "✓ Created 3 test sessions." << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
-                                               huntmaster::DebugLevel::INFO,
-                                               "Created 3 test sessions for query testing");
+                huntmaster::DebugLogger::getInstance().log(
+                    huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::INFO,
+                    "Created 3 test sessions for query testing");
             }
         } else {
             std::cerr << "✗ Expected to create 3 sessions but created " << sessionIds.size()
                       << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
-                                               huntmaster::DebugLevel::ERROR,
-                                               "Expected to create 3 sessions but created " +
-                                                   std::to_string(sessionIds.size()));
+                huntmaster::DebugLogger::getInstance().log(
+                    huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
+                    "Expected to create 3 sessions but created " +
+                        std::to_string(sessionIds.size()));
             }
             return false;
         }
@@ -665,16 +668,16 @@ class UnifiedEngineTestSuite {
             std::cout << "✓ getActiveSessions correctly returns 3 sessions." << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
-                                               huntmaster::DebugLevel::DEBUG,
-                                               "getActiveSessions correctly returns 3 sessions");
+                huntmaster::DebugLogger::getInstance().log(
+                    huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::DEBUG,
+                    "getActiveSessions correctly returns 3 sessions");
             }
         } else {
             std::cerr << "✗ getActiveSessions returned " << activeSessions.size()
                       << " sessions, expected 3." << std::endl;
 
             if (options.enableSessionDebug) {
-                DebugLogger::getInstance().log(
+                huntmaster::DebugLogger::getInstance().log(
                     huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
                     "getActiveSessions returned " + std::to_string(activeSessions.size()) +
                         " sessions, expected 3");
@@ -690,15 +693,15 @@ class UnifiedEngineTestSuite {
         }
 
         for (SessionId sessionId : sessionIds) {
-            engine->destroySession(sessionId);
+            auto destroyResult = engine->destroySession(sessionId);
         }
 
         monitor.checkpoint("Test sessions cleaned up");
 
         if (options.enableSessionDebug) {
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::INFO,
-                                           "Session queries test completed successfully");
+            huntmaster::DebugLogger::getInstance().log(
+                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+                "Session queries test completed successfully");
         }
 
         return true;
@@ -717,42 +720,43 @@ int main(int argc, char* argv[]) {
 
     // Set up debugging based on options
     if (debugOptions.enableTrace) {
-        DebugConfig::setupFullDebug();
+        huntmaster::DebugConfig::setupFullDebug();
     } else if (debugOptions.enableDebug) {
-        DebugConfig::setupToolsDebug();
+        huntmaster::DebugConfig::setupToolsDebug();
     }
 
     // Configure component-specific debug levels
-    auto& logger = DebugLogger::getInstance();
+    auto& logger = huntmaster::DebugLogger::getInstance();
     if (debugOptions.enableEngineDebug) {
-        logger.setComponentLevel(huntmaster::DebugComponent::AUDIO_ENGINE,
+        logger.setComponentLogLevel(huntmaster::DebugComponent::AUDIO_ENGINE,
                                  huntmaster::DebugLevel::DEBUG);
     }
     if (debugOptions.enableSessionDebug) {
-        logger.setComponentLevel(huntmaster::DebugComponent::AUDIO_ENGINE,
+        logger.setComponentLogLevel(huntmaster::DebugComponent::AUDIO_ENGINE,
                                  huntmaster::DebugLevel::TRACE);
     }
     if (debugOptions.enablePerformanceMetrics) {
-        logger.setComponentLevel(huntmaster::DebugComponent::PERFORMANCE,
+        logger.setComponentLogLevel(huntmaster::DebugComponent::PERFORMANCE,
                                  huntmaster::DebugLevel::DEBUG);
     }
 
-    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-                                   "=== Simple Unified Test Tool Started ===");
+    huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                               huntmaster::DebugLevel::INFO,
+                                               "=== Simple Unified Test Tool Started ===");
 
     try {
         UnifiedEngineTestSuite testSuite(debugOptions);
         testSuite.runAllTests();
 
-        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                       huntmaster::DebugLevel::INFO,
-                                       "=== Simple Unified Test Tool Completed Successfully ===");
+        huntmaster::DebugLogger::getInstance().log(
+            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+            "=== Simple Unified Test Tool Completed Successfully ===");
 
     } catch (const std::exception& e) {
         std::cerr << "❌ An unexpected error occurred: " << e.what() << std::endl;
-        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                       huntmaster::DebugLevel::ERROR,
-                                       "Exception occurred: " + std::string(e.what()));
+        huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                   huntmaster::DebugLevel::ERROR,
+                                                   "Exception occurred: " + std::string(e.what()));
         return 1;
     }
 

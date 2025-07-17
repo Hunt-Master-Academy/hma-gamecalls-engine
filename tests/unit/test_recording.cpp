@@ -53,8 +53,10 @@ int main() {
 
     // Test 2: Load and play master call
     std::cout << "\nTest 2: Loading and playing master call..." << std::endl;
-    engine.loadMasterCall("buck_grunt");
-    engine.playMasterCall("buck_grunt");
+    auto loadResult = engine.loadMasterCall("buck_grunt");
+    auto playResult = engine.playMasterCall("buck_grunt");
+    (void)loadResult;  // Suppress unused variable warning
+    (void)playResult;  // Suppress unused variable warning
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
@@ -85,7 +87,8 @@ int main() {
 
     // Play back the user recording
     std::cout << "\nPlaying back your recording..." << std::endl;
-    engine.playRecording("user_buck_grunt_attempt.wav");
+    auto playRecordingResult = engine.playRecording("user_buck_grunt_attempt.wav");
+    (void)playRecordingResult;  // Suppress unused variable warning
 
     std::this_thread::sleep_for(std::chrono::seconds(3));
 

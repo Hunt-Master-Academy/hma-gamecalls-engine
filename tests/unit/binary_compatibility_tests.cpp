@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <chrono>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -36,8 +37,16 @@ TEST_F(BinaryCompatibilityTest, BasicEngineOperations) {
 
 // Test audio recording functionality
 TEST_F(BinaryCompatibilityTest, RecordingOperations) {
+    // Set a timeout for this test to prevent hanging
+    const auto timeout = std::chrono::seconds(10);
+    const auto start_time = std::chrono::steady_clock::now();
+
     auto result = engine.startRecording(44100.0);
     EXPECT_TRUE(result.isOk());
+
+    // Check timeout during recording operations
+    ASSERT_LT(std::chrono::steady_clock::now() - start_time, timeout)
+        << "Test timed out during recording operations";
 
     if (result.isOk()) {
         int recordingId = result.value;

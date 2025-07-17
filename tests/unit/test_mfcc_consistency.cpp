@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 
+#include <chrono>
 #include <cmath>
 #include <iomanip>
 #include <iostream>
@@ -25,7 +26,8 @@ static std::vector<float> generateSineWave(float frequency, float duration, floa
 }
 
 // Save audio to WAV file
-bool saveTestWav(const std::string &filename, const std::vector<float> &samples, float sampleRate) {
+static bool saveTestWav(const std::string &filename, const std::vector<float> &samples,
+                        float sampleRate) {
     drwav wav;
     drwav_data_format format;
     format.container = drwav_container_riff;
@@ -137,6 +139,10 @@ TEST_F(MFCCConsistencyTest, ExistingMasterCallTest) {
 }
 
 TEST_F(MFCCConsistencyTest, SineWaveConsistency) {
+    // Set a timeout for this test to prevent hanging
+    const auto timeout = std::chrono::seconds(30);
+    const auto start_time = std::chrono::steady_clock::now();
+
     std::cout << "Test 1: Processing 440 Hz sine wave" << std::endl;
     std::cout << "---------------------------------------" << std::endl;
 
@@ -153,6 +159,10 @@ TEST_F(MFCCConsistencyTest, SineWaveConsistency) {
     std::cout << "\nProcessing 5 times:" << std::endl;
 
     for (int i = 0; i < 5; ++i) {
+        // Check timeout during processing loop
+        ASSERT_LT(std::chrono::steady_clock::now() - start_time, timeout)
+            << "Test timed out during processing loop iteration " << i;
+
         // Load as master (this triggers MFCC processing)
         auto loadResult = engine.loadMasterCall("test_sine_440");
         if (loadResult != HuntmasterAudioEngine::EngineStatus::OK) {
@@ -222,6 +232,10 @@ TEST_F(MFCCConsistencyTest, SineWaveConsistency) {
 }
 
 TEST_F(MFCCConsistencyTest, ComplexWaveformConsistency) {
+    // Set a timeout for this test to prevent hanging
+    const auto timeout = std::chrono::seconds(30);
+    const auto start_time = std::chrono::steady_clock::now();
+
     std::cout << "\n\nTest 2: Processing complex waveform" << std::endl;
     std::cout << "---------------------------------------" << std::endl;
 
@@ -239,10 +253,16 @@ TEST_F(MFCCConsistencyTest, ComplexWaveformConsistency) {
         FAIL() << "Failed to create complex test file: " << testFile2;
     }
 
+    // Check timeout during file creation
+    ASSERT_LT(std::chrono::steady_clock::now() - start_time, timeout)
+        << "Test timed out during complex waveform creation";
+
     // Process multiple times
     std::vector<float> complexScores;
     for (int i = 0; i < 5; ++i) {
-        engine.loadMasterCall("test_complex");
+        auto loadResult = engine.loadMasterCall("test_complex");
+        EXPECT_TRUE(loadResult == huntmaster::HuntmasterAudioEngine::EngineStatus::OK ||
+                    loadResult == huntmaster::HuntmasterAudioEngine::EngineStatus::FILE_NOT_FOUND);
 
         auto sessionResult2 = engine.startRealtimeSession(44100.0f, 1024);
         ASSERT_TRUE(sessionResult2.isOk()) << "Failed to start realtime session";
@@ -293,8 +313,10 @@ TEST_F(MFCCConsistencyTest, RealAudioFileConsistency) {
 
     for (int i = 0; i < 3; ++i) {
         try {
-            engine.loadMasterCall("buck_grunt");
-            realFileExists = true;
+            auto loadResult = engine.loadMasterCall("buck_grunt");
+            if (loadResult == huntmaster::HuntmasterAudioEngine::EngineStatus::OK) {
+                realFileExists = true;
+            }
 
             // Load the actual audio file
             unsigned int channels, sampleRate;

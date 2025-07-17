@@ -1,4 +1,5 @@
 #include <chrono>
+#include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <span>
@@ -361,8 +362,7 @@ class AudioAnalyzer {
             std::cout << "  - Score range: 0.0 (no similarity) to 1.0 (perfect match)" << std::endl;
             std::cout << "  - Algorithm: DTW (Dynamic Time Warping) with MFCC features"
                       << std::endl;
-            std::cout << "  - Processing chunks: " << ((audioData.size() + 1023) / 1024)
-                      << std::endl;
+            std::cout << "  - Processing chunks: " << ((sampleCount + 1023) / 1024) << std::endl;
         }
     }
 };
@@ -429,104 +429,4 @@ int main(int argc, char* argv[]) {
 
     LOG_INFO(Component::TOOLS, "Analysis completed successfully");
     return 0;
-}
-
-std::cout << "\nAnalyzing: " << recordingPath << std::endl;
-std::cout << "Comparing against master call: " << masterCallId << std::endl;
-
-// Initialize engine
-auto engineResult = UnifiedAudioEngine::create();
-if (!engineResult.isOk()) {
-    std::cerr << "Error: Failed to create UnifiedAudioEngine" << std::endl;
-    return 1;
-}
-auto engine = std::move(*engineResult);
-
-// Load the recording first to get sample rate
-std::cout << "\n1. Loading recording..." << std::endl;
-unsigned int channels, sampleRate;
-std::vector<float> audioData = load_audio_file(recordingPath, channels, sampleRate);
-
-if (audioData.empty()) {
-    std::cerr << "Failed to load recording!" << std::endl;
-    return 1;
-}
-
-// Create session with the correct sample rate
-std::cout << "\n2. Creating audio session..." << std::endl;
-auto sessionResult = engine->createSession(static_cast<float>(sampleRate));
-if (!sessionResult.isOk()) {
-    std::cerr << "Error: Failed to create session" << std::endl;
-    return 1;
-}
-auto sessionId = *sessionResult;
-
-// Load master call
-std::cout << "\n3. Loading master call..." << std::endl;
-auto loadResult = engine->loadMasterCall(sessionId, masterCallId);
-if (loadResult != UnifiedAudioEngine::Status::OK) {
-    std::cerr << "Error: Failed to load master call '" << masterCallId << "'." << std::endl;
-    return 1;
-}
-
-// Process through real-time session
-std::cout << "\n4. Starting analysis session..." << std::endl;
-// Process in chunks (simulating real-time)
-const int chunkSize = 1024;
-int totalChunks = 0;
-for (size_t i = 0; i < audioData.size(); i += chunkSize) {
-    size_t remainingSamples = audioData.size() - i;
-    size_t samplesToProcess = (remainingSamples < chunkSize) ? remainingSamples : chunkSize;
-
-    // Process audio chunk using span
-    std::span<const float> audioChunk(audioData.data() + i, samplesToProcess);
-    auto processStatus = engine->processAudioChunk(sessionId, audioChunk);
-    if (processStatus != UnifiedAudioEngine::Status::OK) {
-        std::cerr << "\nError processing audio chunk. Aborting." << std::endl;
-        break;  // Exit the loop if a chunk fails
-    }
-
-    totalChunks++;
-    if (totalChunks % 10 == 0) {
-        std::cout << ".";
-        std::cout.flush();
-    }
-}
-std::cout << std::endl;
-
-// Get final score
-std::cout << "\n5. Calculating similarity score..." << std::endl;
-auto scoreResult = engine->getSimilarityScore(sessionId);
-if (!scoreResult.isOk()) {
-    std::cerr << "Error: Could not calculate similarity score." << std::endl;
-    return 1;
-}
-float score = *scoreResult;
-
-std::cout << "\n========================================" << std::endl;
-std::cout << "Recording: " << recordingPath << std::endl;
-std::cout << "Duration: " << (float)audioData.size() / sampleRate << " seconds" << std::endl;
-std::cout << "Similarity Score: " << score << std::endl;
-std::cout << "========================================" << std::endl;
-
-// Note: Higher scores = better match (score = 1/(1+distance))
-// For similarity scores (0-1 range), higher values indicate better matches
-const float EXCELLENT_THRESHOLD = 0.8f;        // Very close match
-const float GOOD_THRESHOLD = 0.6f;             // Good match
-const float FAIR_THRESHOLD = 0.4f;             // Fair match
-const float SOME_SIMILARITY_THRESHOLD = 0.2f;  // Some similarity
-
-if (score > EXCELLENT_THRESHOLD) {
-    std::cout << "Interpretation: EXCELLENT match to master call!" << std::endl;
-} else if (score > GOOD_THRESHOLD) {
-    std::cout << "Interpretation: Good match to master call" << std::endl;
-} else if (score > FAIR_THRESHOLD) {
-    std::cout << "Interpretation: Fair match to master call" << std::endl;
-} else if (score > SOME_SIMILARITY_THRESHOLD) {
-    std::cout << "Interpretation: Some similarity to master call" << std::endl;
-} else {
-    std::cout << "Interpretation: Different from master call" << std::endl;
-}
-
-return 0;
 }

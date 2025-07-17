@@ -250,7 +250,7 @@ TEST_F(UnifiedEngineTest, ResultPatternConsistency) {
     auto scoreResult = engine->getSimilarityScore(sessionId);
     EXPECT_FALSE(scoreResult.isOk());
     EXPECT_EQ(scoreResult.error(),
-              UnifiedAudioEngine::Status::PROCESSING_ERROR);  // Or specific error
+              UnifiedAudioEngine::Status::INSUFFICIENT_DATA);  // Not enough data for scoring
 
     // Clean up
     auto result = engine->destroySession(sessionId);

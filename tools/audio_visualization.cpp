@@ -657,15 +657,15 @@ int main(int argc, char *argv[]) {
     // Configure component-specific debug levels
     auto &logger = DebugLogger::getInstance();
     if (debugOptions.enableVisualizationDebug) {
-        logger.setComponentLevel(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::TRACE);
+        logger.setComponentLogLevel(huntmaster::Component::TOOLS, huntmaster::LogLevel::TRACE);
     }
     if (debugOptions.enableAudioAnalysis) {
-        logger.setComponentLevel(huntmaster::DebugComponent::AUDIO_PROCESSING,
-                                 huntmaster::DebugLevel::DEBUG);
+        logger.setComponentLogLevel(huntmaster::Component::FEATURE_EXTRACTION,
+                                    huntmaster::LogLevel::DEBUG);
     }
     if (debugOptions.enablePerformanceMetrics) {
-        logger.setComponentLevel(huntmaster::DebugComponent::PERFORMANCE,
-                                 huntmaster::DebugLevel::DEBUG);
+        logger.setComponentLogLevel(huntmaster::Component::PERFORMANCE,
+                                    huntmaster::LogLevel::DEBUG);
     }
 
     DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
@@ -761,7 +761,8 @@ int main(int argc, char *argv[]) {
             "Engine initialized, loading master call: " + masterCallName);
     }
 
-    engine.loadMasterCall(masterCallName);
+    auto loadResult = engine.loadMasterCall(masterCallName);
+    (void)loadResult;  // Suppress unused variable warning
     int sessionId = engine.startRealtimeSession(static_cast<float>(userSR), 1024);
 
     if (debugOptions.enableDebug) {
@@ -779,7 +780,8 @@ int main(int argc, char *argv[]) {
     for (size_t i = 0; i < userAudio.size(); i += chunkSize) {
         size_t remaining = userAudio.size() - i;
         size_t toProcess = (remaining < chunkSize) ? remaining : chunkSize;
-        engine.processAudioChunk(sessionId, userAudio.data() + i, toProcess);
+        auto processResult = engine.processAudioChunk(sessionId, userAudio.data() + i, toProcess);
+        (void)processResult;  // Suppress unused variable warning
         chunksProcessed++;
 
         if (debugOptions.enableTrace && chunksProcessed % 100 == 0) {

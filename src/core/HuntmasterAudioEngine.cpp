@@ -143,8 +143,9 @@ void HuntmasterAudioEngine::Impl::initialize() {
     vad_ = std::make_unique<VoiceActivityDetector>(vad_config);
 
     // Initialize paths relative to the executable working directory
-    masterCallsPath_ = "data/master_calls/";
-    featuresPath_ = "data/features/";
+    // When running from build directory, we need to go up one level
+    masterCallsPath_ = "../data/master_calls/";
+    featuresPath_ = "../data/features/";
     recordingsPath_ = "../data/recordings/";
     std::cout << "[HuntmasterEngine] Initialized successfully." << std::endl;
 }
