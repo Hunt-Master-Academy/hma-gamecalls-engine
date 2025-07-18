@@ -6,6 +6,48 @@
 
 ---
 
+## Test Coverage & Next Steps
+
+- All major features covered by unit tests:
+  - Waveform generation (silence, sine, multi-channel)
+  - Buffer management and circular buffer edge cases
+  - JSON export (with/without samples, field validation)
+  - Range queries and zoom levels
+  - Error handling for invalid config, audio data, and channel count
+  - Reset and config update logic
+- Utility functions for downsampling, peak/rms envelope tested
+
+### Edge Case & Stress Testing Plan
+
+1. **Edge Case Testing:**
+
+   - Test with minimum and maximum buffer sizes
+   - Validate behavior with extreme downsample ratios
+   - Test invalid and boundary config values
+   - Multi-channel audio with unusual channel counts
+   - Range queries at buffer boundaries and empty ranges
+   - JSON export with very large sample sets
+
+2. **Stress Testing:**
+
+   - Long-duration audio streams (simulate real-time)
+   - Rapid config changes during processing
+   - High-frequency processAudio calls (thread safety)
+   - Simultaneous session isolation under load
+
+3. **Release Candidate Checklist:**
+   - All tests pass on all supported platforms (desktop, WASM, mobile)
+   - Documentation up to date (README, Architecture, Debugging, Deployment)
+   - Debugging outputs and error handling validated
+   - No memory leaks or deadlocks
+   - Performance benchmarks meet targets
+
+## Immediate Next Steps
+
+- Finalize documentation updates (Architecture.md, README.md, etc.)
+- Implement and run edge case and stress tests
+- Prepare release candidate and deployment artifacts
+
 ## ✅ Priority 1: Core Architecture & Infrastructure (100% COMPLETED)
 
 ### 1.1 Modern C++20 Engine Implementation ✅

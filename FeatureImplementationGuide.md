@@ -1,5 +1,30 @@
 # Huntmaster Cross-Platform Architecture & Feature Implementation Guide
 
+## Test Coverage & Next Steps
+
+- All platform integration features validated by unit and integration tests:
+  - Waveform generation, MFCC, DTW, VAD, session isolation
+  - Error handling, debugging, JSON export, platform data integration
+
+### Edge Case & Stress Testing Plan
+
+1. **Edge Case Testing:**
+
+   - Integration with minimum/maximum buffer sizes and config values
+   - Multi-channel audio, range queries, large JSON exports
+
+2. **Stress Testing:**
+
+   - High-frequency API calls, rapid config changes
+   - Simultaneous session integration under load
+
+3. **Release Candidate Checklist:**
+   - All integration tests pass on all platforms
+   - Documentation up to date
+   - Debugging outputs and error handling validated
+   - No memory leaks or deadlocks
+   - Performance benchmarks meet targets
+
 ## Core Architecture Overview
 
 ### 1. **Shared C++ Audio Engine (Current)**

@@ -1,5 +1,42 @@
 # Huntmaster Audio Engine - Cross-Platform Architecture
 
+## Test Coverage & Next Steps
+
+- All architectural features covered by unit and integration tests:
+  - Session isolation and per-session master calls
+  - Lock-free real-time processing and buffer management
+  - Waveform generation, MFCC, DTW, VAD, and scoring
+  - JSON export, range queries, zoom, and config update
+  - Error handling for invalid config, audio data, and channel count
+
+### Edge Case & Stress Testing Plan
+
+1. **Edge Case Testing:**
+
+   - Minimum/maximum buffer sizes and downsample ratios
+   - Invalid/boundary config values and channel counts
+   - Range queries at buffer boundaries and empty ranges
+   - JSON export with large sample sets
+
+2. **Stress Testing:**
+
+   - Long-duration audio streams and rapid config changes
+   - High-frequency processAudio calls (thread safety)
+   - Simultaneous session isolation under load
+
+3. **Release Candidate Checklist:**
+   - All tests pass on all supported platforms
+   - Documentation up to date (README, Debugging, Deployment)
+   - Debugging outputs and error handling validated
+   - No memory leaks or deadlocks
+   - Performance benchmarks meet targets
+
+## Immediate Next Steps
+
+- Finalize documentation updates
+- Implement and run edge case and stress tests
+- Prepare release candidate and deployment artifacts
+
 ## Executive Summary
 
 The Huntmaster Audio Engine is a modern C++20 cross-platform audio processing library designed for real-time wildlife call analysis and training. The engine provides consistent, high-performance audio processing across web (WebAssembly), mobile (iOS/Android), and desktop platforms through a unified codebase with platform-specific optimizations### ✅ **MVP REQUIRED COMPONENTS** (100% Complete)

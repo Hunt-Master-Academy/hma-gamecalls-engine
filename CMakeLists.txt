@@ -297,12 +297,17 @@ else()
         
         # Filter out standalone tests from Google Test sources
         set(TEST_SOURCES)
+
         foreach(test_file ${ALL_TEST_SOURCES})
             list(FIND STANDALONE_TESTS ${test_file} exclude_index)
             if(exclude_index EQUAL -1)
                 list(APPEND TEST_SOURCES ${test_file})
             endif()
         endforeach()
+
+        message(STATUS "ALL_TEST_SOURCES: ${ALL_TEST_SOURCES}")
+        message(STATUS "STANDALONE_TESTS: ${STANDALONE_TESTS}")
+        message(STATUS "TEST_SOURCES after filtering: ${TEST_SOURCES}")
 
         if(TEST_SOURCES)
             add_executable(RunEngineTests ${TEST_SOURCES})

@@ -1,0 +1,4 @@
+Buffer used: 256, capacity: 256
+firstHalf.samples.size(): 128
+secondHalf.samples.size(): 128
+totalTimeMs: 92.88, halfTimeMs: 46.44

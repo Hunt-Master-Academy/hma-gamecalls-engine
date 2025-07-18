@@ -14,7 +14,7 @@ class RealtimeScorerTest : public ::testing::Test {
    protected:
     void SetUp() override {
         scorer_ = std::make_unique<RealtimeScorer>();
-        testMasterCallPath_ = "test_master_call.wav";
+        testMasterCallPath_ = "../data/master_calls/buck_grunt.wav";  // Path to a test master call
     }
 
     void TearDown() override { scorer_.reset(); }
@@ -35,6 +35,7 @@ TEST_F(RealtimeScorerTest, ResetFunctionalityTest) {
     for (int i = 0; i < 3; ++i) {
         std::cout << "TEST: Processing chunk " << i << std::endl;
         std::vector<float> audio(1024, 0.5f);
+        bool audioSuccess = scorer_->processAudio(audio, 1).has_value();
         auto audioResult = scorer_->processAudio(audio, 1);
         std::cout << "TEST: processAudio result: "
                   << (audioResult.has_value() ? "SUCCESS" : "FAILED") << std::endl;

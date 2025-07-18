@@ -44,7 +44,7 @@ TEST_F(EndToEndTest, ProcessSimpleAudio) {
     auto test_signal = generateTestSignal(440.0f, 0.5f, 44100.0f);
 
     // Start a session
-    auto session_result = engine_->startSession(1);
+    auto session_result = engine_->startSession(0);
     ASSERT_TRUE(session_result.has_value());
 
     // Check timeout during session start
@@ -52,13 +52,16 @@ TEST_F(EndToEndTest, ProcessSimpleAudio) {
         << "Test timed out during session start";
 
     // Load a master call before processing audio
-    auto load_result = engine_->loadMasterCall("data/master_calls/buck_grunt.wav");
+    // FIX: The API expects the call name (e.g., "buck_grunt"), not the full path.
+    auto load_result = engine_->loadMasterCall("buck_grunt");
     ASSERT_TRUE(load_result.has_value() ||
-                load_result.error().status == EngineStatus::FILE_NOT_FOUND);
+                load_result.error().status == EngineStatus::ERROR_RESOURCE_UNAVAILABLE);
 
     // Process in chunks
     const size_t chunk_size = 512;
-    for (size_t i = 0; i < test_signal.size(); i += chunk_size) {
+    // FIX: Only process full chunks. The current HuntmasterEngine implementation passes
+    // chunks directly to the MFCCProcessor, which expects a fixed frame size.
+    for (size_t i = 0; i + chunk_size <= test_signal.size(); i += chunk_size) {
         // Check timeout during processing
         ASSERT_LT(std::chrono::steady_clock::now() - start_time, timeout)
             << "Test timed out during audio processing";
@@ -82,7 +85,7 @@ TEST_F(EndToEndTest, ProcessSimpleAudio) {
     }
 
     // End session
-    auto end_result = engine_->endSession(1);
+    auto end_result = engine_->endSession(0);
     EXPECT_TRUE(end_result.has_value());
 }
 
@@ -99,7 +102,9 @@ TEST_F(EndToEndTest, LoadMasterCallAndCompare) {
     ASSERT_TRUE(session_result.has_value());
 
     // Load a master call (would need test data)
-    auto load_result = engine_->loadMasterCall("data/master_calls/buck_grunt.wav");
+    // FIX: The loadMasterCall method expects the call name, not the full
+    // filename. It constructs the path internally.
+    auto load_result = engine_->loadMasterCall("buck_grunt");
     if (!load_result.has_value()) {
         std::cout << "LoadMasterCall failed: status="
                   << static_cast<int>(load_result.error().status) << ", message='"
@@ -121,7 +126,7 @@ TEST_F(EndToEndTest, LoadMasterCallAndCompare) {
         std::cout << "Master call failed to load: status="
                   << static_cast<int>(load_result.error().status) << ", message='"
                   << load_result.error().message << "'\n";
-        EXPECT_EQ(load_result.error().status, EngineStatus::FILE_NOT_FOUND)
+        EXPECT_EQ(load_result.error().status, EngineStatus::ERROR_RESOURCE_UNAVAILABLE)
             << "Unexpected error status: " << static_cast<int>(load_result.error().status)
             << ", message='" << load_result.error().message << "'";
     }

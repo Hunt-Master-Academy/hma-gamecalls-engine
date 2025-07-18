@@ -314,10 +314,15 @@ HuntmasterAudioEngine::Result<float> HuntmasterAudioEngine::Impl::getSimilarityS
     if (it == sessions_.end()) return {0.0f, EngineStatus::INVALID_SESSION};
     const auto &sessionFeatures = it->second.features;
     sessionLock.unlock();
-
+ 
     std::shared_lock masterLock(masterCallMutex_);
-    if (masterCallFeatures_.empty() || sessionFeatures.empty()) {
+    // A master call must be loaded to get a score.
+    if (masterCallFeatures_.empty()) {
         return {0.0f, EngineStatus::INSUFFICIENT_DATA};
+    }
+    // If no audio has been processed in the session, the similarity is zero.
+    if (sessionFeatures.empty()) {
+        return {0.0f, EngineStatus::OK};
     }
 
     const float distance = DTWProcessor::calculateDistance(masterCallFeatures_, sessionFeatures);

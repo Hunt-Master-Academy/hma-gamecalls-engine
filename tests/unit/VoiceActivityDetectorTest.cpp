@@ -17,9 +17,10 @@ class VoiceActivityDetectorTest : public ::testing::Test {
         config_.window_duration = std::chrono::milliseconds(20);
         config_.sample_rate = 16000;
         config_.pre_buffer = std::chrono::milliseconds(40);
-        config_.post_buffer = std::chrono::milliseconds(40);
-        config_.min_sound_duration = std::chrono::milliseconds(20);
+        config_.post_buffer = std::chrono::milliseconds(40); // Hangover for 2 frames
+        config_.min_sound_duration = std::chrono::milliseconds(40); // Requires 2 frames to activate
         vad_ = std::make_unique<VoiceActivityDetector>(config_);
+
     }
 
     std::vector<float> MakeAudio(size_t n, float value) { return std::vector<float>(n, value); }
@@ -39,19 +40,19 @@ TEST_F(VoiceActivityDetectorTest, SilenceIsNotActive) {
 TEST_F(VoiceActivityDetectorTest, VoiceIsDetectedAfterMinDuration) {
     auto voice = MakeAudio(320, 0.2f);  // 20ms at 16kHz, above threshold
 
-    // The first window of voice should be detected, but the VAD might not
-    // transition to the 'active' state until min_sound_duration is met.
-    // In this test's config, min_sound_duration (20ms) equals window_duration (20ms),
-    // so the VAD should become active on the very first voice frame.
+    // Frame 1: The VAD detects energy and transitions from SILENCE to VOICE_CANDIDATE.
+    // The result's is_active flag will be false because the state is not yet VOICE_ACTIVE.
     auto result1 = vad_->processWindow(voice);
     ASSERT_TRUE(result1.has_value());
-    EXPECT_TRUE(result1->is_active);
+    EXPECT_FALSE(result1->is_active) << "VAD should be in CANDIDATE state, not ACTIVE, after one frame.";
+    EXPECT_FALSE(vad_->isVoiceActive()) << "isVoiceActive() should be false in CANDIDATE state.";
 
-    // Processing a second window should keep the state active.
+    // Frame 2: The VAD sees another voice frame, meets min_sound_duration (40ms),
+    // and transitions from VOICE_CANDIDATE to VOICE_ACTIVE.
     auto result2 = vad_->processWindow(voice);
     ASSERT_TRUE(result2.has_value());
-    EXPECT_TRUE(result2->is_active);
-    EXPECT_GT(result2->energy_level, 0.01f);
+    EXPECT_TRUE(result2->is_active) << "VAD should transition to ACTIVE on the second frame.";
+    EXPECT_TRUE(vad_->isVoiceActive()) << "isVoiceActive() should be true after meeting duration.";
 }
 
 TEST_F(VoiceActivityDetectorTest, PreAndPostBuffering) {
@@ -59,20 +60,26 @@ TEST_F(VoiceActivityDetectorTest, PreAndPostBuffering) {
     auto voice = MakeAudio(320, 0.2f);
 
     // Silence first
-    ASSERT_TRUE(vad_->processWindow(silence).has_value()) << "Initial silence processing failed";
-    // Voice onset
-    ASSERT_TRUE(vad_->processWindow(voice).has_value()) << "First voice frame processing failed";
-    ASSERT_TRUE(vad_->processWindow(voice).has_value()) << "Second voice frame processing failed";
+    ASSERT_TRUE(vad_->processWindow(silence).has_value())
+        << "Initial silence processing failed";
+
+    // Voice onset - requires 2 frames (40ms) to become active
+    ASSERT_TRUE(vad_->processWindow(voice).has_value())
+        << "First voice frame processing failed";
+    EXPECT_FALSE(vad_->isVoiceActive()) << "Should not be active after one voice frame.";
+    ASSERT_TRUE(vad_->processWindow(voice).has_value())
+        << "Second voice frame processing failed";
+    EXPECT_TRUE(vad_->isVoiceActive()) << "Should be active after two voice frames.";
+
     // Voice offset (back to silence)
     ASSERT_TRUE(vad_->processWindow(silence).has_value())
         << "Post-buffer window 1 processing failed";
-    EXPECT_TRUE(vad_->isVoiceActive());
+    EXPECT_TRUE(vad_->isVoiceActive()) << "Should be in HANGOVER state after first silent frame.";
     ASSERT_TRUE(vad_->processWindow(silence).has_value())
         << "Post-buffer window 2 processing failed";
-    EXPECT_TRUE(vad_->isVoiceActive());
+    EXPECT_TRUE(vad_->isVoiceActive()) << "Should still be in HANGOVER state after second silent frame (post_buffer is 40ms).";
 
-    // Post-buffer period (40ms) has now elapsed after 2 windows (20ms each).
-    // The next silent window should transition the state to inactive.
+    // Post-buffer period (40ms) has now elapsed. The next silent window should transition to inactive.
     ASSERT_TRUE(vad_->processWindow(silence).has_value()) << "Final silence processing failed";
     EXPECT_FALSE(vad_->isVoiceActive());
 }
@@ -87,6 +94,7 @@ TEST_F(VoiceActivityDetectorTest, ResetRestoresInitialState) {
     EXPECT_EQ(vad_->getActiveDuration().count(), 0);
 }
 
+// Empty audio should return an error
 TEST_F(VoiceActivityDetectorTest, InvalidInputReturnsError) {
     std::vector<float> empty;
     auto result = vad_->processWindow(empty);

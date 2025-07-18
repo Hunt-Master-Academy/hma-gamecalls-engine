@@ -4,6 +4,7 @@
 #include <atomic>
 #include <cmath>
 #include <deque>
+#include <iostream>
 #include <mutex>
 #include <sstream>
 #include <stdexcept>
@@ -38,7 +39,9 @@ struct WaveformGenerator::Impl {
     std::atomic<float> currentRmsAmplitude_{0.0f};
     std::atomic<size_t> totalSamplesProcessed_{0};
 
+    bool configValid_ = true;
     explicit Impl(const Config& config) : config_(config) {
+        configValid_ = config_.isValid();
         initializeBuffers();
         initialized_.store(true);
     }
@@ -128,8 +131,11 @@ WaveformGenerator::Result WaveformGenerator::processAudio(std::span<const float>
     if (!impl_->initialized_.load()) {
         return huntmaster::unexpected(Error::INITIALIZATION_FAILED);
     }
-
-    if (samples.empty() || numChannels <= 0) {
+    if (!impl_->configValid_) {
+        return huntmaster::unexpected(Error::INVALID_CONFIG);
+    }
+    if (samples.empty() || numChannels <= 0 || numChannels > 8) {
+        // Arbitrary upper limit for channels, adjust as needed
         return huntmaster::unexpected(Error::INVALID_AUDIO_DATA);
     }
 
@@ -155,6 +161,16 @@ WaveformGenerator::Result WaveformGenerator::processAudio(std::span<const float>
         if (impl_->config_.enableRmsOverlay && !impl_->rmsBuffer_.empty()) {
             result.rmsEnvelope.assign(impl_->rmsBuffer_.begin(), impl_->rmsBuffer_.end());
         }
+        // Calculate summary fields
+        if (!result.samples.empty()) {
+            result.maxAmplitude = *std::max_element(result.samples.begin(), result.samples.end());
+            float sumSq = 0.0f;
+            for (float s : result.samples) sumSq += s * s;
+            result.rmsAmplitude = std::sqrt(sumSq / result.samples.size());
+        } else {
+            result.maxAmplitude = 0.0f;
+            result.rmsAmplitude = 0.0f;
+        }
         return result;
 
     } catch (...) {
@@ -172,19 +188,35 @@ WaveformGenerator::WaveformData WaveformGenerator::getCompleteWaveform() const {
     if (impl_->config_.enableRmsOverlay) {
         result.rmsEnvelope.assign(impl_->rmsBuffer_.begin(), impl_->rmsBuffer_.end());
     }
+    // Calculate summary fields
+    if (!result.samples.empty()) {
+        result.maxAmplitude = *std::max_element(result.samples.begin(), result.samples.end());
+        float sumSq = 0.0f;
+        for (float s : result.samples) sumSq += s * s;
+        result.rmsAmplitude = std::sqrt(sumSq / result.samples.size());
+    } else {
+        result.maxAmplitude = 0.0f;
+        result.rmsAmplitude = 0.0f;
+    }
     return result;
 }
 
 WaveformGenerator::WaveformData WaveformGenerator::getWaveformRange(float startTimeMs,
-                                                                    float endTimeMs) const {
+                                                                    float durationMs) const {
     std::lock_guard<std::mutex> lock(impl_->mutex_);
     WaveformData result;
     const float msPerSample = 1000.0f * impl_->currentDownsampleRatio_ / impl_->config_.sampleRate;
 
     size_t startIndex = (msPerSample > 0) ? static_cast<size_t>(startTimeMs / msPerSample) : 0;
-    size_t endIndex = (msPerSample > 0) ? static_cast<size_t>(endTimeMs / msPerSample) : 0;
+    size_t durationSamples = (msPerSample > 0) ? static_cast<size_t>(durationMs / msPerSample) : 0;
+    if (durationMs > 0 && durationSamples == 0) durationSamples = 1;
+    size_t endIndex = startIndex + durationSamples;
 
-    if (startIndex < impl_->sampleBuffer_.size()) {
+    std::cout << "[WaveformGenerator::getWaveformRange] startIndex=" << startIndex
+              << ", durationSamples=" << durationSamples << ", endIndex=" << endIndex
+              << ", buffer size=" << impl_->sampleBuffer_.size() << std::endl;
+
+    if (startIndex < impl_->sampleBuffer_.size() && endIndex > startIndex) {
         endIndex = std::min(endIndex, impl_->sampleBuffer_.size());
         auto begin = impl_->sampleBuffer_.begin() + startIndex;
         auto end = impl_->sampleBuffer_.begin() + endIndex;
@@ -201,35 +233,52 @@ WaveformGenerator::WaveformData WaveformGenerator::getWaveformRange(float startT
             auto rmsEnd = impl_->rmsBuffer_.begin() + std::min(endIndex, impl_->rmsBuffer_.size());
             result.rmsEnvelope.assign(rmsBegin, rmsEnd);
         }
+    } else {
+#ifdef DEBUG
+        std::cerr << "[WaveformGenerator::getWaveformRange] Empty range: startIndex=" << startIndex
+                  << ", endIndex=" << endIndex << ", buffer size=" << impl_->sampleBuffer_.size()
+                  << std::endl;
+#endif
     }
     return result;
 }
 
 std::string WaveformGenerator::exportToJson(bool prettyPrint) const {
-    std::lock_guard<std::mutex> lock(impl_->mutex_);
     std::stringstream ss;
     auto waveform = getCompleteWaveform();
 
-    auto vectorToJson = [&](const std::vector<float>& vec, const std::string& name) {
-        ss << "\"" << name << "\":[";
-        for (size_t i = 0; i < vec.size(); ++i) {
-            ss << vec[i] << (i == vec.size() - 1 ? "" : ",");
+    ss << "{";
+    ss << "\"maxAmplitude\":" << waveform.maxAmplitude << ",";
+    ss << "\"rmsAmplitude\":" << waveform.rmsAmplitude << ",";
+    ss << "\"sampleCount\":" << waveform.samples.size() << ",";
+    ss << "\"sampleRate\":" << impl_->config_.sampleRate << ",";
+    ss << "\"downsampleRatio\":" << impl_->currentDownsampleRatio_ << ",";
+    ss << "\"timestamp\":"
+       << std::chrono::duration_cast<std::chrono::milliseconds>(
+              waveform.timestamp.time_since_epoch())
+              .count();
+
+    // Serialize vectors
+    auto vectorToJson = [](const std::vector<float>& vec, const std::string& name,
+                           std::stringstream& ss, bool include = true, size_t maxLen = 0) {
+        if (!include || vec.empty()) return;
+        ss << ",\"" << name << "\": [";
+        size_t len = vec.size();
+        if (maxLen > 0 && len > maxLen) len = maxLen;
+        for (size_t i = 0; i < len; ++i) {
+            ss << vec[i];
+            if (i != len - 1) ss << ",";
         }
+        if (maxLen > 0 && vec.size() > maxLen) ss << ",...";
         ss << "]";
     };
 
-    ss << "{";
-    vectorToJson(waveform.samples, "samples");
-    if (!waveform.peaks.empty()) {
-        ss << ",";
-        vectorToJson(waveform.peaks, "peaks");
-    }
-    if (!waveform.rmsEnvelope.empty()) {
-        ss << ",";
-        vectorToJson(waveform.rmsEnvelope, "rmsEnvelope");
-    }
-    ss << "}";
+    vectorToJson(waveform.samples, "samples", ss,
+                 prettyPrint /* use prettyPrint as includeRawSamples */, 0);
+    vectorToJson(waveform.peaks, "peaks", ss, !waveform.peaks.empty(), 0);
+    vectorToJson(waveform.rmsEnvelope, "rmsEnvelope", ss, !waveform.rmsEnvelope.empty(), 0);
 
+    ss << "}";
     return ss.str();
 }
 

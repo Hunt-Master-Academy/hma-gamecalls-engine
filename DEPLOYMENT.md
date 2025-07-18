@@ -86,17 +86,11 @@ When integrating the Huntmaster Engine as a static library:
 
 1. **Include Headers**: Include the debugging headers if needed
 
-```cpp
+````cpp
 #include <huntmaster/core/DebugLogger.h>
-#include <huntmaster/core/DebugConfig.h>
-```
-
-2. **Initialize Logging**: Set up logging in your application
-
 ```cpp
 // Initialize with appropriate level for your application
-huntmaster::DebugConfig::initialize();
-```
+````
 
 3. **Configure Components**: Set debug levels for components you're using
 
@@ -145,12 +139,6 @@ Include debugging documentation:
 cp DEBUGGING.md /deployment/docs/
 cp README.md /deployment/docs/
 ```
-
-## Monitoring and Diagnostics
-
-### Log Analysis
-
-The debugging system produces structured logs suitable for analysis:
 
 ```
 [2025-07-15 10:30:45] [AUDIO_ENGINE] [INFO] Engine initialized successfully
