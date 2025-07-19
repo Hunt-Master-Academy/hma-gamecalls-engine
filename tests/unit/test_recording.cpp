@@ -3,10 +3,10 @@
 #include <iostream>
 #include <thread>
 
-#include "huntmaster/core/HuntmasterAudioEngine.h"
+#include "huntmaster/core/UnifiedAudioEngine.h"
 
 // Add this line to use HuntmasterAudioEngine without the namespace prefix
-using huntmaster::HuntmasterAudioEngine;
+using huntmaster::UnifiedAudioEngine;
 
 void printLevel(float level) {
     int bars = static_cast<int>(level * 50);
@@ -20,43 +20,57 @@ void printLevel(float level) {
 int main() {
     std::cout << "=== Huntmaster Recording Test ===" << std::endl;
 
-    // Initialize engine
-    HuntmasterAudioEngine &engine = HuntmasterAudioEngine::getInstance();
-    engine.initialize();
+    // Create engine instance
+    auto engineResult = UnifiedAudioEngine::create();
+    if (!engineResult.isOk()) {
+        std::cerr << "Failed to create UnifiedAudioEngine instance!" << std::endl;
+        return 1;
+    }
+    auto engine = std::move(engineResult.value);
 
     // Test 1: Simple Recording
     std::cout << "\nTest 1: Recording for 3 seconds..." << std::endl;
     std::cout << "Speak into your microphone!" << std::endl;
 
-    int recordingId = engine.startRecording(44100.0);
-    if (recordingId < 0) {
+    // Create session for recording
+    auto sessionResult = engine->createSession(44100.0f);
+    if (!sessionResult.isOk()) {
+        std::cerr << "Failed to create session for recording!" << std::endl;
+        return 1;
+    }
+    int sessionId = sessionResult.value;
+
+    auto recStatus = engine->startRecording(sessionId);
+    if (recStatus != UnifiedAudioEngine::Status::OK) {
         std::cerr << "Failed to start recording!" << std::endl;
+        engine->destroySession(sessionId);
         return 1;
     }
 
     // Monitor levels for 3 seconds
     auto start = std::chrono::steady_clock::now();
     while (std::chrono::steady_clock::now() - start < std::chrono::seconds(3)) {
-        float level = engine.getRecordingLevel();
-        printLevel(level);
+        // UnifiedAudioEngine does not expose getRecordingLevel directly; skip or implement if
+        // available
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
     std::cout << std::endl;
 
-    engine.stopRecording(recordingId);
+    engine->stopRecording(sessionId);
 
     // Save recording
-    std::string savedPath = engine.saveRecording(recordingId, "test_grunt").value;
+    auto saveResult = engine->saveRecording(sessionId, "test_grunt");
+    std::string savedPath = saveResult.isOk() ? saveResult.value : "";
     if (!savedPath.empty()) {
         std::cout << "Recording saved to: " << savedPath << std::endl;
     }
 
     // Test 2: Load and play master call
     std::cout << "\nTest 2: Loading and playing master call..." << std::endl;
-    auto loadResult = engine.loadMasterCall("buck_grunt");
-    auto playResult = engine.playMasterCall("buck_grunt");
-    (void)loadResult;  // Suppress unused variable warning
-    (void)playResult;  // Suppress unused variable warning
+
+    auto masterStatus = engine->loadMasterCall(sessionId, "buck_grunt");
+    (void)masterStatus;
+    // UnifiedAudioEngine does not expose playMasterCall; skip or implement if available
 
     std::this_thread::sleep_for(std::chrono::seconds(2));
 
@@ -70,29 +84,30 @@ int main() {
     std::this_thread::sleep_for(std::chrono::seconds(1));
     std::cout << "GO!" << std::endl;
 
-    recordingId = engine.startRecording(44100.0);
+    auto recStatus2 = engine->startRecording(sessionId);
+    if (recStatus2 != UnifiedAudioEngine::Status::OK) {
+        std::cerr << "Failed to start recording!" << std::endl;
+        engine->destroySession(sessionId);
+        return 1;
+    }
 
-    // Record for 3 seconds with level monitoring
+    // Record for 3 seconds
     start = std::chrono::steady_clock::now();
     while (std::chrono::steady_clock::now() - start < std::chrono::seconds(3)) {
-        float level = engine.getRecordingLevel();
-        printLevel(level);
         std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
     std::cout << std::endl;
 
-    engine.stopRecording(recordingId);
-    savedPath = engine.saveRecording(recordingId, "user_buck_grunt_attempt").value;
+    engine->stopRecording(sessionId);
+    auto saveResult2 = engine->saveRecording(sessionId, "user_buck_grunt_attempt");
+    savedPath = saveResult2.isOk() ? saveResult2.value : "";
     std::cout << "Your attempt saved to: " << savedPath << std::endl;
 
-    // Play back the user recording
-    std::cout << "\nPlaying back your recording..." << std::endl;
-    auto playRecordingResult = engine.playRecording("user_buck_grunt_attempt.wav");
-    (void)playRecordingResult;  // Suppress unused variable warning
+    // UnifiedAudioEngine does not expose playRecording; skip or implement if available
 
     std::this_thread::sleep_for(std::chrono::seconds(3));
 
-    engine.shutdown();
+    engine->destroySession(sessionId);
     std::cout << "\nAll tests completed!" << std::endl;
 
     return 0;

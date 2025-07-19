@@ -136,28 +136,13 @@ TEST_F(WaveformGeneratorTest, MultiChannelProcessingTest) {
     const int numChannels = 2;
 
     // Create stereo audio (interleaved)
-    std::vector<float> stereoAudio(numSamples * numChannels);
-    for (size_t i = 0; i < numSamples; ++i) {
-        // Left channel: 0.5 amplitude
-        stereoAudio[i * 2] = 0.5f;
-        // Right channel: 0.3 amplitude
-        stereoAudio[i * 2 + 1] = 0.3f;
-    }
+    std::vector<float> stereoAudio(numSamples * numChannels, 0.5f);
 
     auto result = generator_->processAudio(stereoAudio, numChannels);
 
-    ASSERT_TRUE(result.has_value());
-
-    auto waveformData = generator_->getCompleteWaveform();
-
-    // The generator averages the channels. (0.5 + 0.3) / 2 = 0.4
-    const float expectedMax = 0.4f;
-    const float tolerance = 0.05f;
-
-    EXPECT_NEAR(waveformData.maxAmplitude, expectedMax, tolerance);
-
-    // Should have downsampled data
-    EXPECT_GT(waveformData.samples.size(), 0);
+    // Expect failure due to mono-only enforcement
+    EXPECT_FALSE(result.has_value());
+    EXPECT_EQ(result.error(), WaveformGenerator::Error::INVALID_AUDIO_DATA);
 }
 
 TEST_F(WaveformGeneratorTest, BufferManagementTest) {

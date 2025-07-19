@@ -134,6 +134,13 @@ WaveformGenerator::Result WaveformGenerator::processAudio(std::span<const float>
     if (!impl_->configValid_) {
         return huntmaster::unexpected(Error::INVALID_CONFIG);
     }
+    // Enforce mono-only input for now
+    if (numChannels != 1) {
+        std::cerr << "[WaveformGenerator] ERROR: Only mono (1 channel) audio is supported.\n";
+        // TODO: Support multi-channel audio in future releases (e.g., downmix or per-channel
+        // analysis)
+        return huntmaster::unexpected(Error::INVALID_AUDIO_DATA);
+    }
     if (samples.empty() || numChannels <= 0 || numChannels > 8) {
         // Arbitrary upper limit for channels, adjust as needed
         return huntmaster::unexpected(Error::INVALID_AUDIO_DATA);

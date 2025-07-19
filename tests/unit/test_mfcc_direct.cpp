@@ -4,9 +4,9 @@
 #include <iostream>
 #include <vector>
 
-#include "huntmaster/core/HuntmasterAudioEngine.h"
+#include "huntmaster/core/UnifiedAudioEngine.h"
 
-using huntmaster::HuntmasterAudioEngine;
+using huntmaster::UnifiedAudioEngine;
 
 // Generate a test sine wave (same as in existing test)
 static std::vector<float> generateSineWave(float frequency, float duration, float sampleRate) {
@@ -23,11 +23,21 @@ static std::vector<float> generateSineWave(float frequency, float duration, floa
 
 class MFCCDirectTest : public ::testing::Test {
    protected:
-    void SetUp() override { engine.initialize(); }
+    std::unique_ptr<UnifiedAudioEngine> engine;
+    int sessionId = -1;
 
-    void TearDown() override { engine.shutdown(); }
+    void SetUp() override {
+        auto result = UnifiedAudioEngine::create();
+        ASSERT_TRUE(result.isOk()) << "Failed to create UnifiedAudioEngine instance";
+        engine = std::move(result.value);
+    }
 
-    HuntmasterAudioEngine &engine = HuntmasterAudioEngine::getInstance();
+    void TearDown() override {
+        if (engine && sessionId != -1) {
+            engine->destroySession(sessionId);
+        }
+        engine.reset();
+    }
 };
 
 TEST_F(MFCCDirectTest, SineWaveProcessingTest) {
@@ -38,9 +48,9 @@ TEST_F(MFCCDirectTest, SineWaveProcessingTest) {
     std::cout << "Generated sine wave: " << sineWave.size() << " samples" << std::endl;
 
     // Start a realtime session
-    auto sessionResult = engine.startRealtimeSession(44100.0f, 1024);
-    ASSERT_TRUE(sessionResult.isOk()) << "Failed to start realtime session";
-    int sessionId = sessionResult.value;
+    auto sessionResult = engine->createSession(44100.0f);
+    ASSERT_TRUE(sessionResult.isOk()) << "Failed to create session";
+    sessionId = sessionResult.value;
     std::cout << "Started session ID: " << sessionId << std::endl;
 
     // Process the audio in chunks (simulate real-time processing)
@@ -48,8 +58,9 @@ TEST_F(MFCCDirectTest, SineWaveProcessingTest) {
     size_t totalProcessed = 0;
 
     for (size_t i = 0; i + chunkSize <= sineWave.size(); i += chunkSize) {
-        auto status = engine.processAudioChunk(sessionId, sineWave.data() + i, chunkSize);
-        EXPECT_EQ(status, HuntmasterAudioEngine::EngineStatus::OK)
+        auto status = engine->processAudioChunk(
+            sessionId, std::span<const float>(sineWave.data() + i, chunkSize));
+        EXPECT_EQ(status, UnifiedAudioEngine::Status::OK)
             << "Processing failed at chunk starting at sample " << i;
         totalProcessed += chunkSize;
     }
@@ -57,14 +68,17 @@ TEST_F(MFCCDirectTest, SineWaveProcessingTest) {
     std::cout << "Processed " << totalProcessed << " samples in chunks" << std::endl;
 
     // Check how many features were extracted
-    int featureCount = engine.getSessionFeatureCount(sessionId);
+    auto featureCountResult = engine->getFeatureCount(sessionId);
+    ASSERT_TRUE(featureCountResult.isOk()) << "Failed to get feature count";
+    int featureCount = featureCountResult.value;
     std::cout << "Total features extracted: " << featureCount << std::endl;
 
     // We should have extracted some features from 2 seconds of audio
     EXPECT_GT(featureCount, 0) << "No features were extracted!";
     EXPECT_GT(featureCount, 10) << "Too few features extracted for 2 seconds of audio";
 
-    engine.endRealtimeSession(sessionId);
+    engine->destroySession(sessionId);
+    sessionId = -1;
     std::cout << "Test completed successfully" << std::endl;
 }
 
@@ -76,19 +90,22 @@ TEST_F(MFCCDirectTest, AllAtOnceProcessingTest) {
     std::cout << "Generated test wave: " << testWave.size() << " samples" << std::endl;
 
     // Start a realtime session
-    auto sessionResult = engine.startRealtimeSession(44100.0f, 1024);
-    ASSERT_TRUE(sessionResult.isOk()) << "Failed to start realtime session";
-    int sessionId = sessionResult.value;
+    auto sessionResult = engine->createSession(44100.0f);
+    ASSERT_TRUE(sessionResult.isOk()) << "Failed to create session";
+    sessionId = sessionResult.value;
 
     // Process all at once (as in the original failing test)
-    auto status = engine.processAudioChunk(sessionId, testWave.data(), testWave.size());
-    EXPECT_EQ(status, HuntmasterAudioEngine::EngineStatus::OK) << "All-at-once processing failed";
+    auto status = engine->processAudioChunk(sessionId, std::span<const float>(testWave));
+    EXPECT_EQ(status, UnifiedAudioEngine::Status::OK) << "All-at-once processing failed";
 
     // Check features
-    int featureCount = engine.getSessionFeatureCount(sessionId);
+    auto featureCountResult = engine->getFeatureCount(sessionId);
+    ASSERT_TRUE(featureCountResult.isOk()) << "Failed to get feature count";
+    int featureCount = featureCountResult.value;
     std::cout << "Features from all-at-once processing: " << featureCount << std::endl;
 
     EXPECT_GT(featureCount, 0) << "No features extracted from all-at-once processing";
 
-    engine.endRealtimeSession(sessionId);
+    engine->destroySession(sessionId);
+    sessionId = -1;
 }

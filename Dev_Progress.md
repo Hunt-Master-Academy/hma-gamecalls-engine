@@ -178,23 +178,21 @@
 **Test Results Summary:**
 
 - ✅ **AudioBufferPoolTest**: 3/3 tests passing
+- ✅ **EndToEndTest**: 3/3 tests passing
 - ✅ **DTWComparatorTest**: 6/6 tests passing
 - ✅ **MFCCDirectTest**: 2/2 tests passing
 - ✅ **AudioLevelUtilityTest**: 2/2 tests passing
 - ✅ **BinaryCompatibilityTest**: 2/2 tests passing
-- ⚠️ **RealtimeAudioProcessorTest**: 6/12 tests passing (audio processing algorithm tuning needed)
+- ✅ **RealtimeAudioProcessorTest**: 12/12 tests passing
 - ✅ **VoiceActivityDetectorTest**: 6/6 tests passing (VAD energy comparison and state machine fully validated)
-- ⚠️ **AudioLevelProcessorTest**: 7/9 tests passing (level measurement calibration needed)
-- ⚠️ **RealtimeScorerTest**: 9/12 tests passing (scoring algorithm refinement needed)
-- ⚠️ **MFCCConsistencyTest**: 0/5 tests passing (master call file dependencies missing)
-- ⚠️ **EndToEndTest**: 1/3 tests passing (integration testing in progress)
-- ⚠️ **HuntmasterEngineTest**: 1/2 tests passing (session management refinement needed)
+- ✅ **AudioLevelProcessorTest**: 9/9 tests passing
+- ✅ **RealtimeScorerTest**: 12/12 tests passing
+- ✅ **MFCCConsistencyTest**: 5/5 tests passing
+- ✅ **HuntmasterEngineTest**: 3/3 tests passing
 
 **Current Issues Being Addressed:**
 
-- Missing master call audio files for integration tests
-- Algorithm parameter tuning for voice detection and audio level processing
-- Some tests require actual audio hardware (expected in CI environment)
+ - Some tests show ALSA errors in environments without audio hardware (e.g., CI/WSL), but pass successfully.
 
 ### 3.2 Integration Testing 🔄
 

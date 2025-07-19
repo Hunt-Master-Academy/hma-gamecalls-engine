@@ -7,11 +7,11 @@
 
 #include "huntmaster/core/DebugConfig.h"
 #include "huntmaster/core/DebugLogger.h"
-#include "huntmaster/core/HuntmasterAudioEngine.h"
+#include "huntmaster/core/UnifiedAudioEngine.h"
 
 using huntmaster::DebugConfig;
 using huntmaster::DebugLogger;
-using huntmaster::HuntmasterAudioEngine;
+using huntmaster::UnifiedAudioEngine;
 
 // Debug options structure
 struct DebugOptions {
@@ -122,11 +122,19 @@ class PerformanceMonitor {
 // Feature generation class
 class FeatureGenerator {
    private:
-    HuntmasterAudioEngine& engine;
+    UnifiedAudioEngine& engine;
+    int sessionId_ = -1;
     DebugOptions& options;
 
    public:
-    FeatureGenerator(HuntmasterAudioEngine& eng, DebugOptions& opts) : engine(eng), options(opts) {}
+    FeatureGenerator(UnifiedAudioEngine& eng, DebugOptions& opts) : engine(eng), options(opts) {
+        sessionId_ = engine.createSession();
+    }
+    ~FeatureGenerator() {
+        if (sessionId_ != -1) {
+            engine.destroySession(sessionId_);
+        }
+    }
 
     bool processCall(const std::string& callName) {
         PerformanceMonitor monitor("Processing call: " + callName,
@@ -158,8 +166,8 @@ class FeatureGenerator {
         try {
             // Load master call - this will generate features
             std::cout << "Processing: " << callName << std::endl;
-            auto loadResult = engine.loadMasterCall(callName);
-            if (loadResult != huntmaster::HuntmasterAudioEngine::EngineStatus::OK) {
+            auto loadResult = engine.loadMasterCall(sessionId_, callName);
+            if (loadResult != UnifiedAudioEngine::Result::OK) {
                 std::cerr << "Failed to load master call: " << callName << std::endl;
                 return false;
             }
@@ -275,20 +283,12 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // Initialize engine
-    HuntmasterAudioEngine& engine = HuntmasterAudioEngine::getInstance();
-
-    if (debugOptions.enableEngineDebug) {
-        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                       huntmaster::DebugLevel::DEBUG,
-                                       "Initializing HuntmasterAudioEngine");
-    }
-
-    engine.initialize();
-    totalMonitor.checkpoint("Engine initialized");
+    // Initialize UnifiedAudioEngine
+    std::unique_ptr<UnifiedAudioEngine> engine = UnifiedAudioEngine::create();
+    totalMonitor.checkpoint("Engine created");
 
     // Create feature generator
-    FeatureGenerator generator(engine, debugOptions);
+    FeatureGenerator generator(*engine, debugOptions);
 
     // Process calls
     int successCount = 0;
@@ -304,15 +304,7 @@ int main(int argc, char* argv[]) {
 
     totalMonitor.checkpoint("All calls processed");
 
-    // Shutdown engine
-    if (debugOptions.enableEngineDebug) {
-        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                       huntmaster::DebugLevel::DEBUG,
-                                       "Shutting down HuntmasterAudioEngine");
-    }
-
-    engine.shutdown();
-    totalMonitor.checkpoint("Engine shut down");
+    // Destroy engine session (handled by FeatureGenerator destructor)
 
     // Print summary
     std::cout << "\n=== PROCESSING SUMMARY ===" << std::endl;

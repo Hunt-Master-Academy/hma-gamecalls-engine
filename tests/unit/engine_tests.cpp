@@ -5,18 +5,17 @@
 #include <vector>
 
 #include "dr_wav.h"
-#include "huntmaster/core/HuntmasterAudioEngine.h"
+#include "huntmaster/core/UnifiedAudioEngine.h"
 
-using huntmaster::HuntmasterAudioEngine;
+using huntmaster::UnifiedAudioEngine;
 
 // Helper function to load a WAV file into a mono float vector.
 // This is a common utility in these tests.
-static std::vector<float> load_wav_to_mono(const std::string &filePath,
-                                           unsigned int &sampleRate) {
+static std::vector<float> load_wav_to_mono(const std::string &filePath, unsigned int &sampleRate) {
     unsigned int channels;
     drwav_uint64 totalFrames;
-    float *audioData = drwav_open_file_and_read_pcm_frames_f32(
-        filePath.c_str(), &channels, &sampleRate, &totalFrames, nullptr);
+    float *audioData = drwav_open_file_and_read_pcm_frames_f32(filePath.c_str(), &channels,
+                                                               &sampleRate, &totalFrames, nullptr);
 
     if (!audioData) {
         return {};  // Return empty vector on failure
@@ -39,20 +38,31 @@ static std::vector<float> load_wav_to_mono(const std::string &filePath,
     return monoData;
 }
 // A simple test fixture for the main engine.
+
 class HuntmasterEngineTest : public ::testing::Test {
    protected:
-    void SetUp() override { engine.initialize(); }
+    std::unique_ptr<UnifiedAudioEngine> engine;
+    int sessionId = -1;
 
-    void TearDown() override { engine.shutdown(); }
+    void SetUp() override {
+        auto result = UnifiedAudioEngine::create();
+        ASSERT_TRUE(result.isOk()) << "Failed to create UnifiedAudioEngine instance";
+        engine = std::move(result.value);
+    }
 
-    HuntmasterAudioEngine &engine = HuntmasterAudioEngine::getInstance();
+    void TearDown() override {
+        if (engine && sessionId != -1) {
+            engine->destroySession(sessionId);
+        }
+        engine.reset();
+    }
 };
 
 // Test case to ensure the engine can be initialized and shut down.
 TEST_F(HuntmasterEngineTest, CanInitializeAndShutdown) {
     // The SetUp and TearDown methods already handle this.
     // We just need to assert that it doesn't crash.
-    ASSERT_TRUE(true);
+    ASSERT_TRUE(engine != nullptr);
 }
 
 // Test case to check the dummy scoring functionality.
@@ -60,25 +70,25 @@ TEST_F(HuntmasterEngineTest, EmptySessionReturnsZeroScore) {
     // Set a timeout for this test to prevent hanging
     const auto timeout = std::chrono::seconds(5);
     const auto start_time = std::chrono::steady_clock::now();
-    
-    auto loadResult = engine.loadMasterCall("buck_grunt");
-    if (loadResult != HuntmasterAudioEngine::EngineStatus::OK) {
+
+    auto sessionResult = engine->createSession(44100.0f);
+    ASSERT_TRUE(sessionResult.isOk());
+    sessionId = sessionResult.value;
+
+    auto masterStatus = engine->loadMasterCall(sessionId, "buck_grunt");
+    if (masterStatus != UnifiedAudioEngine::Status::OK) {
         GTEST_SKIP() << "buck_grunt master call not available";
     }
-
-    auto sessionResult = engine.startRealtimeSession(44100.0, 1024);
-    ASSERT_TRUE(sessionResult.isOk());
 
     // Check timeout during processing
     ASSERT_LT(std::chrono::steady_clock::now() - start_time, timeout)
         << "Test timed out during session operations";
 
-    int sessionId = sessionResult.value;
-    auto scoreResult = engine.getSimilarityScore(sessionId);
+    auto scoreResult = engine->getSimilarityScore(sessionId);
     ASSERT_TRUE(scoreResult.isOk());
-
     float score = scoreResult.value;
-    engine.endRealtimeSession(sessionId);
+    engine->destroySession(sessionId);
+    sessionId = -1;
 
     // Without processing audio, score should be 0
     ASSERT_EQ(score, 0.0f);
@@ -88,13 +98,6 @@ TEST_F(HuntmasterEngineTest, EmptySessionReturnsZeroScore) {
 // It will be enabled once file loading and processing is fully implemented.
 TEST_F(HuntmasterEngineTest, CanProcessAudioFiles) {
     // 1. Load the master call which generates and caches the features.
-    const std::string masterCallId = "buck_grunt";
-    auto loadResult = engine.loadMasterCall(masterCallId);
-    if (loadResult != HuntmasterAudioEngine::EngineStatus::OK) {
-        GTEST_SKIP() << "Master call file for 'buck_grunt' not found. Skipping test.";
-    }
-
-    // 2. Load the same audio file to be processed as the "user attempt".
     unsigned int sampleRate;
     const std::string audioFilePath = "../data/master_calls/buck_grunt.wav";
     std::vector<float> audioData = load_wav_to_mono(audioFilePath, sampleRate);
@@ -102,23 +105,25 @@ TEST_F(HuntmasterEngineTest, CanProcessAudioFiles) {
         GTEST_SKIP() << "Audio file '" << audioFilePath << "' not found. Skipping test.";
     }
 
-    // 3. Start a processing session.
-    auto sessionResult = engine.startRealtimeSession(static_cast<float>(sampleRate), 1024);
-    ASSERT_TRUE(sessionResult.isOk()) << "Failed to start a realtime session.";
-    int sessionId = sessionResult.value;
+    auto sessionResult = engine->createSession(static_cast<float>(sampleRate));
+    ASSERT_TRUE(sessionResult.isOk()) << "Failed to create session.";
+    sessionId = sessionResult.value;
 
-    // 4. Process the audio data.
-    auto processResult = engine.processAudioChunk(sessionId, audioData.data(), audioData.size());
-    ASSERT_EQ(processResult, HuntmasterAudioEngine::EngineStatus::OK) << "Audio processing failed.";
+    auto masterStatus = engine->loadMasterCall(sessionId, "buck_grunt");
+    if (masterStatus != UnifiedAudioEngine::Status::OK) {
+        GTEST_SKIP() << "Master call file for 'buck_grunt' not found. Skipping test.";
+    }
 
-    // 5. Get the similarity score.
-    auto scoreResult = engine.getSimilarityScore(sessionId);
+    auto processStatus = engine->processAudioChunk(sessionId, std::span<const float>(audioData));
+    ASSERT_EQ(processStatus, UnifiedAudioEngine::Status::OK) << "Audio processing failed.";
+
+    auto scoreResult = engine->getSimilarityScore(sessionId);
     ASSERT_TRUE(scoreResult.isOk()) << "Failed to get similarity score.";
     float score = scoreResult.value;
 
-    // 6. End the session.
-    engine.endRealtimeSession(sessionId);
+    engine->destroySession(sessionId);
+    sessionId = -1;
 
-    // 7. Since we are comparing the audio to itself, the score should be very close to 1.0.
+    // Since we are comparing the audio to itself, the score should be very close to 1.0.
     EXPECT_GT(score, 0.99f) << "Self-similarity score should be very high.";
 }

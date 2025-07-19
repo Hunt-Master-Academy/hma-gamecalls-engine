@@ -11,7 +11,10 @@
 #include <huntmaster/core/DebugLogger.h>
 
 #include "dr_wav.h"
-#include "huntmaster/core/HuntmasterAudioEngine.h"
+// Use the correct UnifiedAudioEngine implementation
+#include "huntmaster/core/UnifiedAudioEngine.h"
+
+using huntmaster::UnifiedAudioEngine;
 
 // Debug options for detailed analysis
 struct DebugOptions {
@@ -193,12 +196,10 @@ std::vector<float> load_audio_file(const std::string& filePath, unsigned int& ch
 }
 }  // namespace AudioUtils
 
-using huntmaster::HuntmasterAudioEngine;
-
 // Enhanced detailed analysis class
 class DetailedAnalyzer {
    private:
-    HuntmasterAudioEngine& engine;
+    std::unique_ptr<UnifiedAudioEngine> engine;
 
     struct AnalysisResult {
         std::string masterCallId;
@@ -211,7 +212,20 @@ class DetailedAnalyzer {
     };
 
    public:
-    DetailedAnalyzer(HuntmasterAudioEngine& eng) : engine(eng) {}
+    DetailedAnalyzer() {
+        auto result = UnifiedAudioEngine::create();
+        if (!result.isOk()) {
+            throw std::runtime_error("Failed to create UnifiedAudioEngine instance");
+        }
+        engine = std::move(result.value);
+    }
+
+    DetailedAnalyzer(std::unique_ptr<UnifiedAudioEngine>& enginePtr) {
+        if (!enginePtr) {
+            throw std::runtime_error("UnifiedAudioEngine pointer is null");
+        }
+        engine = std::move(enginePtr);
+    }
 
     std::vector<AnalysisResult> analyzeRecording(const std::string& recordingPath,
                                                  const std::vector<std::string>& masterCalls) {
@@ -286,7 +300,15 @@ class DetailedAnalyzer {
         }
 
         // A. Load the master call
-        if (engine.loadMasterCall(masterId) != HuntmasterAudioEngine::EngineStatus::OK) {
+        auto sessionResult = engine->createSession(static_cast<float>(sampleRate));
+        if (!sessionResult.isOk()) {
+            std::cerr << "Could not create session for master call: " << masterId << ". Skipping."
+                      << std::endl;
+            return AnalysisResult(masterId, 0.0f, false, "Failed to create session");
+        }
+        int sessionId = sessionResult.value;
+        auto loadResult = engine->loadMasterCall(sessionId, masterId);
+        if (loadResult != UnifiedAudioEngine::Status::OK) {
             std::cerr << "Could not load master call: " << masterId << ". Skipping." << std::endl;
 
             if (g_debugOptions.enableAnalysisDebug) {
@@ -307,18 +329,7 @@ class DetailedAnalyzer {
         }
 
         // B. Start a session for this comparison
-        auto sessionResult = engine.startRealtimeSession(static_cast<float>(sampleRate), 4096);
-        if (!sessionResult.isOk()) {
-            std::cerr << "Could not start session for " << masterId << ". Skipping." << std::endl;
-
-            if (g_debugOptions.enableAnalysisDebug) {
-                huntmaster::DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
-                    "Failed to start session for " + masterId);
-            }
-
-            return AnalysisResult(masterId, 0.0f, false, "Failed to start session");
-        }
+        // Session already created above
 
         int sessionId = sessionResult.value;
         monitor.checkpoint("Session started");
@@ -330,8 +341,9 @@ class DetailedAnalyzer {
         }
 
         // C. Process the entire user recording
-        if (engine.processAudioChunk(sessionId, recordingAudio.data(), recordingAudio.size()) !=
-            HuntmasterAudioEngine::EngineStatus::OK) {
+        auto processResult = engine->processAudioChunk(
+            sessionId, std::span<const float>(recordingAudio.data(), recordingAudio.size()));
+        if (processResult != UnifiedAudioEngine::Status::OK) {
             std::cerr << "Could not process audio for " << masterId << ". Skipping." << std::endl;
 
             if (g_debugOptions.enableAnalysisDebug) {
@@ -340,7 +352,7 @@ class DetailedAnalyzer {
                     "Failed to process audio for " + masterId);
             }
 
-            engine.endRealtimeSession(sessionId);
+            engine->destroySession(sessionId);
             return AnalysisResult(masterId, 0.0f, false, "Failed to process audio");
         }
 
@@ -354,7 +366,7 @@ class DetailedAnalyzer {
         }
 
         // D. Get the score
-        auto scoreResult = engine.getSimilarityScore(sessionId);
+        auto scoreResult = engine->getSimilarityScore(sessionId);
         float currentScore = 0.0f;
         bool success = false;
         std::string errorMessage;
@@ -387,7 +399,7 @@ class DetailedAnalyzer {
         monitor.checkpoint("Score calculated");
 
         // E. Clean up the session for the next loop
-        engine.endRealtimeSession(sessionId);
+        engine->destroySession(sessionId);
 
         if (g_debugOptions.enableAnalysisDebug) {
             huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
@@ -451,7 +463,7 @@ int main(int argc, char* argv[]) {
 
     for (int i = 1; i < argc; i++) {
         std::string arg = argv[i];
-        if (arg[0] != '-') {  // Not a debug option
+        if (!arg.empty() && arg[0] != '-') {  // Not a debug option
             recordingPath = arg;
             foundRecordingPath = true;
             break;
@@ -478,21 +490,26 @@ int main(int argc, char* argv[]) {
                                         g_debugOptions.enablePerformanceMetrics);
 
         // --- 2. Initialize the Engine ---
-        HuntmasterAudioEngine& engine = HuntmasterAudioEngine::getInstance();
+        auto engineResult = UnifiedAudioEngine::create();
+        if (!engineResult.isOk()) {
+            std::cerr << "Failed to create UnifiedAudioEngine instance" << std::endl;
+            return 1;
+        }
+        auto engine = std::move(engineResult.value);
 
         if (g_debugOptions.enableEngineDebug) {
             huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
                                                        huntmaster::DebugLevel::DEBUG,
-                                                       "Initializing HuntmasterAudioEngine");
+                                                       "Initializing UnifiedEngine");
         }
 
-        engine.initialize();
-        totalMonitor.checkpoint("Engine initialized");
+        // No explicit initialize needed for UnifiedAudioEngine
+        totalMonitor.checkpoint("Engine created");
 
         if (g_debugOptions.enableEngineDebug) {
-            huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::INFO,
-                "HuntmasterAudioEngine initialized successfully");
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                                       huntmaster::DebugLevel::INFO,
+                                                       "UnifiedEngine initialized successfully");
         }
 
         // --- 3. Define Master Calls ---
@@ -521,7 +538,7 @@ int main(int argc, char* argv[]) {
         totalMonitor.checkpoint("Analysis completed");
 
         // --- 5. Find Best Match ---
-        float bestScore = -1.0f;
+        float bestScore = std::numeric_limits<float>::lowest();
         std::string bestMatchName = "None";
         int successfulAnalyses = 0;
 
@@ -574,15 +591,15 @@ int main(int argc, char* argv[]) {
         if (g_debugOptions.enableEngineDebug) {
             huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
                                                        huntmaster::DebugLevel::DEBUG,
-                                                       "Shutting down HuntmasterAudioEngine");
+                                                       "Shutting down UnifiedEngine");
         }
 
-        engine.shutdown();
+        // No explicit shutdown needed for UnifiedAudioEngine
 
         if (g_debugOptions.enableEngineDebug) {
             huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
                                                        huntmaster::DebugLevel::INFO,
-                                                       "HuntmasterAudioEngine shutdown completed");
+                                                       "UnifiedEngine shutdown completed");
         }
 
         huntmaster::DebugLogger::getInstance().log(
@@ -594,6 +611,12 @@ int main(int argc, char* argv[]) {
         huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
                                                    huntmaster::DebugLevel::ERROR,
                                                    "Exception occurred: " + std::string(e.what()));
+        return 1;
+    } catch (...) {
+        std::cerr << "❌ An unknown error occurred." << std::endl;
+        huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                   huntmaster::DebugLevel::ERROR,
+                                                   "Unknown exception occurred.");
         return 1;
     }
 

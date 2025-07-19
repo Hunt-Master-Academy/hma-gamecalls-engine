@@ -16,27 +16,27 @@
 #include "dr_wav.h"
 #include "huntmaster/core/DebugConfig.h"
 #include "huntmaster/core/DebugLogger.h"
-#include "huntmaster/core/HuntmasterAudioEngine.h"
+#include "huntmaster/core/UnifiedAudioEngine.h"
 
 using huntmaster::Component;
 using huntmaster::DebugConfig;
 using huntmaster::DebugLogger;
-using huntmaster::HuntmasterAudioEngine;
 using huntmaster::LogLevel;
+using huntmaster::UnifiedAudioEngine;
 
 /**
  * @brief Enhanced DTW debugging with detailed feature analysis
  */
 class DTWDebugger {
    private:
-    HuntmasterAudioEngine& engine_;
+    std::unique_ptr<UnifiedAudioEngine> engine_;
     bool verbose_;
     bool trace_;
     int sessionId_ = -1;  // Track the active session
 
    public:
     DTWDebugger(bool verbose = false, bool trace = false)
-        : engine_(HuntmasterAudioEngine::getInstance()), verbose_(verbose), trace_(trace) {
+        : engine_(UnifiedAudioEngine::create()), verbose_(verbose), trace_(trace) {
         if (trace) {
             DebugConfig::setupFullDebug();
         } else if (verbose) {
@@ -49,7 +49,7 @@ class DTWDebugger {
     ~DTWDebugger() {
         // Ensure session is properly ended
         if (sessionId_ != -1) {
-            engine_.endRealtimeSession(sessionId_);
+            engine_->destroySession(sessionId_);
             sessionId_ = -1;
         }
     }
@@ -59,8 +59,10 @@ class DTWDebugger {
         LOG_INFO(Component::TOOLS, "Audio file: " + audioFile);
         LOG_INFO(Component::TOOLS, "Master call: " + masterCallId);
 
-        // Initialize engine
-        if (!initializeEngine()) {
+        // Create session
+        sessionId_ = engine_->createSession();
+        if (sessionId_ == -1) {
+            LOG_ERROR(Component::TOOLS, "❌ Failed to create engine session");
             return false;
         }
 
@@ -79,25 +81,11 @@ class DTWDebugger {
     }
 
    private:
-    bool initializeEngine() {
-        LOG_DEBUG(Component::TOOLS, "Initializing HuntmasterAudioEngine");
-
-        try {
-            engine_.initialize();
-            LOG_INFO(Component::TOOLS, "✅ Engine initialized successfully");
-            return true;
-        } catch (const std::exception& e) {
-            LOG_ERROR(Component::TOOLS,
-                      "❌ Engine initialization failed: " + std::string(e.what()));
-            return false;
-        }
-    }
-
     bool loadMasterCall(const std::string& masterCallId) {
         LOG_DEBUG(Component::TOOLS, "Loading master call: " + masterCallId);
 
-        auto loadResult = engine_.loadMasterCall(masterCallId);
-        if (loadResult != HuntmasterAudioEngine::EngineStatus::OK) {
+        auto loadResult = engine_->loadMasterCall(sessionId_, masterCallId);
+        if (loadResult != UnifiedAudioEngine::Status::OK) {
             LOG_ERROR(Component::TOOLS,
                       "❌ Failed to load master call '" + masterCallId +
                           "'. Status: " + std::to_string(static_cast<int>(loadResult)));
@@ -150,7 +138,7 @@ class DTWDebugger {
         analyzeAudioCharacteristics(monoData, sampleRate);
 
         // Process through engine
-        return processAudioThroughEngine(monoData);
+        return processAudioThroughEngine(monoData, sampleRate);
     }
 
     std::vector<float> convertToMono(float* audioData, drwav_uint64 totalFrames,
@@ -218,19 +206,8 @@ class DTWDebugger {
         }
     }
 
-    bool processAudioThroughEngine(const std::vector<float>& audioData) {
+    bool processAudioThroughEngine(const std::vector<float>& audioData, unsigned int sampleRate) {
         LOG_DEBUG(Component::TOOLS, "Processing audio through engine...");
-
-        // Start a realtime session
-        auto sessionResult = engine_.startRealtimeSession(44100.0f, 1024);
-        if (!sessionResult.isOk()) {
-            LOG_ERROR(Component::TOOLS, "❌ Failed to start realtime session");
-            return false;
-        }
-
-        sessionId_ = sessionResult.value;
-        LOG_INFO(Component::TOOLS,
-                 "✅ Started realtime session with ID: " + std::to_string(sessionId_));
 
         // Process in chunks to simulate real-time processing
         const size_t chunkSize = 1024;
@@ -251,12 +228,13 @@ class DTWDebugger {
             }
 
             // Process chunk through engine
-            auto status =
-                engine_.processAudioChunk(sessionId_, audioData.data() + i, samplesToProcess);
-            if (status != huntmaster::HuntmasterAudioEngine::EngineStatus::OK) {
+            std::span<const float> chunkSpan(audioData.data() + i, samplesToProcess);
+            auto status = engine_->processAudioChunk(sessionId_, chunkSpan);
+            if (status != UnifiedAudioEngine::Status::OK) {
                 LOG_ERROR(Component::TOOLS,
                           "❌ Failed to process audio chunk at sample " + std::to_string(i));
-                engine_.endRealtimeSession(sessionId_);
+                engine_->destroySession(sessionId_);
+                sessionId_ = -1;
                 return false;
             }
 
@@ -276,7 +254,7 @@ class DTWDebugger {
         LOG_DEBUG(Component::TOOLS, "Performing detailed similarity analysis...");
 
         // Get similarity score
-        auto scoreResult = engine_.getSimilarityScore(sessionId_);
+        auto scoreResult = engine_->getSimilarityScore(sessionId_);
 
         if (scoreResult.isOk()) {
             float score = scoreResult.value;

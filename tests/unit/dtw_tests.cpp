@@ -4,13 +4,14 @@
 #include <vector>    // For std::vector
 
 #include "dr_wav.h"  // For loading WAV files
-#include "huntmaster/core/HuntmasterAudioEngine.h"
+#include "huntmaster/core/UnifiedAudioEngine.h"
 
-using namespace huntmaster;
+using huntmaster::UnifiedAudioEngine;
 
 class CoreValidationTest : public ::testing::Test {
    protected:
-    HuntmasterAudioEngine *engine;
+    std::unique_ptr<UnifiedAudioEngine> engine;
+    int sessionId = -1;
 
     // Helper function to load audio file (duplicate from analyze_recording.cpp for self-contained
     // test)
@@ -43,11 +44,17 @@ class CoreValidationTest : public ::testing::Test {
     }
 
     void SetUp() override {
-        engine = &HuntmasterAudioEngine::getInstance();
-        engine->initialize();
+        auto result = UnifiedAudioEngine::create();
+        ASSERT_TRUE(result.isOk()) << "Failed to create UnifiedAudioEngine instance";
+        engine = std::move(result.value);
     }
 
-    void TearDown() override { engine->shutdown(); }
+    void TearDown() override {
+        if (engine && sessionId != -1) {
+            engine->destroySession(sessionId);
+        }
+        engine.reset();
+    }
 };
 
 TEST_F(CoreValidationTest, DTWSelfSimilarity) {
@@ -55,9 +62,15 @@ TEST_F(CoreValidationTest, DTWSelfSimilarity) {
     const std::string audioFilePath = "../data/master_calls/" + masterCallId + ".wav";
 
     // Load master call first
-    auto loadResult = engine->loadMasterCall(masterCallId);
-    if (loadResult != HuntmasterAudioEngine::EngineStatus::OK) {
+    auto sessionResult = engine->createSession(static_cast<float>(44100.0f));
+    ASSERT_TRUE(sessionResult.isOk()) << "Failed to create session.";
+    sessionId = sessionResult.value;
+
+    auto masterStatus = engine->loadMasterCall(sessionId, masterCallId);
+    if (masterStatus != UnifiedAudioEngine::Status::OK) {
         GTEST_SKIP() << "Could not load master call file: " << masterCallId;
+        engine->destroySession(sessionId);
+        sessionId = -1;
         return;
     }
 
@@ -70,24 +83,19 @@ TEST_F(CoreValidationTest, DTWSelfSimilarity) {
     }
 
     // Start a real-time session
-    auto sessionResult = engine->startRealtimeSession(static_cast<float>(sampleRate), 1024);
-    ASSERT_TRUE(sessionResult.isOk())
-        << "Failed to start real-time session for DTW self-similarity test.";
-
-    int sessionId = sessionResult.value;
-
     // Process in chunks (simulating real-time)
     const int chunkSize = 1024;
     for (size_t i = 0; i < audioData.size(); i += chunkSize) {
         size_t remainingSamples = audioData.size() - i;
         size_t samplesToProcess = (remainingSamples < chunkSize) ? remainingSamples : chunkSize;
-        auto status = engine->processAudioChunk(sessionId, audioData.data() + i,
-                                                static_cast<int>(samplesToProcess));
-        EXPECT_EQ(status, huntmaster::HuntmasterAudioEngine::EngineStatus::OK);
+        auto status = engine->processAudioChunk(
+            sessionId, std::span<const float>(audioData.data() + i, samplesToProcess));
+        EXPECT_EQ(status, UnifiedAudioEngine::Status::OK);
     }
 
     auto scoreResult = engine->getSimilarityScore(sessionId);
-    engine->endRealtimeSession(sessionId);
+    engine->destroySession(sessionId);
+    sessionId = -1;
 
     if (scoreResult.isOk()) {
         float score = scoreResult.value;

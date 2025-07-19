@@ -5,9 +5,9 @@
 #include <thread>
 #include <vector>
 
-#include "huntmaster/core/HuntmasterAudioEngine.h"
+#include "huntmaster/core/UnifiedAudioEngine.h"
 
-using huntmaster::HuntmasterAudioEngine;
+using huntmaster::UnifiedAudioEngine;
 
 // Platform-specific memory usage functions
 #ifdef _WIN32
@@ -46,8 +46,12 @@ int main() {
     std::cout << "=== Huntmaster Performance Testing ===" << std::endl;
     std::cout << "Testing real-time processing capability and memory usage\n" << std::endl;
 
-    HuntmasterAudioEngine &engine = HuntmasterAudioEngine::getInstance();
-    engine.initialize();
+    auto engineResult = UnifiedAudioEngine::create();
+    if (!engineResult.isOk()) {
+        std::cerr << "Failed to create UnifiedAudioEngine instance!" << std::endl;
+        return -1;
+    }
+    auto engine = std::move(engineResult.value);
 
     // Test 1: Real-time Processing Performance
     std::cout << "Test 1: Real-time Processing Performance" << std::endl;
@@ -65,31 +69,37 @@ int main() {
         auto testAudio = generateTestAudio(duration, sampleRate);
 
         // Load a dummy master call (use the test file we created)
-        auto loadResult = engine.loadMasterCall("test_sine_440");
-        (void)loadResult;  // Suppress unused variable warning
 
         // Start timing
         auto startTime = std::chrono::high_resolution_clock::now();
         size_t startMemory = getCurrentMemoryUsage();
 
         // Create session and process
-        int sessionId = engine.startRealtimeSession(static_cast<float>(sampleRate), chunkSize);
+        auto sessionResult = engine->createSession(static_cast<float>(sampleRate));
+        if (!sessionResult.isOk()) {
+            std::cerr << "Failed to create session!" << std::endl;
+            continue;
+        }
+        int sessionId = sessionResult.value;
+
+        // Load dummy master call (if needed)
+        auto masterStatus = engine->loadMasterCall(sessionId, "test_sine_440");
+        (void)masterStatus;
 
         int chunksProcessed = 0;
         for (size_t i = 0; i < testAudio.size(); i += chunkSize) {
             size_t remaining = testAudio.size() - i;
             size_t toProcess = std::min(static_cast<size_t>(chunkSize), remaining);
-
-            auto processResult =
-                engine.processAudioChunk(sessionId, testAudio.data() + i, toProcess);
-            (void)processResult;  // Suppress unused variable warning
+            auto processResult = engine->processAudioChunk(
+                sessionId, std::span<const float>(testAudio.data() + i, toProcess));
+            (void)processResult;
             chunksProcessed++;
         }
 
         // Get final score to ensure processing completed
-        auto scoreResult = engine.getSimilarityScore(sessionId);
+        auto scoreResult = engine->getSimilarityScore(sessionId);
         float score = scoreResult.isOk() ? scoreResult.value : 0.0f;
-        engine.endRealtimeSession(sessionId);
+        engine->destroySession(sessionId);
 
         // End timing
         auto endTime = std::chrono::high_resolution_clock::now();
@@ -126,9 +136,14 @@ int main() {
     std::vector<size_t> memoryReadings;
     for (int i = 0; i < 100; ++i) {
         // Start and stop recording
-        int recId = engine.startRecording(44100.0);
+        // Recording API is now per-session; create session for each recording
+        auto sessionResult = engine->createSession(44100.0f);
+        if (!sessionResult.isOk()) continue;
+        int sessionId = sessionResult.value;
+        auto recStatus = engine->startRecording(sessionId);
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        engine.stopRecording(recId);
+        engine->stopRecording(sessionId);
+        engine->destroySession(sessionId);
 
         // Check memory every 10 iterations
         if (i % 10 == 0) {
@@ -164,21 +179,24 @@ int main() {
     for (int size : chunkSizes) {
         std::cout << "\nChunk size: " << size << " samples" << std::endl;
 
-        int sessionId = engine.startRealtimeSession(44100.0f, size);
+        auto sessionResult = engine->createSession(44100.0f);
+        if (!sessionResult.isOk()) continue;
+        int sessionId = sessionResult.value;
 
         // Measure 100 chunks
         std::vector<double> latencies;
         for (int i = 0; i < 100; ++i) {
             auto start = std::chrono::high_resolution_clock::now();
-            auto processResult = engine.processAudioChunk(sessionId, testChunk.data(), size);
-            (void)processResult;  // Suppress unused variable warning
+            auto processResult = engine->processAudioChunk(
+                sessionId, std::span<const float>(testChunk.data(), size));
+            (void)processResult;
             auto end = std::chrono::high_resolution_clock::now();
 
             auto latency = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
             latencies.push_back(latency.count() / 1000.0);  // Convert to ms
         }
 
-        engine.endRealtimeSession(sessionId);
+        engine->destroySession(sessionId);
 
         // Calculate statistics
         double avgLatency = 0.0;
@@ -210,9 +228,7 @@ int main() {
               << std::endl;
     std::cout << "Latency: Suitable for real-time applications" << std::endl;
 
-    engine.shutdown();
     std::cout << "\n\nShutting down engine..." << std::endl;
-    engine.shutdown();
     std::cout << "Performance tests completed successfully!" << std::endl;
     return 0;
 }

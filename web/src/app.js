@@ -94,7 +94,7 @@ class AudioProcessor {
    */
   allocateWASMMemory(data) {
     const size = data.length * 4; // 4 bytes per float
-    const ptr = this.audioProcessor.engine._malloc(size);
+    const ptr = this.engine._malloc(size);
 
     if (!ptr) {
       throw new Error("Failed to allocate WASM memory");
@@ -657,26 +657,30 @@ class HuntmasterApplication {
 
       source.connect(this.audioProcessor.analyser);
 
-      // Setup media recorder
-      this.recordedChunks = [];
-      this.mediaRecorder = new MediaRecorder(this.audioStream, {
-        mimeType: "audio/webm",
-      });
-
-      this.mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          this.recordedChunks.push(event.data);
-        }
+      // Setup AudioWorklet for real-time chunked processing
+      await this.audioProcessor.audioContext.audioWorklet.addModule(
+        "audio-worklet-processor.js"
+      );
+      this.workletNode = new AudioWorkletNode(
+        this.audioProcessor.audioContext,
+        "audio-worklet-processor"
+      );
+      this.workletNode.port.onmessage = (event) => {
+        const audioChunk = event.data;
+        // Send chunk to WASM engine for real-time processing
+        this.audioProcessor.processAudioChunk(
+          audioChunk,
+          this.audioProcessor.audioContext.sampleRate
+        );
       };
-
-      this.mediaRecorder.onstop = async () => {
-        await this.processRecording();
-      };
+      const source = this.audioProcessor.audioContext.createMediaStreamSource(
+        this.audioStream
+      );
+      source.connect(this.workletNode);
+      this.workletNode.connect(this.audioProcessor.audioContext.destination);
+      this.audioProcessor.isRecording = true;
 
       // Start engine session
-      // const sessionResult = this.audioProcessor.engine._startSession(
-      //   this.audioProcessor.engineId
-      // );
       const sessionResult = this.audioProcessor.engine._startSession(
         this.audioProcessor.engineId,
         44100, // sampleRate
@@ -686,10 +690,6 @@ class HuntmasterApplication {
       if (sessionResult !== 1) {
         throw new Error(`Failed to start engine session: ${sessionResult}`);
       }
-
-      // Start recording
-      this.mediaRecorder.start();
-      this.audioProcessor.isRecording = true;
 
       // Update UI
       this.uiController.setState(this.uiController.states.RECORDING);
@@ -718,8 +718,9 @@ class HuntmasterApplication {
   stopRecording() {
     Logger.log("Stopping recording...");
 
-    if (this.mediaRecorder && this.audioProcessor.isRecording) {
-      this.mediaRecorder.stop();
+    if (this.workletNode && this.audioProcessor.isRecording) {
+      this.workletNode.disconnect();
+      this.workletNode = null;
       this.audioProcessor.isRecording = false;
 
       // Stop audio stream
@@ -737,10 +738,6 @@ class HuntmasterApplication {
 
       // End engine session
       this.audioProcessor.engine._endSession(this.audioProcessor.engineId);
-      if (this.scriptProcessor) {
-        this.scriptProcessor.disconnect();
-        this.scriptProcessor = null;
-      }
       Logger.log("Recording stopped", "success");
     }
   }
