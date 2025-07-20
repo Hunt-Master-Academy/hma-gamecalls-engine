@@ -682,14 +682,16 @@ int main(int argc, char *argv[]) {
     // Configure component-specific debug levels
     auto &logger = DebugLogger::getInstance();
     if (debugOptions.enableVADDebug) {
-        logger.setComponentLogLevel(huntmaster::Component::VAD, huntmaster::LogLevel::DEBUG);
+        logger.setComponentLogLevel(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                    huntmaster::DebugLevel::DEBUG);
     }
     if (debugOptions.enableTrimDebug) {
-        logger.setComponentLogLevel(huntmaster::Component::TOOLS, huntmaster::LogLevel::TRACE);
+        logger.setComponentLogLevel(huntmaster::DebugComponent::TOOLS,
+                                    huntmaster::DebugLevel::TRACE);
     }
     if (debugOptions.enablePerformanceMetrics) {
-        logger.setComponentLogLevel(huntmaster::Component::PERFORMANCE,
-                                    huntmaster::LogLevel::DEBUG);
+        logger.setComponentLogLevel(huntmaster::DebugComponent::PERFORMANCE,
+                                    huntmaster::DebugLevel::DEBUG);
     }
 
     DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,

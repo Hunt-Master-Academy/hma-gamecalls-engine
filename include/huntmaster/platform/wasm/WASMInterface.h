@@ -2,73 +2,64 @@
 
 #ifdef __EMSCRIPTEN__
 
-#include "huntmaster/core/HuntmasterEngine.h"
 #include <emscripten/bind.h>
 #include <emscripten/val.h>
+
 #include <memory>
 #include <vector>
 
-namespace huntmaster
-{
+#include "huntmaster/core/UnifiedAudioEngine.h"
 
-    class WASMInterface
-    {
-    public:
-        WASMInterface();
-        ~WASMInterface();
+namespace wasm {
+class WASMEngine {
+   private:
+    std::unique_ptr<UnifiedAudioEngine> engine;
+    std::string sessionId;
 
-        // Engine lifecycle
-        bool initialize(int sampleRate, int frameSize, int mfccCoeffs);
-        void shutdown();
-        bool isInitialized() const;
+   public:
+    WASMEngine();
+    ~WASMEngine() = default;
 
-        // Master call management
-        bool loadMasterCall(const std::string &callName,
-                            emscripten::val audioData);
-        std::vector<std::string> getAvailableCalls() const;
+    // Engine lifecycle
+    bool initialize(int sampleRate = 44100, int bufferSize = 1024);
+    bool loadMasterCall(const std::string& audioPath);
+    bool startSession(const std::string& newSessionId);
+    bool endSession();
 
-        // Audio processing
-        float processAudioChunk(uintptr_t audioPtr, size_t numSamples);
-        emscripten::val processAudioArray(emscripten::val audioArray);
+    // Real-time processing
+    bool processAudio(const emscripten::val& audioData);
+    emscripten::val getWaveformData(int startTime, int duration);
+    emscripten::val exportWaveformToJSON();
 
-        // Session management
-        int startSession();
-        bool endSession(int sessionId);
-        int getActiveSessionCount() const;
+    // Analysis
+    emscripten::val getCurrentSimilarity();
+    emscripten::val getRecentFeatures();
 
-        // Real-time streaming
-        bool enableStreaming(bool enable);
-        bool enqueueAudioBuffer(emscripten::val buffer);
-        emscripten::val dequeueResults();
+    // Utilities
+    std::string getSessionId() const;
+    emscripten::val getEngineStatus();
+};
 
-        // Performance metrics
-        emscripten::val getPerformanceStats() const;
-        void resetStats();
+}  // namespace wasm
+WASMAudioWorker();
 
-        // Memory pressure handling
-        void onMemoryPressure();
-        size_t getMemoryUsage() const;
+}  // namespace huntmaster
 
-    private:
-        class Impl;
-        std::unique_ptr<Impl> pimpl_;
-    };
+// Emscripten bindings
+EMSCRIPTEN_BINDINGS(huntmaster_wasm) {
+    emscripten::class_<huntmaster::wasm::WASMEngine>("HuntmasterEngine")
+        .constructor<>()
+        .function("initialize", &huntmaster::wasm::WASMEngine::initialize)
+        .function("loadMasterCall", &huntmaster::wasm::WASMEngine::loadMasterCall)
+        .function("startSession", &huntmaster::wasm::WASMEngine::startSession)
+        .function("endSession", &huntmaster::wasm::WASMEngine::endSession)
+        .function("processAudio", &huntmaster::wasm::WASMEngine::processAudio)
+        .function("getWaveformData", &huntmaster::wasm::WASMEngine::getWaveformData)
+        .function("exportWaveformToJSON", &huntmaster::wasm::WASMEngine::exportWaveformToJSON)
+        .function("getCurrentSimilarity", &huntmaster::wasm::WASMEngine::getCurrentSimilarity)
+        .function("getRecentFeatures", &huntmaster::wasm::WASMEngine::getRecentFeatures)
+        .function("getSessionId", &huntmaster::wasm::WASMEngine::getSessionId)
+        .function("getEngineStatus", &huntmaster::wasm::WASMEngine::getEngineStatus);
+}
 
-    // SharedArrayBuffer support for audio workers
-    class WASMAudioWorker
-    {
-    public:
-        WASMAudioWorker();
-
-        bool initialize(uintptr_t sharedBufferPtr, size_t bufferSize);
-        void processSharedBuffer();
-        emscripten::val getStatus() const;
-
-    private:
-        class Impl;
-        std::unique_ptr<Impl> pimpl_;
-    };
-
-} // namespace huntmaster
-
-#endif // __EMSCRIPTEN__
+#endif  // __EMSCRIPTEN__

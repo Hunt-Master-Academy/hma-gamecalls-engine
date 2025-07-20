@@ -151,22 +151,29 @@ message(STATUS "Configuring core HuntmasterEngine library...")
 #     "${PROJECT_SOURCE_DIR}/core/DTWProcessor.cpp"
 # )
 
-# This will find all .cpp files in the src/core directory and add them to the variable.
-file(GLOB HUNTMASTER_CORE_SOURCES
-    "${PROJECT_SOURCE_DIR}/core/*.cpp"
-)
-
-# Ensure UnifiedAudioEngine is included (should be covered by glob but making explicit)
-list(APPEND HUNTMASTER_CORE_SOURCES 
+# Define the core sources explicitly for the modern UnifiedAudioEngine architecture
+set(UNIFIED_ENGINE_CORE_SOURCES
     "${PROJECT_SOURCE_DIR}/core/UnifiedAudioEngine.cpp"
+    "${PROJECT_SOURCE_DIR}/core/AudioBufferPool.cpp"
+    "${PROJECT_SOURCE_DIR}/core/VoiceActivityDetector.cpp"
+    "${PROJECT_SOURCE_DIR}/core/MFCCProcessor.cpp"
+    "${PROJECT_SOURCE_DIR}/core/DTWComparator.cpp"
+    "${PROJECT_SOURCE_DIR}/core/RealtimeAudioProcessor.cpp"
+    "${PROJECT_SOURCE_DIR}/core/WaveformGenerator.cpp"
+    "${PROJECT_SOURCE_DIR}/core/AudioPlayer.cpp"
+    "${PROJECT_SOURCE_DIR}/core/AudioRecorder.cpp"
+    "${PROJECT_SOURCE_DIR}/core/DTWProcessor.cpp"
+    "${PROJECT_SOURCE_DIR}/core/ThirdPartyLibs.cpp"
+    "${PROJECT_SOURCE_DIR}/core/AudioLevelProcessor.cpp"
+    "${PROJECT_SOURCE_DIR}/core/DebugLogger.cpp"
+    "${PROJECT_SOURCE_DIR}/core/RealtimeScorer.cpp"
 )
 
+# Create the unified engine library
+add_library(UnifiedAudioEngine STATIC ${UNIFIED_ENGINE_CORE_SOURCES})
 
-# Create the static library for the engine core.
-add_library(HuntmasterEngine STATIC ${HUNTMASTER_CORE_SOURCES})
-
-# Set public include directories. Any target linking to HuntmasterEngine will inherit these.
-target_include_directories(HuntmasterEngine PUBLIC
+# Set public include directories. Any target linking to UnifiedAudioEngine will inherit these.
+target_include_directories(UnifiedAudioEngine PUBLIC
     ${PROJECT_INCLUDE_DIR}
     # Add libs dir for header-only libraries like dr_wav.h and miniaudio.h
     ${PROJECT_LIBS_DIR}/kissfft
@@ -177,8 +184,8 @@ target_include_directories(HuntmasterEngine PUBLIC
 )
 
 # Link core dependencies.
-target_link_libraries(HuntmasterEngine PUBLIC kissfft)
-target_compile_definitions(HuntmasterEngine PUBLIC HAVE_KISSFFT)
+target_link_libraries(UnifiedAudioEngine PUBLIC kissfft)
+target_compile_definitions(UnifiedAudioEngine PUBLIC HAVE_KISSFFT)
 
 
 # ==============================================================================
@@ -194,15 +201,15 @@ if(EMSCRIPTEN)
     # Define the sources needed specifically for the WASM module.
     # This primarily includes the Embind interface file.
     set(WASM_INTERFACE_SOURCES
-        "${PROJECT_SOURCE_DIR}/platform/wasm/WASMInterface.cpp" # Assuming this is the correct path
+        "${PROJECT_SOURCE_DIR}/src/platform/wasm/WASMInterface.cpp"
     )
 
     # Create the final WASM executable (which produces .js and .wasm files)
     add_executable(huntmaster_wasm ${WASM_INTERFACE_SOURCES})
 
-    # Link the WASM executable against the core engine library.
+    # Link the WASM executable against the unified engine library.
     # This pulls in all the core source files and their dependencies.
-    target_link_libraries(huntmaster_wasm PRIVATE HuntmasterEngine)
+    target_link_libraries(huntmaster_wasm PRIVATE UnifiedAudioEngine)
 
     # Add Emscripten-specific compiler options
     target_compile_options(huntmaster_wasm PRIVATE
@@ -241,23 +248,23 @@ else()
 
     # Link platform-specific libraries for native audio, threading, etc.
     if(WIN32)
-        target_link_libraries(HuntmasterEngine PUBLIC winmm)
+        target_link_libraries(UnifiedAudioEngine PUBLIC winmm)
     elseif(APPLE)
         find_library(COREAUDIO_LIBRARY CoreAudio REQUIRED)
         find_library(AUDIOUNIT_LIBRARY AudioUnit REQUIRED)
         find_library(COREFOUNDATION_LIBRARY CoreFoundation REQUIRED)
-        target_link_libraries(HuntmasterEngine PUBLIC
+        target_link_libraries(UnifiedAudioEngine PUBLIC
             ${COREAUDIO_LIBRARY}
             ${AUDIOUNIT_LIBRARY}
             ${COREFOUNDATION_LIBRARY}
         )
     elseif(UNIX AND NOT ANDROID)
         find_package(Threads REQUIRED)
-        target_link_libraries(HuntmasterEngine PUBLIC Threads::Threads)
+        target_link_libraries(UnifiedAudioEngine PUBLIC Threads::Threads)
         # For audio, you might need to find and link ALSA or PulseAudio here.
         # find_package(ALSA)
         # if(ALSA_FOUND)
-        #   target_link_libraries(HuntmasterEngine PUBLIC ${ALSA_LIBRARIES})
+        #   target_link_libraries(UnifiedAudioEngine PUBLIC ${ALSA_LIBRARIES})
         # endif()
     endif()
 
@@ -269,7 +276,7 @@ else()
         foreach(tool_source_path ${TOOL_SOURCES})
             get_filename_component(tool_name ${tool_source_path} NAME_WE)
             add_executable(${tool_name} ${tool_source_path})
-            target_link_libraries(${tool_name} PRIVATE HuntmasterEngine)
+            target_link_libraries(${tool_name} PRIVATE UnifiedAudioEngine)
             message(STATUS "  -- Added tool: ${tool_name}")
         endforeach()
     endif()
@@ -297,7 +304,6 @@ else()
         
         # Filter out standalone tests from Google Test sources
         set(TEST_SOURCES)
-
         foreach(test_file ${ALL_TEST_SOURCES})
             list(FIND STANDALONE_TESTS ${test_file} exclude_index)
             if(exclude_index EQUAL -1)
@@ -305,13 +311,9 @@ else()
             endif()
         endforeach()
 
-        message(STATUS "ALL_TEST_SOURCES: ${ALL_TEST_SOURCES}")
-        message(STATUS "STANDALONE_TESTS: ${STANDALONE_TESTS}")
-        message(STATUS "TEST_SOURCES after filtering: ${TEST_SOURCES}")
-
         if(TEST_SOURCES)
             add_executable(RunEngineTests ${TEST_SOURCES})
-            target_link_libraries(RunEngineTests PRIVATE HuntmasterEngine GTest::gtest_main)
+            target_link_libraries(RunEngineTests PRIVATE UnifiedAudioEngine GTest::gtest_main)
             include(GoogleTest)
             gtest_discover_tests(RunEngineTests)
             message(STATUS "  -- Unit test runner 'RunEngineTests' configured.")
@@ -319,36 +321,36 @@ else()
         
         # Create standalone diagnostic executables
         add_executable(CrossPlatformTest "${PROJECT_TESTS_DIR}/unit/test_cross_platform.cpp")
-        target_link_libraries(CrossPlatformTest PRIVATE HuntmasterEngine)
+        target_link_libraries(CrossPlatformTest PRIVATE UnifiedAudioEngine)
         
         add_executable(TestHarness "${PROJECT_TESTS_DIR}/unit/test_harness.cpp")
-        target_link_libraries(TestHarness PRIVATE HuntmasterEngine)
+        target_link_libraries(TestHarness PRIVATE UnifiedAudioEngine)
         
         add_executable(PerformanceTest "${PROJECT_TESTS_DIR}/unit/test_performance.cpp")
-        target_link_libraries(PerformanceTest PRIVATE HuntmasterEngine)
+        target_link_libraries(PerformanceTest PRIVATE UnifiedAudioEngine)
         
         add_executable(RecordingTest "${PROJECT_TESTS_DIR}/unit/test_recording.cpp")
-        target_link_libraries(RecordingTest PRIVATE HuntmasterEngine)
+        target_link_libraries(RecordingTest PRIVATE UnifiedAudioEngine)
         
         add_executable(RecorderTest "${PROJECT_TESTS_DIR}/unit/test_recorder.cpp")
-        target_link_libraries(RecorderTest PRIVATE HuntmasterEngine)
+        target_link_libraries(RecorderTest PRIVATE UnifiedAudioEngine)
         
         # Add UnifiedAudioEngine test
         add_executable(UnifiedEngineTest "${PROJECT_TESTS_DIR}/unit/test_unified_engine.cpp")
-        target_link_libraries(UnifiedEngineTest PRIVATE HuntmasterEngine gtest gtest_main)
+        target_link_libraries(UnifiedEngineTest PRIVATE UnifiedAudioEngine gtest gtest_main)
         
         # Add new unified test executables
         add_executable(MFCCConsistencyUnifiedTest "${PROJECT_TESTS_DIR}/unit/test_mfcc_consistency_unified.cpp")
-        target_link_libraries(MFCCConsistencyUnifiedTest PRIVATE HuntmasterEngine gtest gtest_main)
+        target_link_libraries(MFCCConsistencyUnifiedTest PRIVATE UnifiedAudioEngine gtest gtest_main)
         
         add_executable(DTWUnifiedTest "${PROJECT_TESTS_DIR}/unit/dtw_tests_unified.cpp")
-        target_link_libraries(DTWUnifiedTest PRIVATE HuntmasterEngine gtest gtest_main)
+        target_link_libraries(DTWUnifiedTest PRIVATE UnifiedAudioEngine gtest gtest_main)
         
         add_executable(MFCCDirectUnifiedTest "${PROJECT_TESTS_DIR}/unit/test_mfcc_direct_unified.cpp")
-        target_link_libraries(MFCCDirectUnifiedTest PRIVATE HuntmasterEngine gtest gtest_main)
+        target_link_libraries(MFCCDirectUnifiedTest PRIVATE UnifiedAudioEngine gtest gtest_main)
         
         add_executable(ValidationUnifiedTest "${PROJECT_TESTS_DIR}/unit/test_validation_unified.cpp")
-        target_link_libraries(ValidationUnifiedTest PRIVATE HuntmasterEngine gtest gtest_main)
+        target_link_libraries(ValidationUnifiedTest PRIVATE UnifiedAudioEngine gtest gtest_main)
         
         message(STATUS "  -- Standalone diagnostic tools configured.")
 
@@ -364,7 +366,7 @@ else()
     # REPLACED: This whole section is now more robust.
     # The old install rules were okay, but using GNUInstallDirs is standard practice.
     include(GNUInstallDirs)
-    install(TARGETS HuntmasterEngine
+    install(TARGETS UnifiedAudioEngine
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

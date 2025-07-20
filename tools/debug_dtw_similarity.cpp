@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <iostream>
 #include <memory>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -30,13 +31,12 @@ using huntmaster::UnifiedAudioEngine;
 class DTWDebugger {
    private:
     std::unique_ptr<UnifiedAudioEngine> engine_;
+    huntmaster::SessionId sessionId_;
     bool verbose_;
     bool trace_;
-    int sessionId_ = -1;  // Track the active session
 
    public:
-    DTWDebugger(bool verbose = false, bool trace = false)
-        : engine_(UnifiedAudioEngine::create()), verbose_(verbose), trace_(trace) {
+    DTWDebugger(bool verbose = false, bool trace = false) : verbose_(verbose), trace_(trace) {
         if (trace) {
             DebugConfig::setupFullDebug();
         } else if (verbose) {
@@ -46,33 +46,18 @@ class DTWDebugger {
         }
     }
 
-    ~DTWDebugger() {
-        // Ensure session is properly ended
-        if (sessionId_ != -1) {
-            engine_->destroySession(sessionId_);
-            sessionId_ = -1;
-        }
-    }
-
     bool runDebugAnalysis(const std::string& audioFile, const std::string& masterCallId) {
         LOG_INFO(Component::TOOLS, "=== DTW Similarity Debug Analysis ===");
         LOG_INFO(Component::TOOLS, "Audio file: " + audioFile);
         LOG_INFO(Component::TOOLS, "Master call: " + masterCallId);
 
-        // Create session
-        sessionId_ = engine_->createSession();
-        if (sessionId_ == -1) {
-            LOG_ERROR(Component::TOOLS, "❌ Failed to create engine session");
+        // Initialize engine
+        if (!initializeEngine()) {
             return false;
         }
 
-        // Load master call
-        if (!loadMasterCall(masterCallId)) {
-            return false;
-        }
-
-        // Load and analyze audio
-        if (!loadAndAnalyzeAudio(audioFile)) {
+        // Load and analyze audio with master call
+        if (!loadAndAnalyzeAudio(audioFile, masterCallId)) {
             return false;
         }
 
@@ -81,30 +66,22 @@ class DTWDebugger {
     }
 
    private:
-    bool loadMasterCall(const std::string& masterCallId) {
-        LOG_DEBUG(Component::TOOLS, "Loading master call: " + masterCallId);
+    bool initializeEngine() {
+        LOG_DEBUG(Component::TOOLS, "Creating UnifiedAudioEngine");
 
-        auto loadResult = engine_->loadMasterCall(sessionId_, masterCallId);
-        if (loadResult != UnifiedAudioEngine::Status::OK) {
-            LOG_ERROR(Component::TOOLS,
-                      "❌ Failed to load master call '" + masterCallId +
-                          "'. Status: " + std::to_string(static_cast<int>(loadResult)));
-
-            // Provide helpful suggestions
-            LOG_INFO(Component::TOOLS, "💡 Suggestions:");
-            LOG_INFO(Component::TOOLS,
-                     "  - Check if file exists: data/master_calls/" + masterCallId + ".wav");
-            LOG_INFO(Component::TOOLS, "  - Verify file format (WAV, PCM)");
-            LOG_INFO(Component::TOOLS, "  - Check file permissions");
-
+        auto engineResult = UnifiedAudioEngine::create();
+        if (!engineResult.isOk()) {
+            LOG_ERROR(Component::TOOLS, "❌ Failed to create UnifiedAudioEngine");
             return false;
         }
 
-        LOG_INFO(Component::TOOLS, "✅ Master call loaded successfully");
+        engine_ = std::move(engineResult.value);
+        LOG_INFO(Component::TOOLS, "✅ Engine created successfully");
         return true;
     }
 
-    bool loadAndAnalyzeAudio(const std::string& audioFile) {
+   private:
+    bool loadAndAnalyzeAudio(const std::string& audioFile, const std::string& masterCallId) {
         LOG_DEBUG(Component::TOOLS, "Loading audio file for analysis");
 
         unsigned int channels, sampleRate;
@@ -117,6 +94,25 @@ class DTWDebugger {
             LOG_ERROR(Component::TOOLS, "❌ Failed to load audio file: " + audioFile);
             return false;
         }
+
+        // Create session with the audio's sample rate
+        auto sessionResult = engine_->createSession(static_cast<float>(sampleRate));
+        if (!sessionResult.isOk()) {
+            LOG_ERROR(Component::TOOLS, "❌ Failed to create session");
+            drwav_free(audioData, nullptr);
+            return false;
+        }
+        sessionId_ = sessionResult.value;
+
+        // Load master call
+        auto loadResult = engine_->loadMasterCall(sessionId_, masterCallId);
+        if (loadResult != UnifiedAudioEngine::Status::OK) {
+            LOG_ERROR(Component::TOOLS, "❌ Failed to load master call '" + masterCallId + "'");
+            drwav_free(audioData, nullptr);
+            return false;
+        }
+
+        LOG_INFO(Component::TOOLS, "✅ Master call loaded successfully");
 
         // Log detailed audio information
         LOG_INFO(Component::TOOLS, "✅ Audio loaded successfully:");
@@ -138,7 +134,7 @@ class DTWDebugger {
         analyzeAudioCharacteristics(monoData, sampleRate);
 
         // Process through engine
-        return processAudioThroughEngine(monoData, sampleRate);
+        return processAudioThroughEngine(monoData);
     }
 
     std::vector<float> convertToMono(float* audioData, drwav_uint64 totalFrames,
@@ -206,7 +202,7 @@ class DTWDebugger {
         }
     }
 
-    bool processAudioThroughEngine(const std::vector<float>& audioData, unsigned int sampleRate) {
+    bool processAudioThroughEngine(const std::vector<float>& audioData) {
         LOG_DEBUG(Component::TOOLS, "Processing audio through engine...");
 
         // Process in chunks to simulate real-time processing
@@ -227,18 +223,16 @@ class DTWDebugger {
                                                 std::to_string(samplesToProcess) + " samples)");
             }
 
-            // Process chunk through engine
-            std::span<const float> chunkSpan(audioData.data() + i, samplesToProcess);
-            auto status = engine_->processAudioChunk(sessionId_, chunkSpan);
-            if (status != UnifiedAudioEngine::Status::OK) {
+            // Process audio chunk using span
+            std::span<const float> audioChunk(audioData.data() + i, samplesToProcess);
+            auto processStatus = engine_->processAudioChunk(sessionId_, audioChunk);
+
+            if (processStatus != UnifiedAudioEngine::Status::OK) {
                 LOG_ERROR(Component::TOOLS,
-                          "❌ Failed to process audio chunk at sample " + std::to_string(i));
-                engine_->destroySession(sessionId_);
-                sessionId_ = -1;
+                          "❌ Failed to process audio chunk " + std::to_string(i / chunkSize + 1));
                 return false;
             }
 
-            // Progress logging
             if (verbose_ && (i / chunkSize) % 10 == 0) {
                 float progress = static_cast<float>(i) / audioData.size() * 100.0f;
                 LOG_DEBUG(Component::TOOLS,
@@ -268,6 +262,12 @@ class DTWDebugger {
             // Additional analysis for debugging
             if (verbose_) {
                 performAdvancedAnalysis(score);
+            }
+
+            // Clean up session
+            auto destroyResult = engine_->destroySession(sessionId_);
+            if (destroyResult != UnifiedAudioEngine::Status::OK) {
+                LOG_WARN(Component::TOOLS, "Warning: Failed to destroy session properly");
             }
 
             return true;

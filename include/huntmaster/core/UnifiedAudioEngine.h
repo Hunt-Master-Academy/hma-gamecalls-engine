@@ -13,6 +13,11 @@
 
 namespace huntmaster {
 
+// Forward declarations for audio components
+class AudioPlayer;
+class AudioRecorder;
+class AudioLevelProcessor;
+
 using SessionId = uint32_t;
 constexpr SessionId INVALID_SESSION_ID = 0;
 
@@ -69,6 +74,23 @@ class UnifiedAudioEngine {
     [[nodiscard]] Status startRecording(SessionId sessionId);
     [[nodiscard]] Status stopRecording(SessionId sessionId);
     [[nodiscard]] Result<std::string> saveRecording(SessionId sessionId, std::string_view filename);
+    [[nodiscard]] bool isRecording(SessionId sessionId) const;
+    [[nodiscard]] Result<float> getRecordingLevel(SessionId sessionId) const;
+    [[nodiscard]] Result<double> getRecordingDuration(SessionId sessionId) const;
+
+    // Audio Playback (per session)
+    [[nodiscard]] Status playMasterCall(SessionId sessionId, std::string_view masterCallId);
+    [[nodiscard]] Status playRecording(SessionId sessionId, std::string_view filename);
+    [[nodiscard]] Status stopPlayback(SessionId sessionId);
+    [[nodiscard]] bool isPlaying(SessionId sessionId) const;
+    [[nodiscard]] Result<double> getPlaybackPosition(SessionId sessionId) const;
+    [[nodiscard]] Status setPlaybackVolume(SessionId sessionId, float volume);
+
+    // Real-time Session Management (for interactive tools)
+    [[nodiscard]] Result<SessionId> startRealtimeSession(float sampleRate = 44100.0f,
+                                                         int bufferSize = 512);
+    [[nodiscard]] Status endRealtimeSession(SessionId sessionId);
+    [[nodiscard]] bool isRealtimeSession(SessionId sessionId) const;
 
    private:
     UnifiedAudioEngine();
@@ -96,9 +118,21 @@ class UnifiedAudioEngine {
         bool isRecording = false;
         std::vector<float> recordingBuffer;
 
+        // Playback state
+        bool isPlaying = false;
+        std::string currentPlaybackFile;
+        float playbackVolume = 1.0f;
+
+        // Real-time session properties
+        bool isRealtimeSession = false;
+        int realtimeBufferSize = 512;
+
         // Processing components (per-session for thread safety)
         std::unique_ptr<class MFCCProcessor> mfccProcessor;
         std::unique_ptr<class VoiceActivityDetector> vad;
+        std::unique_ptr<class AudioPlayer> audioPlayer;
+        std::unique_ptr<class AudioRecorder> audioRecorder;
+        std::unique_ptr<class AudioLevelProcessor> levelProcessor;
     };
 
     class Impl;
@@ -115,6 +149,10 @@ void unified_destroy_engine(int engineId);
 [[nodiscard]] int unified_create_session(int engineId, float sampleRate);
 [[nodiscard]] int unified_destroy_session(int engineId, int sessionId);
 
+// Real-time session management
+[[nodiscard]] int unified_start_realtime_session(int engineId, float sampleRate, int bufferSize);
+[[nodiscard]] int unified_end_realtime_session(int engineId, int sessionId);
+
 // Master calls - now per session
 [[nodiscard]] int unified_load_master_call(int engineId, int sessionId, const char* masterCallId);
 
@@ -123,6 +161,19 @@ void unified_destroy_engine(int engineId);
                                               int bufferSize);
 [[nodiscard]] float unified_get_similarity_score(int engineId, int sessionId);
 [[nodiscard]] int unified_get_feature_count(int engineId, int sessionId);
+
+// Recording
+[[nodiscard]] int unified_start_recording(int engineId, int sessionId);
+[[nodiscard]] int unified_stop_recording(int engineId, int sessionId);
+[[nodiscard]] int unified_save_recording(int engineId, int sessionId, const char* filename);
+[[nodiscard]] int unified_is_recording(int engineId, int sessionId);
+[[nodiscard]] float unified_get_recording_level(int engineId, int sessionId);
+
+// Playback
+[[nodiscard]] int unified_play_master_call(int engineId, int sessionId, const char* masterCallId);
+[[nodiscard]] int unified_play_recording(int engineId, int sessionId, const char* filename);
+[[nodiscard]] int unified_stop_playback(int engineId, int sessionId);
+[[nodiscard]] int unified_is_playing(int engineId, int sessionId);
 }
 
 }  // namespace huntmaster

@@ -353,8 +353,8 @@ TEST_F(ValidationUnifiedTest, ErrorHandlingValidation) {
     // Test session operations after double destruction
     auto destroyResult1 = engine->destroySession(sessionId);
     (void)destroyResult1;  // Suppress unused variable warning
+
     auto destroyResult2 = engine->destroySession(sessionId);
-    (void)destroyResult2;  // Suppress unused variable warning
     EXPECT_EQ(destroyResult2, UnifiedAudioEngine::Status::SESSION_NOT_FOUND)
         << "Second destruction should return SESSION_NOT_FOUND";
 

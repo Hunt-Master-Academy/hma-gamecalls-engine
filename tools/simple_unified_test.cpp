@@ -400,8 +400,16 @@ class UnifiedEngineTestSuite {
             std::cout << "  Destroying both sessions..." << std::endl;
         }
 
-        auto destroyResult1 = engine->destroySession(session1);
-        auto destroyResult2 = engine->destroySession(session2);
+        auto destroy1Result = engine->destroySession(session1);
+        if (destroy1Result != UnifiedAudioEngine::Status::OK) {
+            std::cerr << "Warning: Failed to destroy session1" << std::endl;
+        }
+
+        auto destroy2Result = engine->destroySession(session2);
+        if (destroy2Result != UnifiedAudioEngine::Status::OK) {
+            std::cerr << "Warning: Failed to destroy session2" << std::endl;
+        }
+
         std::cout << "✓ Destroyed both sessions." << std::endl;
 
         monitor.checkpoint("Sessions destroyed");
@@ -694,6 +702,10 @@ class UnifiedEngineTestSuite {
 
         for (SessionId sessionId : sessionIds) {
             auto destroyResult = engine->destroySession(sessionId);
+            if (destroyResult != huntmaster::UnifiedAudioEngine::Status::OK) {
+                std::cerr << "Warning: Failed to destroy session " << sessionId << ": "
+                          << static_cast<int>(destroyResult) << std::endl;
+            }
         }
 
         monitor.checkpoint("Test sessions cleaned up");
@@ -729,15 +741,15 @@ int main(int argc, char* argv[]) {
     auto& logger = huntmaster::DebugLogger::getInstance();
     if (debugOptions.enableEngineDebug) {
         logger.setComponentLogLevel(huntmaster::DebugComponent::AUDIO_ENGINE,
-                                 huntmaster::DebugLevel::DEBUG);
+                                    huntmaster::DebugLevel::DEBUG);
     }
     if (debugOptions.enableSessionDebug) {
         logger.setComponentLogLevel(huntmaster::DebugComponent::AUDIO_ENGINE,
-                                 huntmaster::DebugLevel::TRACE);
+                                    huntmaster::DebugLevel::TRACE);
     }
     if (debugOptions.enablePerformanceMetrics) {
         logger.setComponentLogLevel(huntmaster::DebugComponent::PERFORMANCE,
-                                 huntmaster::DebugLevel::DEBUG);
+                                    huntmaster::DebugLevel::DEBUG);
     }
 
     huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,

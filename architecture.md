@@ -1,65 +1,4 @@
-# Huntmaster Audio Engine Architecture
-
-The Huntmaster Audio Engine is designed for robust, real-time audio feature extraction and scoring. Key components include:
-
-- WaveformGenerator: Generates synthetic test waveforms
-- HuntmasterEngine: Core engine for feature extraction and scoring
-- UnifiedAudioEngine: Platform abstraction layer
-- MFCCProcessor: Extracts MFCC features
-- DTWComparator: Compares feature sequences
-- VoiceActivityDetector: Trims silence
-- RealtimeScorer: Computes similarity scores
-
-Error handling is implemented via a custom expected type and Result<T> pattern. The engine strictly enforces mono-only input; multi-channel support is a future goal. All tests validate mono-only behavior, robust error handling, and edge case coverage (including silence trimming and low-amplitude robustness).
-
-## Test Infrastructure
-
-Unit tests are implemented using GoogleTest. The test suite covers:
-
-- Core feature extraction and scoring
-- MFCC consistency and robustness (SineWaveConsistency, ComplexWaveformConsistency, RealAudioFileConsistency)
-- Edge cases (AirGapUserAttempt, LowVolumeUserAttempt, silence trimming, low amplitude, waveform complexity)
-- Error handling and invalid input (including multi-channel rejection)
-  Tests are located in `tests/unit/`. Test audio files are in `data/recordings/` and `data/master_calls/`.
-
 # Huntmaster Audio Engine - Cross-Platform Architecture
-
-## Test Coverage & Next Steps
-
-- All architectural features covered by unit and integration tests:
-  - Session isolation and per-session master calls
-  - Lock-free real-time processing and buffer management
-  - Waveform generation, MFCC, DTW, VAD, and scoring
-  - JSON export, range queries, zoom, and config update
-  - Error handling for invalid config, audio data, and channel count
-
-### Edge Case & Stress Testing Plan
-
-1. **Edge Case Testing:**
-
-   - Minimum/maximum buffer sizes and downsample ratios
-   - Invalid/boundary config values and channel counts
-   - Range queries at buffer boundaries and empty ranges
-   - JSON export with large sample sets
-
-2. **Stress Testing:**
-
-   - Long-duration audio streams and rapid config changes
-   - High-frequency processAudio calls (thread safety)
-   - Simultaneous session isolation under load
-
-3. **Release Candidate Checklist:**
-   - All tests pass on all supported platforms
-   - Documentation up to date (README, Debugging, Deployment)
-   - Debugging outputs and error handling validated
-   - No memory leaks or deadlocks
-   - Performance benchmarks meet targets
-
-## Immediate Next Steps
-
-- Finalize documentation updates
-- Implement and run edge case and stress tests
-- Prepare release candidate and deployment artifacts
 
 ## Executive Summary
 
@@ -484,28 +423,40 @@ huntmaster-engine/
 
 ## Development Status & MVP Completion
 
-### ✅ Completed Core Components (100% Complete)
+### ✅ Completed Core Components (95% Complete)
 
 - **Core Engine**: Full implementation with modern C++20
-- **MFCC Processor**: ✅ **PRODUCTION READY** - 28-171 features extracted, all core and edge case tests passing
+- **MFCC Processor**: ✅ **PRODUCTION READY** - 28-171 features extracted, 6/7 tests passing
 - **DTW Comparator**: ✅ **PRODUCTION READY** - Normalized scoring, validated thresholds
 - **VAD System**: Real-time voice activity detection
 - **Buffer Management**: Lock-free memory pools
-- **Test Infrastructure**: Comprehensive unit, integration, and edge case tests
+- **Test Infrastructure**: Comprehensive unit and integration tests
 - **Build System**: CMake with multi-platform support
 - **File Path Resolution**: ✅ **FIXED** - Master call loading operational
-- **AudioLevelProcessor**: ✅ **IMPLEMENTED** - Real-time RMS/Peak/dB monitoring
-- **WaveformGenerator**: ✅ **IMPLEMENTED** - Visualization data for platform consumption
-- **RealtimeScorer**: ✅ **IMPLEMENTED** - Multi-dimensional similarity scoring with feedback
 
-### 🔄 **Advanced Features & Future Enhancements**
+### � **MVP REQUIRED COMPONENTS** (0% Complete)
+
+**Critical for MVP delivery - must be implemented:**
+
+- **AudioLevelProcessor**: Real-time RMS/Peak/dB monitoring
+- **WaveformGenerator**: Visualization data for platform consumption
+- **RealtimeScorer**: Multi-dimensional similarity scoring with feedback
+
+### 🔄 **MVP ENHANCEMENT COMPONENTS** (Foundation Exists)
+
+**Builds on existing infrastructure:**
 
 - **SpectrogramProcessor**: STFT visualization (leverages MFCCProcessor FFT)
 - **Enhanced DTW Output**: Alignment data extraction for visualization
 - **JSON Export System**: Standardized data format for platforms
-- **PitchTracker**: YIN algorithm pitch detection and contour tracking (planned)
-- **AudioAligner**: Advanced visualization overlay generation (planned)
-- **Machine Learning Integration**: Neural network pattern recognition (future)
+
+### 🎯 **MVP ADVANCED FEATURES** (Future Phases)
+
+**Complex implementations for enhanced MVP:**
+
+- **PitchTracker**: YIN algorithm pitch detection and contour tracking
+- **AudioAligner**: Advanced visualization overlay generation
+- **Machine Learning Integration**: Neural network pattern recognition
 
 ---
 
@@ -587,23 +538,20 @@ All MVP components follow the established patterns:
 
 ## Testing & Quality Assurance
 
-### Test Coverage & Validation
+### Test Coverage Strategy
 
-- **Unit Tests**: All core features, edge cases, and error handling validated (>90% coverage)
-- **Integration Tests**: End-to-end pipeline testing, including real-time and batch workflows
-- **Performance Tests**: Real-time constraint validation and stress testing
-- **Platform Tests**: Cross-platform behavior verification (Windows, Linux, macOS, WASM, Android, iOS)
+- **Unit Tests**: Individual component validation (>80% coverage target)
+- **Integration Tests**: End-to-end pipeline testing
+- **Performance Tests**: Real-time constraint validation
+- **Platform Tests**: Cross-platform behavior verification
 - **Fuzzing Tests**: Input validation and robustness
-- **Edge Case Tests**: Silence trimming, low amplitude, multi-channel rejection, file path resolution
 
 ### Continuous Integration
 
 - **Build Validation**: Multi-platform build verification
-- **Test Automation**: Automated test execution for all platforms
+- **Test Automation**: Automated test execution
 - **Performance Regression**: Benchmark tracking
 - **Code Quality**: Static analysis and formatting
-
-All tests currently pass, including new edge case and consistency scenarios. The test suite is regularly updated to cover new features and platform targets.
 
 ---
 

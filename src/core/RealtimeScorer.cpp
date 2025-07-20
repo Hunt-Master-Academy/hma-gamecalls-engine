@@ -127,65 +127,31 @@ RealtimeScorer::RealtimeScorer(const Config& config) : impl_(std::make_unique<Im
 RealtimeScorer::~RealtimeScorer() = default;
 
 RealtimeScorer::Impl::Impl(const Config& config) : config_(config) {
-    SCORER_LOG_DEBUG("Impl::Impl() constructor called");
-
     if (config_.isValid()) {
-        SCORER_LOG_DEBUG("Impl::Impl() config is valid, initializing components");
         initializeComponents();
         sessionStartTime_ = std::chrono::steady_clock::now();
         lastUpdateTime_ = sessionStartTime_;
         initialized_.store(true);
-        SCORER_LOG_DEBUG("Impl::Impl() initialization complete");
-    } else {
-        SCORER_LOG_ERROR("Impl::Impl() config is invalid, skipping initialization");
-        initialized_.store(false);
     }
 }
 
 void RealtimeScorer::Impl::initializeComponents() {
-    SCORER_LOG_DEBUG("initializeComponents() called");
-
     // Initialize MFCC processor with appropriate settings
     MFCCProcessor::Config mfccConfig;
     mfccConfig.sample_rate = static_cast<size_t>(config_.sampleRate);
     mfccConfig.frame_size = 1024;
     mfccConfig.num_coefficients = 13;
-
-    try {
-        mfccProcessor_ = std::make_unique<MFCCProcessor>(mfccConfig);
-        SCORER_LOG_DEBUG("initializeComponents() MFCCProcessor created successfully");
-    } catch (const std::exception& e) {
-        SCORER_LOG_ERROR("initializeComponents() MFCCProcessor creation failed: " +
-                         std::string(e.what()));
-        throw;
-    }
+    mfccProcessor_ = std::make_unique<MFCCProcessor>(mfccConfig);
 
     // Initialize DTW comparator
     DTWComparator::Config dtwConfig;
-    try {
-        dtwComparator_ = std::make_unique<DTWComparator>(dtwConfig);
-        SCORER_LOG_DEBUG("initializeComponents() DTWComparator created successfully");
-    } catch (const std::exception& e) {
-        SCORER_LOG_ERROR("initializeComponents() DTWComparator creation failed: " +
-                         std::string(e.what()));
-        throw;
-    }
+    dtwComparator_ = std::make_unique<DTWComparator>(dtwConfig);
 
     // Initialize audio level processor for volume analysis
     AudioLevelProcessor::Config levelConfig;
     levelConfig.sampleRate = config_.sampleRate;
     levelConfig.updateRateMs = config_.updateRateMs;
-
-    try {
-        levelProcessor_ = std::make_unique<AudioLevelProcessor>(levelConfig);
-        SCORER_LOG_DEBUG("initializeComponents() AudioLevelProcessor created successfully");
-    } catch (const std::exception& e) {
-        SCORER_LOG_ERROR("initializeComponents() AudioLevelProcessor creation failed: " +
-                         std::string(e.what()));
-        throw;
-    }
-
-    SCORER_LOG_DEBUG("initializeComponents() all components initialized successfully");
+    levelProcessor_ = std::make_unique<AudioLevelProcessor>(levelConfig);
 }
 
 float RealtimeScorer::Impl::calculateWeightedScore(float mfcc, float volume, float timing,
@@ -249,29 +215,13 @@ bool RealtimeScorer::Impl::isScoreTrendingUp() const {
 
 bool RealtimeScorer::setMasterCall(const std::string& masterCallPath) noexcept {
     try {
-        SCORER_LOG_DEBUG("setMasterCall() called - validating impl_");
-
-        // Defensive programming: check if impl_ is valid
-        if (!impl_) {
-            SCORER_LOG_ERROR("setMasterCall() called with null impl_");
-            return false;
-        }
-
-        // Check if the scorer was properly initialized
-        if (!impl_->initialized_.load()) {
-            SCORER_LOG_ERROR("setMasterCall() called on uninitialized RealtimeScorer");
-            return false;
-        }
-
         std::lock_guard<std::mutex> lock(impl_->mutex_);
-        SCORER_LOG_DEBUG("setMasterCall() lock acquired");
 
         // Try to load as feature file first (.mfc)
         if (masterCallPath.size() >= 4 &&
             masterCallPath.compare(masterCallPath.size() - 4, 4, ".mfc") == 0) {
             std::ifstream file(masterCallPath, std::ios::binary);
             if (!file.is_open()) {
-                SCORER_LOG_ERROR("setMasterCall() failed to open .mfc file: " + masterCallPath);
                 return false;
             }
 
@@ -281,7 +231,6 @@ bool RealtimeScorer::setMasterCall(const std::string& masterCallPath) noexcept {
             file.read(reinterpret_cast<char*>(&numCoeffs), sizeof(numCoeffs));
 
             if (!file || numFrames == 0 || numCoeffs == 0) {
-                SCORER_LOG_ERROR("setMasterCall() invalid .mfc file format");
                 return false;
             }
 
@@ -295,7 +244,6 @@ bool RealtimeScorer::setMasterCall(const std::string& masterCallPath) noexcept {
 
                 if (!file) {
                     impl_->masterMfccFeatures_.clear();
-                    SCORER_LOG_ERROR("setMasterCall() failed to read .mfc frame data");
                     return false;
                 }
 
@@ -327,14 +275,6 @@ bool RealtimeScorer::setMasterCall(const std::string& masterCallPath) noexcept {
 
         } else {
             // Load from audio file
-            SCORER_LOG_DEBUG("setMasterCall() loading from audio file");
-
-            // Validate mfccProcessor_ is initialized
-            if (!impl_->mfccProcessor_) {
-                SCORER_LOG_ERROR("setMasterCall() mfccProcessor_ is null");
-                return false;
-            }
-
             unsigned int channels;
             unsigned int sampleRate;
             drwav_uint64 totalFrameCount;
@@ -342,7 +282,6 @@ bool RealtimeScorer::setMasterCall(const std::string& masterCallPath) noexcept {
                 masterCallPath.c_str(), &channels, &sampleRate, &totalFrameCount, nullptr);
 
             if (pSampleData == nullptr) {
-                SCORER_LOG_ERROR("setMasterCall() failed to load WAV file: " + masterCallPath);
                 return false;  // Failed to load WAV file
             }
 
@@ -367,7 +306,6 @@ bool RealtimeScorer::setMasterCall(const std::string& masterCallPath) noexcept {
             // Extract features
             auto featuresResult = impl_->mfccProcessor_->extractFeaturesFromBuffer(monoData, 512);
             if (!featuresResult.has_value()) {
-                SCORER_LOG_ERROR("setMasterCall() failed to extract MFCC features");
                 return false;
             }
             impl_->masterMfccFeatures_ = std::move(*featuresResult);
@@ -389,15 +327,9 @@ bool RealtimeScorer::setMasterCall(const std::string& masterCallPath) noexcept {
         }
 
         impl_->hasMasterCall_ = true;
-        SCORER_LOG_DEBUG("setMasterCall() completed successfully");
         return true;
 
-    } catch (const std::exception& e) {
-        SCORER_LOG_ERROR("setMasterCall() exception: " + std::string(e.what()));
-        impl_->hasMasterCall_ = false;
-        return false;
     } catch (...) {
-        SCORER_LOG_ERROR("setMasterCall() unknown exception");
         impl_->hasMasterCall_ = false;
         return false;
     }
@@ -703,21 +635,7 @@ std::string RealtimeScorer::exportHistoryToJson(size_t maxCount) const {
 }
 
 void RealtimeScorer::reset() noexcept {
-    SCORER_LOG_DEBUG("reset() called - validating impl_");
-
-    // Defensive programming: check if impl_ is valid
-    if (!impl_) {
-        SCORER_LOG_ERROR("reset() called with null impl_");
-        return;
-    }
-
-    // Check if the scorer was properly initialized
-    if (!impl_->initialized_.load()) {
-        SCORER_LOG_ERROR("reset() called on uninitialized RealtimeScorer");
-        return;
-    }
-
-    SCORER_LOG_DEBUG("reset() acquiring lock");
+    SCORER_LOG_DEBUG("reset() called - acquiring lock");
     std::lock_guard<std::mutex> lock(impl_->mutex_);
     SCORER_LOG_DEBUG("reset() lock acquired - clearing data structures");
 
@@ -745,33 +663,12 @@ void RealtimeScorer::reset() noexcept {
     impl_->averageSignalLevel_.store(0.0f);
     SCORER_LOG_DEBUG("reset() averageSignalLevel_ reset");
 
-    // Safely reset components with additional validation
     if (impl_->levelProcessor_) {
         SCORER_LOG_DEBUG("reset() calling levelProcessor_->reset()");
-        try {
-            impl_->levelProcessor_->reset();
-            SCORER_LOG_DEBUG("reset() levelProcessor_->reset() completed");
-        } catch (const std::exception& e) {
-            SCORER_LOG_ERROR("reset() levelProcessor_->reset() threw exception: " +
-                             std::string(e.what()));
-        }
+        impl_->levelProcessor_->reset();
+        SCORER_LOG_DEBUG("reset() levelProcessor_->reset() completed");
     } else {
         SCORER_LOG_DEBUG("reset() levelProcessor_ is null, skipping");
-    }
-
-    // Reset other components safely
-    if (impl_->mfccProcessor_) {
-        SCORER_LOG_DEBUG("reset() mfccProcessor_ is available");
-        // MFCCProcessor doesn't have a reset method, so we just log its presence
-    } else {
-        SCORER_LOG_DEBUG("reset() mfccProcessor_ is null");
-    }
-
-    if (impl_->dtwComparator_) {
-        SCORER_LOG_DEBUG("reset() dtwComparator_ is available");
-        // DTWComparator doesn't have a reset method, so we just log its presence
-    } else {
-        SCORER_LOG_DEBUG("reset() dtwComparator_ is null");
     }
 
     impl_->sessionStartTime_ = std::chrono::steady_clock::now();

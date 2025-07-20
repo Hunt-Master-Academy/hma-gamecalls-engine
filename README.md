@@ -46,6 +46,13 @@ The Huntmaster Engine includes a comprehensive debugging infrastructure with 10 
 
 ### Debug Features
 
+- **Thread-safe logging** with component-specific levels
+- **5 Debug levels**: ERROR, WARN, INFO, DEBUG, TRACE
+- **14 Component categories** for targeted debugging
+- **Performance monitoring** with timing metrics
+- **Console and file output** options
+- **Configurable timestamps** and thread IDs
+
 ### Available Tools
 
 1. **interactive_recorder** - Interactive audio recording with live monitoring
@@ -77,7 +84,25 @@ The Huntmaster Engine includes a comprehensive debugging infrastructure with 10 
 
 ### Debug Components
 
+- **GENERAL** - General system operations
+- **UNIFIED_ENGINE** - Core engine functionality
+- **MFCC_PROCESSOR** - MFCC feature extraction
+- **DTW_COMPARATOR** - Dynamic Time Warping comparison
+- **VAD** - Voice Activity Detection
+- **REALTIME_PROCESSOR** - Real-time processing
+- **AUDIO_BUFFER_POOL** - Audio buffer management
+- **AUDIO_LEVEL_PROCESSOR** - Audio level processing
+- **WAVEFORM_GENERATOR** - Audio waveform generation
+- **REALTIME_SCORER** - Real-time scoring
+- **TOOLS** - Development tools
+- **AUDIO_ENGINE** - Audio engine operations
+- **FEATURE_EXTRACTION** - Feature extraction processes
+- **SIMILARITY_ANALYSIS** - Similarity analysis algorithms
+- **PERFORMANCE** - Performance monitoring and metrics
+
 ## Dependencies
+
+This project uses git submodules for external dependencies:
 
 - **KissFFT**: Fast Fourier Transform library (`libs/kissfft`)
 - **GoogleTest**: Testing framework (`tests/lib/googletest`)

@@ -182,7 +182,7 @@ class AudioAnalyzer {
             LOG_ERROR(Component::TOOLS, "Failed to create UnifiedAudioEngine");
             return false;
         }
-        engine_ = std::move(*engineResult);
+        engine_ = std::move(engineResult.value);
         LOG_INFO(Component::TOOLS, "UnifiedAudioEngine created successfully");
         return true;
     }
@@ -213,7 +213,7 @@ class AudioAnalyzer {
                 LOG_ERROR(Component::TOOLS, "Failed to create session");
                 return false;
             }
-            auto sessionId = *sessionResult;
+            auto sessionId = sessionResult.value;
             LOG_DEBUG(Component::TOOLS, "Session created with ID: " + std::to_string(sessionId));
 
             // Step 3: Load master call
@@ -299,7 +299,7 @@ class AudioAnalyzer {
             return false;
         }
 
-        float score = *scoreResult;
+        float score = scoreResult.value;
         float duration = static_cast<float>(audioData.size()) / sampleRate;
 
         // Display results

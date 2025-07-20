@@ -122,20 +122,17 @@ class PerformanceMonitor {
 // Feature generation class
 class FeatureGenerator {
    private:
-    UnifiedAudioEngine& engine;
-    int sessionId_ = -1;
+    std::unique_ptr<UnifiedAudioEngine> engine;
     DebugOptions& options;
 
    public:
-    FeatureGenerator(UnifiedAudioEngine& eng, DebugOptions& opts) : engine(eng), options(opts) {
-        sessionId_ = engine.createSession();
-    }
-    ~FeatureGenerator() {
-        if (sessionId_ != -1) {
-            engine.destroySession(sessionId_);
+    FeatureGenerator(DebugOptions& opts) : options(opts) {
+        auto engineResult = UnifiedAudioEngine::create();
+        if (!engineResult.isOk()) {
+            throw std::runtime_error("Failed to create UnifiedAudioEngine");
         }
+        engine = std::move(engineResult.value);
     }
-
     bool processCall(const std::string& callName) {
         PerformanceMonitor monitor("Processing call: " + callName,
                                    options.enablePerformanceMetrics);
@@ -164,11 +161,24 @@ class FeatureGenerator {
         }
 
         try {
+            // Create session for processing
+            auto sessionResult = engine->createSession();
+            if (!sessionResult.isOk()) {
+                std::cout << "  ✗ Failed to create session for: " << callName << std::endl;
+                return false;
+            }
+
+            uint32_t sessionId = sessionResult.value;
+
             // Load master call - this will generate features
             std::cout << "Processing: " << callName << std::endl;
-            auto loadResult = engine.loadMasterCall(sessionId_, callName);
-            if (loadResult != UnifiedAudioEngine::Result::OK) {
-                std::cerr << "Failed to load master call: " << callName << std::endl;
+            auto loadResult = engine->loadMasterCall(sessionId, callName);
+            if (loadResult != UnifiedAudioEngine::Status::OK) {
+                std::cout << "  ✗ Failed to load master call: " << callName << std::endl;
+                auto destroyResult = engine->destroySession(sessionId);
+                if (destroyResult != UnifiedAudioEngine::Status::OK) {
+                    // Log warning but continue since we're in error path
+                }
                 return false;
             }
 
@@ -177,6 +187,16 @@ class FeatureGenerator {
                                                huntmaster::DebugLevel::INFO,
                                                "Successfully loaded master call: " + callName);
                 monitor.checkpoint("Master call loaded");
+            }
+
+            // Clean up session
+            auto destroyResult = engine->destroySession(sessionId);
+            if (destroyResult != UnifiedAudioEngine::Status::OK) {
+                if (options.enableFeatureDebug) {
+                    DebugLogger::getInstance().log(
+                        huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::WARN,
+                        "Warning: Failed to destroy session for: " + callName);
+                }
             }
 
             // Check if feature file was generated
@@ -229,21 +249,22 @@ int main(int argc, char* argv[]) {
     }
 
     // Configure component-specific debug levels
-    auto& logger = huntmaster::DebugLogger::getInstance();
+    auto& logger = DebugLogger::getInstance();
     if (debugOptions.enableEngineDebug) {
-        logger.setComponentLogLevel(huntmaster::Component::AUDIO_ENGINE,
-                                    huntmaster::LogLevel::DEBUG);
+        logger.setComponentLogLevel(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                    huntmaster::DebugLevel::DEBUG);
     }
     if (debugOptions.enableFeatureDebug) {
-        logger.setComponentLogLevel(huntmaster::Component::FEATURE_EXTRACTION,
-                                    huntmaster::LogLevel::DEBUG);
+        logger.setComponentLogLevel(huntmaster::DebugComponent::FEATURE_EXTRACTION,
+                                    huntmaster::DebugLevel::DEBUG);
     }
     if (debugOptions.enableBatchDebug) {
-        logger.setComponentLogLevel(huntmaster::Component::TOOLS, huntmaster::LogLevel::TRACE);
+        logger.setComponentLogLevel(huntmaster::DebugComponent::TOOLS,
+                                    huntmaster::DebugLevel::TRACE);
     }
     if (debugOptions.enablePerformanceMetrics) {
-        logger.setComponentLogLevel(huntmaster::Component::PERFORMANCE,
-                                    huntmaster::LogLevel::DEBUG);
+        logger.setComponentLogLevel(huntmaster::DebugComponent::PERFORMANCE,
+                                    huntmaster::DebugLevel::DEBUG);
     }
 
     DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
@@ -283,12 +304,8 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    // Initialize UnifiedAudioEngine
-    std::unique_ptr<UnifiedAudioEngine> engine = UnifiedAudioEngine::create();
-    totalMonitor.checkpoint("Engine created");
-
     // Create feature generator
-    FeatureGenerator generator(*engine, debugOptions);
+    FeatureGenerator generator(debugOptions);
 
     // Process calls
     int successCount = 0;
@@ -303,8 +320,6 @@ int main(int argc, char* argv[]) {
     }
 
     totalMonitor.checkpoint("All calls processed");
-
-    // Destroy engine session (handled by FeatureGenerator destructor)
 
     // Print summary
     std::cout << "\n=== PROCESSING SUMMARY ===" << std::endl;

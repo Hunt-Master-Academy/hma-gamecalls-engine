@@ -20,6 +20,9 @@
 
 // Include existing components
 #include "dr_wav.h"
+#include "huntmaster/core/AudioLevelProcessor.h"
+#include "huntmaster/core/AudioPlayer.h"
+#include "huntmaster/core/AudioRecorder.h"
 #include "huntmaster/core/DTWProcessor.h"
 #include "huntmaster/core/MFCCProcessor.h"
 #include "huntmaster/core/VoiceActivityDetector.h"
@@ -81,6 +84,22 @@ class UnifiedAudioEngine::Impl {
     Status startRecording(SessionId sessionId);
     Status stopRecording(SessionId sessionId);
     Result<std::string> saveRecording(SessionId sessionId, std::string_view filename);
+    bool isRecording(SessionId sessionId) const;
+    Result<float> getRecordingLevel(SessionId sessionId) const;
+    Result<double> getRecordingDuration(SessionId sessionId) const;
+
+    // Audio Playback
+    Status playMasterCall(SessionId sessionId, std::string_view masterCallId);
+    Status playRecording(SessionId sessionId, std::string_view filename);
+    Status stopPlayback(SessionId sessionId);
+    bool isPlaying(SessionId sessionId) const;
+    Result<double> getPlaybackPosition(SessionId sessionId) const;
+    Status setPlaybackVolume(SessionId sessionId, float volume);
+
+    // Real-time Session Management
+    Result<SessionId> startRealtimeSession(float sampleRate, int bufferSize);
+    Status endRealtimeSession(SessionId sessionId);
+    bool isRealtimeSession(SessionId sessionId) const;
 
    private:
     // Session state structure - each session is completely isolated
@@ -100,10 +119,22 @@ class UnifiedAudioEngine::Impl {
         // Processing components (per-session for true isolation)
         std::unique_ptr<MFCCProcessor> mfccProcessor;
         std::unique_ptr<VoiceActivityDetector> vad;
+        std::unique_ptr<AudioPlayer> audioPlayer;
+        std::unique_ptr<AudioRecorder> audioRecorder;
+        std::unique_ptr<AudioLevelProcessor> levelProcessor;
 
         // Recording state
         bool isRecording = false;
         std::vector<float> recordingBuffer;
+
+        // Playback state
+        bool isPlaying = false;
+        std::string currentPlaybackFile;
+        float playbackVolume = 1.0f;
+
+        // Real-time session properties
+        bool isRealtimeSession = false;
+        int realtimeBufferSize = 512;
 
         SessionState(SessionId id, float sampleRate)
             : id(id), sampleRate(sampleRate), startTime(std::chrono::steady_clock::now()) {
@@ -118,6 +149,15 @@ class UnifiedAudioEngine::Impl {
             // Initialize VAD with default configuration
             VoiceActivityDetector::Config vadConfig;
             vad = std::make_unique<VoiceActivityDetector>(vadConfig);
+
+            // Initialize audio components
+            audioPlayer = std::make_unique<AudioPlayer>();
+            audioRecorder = std::make_unique<AudioRecorder>();
+
+            // Initialize level processor
+            AudioLevelProcessor::Config levelConfig;
+            levelConfig.sampleRate = sampleRate;
+            levelProcessor = std::make_unique<AudioLevelProcessor>(levelConfig);
         }
     };
 
@@ -221,6 +261,62 @@ UnifiedAudioEngine::Status UnifiedAudioEngine::stopRecording(SessionId sessionId
 UnifiedAudioEngine::Result<std::string> UnifiedAudioEngine::saveRecording(
     SessionId sessionId, std::string_view filename) {
     return pimpl->saveRecording(sessionId, filename);
+}
+
+bool UnifiedAudioEngine::isRecording(SessionId sessionId) const {
+    return pimpl->isRecording(sessionId);
+}
+
+UnifiedAudioEngine::Result<float> UnifiedAudioEngine::getRecordingLevel(SessionId sessionId) const {
+    return pimpl->getRecordingLevel(sessionId);
+}
+
+UnifiedAudioEngine::Result<double> UnifiedAudioEngine::getRecordingDuration(
+    SessionId sessionId) const {
+    return pimpl->getRecordingDuration(sessionId);
+}
+
+// Audio Playback
+UnifiedAudioEngine::Status UnifiedAudioEngine::playMasterCall(SessionId sessionId,
+                                                              std::string_view masterCallId) {
+    return pimpl->playMasterCall(sessionId, masterCallId);
+}
+
+UnifiedAudioEngine::Status UnifiedAudioEngine::playRecording(SessionId sessionId,
+                                                             std::string_view filename) {
+    return pimpl->playRecording(sessionId, filename);
+}
+
+UnifiedAudioEngine::Status UnifiedAudioEngine::stopPlayback(SessionId sessionId) {
+    return pimpl->stopPlayback(sessionId);
+}
+
+bool UnifiedAudioEngine::isPlaying(SessionId sessionId) const {
+    return pimpl->isPlaying(sessionId);
+}
+
+UnifiedAudioEngine::Result<double> UnifiedAudioEngine::getPlaybackPosition(
+    SessionId sessionId) const {
+    return pimpl->getPlaybackPosition(sessionId);
+}
+
+UnifiedAudioEngine::Status UnifiedAudioEngine::setPlaybackVolume(SessionId sessionId,
+                                                                 float volume) {
+    return pimpl->setPlaybackVolume(sessionId, volume);
+}
+
+// Real-time Session Management
+UnifiedAudioEngine::Result<SessionId> UnifiedAudioEngine::startRealtimeSession(float sampleRate,
+                                                                               int bufferSize) {
+    return pimpl->startRealtimeSession(sampleRate, bufferSize);
+}
+
+UnifiedAudioEngine::Status UnifiedAudioEngine::endRealtimeSession(SessionId sessionId) {
+    return pimpl->endRealtimeSession(sessionId);
+}
+
+bool UnifiedAudioEngine::isRealtimeSession(SessionId sessionId) const {
+    return pimpl->isRealtimeSession(sessionId);
 }
 
 // === Implementation Details ===
@@ -430,10 +526,21 @@ UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::resetSession(SessionId sess
     return Status::OK;
 }
 
-// Placeholder implementations for recording (to be expanded)
+// Recording implementations
 UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::startRecording(SessionId sessionId) {
     SessionState* session = getSession(sessionId);
     if (!session) return Status::SESSION_NOT_FOUND;
+
+    if (!session->audioRecorder) return Status::INIT_FAILED;
+
+    AudioRecorder::Config config;
+    config.sampleRate = static_cast<int>(session->sampleRate);
+    config.channels = 1;  // Mono for voice analysis
+    config.bufferSize = session->isRealtimeSession ? session->realtimeBufferSize : 512;
+
+    if (!session->audioRecorder->startRecording(config)) {
+        return Status::PROCESSING_ERROR;
+    }
 
     session->isRecording = true;
     session->recordingBuffer.clear();
@@ -444,7 +551,14 @@ UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::stopRecording(SessionId ses
     SessionState* session = getSession(sessionId);
     if (!session) return Status::SESSION_NOT_FOUND;
 
+    if (!session->audioRecorder) return Status::INIT_FAILED;
+
+    session->audioRecorder->stopRecording();
     session->isRecording = false;
+
+    // Copy recorded data to session buffer
+    session->recordingBuffer = session->audioRecorder->getRecordedData();
+
     return Status::OK;
 }
 
@@ -453,9 +567,175 @@ UnifiedAudioEngine::Result<std::string> UnifiedAudioEngine::Impl::saveRecording(
     SessionState* session = getSession(sessionId);
     if (!session) return {"", Status::SESSION_NOT_FOUND};
 
-    // TODO: Implement WAV file saving
+    if (!session->audioRecorder) return {"", Status::INIT_FAILED};
+
     const std::string fullPath = recordingsPath_ + std::string(filename);
+
+    // Use the AudioRecorder's save functionality
+    if (!session->audioRecorder->saveToWav(fullPath)) {
+        return {"", Status::PROCESSING_ERROR};
+    }
+
     return {fullPath, Status::OK};
+}
+
+bool UnifiedAudioEngine::Impl::isRecording(SessionId sessionId) const {
+    const SessionState* session = getSession(sessionId);
+    if (!session) return false;
+    return session->isRecording && session->audioRecorder && session->audioRecorder->isRecording();
+}
+
+UnifiedAudioEngine::Result<float> UnifiedAudioEngine::Impl::getRecordingLevel(
+    SessionId sessionId) const {
+    const SessionState* session = getSession(sessionId);
+    if (!session) return {0.0f, Status::SESSION_NOT_FOUND};
+
+    if (!session->audioRecorder) return {0.0f, Status::INIT_FAILED};
+
+    return {session->audioRecorder->getCurrentLevel(), Status::OK};
+}
+
+UnifiedAudioEngine::Result<double> UnifiedAudioEngine::Impl::getRecordingDuration(
+    SessionId sessionId) const {
+    const SessionState* session = getSession(sessionId);
+    if (!session) return {0.0, Status::SESSION_NOT_FOUND};
+
+    if (!session->audioRecorder) return {0.0, Status::INIT_FAILED};
+
+    return {session->audioRecorder->getDuration(), Status::OK};
+}
+
+// Audio Playback implementations
+UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::playMasterCall(SessionId sessionId,
+                                                                    std::string_view masterCallId) {
+    SessionState* session = getSession(sessionId);
+    if (!session) return Status::SESSION_NOT_FOUND;
+
+    if (!session->audioPlayer) return Status::INIT_FAILED;
+
+    const std::string audioFilePath = masterCallsPath_ + std::string(masterCallId) + ".wav";
+
+    if (!session->audioPlayer->loadFile(audioFilePath)) {
+        return Status::FILE_NOT_FOUND;
+    }
+
+    if (!session->audioPlayer->play()) {
+        return Status::PROCESSING_ERROR;
+    }
+
+    session->isPlaying = true;
+    session->currentPlaybackFile = audioFilePath;
+    return Status::OK;
+}
+
+UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::playRecording(SessionId sessionId,
+                                                                   std::string_view filename) {
+    SessionState* session = getSession(sessionId);
+    if (!session) return Status::SESSION_NOT_FOUND;
+
+    if (!session->audioPlayer) return Status::INIT_FAILED;
+
+    const std::string fullPath = recordingsPath_ + std::string(filename);
+
+    if (!session->audioPlayer->loadFile(fullPath)) {
+        return Status::FILE_NOT_FOUND;
+    }
+
+    if (!session->audioPlayer->play()) {
+        return Status::PROCESSING_ERROR;
+    }
+
+    session->isPlaying = true;
+    session->currentPlaybackFile = fullPath;
+    return Status::OK;
+}
+
+UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::stopPlayback(SessionId sessionId) {
+    SessionState* session = getSession(sessionId);
+    if (!session) return Status::SESSION_NOT_FOUND;
+
+    if (!session->audioPlayer) return Status::INIT_FAILED;
+
+    session->audioPlayer->stop();
+    session->isPlaying = false;
+    session->currentPlaybackFile.clear();
+    return Status::OK;
+}
+
+bool UnifiedAudioEngine::Impl::isPlaying(SessionId sessionId) const {
+    const SessionState* session = getSession(sessionId);
+    if (!session) return false;
+    return session->isPlaying && session->audioPlayer && session->audioPlayer->isPlaying();
+}
+
+UnifiedAudioEngine::Result<double> UnifiedAudioEngine::Impl::getPlaybackPosition(
+    SessionId sessionId) const {
+    const SessionState* session = getSession(sessionId);
+    if (!session) return {0.0, Status::SESSION_NOT_FOUND};
+
+    if (!session->audioPlayer) return {0.0, Status::INIT_FAILED};
+
+    return {session->audioPlayer->getCurrentPosition(), Status::OK};
+}
+
+UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::setPlaybackVolume(SessionId sessionId,
+                                                                       float volume) {
+    SessionState* session = getSession(sessionId);
+    if (!session) return Status::SESSION_NOT_FOUND;
+
+    if (!session->audioPlayer) return Status::INIT_FAILED;
+
+    if (volume < 0.0f || volume > 1.0f) return Status::INVALID_PARAMS;
+
+    session->audioPlayer->setVolume(volume);
+    session->playbackVolume = volume;
+    return Status::OK;
+}
+
+// Real-time Session Management implementations
+UnifiedAudioEngine::Result<SessionId> UnifiedAudioEngine::Impl::startRealtimeSession(
+    float sampleRate, int bufferSize) {
+    if (sampleRate <= 0 || bufferSize <= 0) {
+        return {INVALID_SESSION_ID, Status::INVALID_PARAMS};
+    }
+
+    std::unique_lock lock(sessionsMutex_);
+    const SessionId sessionId = nextSessionId_++;
+
+    try {
+        auto session = std::make_unique<SessionState>(sessionId, sampleRate);
+        session->isRealtimeSession = true;
+        session->realtimeBufferSize = bufferSize;
+
+        sessions_[sessionId] = std::move(session);
+        return {sessionId, Status::OK};
+    } catch (const std::exception&) {
+        return {INVALID_SESSION_ID, Status::OUT_OF_MEMORY};
+    }
+}
+
+UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::endRealtimeSession(SessionId sessionId) {
+    SessionState* session = getSession(sessionId);
+    if (!session) return Status::SESSION_NOT_FOUND;
+
+    if (!session->isRealtimeSession) return Status::INVALID_PARAMS;
+
+    // Stop any ongoing recording or playback
+    if (session->isRecording) {
+        stopRecording(sessionId);
+    }
+    if (session->isPlaying) {
+        stopPlayback(sessionId);
+    }
+
+    // Destroy the session
+    return destroySession(sessionId);
+}
+
+bool UnifiedAudioEngine::Impl::isRealtimeSession(SessionId sessionId) const {
+    const SessionState* session = getSession(sessionId);
+    if (!session) return false;
+    return session->isRealtimeSession;
 }
 
 // Feature file I/O

@@ -32,12 +32,8 @@ CMakeUserPresets.json
 *~
 
 # === Audio Project Specific ===
-/data/recordings/*.mp3
-/data/recordings/*.flac
-/data/test_audio/output_*
-/data/test_audio/temp_*
-*.tmp.wav
-test_recording*.wav
+# Test audio files (keep sample files, ignore generated ones)
+/data/recordings/*.wav
 /data/recordings/*.mp3
 /data/recordings/*.flac
 /data/test_audio/output_*
@@ -51,10 +47,7 @@ test_recording*.wav
 
 # === Platform Specific ===
 # Windows
-# === Platform Specific ===
-# Windows
 Thumbs.db
-tools/emsdk/
 ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/

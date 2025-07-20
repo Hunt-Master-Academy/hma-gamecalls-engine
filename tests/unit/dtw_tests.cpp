@@ -1,17 +1,18 @@
 #include <gtest/gtest.h>
 
 #include <iostream>  // For std::cerr
+#include <memory>    // For std::unique_ptr
+#include <span>      // For std::span
 #include <vector>    // For std::vector
 
 #include "dr_wav.h"  // For loading WAV files
 #include "huntmaster/core/UnifiedAudioEngine.h"
 
-using huntmaster::UnifiedAudioEngine;
+using namespace huntmaster;
 
 class CoreValidationTest : public ::testing::Test {
    protected:
     std::unique_ptr<UnifiedAudioEngine> engine;
-    int sessionId = -1;
 
     // Helper function to load audio file (duplicate from analyze_recording.cpp for self-contained
     // test)
@@ -44,15 +45,13 @@ class CoreValidationTest : public ::testing::Test {
     }
 
     void SetUp() override {
-        auto result = UnifiedAudioEngine::create();
-        ASSERT_TRUE(result.isOk()) << "Failed to create UnifiedAudioEngine instance";
-        engine = std::move(result.value);
+        auto engineResult = UnifiedAudioEngine::create();
+        ASSERT_TRUE(engineResult.isOk()) << "Failed to create UnifiedAudioEngine";
+        engine = std::move(engineResult.value);
     }
 
     void TearDown() override {
-        if (engine && sessionId != -1) {
-            engine->destroySession(sessionId);
-        }
+        // UnifiedAudioEngine manages its own cleanup
         engine.reset();
     }
 };
@@ -60,19 +59,6 @@ class CoreValidationTest : public ::testing::Test {
 TEST_F(CoreValidationTest, DTWSelfSimilarity) {
     const std::string masterCallId = "buck_grunt";
     const std::string audioFilePath = "../data/master_calls/" + masterCallId + ".wav";
-
-    // Load master call first
-    auto sessionResult = engine->createSession(static_cast<float>(44100.0f));
-    ASSERT_TRUE(sessionResult.isOk()) << "Failed to create session.";
-    sessionId = sessionResult.value;
-
-    auto masterStatus = engine->loadMasterCall(sessionId, masterCallId);
-    if (masterStatus != UnifiedAudioEngine::Status::OK) {
-        GTEST_SKIP() << "Could not load master call file: " << masterCallId;
-        engine->destroySession(sessionId);
-        sessionId = -1;
-        return;
-    }
 
     // Load the same file as the "user attempt"
     unsigned int channels, sampleRate;
@@ -83,6 +69,21 @@ TEST_F(CoreValidationTest, DTWSelfSimilarity) {
     }
 
     // Start a real-time session
+    auto sessionResult = engine->startRealtimeSession(static_cast<float>(sampleRate));
+    ASSERT_TRUE(sessionResult.isOk())
+        << "Failed to start real-time session for DTW self-similarity test.";
+
+    uint32_t sessionId = sessionResult.value;
+
+    // Load master call using the session
+    auto loadResult = engine->loadMasterCall(sessionId, masterCallId);
+    if (loadResult != UnifiedAudioEngine::Status::OK) {
+        auto endResult = engine->endRealtimeSession(sessionId);
+        (void)endResult;  // Suppress unused variable warning
+        GTEST_SKIP() << "Could not load master call file: " << masterCallId;
+        return;
+    }
+
     // Process in chunks (simulating real-time)
     const int chunkSize = 1024;
     for (size_t i = 0; i < audioData.size(); i += chunkSize) {
@@ -94,8 +95,7 @@ TEST_F(CoreValidationTest, DTWSelfSimilarity) {
     }
 
     auto scoreResult = engine->getSimilarityScore(sessionId);
-    engine->destroySession(sessionId);
-    sessionId = -1;
+    [[maybe_unused]] auto endResult = engine->endRealtimeSession(sessionId);
 
     if (scoreResult.isOk()) {
         float score = scoreResult.value;

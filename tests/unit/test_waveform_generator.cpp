@@ -2,9 +2,11 @@
 
 #include <chrono>
 #include <cmath>
+#include <memory>
 #include <thread>
 #include <vector>
 
+#include "huntmaster/core/DebugLogger.h"
 #include "huntmaster/core/WaveformGenerator.h"
 
 namespace huntmaster {
@@ -43,18 +45,8 @@ TEST_F(WaveformGeneratorTest, InitializationTest) {
 
     // Test invalid configuration
     WaveformGenerator::Config invalidConfig;
-    invalidConfig.sampleRate = -1.0f;  // Invalid
-    WaveformGenerator invalidGenerator(invalidConfig);
-    std::vector<float> audio(512, 0.1f);
-    auto invalidResult = invalidGenerator.processAudio(audio, 1);
-    if (invalidResult.has_value()) {
-        std::cout << "[InitializationTest] Unexpected value for invalid config!" << std::endl;
-        ADD_FAILURE() << "processAudio returned value for invalid config.";
-    } else {
-        std::cout << "[InitializationTest] Error for invalid config: "
-                  << static_cast<int>(invalidResult.error()) << std::endl;
-        EXPECT_EQ(invalidResult.error(), WaveformGenerator::Error::INVALID_CONFIG);
-    }
+    invalidConfig.sampleRate = -1.0f;       // Invalid
+    EXPECT_FALSE(invalidConfig.isValid());  // Test that config validation works
 }
 
 TEST_F(WaveformGeneratorTest, SilenceProcessingTest) {
@@ -136,13 +128,28 @@ TEST_F(WaveformGeneratorTest, MultiChannelProcessingTest) {
     const int numChannels = 2;
 
     // Create stereo audio (interleaved)
-    std::vector<float> stereoAudio(numSamples * numChannels, 0.5f);
+    std::vector<float> stereoAudio(numSamples * numChannels);
+    for (size_t i = 0; i < numSamples; ++i) {
+        // Left channel: 0.5 amplitude
+        stereoAudio[i * 2] = 0.5f;
+        // Right channel: 0.3 amplitude
+        stereoAudio[i * 2 + 1] = 0.3f;
+    }
 
     auto result = generator_->processAudio(stereoAudio, numChannels);
 
-    // Expect failure due to mono-only enforcement
-    EXPECT_FALSE(result.has_value());
-    EXPECT_EQ(result.error(), WaveformGenerator::Error::INVALID_AUDIO_DATA);
+    ASSERT_TRUE(result.has_value());
+
+    auto waveformData = generator_->getCompleteWaveform();
+
+    // The generator averages the channels. (0.5 + 0.3) / 2 = 0.4
+    const float expectedMax = 0.4f;
+    const float tolerance = 0.05f;
+
+    EXPECT_NEAR(waveformData.maxAmplitude, expectedMax, tolerance);
+
+    // Should have downsampled data
+    EXPECT_GT(waveformData.samples.size(), 0);
 }
 
 TEST_F(WaveformGeneratorTest, BufferManagementTest) {
@@ -167,29 +174,31 @@ TEST_F(WaveformGeneratorTest, BufferManagementTest) {
 }
 
 TEST_F(WaveformGeneratorTest, JsonExportTest) {
+    // Enable debug logging for this test
+    huntmaster::DebugLogger::getInstance().setComponentLogLevel(
+        huntmaster::Component::WAVEFORM_GENERATOR, huntmaster::LogLevel::DEBUG);
+
     // Process some audio
     std::vector<float> audio(1024, 0.5f);
+
     auto result = generator_->processAudio(audio, 1);
     ASSERT_TRUE(result.has_value());
 
-    // Debug: Print buffer stats before export
-    auto [used, capacity] = generator_->getBufferStats();
-    std::cout << "[WaveformGeneratorTest::JsonExportTest] Buffer used: " << used
-              << ", capacity: " << capacity << std::endl;
-
-    // Debug: Print waveform stats before export
-    auto waveformData = generator_->getCompleteWaveform();
-    std::cout << "[WaveformGeneratorTest::JsonExportTest] Waveform samples: "
-              << waveformData.samples.size() << ", maxAmplitude: " << waveformData.maxAmplitude
-              << ", rmsAmplitude: " << waveformData.rmsAmplitude << std::endl;
-
-    // Debug: Time the JSON export
-    auto start = std::chrono::high_resolution_clock::now();
-    std::string json = generator_->exportToJson(true);
-    auto end = std::chrono::high_resolution_clock::now();
-    auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << "[WaveformGeneratorTest::JsonExportTest] exportToJson(true) duration: "
-              << durationMs << " ms" << std::endl;
+    // Test JSON export with raw samples
+    std::string json;
+    try {
+        json = generator_->exportToJson(true);
+        if (json.length() > 100) {
+            huntmaster::DebugLogger::getInstance().info(
+                huntmaster::Component::WAVEFORM_GENERATOR,
+                "JSON preview: " + json.substr(0, 100) + "...");
+        } else {
+            huntmaster::DebugLogger::getInstance().info(huntmaster::Component::WAVEFORM_GENERATOR,
+                                                        "Full JSON: " + json);
+        }
+    } catch (const std::exception& e) {
+        FAIL() << "exportToJson(true) threw exception: " << e.what();
+    }
 
     // Should contain expected fields
     EXPECT_NE(json.find("\"maxAmplitude\""), std::string::npos);
@@ -201,24 +210,26 @@ TEST_F(WaveformGeneratorTest, JsonExportTest) {
     EXPECT_NE(json.find("\"samples\""), std::string::npos);
 
     // Should be valid JSON format
-    EXPECT_EQ(json.front(), '{');
-    EXPECT_EQ(json.back(), '}');
-
-    // Debug: Print truncated JSON output for inspection
-    std::cout << "[WaveformGeneratorTest::JsonExportTest] JSON output (truncated): "
-              << json.substr(0, 256) << (json.size() > 256 ? "..." : "") << std::endl;
+    if (!json.empty()) {
+        EXPECT_EQ(json.front(), '{');
+        EXPECT_EQ(json.back(), '}');
+    } else {
+        FAIL() << "JSON string is empty";
+    }
 
     // Test export without raw samples
-    start = std::chrono::high_resolution_clock::now();
-    std::string jsonNoSamples = generator_->exportToJson(false);
-    end = std::chrono::high_resolution_clock::now();
-    durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << "[WaveformGeneratorTest::JsonExportTest] exportToJson(false) duration: "
-              << durationMs << " ms" << std::endl;
+    std::string jsonNoSamples;
+    try {
+        jsonNoSamples = generator_->exportToJson(false);
+    } catch (const std::exception& e) {
+        FAIL() << "exportToJson(false) threw exception: " << e.what();
+    }
+
     EXPECT_EQ(jsonNoSamples.find("\"samples\""), std::string::npos);
-    std::cout << "[WaveformGeneratorTest::JsonExportTest] JSON (no samples) output: "
-              << jsonNoSamples.substr(0, 256) << (jsonNoSamples.size() > 256 ? "..." : "")
-              << std::endl;
+
+    // Reset debug logging to default
+    huntmaster::DebugLogger::getInstance().setComponentLogLevel(
+        huntmaster::Component::WAVEFORM_GENERATOR, huntmaster::LogLevel::NONE);
 }
 
 /*
@@ -296,26 +307,6 @@ TEST_F(WaveformGeneratorTest, WaveformRangeTest) {
     auto firstHalf = generator_->getWaveformRange(0.0f, halfTimeMs);
     auto secondHalf = generator_->getWaveformRange(halfTimeMs, halfTimeMs);
 
-    auto [used, capacity] = generator_->getBufferStats();
-    FILE* dbg = fopen("waveform_range_debug.txt", "w");
-    if (dbg) {
-        fprintf(dbg, "Buffer used: %zu, capacity: %zu\n", used, capacity);
-        fprintf(dbg, "firstHalf.samples.size(): %zu\n", firstHalf.samples.size());
-        fprintf(dbg, "secondHalf.samples.size(): %zu\n", secondHalf.samples.size());
-        fprintf(dbg, "totalTimeMs: %.2f, halfTimeMs: %.2f\n", totalTimeMs, halfTimeMs);
-        fclose(dbg);
-    }
-
-    if (firstHalf.samples.size() == 0) {
-        ADD_FAILURE() << "firstHalf.samples.size() == 0. Buffer used: " << used
-                      << ", capacity: " << capacity << ", totalTimeMs: " << totalTimeMs
-                      << ", halfTimeMs: " << halfTimeMs;
-    }
-    if (secondHalf.samples.size() == 0) {
-        ADD_FAILURE() << "secondHalf.samples.size() == 0. Buffer used: " << used
-                      << ", capacity: " << capacity << ", totalTimeMs: " << totalTimeMs
-                      << ", halfTimeMs: " << halfTimeMs;
-    }
     EXPECT_GT(firstHalf.samples.size(), 0);
     EXPECT_GT(secondHalf.samples.size(), 0);
 

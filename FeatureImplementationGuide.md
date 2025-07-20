@@ -1,66 +1,8 @@
-# Huntmaster Feature Implementation Guide
-
-## Mono vs Multi-Channel Support
-
-**Current State:**
-
-- The engine enforces mono-only input for all feature extraction and scoring routines. Multi-channel input is explicitly rejected and will cause tests to fail.
-- All edge case and consistency tests validate mono-only behavior. Multi-channel support is a future stretch goal.
-
-**Future Work:**
-
-- Implement multi-channel support in the engine and update all relevant tests and documentation.
-
----
-
-## MFCC Consistency and Robustness
-
-The MFCC consistency and edge case tests ensure that feature extraction is:
-
-- Stable across repeated runs (SineWaveConsistency, ComplexWaveformConsistency, RealAudioFileConsistency)
-- Robust to silence and VAD trimming (AirGapUserAttempt)
-- Robust to low-amplitude input (LowVolumeUserAttempt)
-
-All tests expect mono input and will skip if required files are missing. Feature extraction must succeed for valid mono audio. Multi-channel input is not supported and will fail.
-
----
-
-## Error Handling and Result Pattern
-
-All engine APIs use a custom expected type and Result<T> pattern for robust error handling. Tests validate that errors (e.g., invalid input, missing files, multi-channel audio) are handled gracefully and do not crash the engine. Mono-only enforcement is strictly validated.
-
----
-
-# Huntmaster Cross-Platform Architecture and Feature Implementation Guide
-
-## Test Coverage & Next Steps
-
-- All platform integration features validated by unit and integration tests:
-  - Waveform generation, MFCC, DTW, VAD, session isolation
-  - Error handling, debugging, JSON export, platform data integration
-
-### Edge Case & Stress Testing Plan
-
-1. **Edge Case Testing:**
-
-   - Integration with minimum/maximum buffer sizes and config values
-   - Multi-channel audio, range queries, large JSON exports
-
-2. **Stress Testing:**
-
-   - High-frequency API calls, rapid config changes
-   - Simultaneous session integration under load
-
-3. **Release Candidate Checklist:**
-   - All integration tests pass on all platforms
-   - Documentation up to date
-   - Debugging outputs and error handling validated
-   - No memory leaks or deadlocks
-   - Performance benchmarks meet targets
+# Huntmaster Cross-Platform Architecture & Feature Implementation Guide
 
 ## Core Architecture Overview
 
-### 1. Shared C++ Audio Engine (Current)
+### 1. **Shared C++ Audio Engine (Current)**
 
 - **What**: Core audio processing library (already built)
 - **Contains**: MFCC, DTW, Recording, Playback, Analysis
@@ -69,15 +11,17 @@ All engine APIs use a custom expected type and Result<T> pattern for robust erro
   - **Android**: JNI wrapper
   - **iOS**: Objective-C++ bridge
 
-### 2. Platform-Specific UI Layer
+### 2. **Platform-Specific UI Layer**
 
 - **Web**: React/Vue.js + Web Audio API
 - **Android**: Kotlin/Jetpack Compose
 - **iOS**: Swift/SwiftUI
 
+---
+
 ## Feature Implementation Methodology
 
-### Feature 1: Real-Time Audio Level Monitoring
+### **Feature 1: Real-Time Audio Level Monitoring**
 
 #### Technical Implementation:
 
@@ -97,6 +41,8 @@ Platform Integration:
 #### Data Flow:
 
 1. **Capture** → Platform audio API
+2. **Process** → C++ engine (every 10ms)
+3. **Display** → Platform UI (60 FPS)
 
 #### Implementation Steps:
 
@@ -119,7 +65,11 @@ C++ Core:
 
 Data Format:
 ├── PeakData: {min[], max[], rms[]}
+└── Point: {x, yMin, yMax}
+```
+
 #### Platform Rendering:
+
 - **Web**: Canvas API or WebGL for performance
 - **Android**: Custom View with Canvas
 - **iOS**: CAShapeLayer or Metal for performance
@@ -131,16 +81,17 @@ Data Format:
 #### Technical Implementation:
 
 ```
-
 C++ Core:
 ├── SpectrogramProcessor
-│ ├── computeSTFT(audio, windowSize, hopSize) -> Matrix
-│ ├── magnitudeToDecibels(magnitude) -> Matrix
-│ └── generateColorMap(dbMatrix) -> ImageData
+│   ├── computeSTFT(audio, windowSize, hopSize) -> Matrix
+│   ├── magnitudeToDecibels(magnitude) -> Matrix
+│   └── generateColorMap(dbMatrix) -> ImageData
 
 Parameters:
 ├── Window: Hanning, 2048 samples
 ├── Hop: 512 samples (75% overlap)
+└── Frequency bins: 0-8kHz (relevant for calls)
+```
 
 #### Optimization Strategy:
 
@@ -164,7 +115,11 @@ C++ Core:
 PitchCurve:
 ├── timestamps[]
 ├── frequencies[]
+└── confidences[]
+```
+
 #### Display Method:
+
 - Overlay on waveform as line graph
 - Color-code by confidence (green=high, red=low)
 - Show target pitch range for specific call
@@ -176,12 +131,11 @@ PitchCurve:
 #### Technical Implementation:
 
 ```
-
 C++ Core:
 ├── RealtimeScorer
-│ ├── updateScore(newAudioChunk) -> ScoreUpdate
-│ ├── getDetailedScores() -> MultiScore
-│ └── generateFeedback() -> Feedback
+│   ├── updateScore(newAudioChunk) -> ScoreUpdate
+│   ├── getDetailedScores() -> MultiScore
+│   └── generateFeedback() -> Feedback
 
 MultiScore:
 ├── overall: float
@@ -189,8 +143,7 @@ MultiScore:
 ├── timing: float
 ├── volume: float
 └── tonality: float
-
-````
+```
 
 #### Feedback Generation:
 
@@ -198,9 +151,10 @@ MultiScore:
 Feedback {
     type: enum {PITCH_HIGH, PITCH_LOW, TOO_FAST, TOO_SLOW, etc}
     severity: float (0-1)
+    suggestion: string
     timestamp: float
 }
-````
+```
 
 ---
 
@@ -216,6 +170,7 @@ C++ Core:
 │   └── generateHeatmap(diff) -> HeatmapData
 
 Visualization Data:
+├── AlignmentData: {masterTime[], userTime[], confidence[]}
 ├── DiffData: {timeDiff[], ampDiff[], freqDiff[]}
 └── HeatmapData: {width, height, colorValues[]}
 ```
@@ -223,6 +178,10 @@ Visualization Data:
 ---
 
 ## Platform-Specific Implementation Details
+
+### **Web Application**
+
+#### Technology Stack:
 
 - **Frontend**: React + TypeScript
 - **Audio**: Web Audio API + AudioWorklet
@@ -251,11 +210,14 @@ web/
 ```bash
 # Compile C++ to WASM
 emcc -O3 -s WASM=1 -s MODULARIZE=1 \
+     -s EXPORT_NAME="HuntmasterEngine" \
      -s EXPORTED_FUNCTIONS='["_processAudio","_getScore"]' \
      -o huntmaster.js *.cpp
 ```
 
 ---
+
+### **Android Application**
 
 #### Technology Stack:
 
@@ -297,11 +259,14 @@ Java_com_huntmaster_audio_AudioEngine_processAudioChunk(
     jfloatArray output = env->NewFloatArray(result.size());
     env->SetFloatArrayRegion(output, 0, result.size(), result.data());
 
+    env->ReleaseFloatArrayElements(input, inputBuffer, 0);
     return output;
 }
 ```
 
 ---
+
+### **iOS Application**
 
 #### Technology Stack:
 
@@ -329,9 +294,11 @@ ios/
 #### Objective-C++ Bridge:
 
 ```objc
+// AudioEngineBridge.mm
 @implementation AudioEngineBridge {
     std::unique_ptr<HuntmasterEngine> _engine;
 }
+
 - (float)processAudioBuffer:(float*)buffer length:(int)length {
     return _engine->processChunk(buffer, length);
 }
@@ -342,6 +309,7 @@ ios/
         @"overall": @(scores.overall),
         @"pitch": @(scores.pitch),
         @"timing": @(scores.timing)
+    };
 }
 @end
 ```
@@ -379,9 +347,13 @@ ios/
 }
 ```
 
+### **Performance Optimization**
+
 #### Buffer Sizes:
 
 - **Recording**: 512 samples (11.6ms @ 44.1kHz)
+- **Analysis**: 2048 samples (46.4ms @ 44.1kHz)
+- **Display**: 60 FPS (16.7ms update rate)
 
 #### Memory Management:
 
@@ -398,6 +370,7 @@ ios/
 1. Basic recording with level meter
 2. Simple waveform display
 3. Basic DTW scoring
+4. Save/load recordings
 
 ### **Phase 2: Visual Analysis**
 
@@ -410,51 +383,30 @@ ios/
 
 1. Multi-dimensional scoring
 2. Specific feedback generation
-3. Progress tracking
+3. Practice mode with loops
+4. Progress tracking
 
 ### **Phase 4: Social & Gamification**
 
+1. Share recordings
 2. Leaderboards
 3. Achievements
 4. Challenges
-
-## Audio Input Requirements
-
-- **Mono-only support:**
-
-  - The engine currently supports only mono (single channel) audio input for all core features and tests.
-  - If multi-channel audio is submitted, the engine will reject the input and return an error.
-  - Multi-channel support (e.g., stereo, microphone arrays) is a stretch goal for future releases.
-  - Future enhancements may include downmixing, per-channel analysis, or spatial feature extraction in the WaveformGenerator and related components.
 
 ---
 
 ## Testing Strategy
 
-### **Unit Tests & MFCC Consistency**
+### **Unit Tests** (C++)
 
-The project uses GoogleTest-based C++ unit tests to validate all core features, including MFCC extraction, DTW scoring, and error handling. The MFCC consistency tests include:
-
-- **Sine Wave Consistency:**
-
-  - Generates a 440 Hz sine wave, saves as WAV, and processes it multiple times.
-  - Verifies that MFCC and similarity scores are consistent across runs (max deviation < 0.0001).
-
-- **Complex Waveform Consistency:**
-
-  - Generates a composite waveform (220 Hz, 440 Hz, 880 Hz), saves as WAV, and processes in chunks.
-  - Ensures scoring consistency across multiple runs.
-
-- **Real Audio File Consistency:**
-
-  - Loads a real wildlife call (e.g., buck_grunt.wav), processes in chunks, and checks score consistency.
-  - Skips test if file is not available.
-
-- **Self-Similarity Test:**
-  - Compares a master call to itself (with added noise) to ensure high similarity score.
-  - Score thresholds: >0.01 = excellent, >0.005 = good, >0.002 = fair.
-
-All tests enforce mono-only input. Multi-channel audio is downmixed to mono for testing, or rejected by the engine if not supported.
+```cpp
+TEST(AudioEngine, ProcessChunk) {
+    AudioEngine engine;
+    float input[512] = {0};
+    auto result = engine.processChunk(input, 512);
+    EXPECT_EQ(result.size(), 512);
+}
+```
 
 ### **Platform Tests**
 
@@ -464,7 +416,7 @@ All tests enforce mono-only input. Multi-channel audio is downmixed to mono for 
 
 ### **Cross-Platform Validation**
 
-All core features and scoring algorithms are validated to produce consistent results across platforms (Web, Android, iOS). Example validation:
+Ensure identical results across platforms:
 
 ```
 Input: test_audio.wav

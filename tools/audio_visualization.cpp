@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <iostream>
 #include <memory>
+#include <span>
 #include <sstream>
 #include <vector>
 
@@ -657,15 +658,16 @@ int main(int argc, char *argv[]) {
     // Configure component-specific debug levels
     auto &logger = DebugLogger::getInstance();
     if (debugOptions.enableVisualizationDebug) {
-        logger.setComponentLogLevel(huntmaster::Component::TOOLS, huntmaster::LogLevel::TRACE);
+        logger.setComponentLogLevel(huntmaster::DebugComponent::TOOLS,
+                                    huntmaster::DebugLevel::TRACE);
     }
     if (debugOptions.enableAudioAnalysis) {
-        logger.setComponentLogLevel(huntmaster::Component::FEATURE_EXTRACTION,
-                                    huntmaster::LogLevel::DEBUG);
+        logger.setComponentLogLevel(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                    huntmaster::DebugLevel::DEBUG);
     }
     if (debugOptions.enablePerformanceMetrics) {
-        logger.setComponentLogLevel(huntmaster::Component::PERFORMANCE,
-                                    huntmaster::LogLevel::DEBUG);
+        logger.setComponentLogLevel(huntmaster::DebugComponent::PERFORMANCE,
+                                    huntmaster::DebugLevel::DEBUG);
     }
 
     DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
@@ -752,39 +754,39 @@ int main(int argc, char *argv[]) {
 
     PerformanceMonitor engineMonitor("Engine analysis", debugOptions.enablePerformanceMetrics);
 
-    // UnifiedAudioEngine session-based refactor
+    // Create UnifiedAudioEngine
     auto engineResult = UnifiedAudioEngine::create();
     if (!engineResult.isOk()) {
-        std::cerr << "Failed to create engine." << std::endl;
-        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                       huntmaster::DebugLevel::ERROR, "Failed to create engine.");
+        std::cerr << "Error: Failed to create UnifiedAudioEngine" << std::endl;
         return 1;
     }
-    std::unique_ptr<UnifiedAudioEngine> engine = std::move(engineResult.value);
-
-    int sessionId = engine->createSession();
-    if (sessionId == -1) {
-        std::cerr << "Failed to create engine session." << std::endl;
-        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                       huntmaster::DebugLevel::ERROR,
-                                       "Failed to create engine session.");
-        return 1;
-    }
+    auto engine = std::move(engineResult.value);
 
     if (debugOptions.enableDebug) {
         DebugLogger::getInstance().log(
             huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Engine session created, loading master call: " + masterCallName);
+            "Engine initialized, loading master call: " + masterCallName);
     }
 
-    auto loadResult = engine->loadMasterCall(sessionId, masterCallName);
-    if (loadResult != huntmaster::UnifiedAudioEngine::Status::OK) {
-        std::cerr << "Failed to load master call into engine session." << std::endl;
-        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                       huntmaster::DebugLevel::ERROR,
-                                       "Failed to load master call into engine session.");
-        engine->destroySession(sessionId);
+    // Create session
+    auto sessionResult = engine->createSession(static_cast<float>(userSR));
+    if (!sessionResult.isOk()) {
+        std::cerr << "Error: Failed to create session" << std::endl;
         return 1;
+    }
+    auto sessionId = sessionResult.value;
+
+    // Load master call
+    auto loadResult = engine->loadMasterCall(sessionId, masterCallName);
+    if (loadResult != UnifiedAudioEngine::Status::OK) {
+        std::cerr << "Error: Failed to load master call '" << masterCallName << "'" << std::endl;
+        return 1;
+    }
+
+    if (debugOptions.enableDebug) {
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Started session with ID: " + std::to_string(sessionId));
     }
 
     engineMonitor.checkpoint("Engine setup completed");
@@ -796,16 +798,15 @@ int main(int argc, char *argv[]) {
     for (size_t i = 0; i < userAudio.size(); i += chunkSize) {
         size_t remaining = userAudio.size() - i;
         size_t toProcess = (remaining < chunkSize) ? remaining : chunkSize;
-        std::span<const float> chunkSpan(userAudio.data() + i, toProcess);
-        auto processResult = engine->processAudioChunk(sessionId, chunkSpan);
-        if (processResult != huntmaster::UnifiedAudioEngine::Status::OK) {
-            std::cerr << "Failed to process audio chunk in engine session." << std::endl;
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::ERROR,
-                                           "Failed to process audio chunk in engine session.");
-            engine->destroySession(sessionId);
+
+        // Process audio chunk using span
+        std::span<const float> audioChunk(userAudio.data() + i, toProcess);
+        auto processStatus = engine->processAudioChunk(sessionId, audioChunk);
+        if (processStatus != UnifiedAudioEngine::Status::OK) {
+            std::cerr << "Error processing audio chunk " << chunksProcessed + 1 << std::endl;
             return 1;
         }
+
         chunksProcessed++;
 
         if (debugOptions.enableTrace && chunksProcessed % 100 == 0) {
@@ -824,7 +825,11 @@ int main(int argc, char *argv[]) {
     }
 
     auto scoreResult = engine->getSimilarityScore(sessionId);
-    float score = scoreResult.isOk() ? scoreResult.value : 0.0f;
+    if (!scoreResult.isOk()) {
+        std::cerr << "Error: Could not calculate similarity score" << std::endl;
+        return 1;
+    }
+    float score = scoreResult.value;
     std::cout << "Similarity Score: " << score;
 
     if (score > 0.01) {
@@ -843,8 +848,15 @@ int main(int argc, char *argv[]) {
                                        "Similarity score: " + std::to_string(score));
     }
 
-    engine->destroySession(sessionId);
-    engineMonitor.checkpoint("Engine session destroyed");
+    // Cleanup session
+    auto destroyResult = engine->destroySession(sessionId);
+    if (destroyResult != UnifiedAudioEngine::Status::OK) {
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::WARN,
+                                       "Warning: Failed to destroy session");
+    }
+
+    engineMonitor.checkpoint("Engine shutdown completed");
 
     DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
                                    "=== Audio Visualization Tool Completed Successfully ===");

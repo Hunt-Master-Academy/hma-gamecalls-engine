@@ -1,22 +1,21 @@
 #include <gtest/gtest.h>
 
-#include <chrono>
 #include <cmath>
+#include <memory>
+#include <span>
 #include <vector>
 
-#include "huntmaster/core/HuntmasterEngine.h"
+#include "huntmaster/core/UnifiedAudioEngine.h"
 
 using namespace huntmaster;
+using SessionId = uint32_t;
 
 class EndToEndTest : public ::testing::Test {
    protected:
     void SetUp() override {
-        // The PlatformEngineConfig struct has been refactored and no longer
-        // contains direct members like 'sample_rate'. The engine now uses
-        // reasonable internal defaults when given a default-constructed config.
-        // This change aligns the test with the new engine architecture.
-        huntmaster::PlatformEngineConfig config;
-        engine_ = std::make_unique<huntmaster::HuntmasterEngine>(config);
+        auto engineResult = UnifiedAudioEngine::create();
+        ASSERT_TRUE(engineResult.isOk()) << "Failed to create UnifiedAudioEngine";
+        engine_ = std::move(engineResult.value);
     }
 
     // Generate a simple test signal
@@ -32,107 +31,61 @@ class EndToEndTest : public ::testing::Test {
         return signal;
     }
 
-    std::unique_ptr<huntmaster::HuntmasterEngine> engine_;
+    std::unique_ptr<UnifiedAudioEngine> engine_;
 };
 
 TEST_F(EndToEndTest, ProcessSimpleAudio) {
-    // Set a timeout for this test to prevent hanging
-    const auto timeout = std::chrono::seconds(15);
-    const auto start_time = std::chrono::steady_clock::now();
-
     // Generate a 440Hz test signal
     auto test_signal = generateTestSignal(440.0f, 0.5f, 44100.0f);
 
-    // Start a session
-    auto session_result = engine_->startSession(0);
-    ASSERT_TRUE(session_result.has_value());
-
-    // Check timeout during session start
-    ASSERT_LT(std::chrono::steady_clock::now() - start_time, timeout)
-        << "Test timed out during session start";
-
-    // Load a master call before processing audio
-    // FIX: The API expects the call name (e.g., "buck_grunt"), not the full path.
-    auto load_result = engine_->loadMasterCall("buck_grunt");
-    ASSERT_TRUE(load_result.has_value() ||
-                load_result.error().status == EngineStatus::ERROR_RESOURCE_UNAVAILABLE);
+    // Start a realtime session
+    auto sessionResult = engine_->startRealtimeSession(44100.0f);
+    ASSERT_TRUE(sessionResult.isOk()) << "Failed to start realtime session";
+    uint32_t sessionId = sessionResult.value;
 
     // Process in chunks
     const size_t chunk_size = 512;
-    // FIX: Only process full chunks. The current HuntmasterEngine implementation passes
-    // chunks directly to the MFCCProcessor, which expects a fixed frame size.
-    for (size_t i = 0; i + chunk_size <= test_signal.size(); i += chunk_size) {
-        // Check timeout during processing
-        ASSERT_LT(std::chrono::steady_clock::now() - start_time, timeout)
-            << "Test timed out during audio processing";
-
+    for (size_t i = 0; i < test_signal.size(); i += chunk_size) {
         size_t actual_size = std::min(chunk_size, test_signal.size() - i);
-        std::span<const float> chunk(test_signal.data() + i, actual_size);
 
-        auto result = engine_->processChunk(chunk);
-        if (!result.has_value()) {
-            std::cout << "ProcessChunk failed at chunk " << i / chunk_size
-                      << ": status=" << static_cast<int>(result.error().status) << ", message='"
-                      << result.error().message << "'\n";
-            ADD_FAILURE() << "ProcessChunk failed at chunk " << i / chunk_size
-                          << ": status=" << static_cast<int>(result.error().status) << ", message='"
-                          << result.error().message << "'";
-        }
-        ASSERT_TRUE(result.has_value())
-            << "Chunk " << i / chunk_size << " failed: status="
-            << (result.has_value() ? 0 : static_cast<int>(result.error().status)) << ", message='"
-            << (result.has_value() ? "" : result.error().message) << "'";
+        std::span<const float> chunk(test_signal.data() + i, actual_size);
+        auto result = engine_->processAudioChunk(sessionId, chunk);
+        ASSERT_EQ(result, UnifiedAudioEngine::Status::OK) << "Failed to process audio chunk";
     }
 
     // End session
-    auto end_result = engine_->endSession(0);
-    EXPECT_TRUE(end_result.has_value());
+    auto endResult = engine_->endRealtimeSession(sessionId);
+    EXPECT_EQ(endResult, UnifiedAudioEngine::Status::OK) << "Failed to end session";
 }
 
 TEST_F(EndToEndTest, LoadMasterCallAndCompare) {
-    // Set a timeout for this test to prevent hanging
-    const auto timeout = std::chrono::seconds(10);
-    const auto start_time = std::chrono::steady_clock::now();
+    // Start a session first
+    auto sessionResult = engine_->startRealtimeSession(44100.0f);
+    ASSERT_TRUE(sessionResult.isOk()) << "Failed to start realtime session";
+    uint32_t sessionId = sessionResult.value;
 
-    // This test would require having test audio files
-    // For unit testing, we might want to generate synthetic master calls
+    // Try to load a master call that doesn't exist (this should fail gracefully)
+    auto loadResult = engine_->loadMasterCall(sessionId, "nonexistent_call");
+    // We expect this to fail since this file definitely doesn't exist
+    EXPECT_EQ(loadResult, UnifiedAudioEngine::Status::FILE_NOT_FOUND)
+        << "Expected file not found error for missing test data";
 
-    // Start a session before loading master call
-    auto session_result = engine_->startSession(1);
-    ASSERT_TRUE(session_result.has_value());
-
-    // Load a master call (would need test data)
-    // FIX: The loadMasterCall method expects the call name, not the full
-    // filename. It constructs the path internally.
-    auto load_result = engine_->loadMasterCall("buck_grunt");
-    if (!load_result.has_value()) {
-        std::cout << "LoadMasterCall failed: status="
-                  << static_cast<int>(load_result.error().status) << ", message='"
-                  << load_result.error().message << "'\n";
-        ADD_FAILURE() << "LoadMasterCall failed: status="
-                      << static_cast<int>(load_result.error().status) << ", message='"
-                      << load_result.error().message << "'";
-    }
-
-    // Check timeout during load operation
-    ASSERT_LT(std::chrono::steady_clock::now() - start_time, timeout)
-        << "Test timed out during master call loading";
-
-    // If the file exists, load_result should succeed; otherwise, expect FILE_NOT_FOUND
-    if (load_result.has_value()) {
-        std::cout << "Master call loaded successfully." << std::endl;
-        SUCCEED() << "Master call loaded successfully.";
-    } else {
-        std::cout << "Master call failed to load: status="
-                  << static_cast<int>(load_result.error().status) << ", message='"
-                  << load_result.error().message << "'\n";
-        EXPECT_EQ(load_result.error().status, EngineStatus::ERROR_RESOURCE_UNAVAILABLE)
-            << "Unexpected error status: " << static_cast<int>(load_result.error().status)
-            << ", message='" << load_result.error().message << "'";
-    }
-
-    // For now, just verify the API works
-    EXPECT_TRUE(engine_->isInitialized());
+    // Clean up session
+    auto endResult = engine_->endRealtimeSession(sessionId);
+    EXPECT_EQ(endResult, UnifiedAudioEngine::Status::OK) << "Failed to end session";
 }
 
-TEST_F(EndToEndTest, EngineInitializesSuccessfully) { ASSERT_TRUE(engine_->isInitialized()); }
+TEST_F(EndToEndTest, EngineInitializesSuccessfully) {
+    // For UnifiedAudioEngine, we verify successful creation in SetUp()
+    // If we got here, the engine was created successfully
+    ASSERT_TRUE(engine_ != nullptr) << "Engine should be initialized";
+
+    // Test that we can create a session as a basic functionality check
+    auto sessionResult = engine_->startRealtimeSession(44100.0f);
+    EXPECT_TRUE(sessionResult.isOk()) << "Should be able to create a realtime session";
+
+    if (sessionResult.isOk()) {
+        auto endResult = engine_->endRealtimeSession(sessionResult.value);
+        EXPECT_EQ(endResult, UnifiedAudioEngine::Status::OK) << "Should be able to end session";
+    }
+}

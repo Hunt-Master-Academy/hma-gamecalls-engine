@@ -191,6 +191,16 @@ class WaveformGenerator {
     void setZoomLevel(float zoomLevel) noexcept;
 
    private:
+    /**
+     * @brief Internal helper to get complete waveform without acquiring mutex
+     *
+     * This method assumes the mutex is already locked by the caller.
+     * Used internally to avoid deadlocks in methods that already hold the lock.
+     *
+     * @return Complete waveform data buffer
+     */
+    [[nodiscard]] WaveformData getCompleteWaveformInternal() const;
+
     /// Internal implementation details
     class Impl;
     std::unique_ptr<Impl> impl_;
