@@ -1,0 +1,26 @@
+var searchData=
+[
+  ['real_20time_20guarantees_0',['Real-Time Guarantees',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md70',1,'']]],
+  ['real_20time_20processing_20architecture_20strong_1',['3. &lt;strong&gt;Real-Time Processing Architecture&lt;/strong&gt;',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md46',1,'']]],
+  ['realtimefeedback_2',['realtimefeedback',['../structhuntmaster_1_1RealtimeScorer_1_1RealtimeFeedback.html',1,'huntmaster::RealtimeScorer::RealtimeFeedback'],['../structhuntmaster_1_1RealtimeFeedback.html',1,'huntmaster::RealtimeFeedback']]],
+  ['realtimescorer_3',['realtimescorer',['../classhuntmaster_1_1RealtimeScorer.html#af978ff0df9c43d6cd63dd592f434371a',1,'huntmaster::RealtimeScorer::RealtimeScorer()'],['../classhuntmaster_1_1RealtimeScorer.html#ac5b06b8b6ff4ec825e97bd556346d5b3',1,'huntmaster::RealtimeScorer::RealtimeScorer(const Config &amp;config)'],['../classhuntmaster_1_1RealtimeScorer.html',1,'huntmaster::RealtimeScorer']]],
+  ['realtimescorerconfig_4',['RealtimeScorerConfig',['../structhuntmaster_1_1RealtimeScorerConfig.html',1,'huntmaster']]],
+  ['realtimescoringresult_5',['RealtimeScoringResult',['../structhuntmaster_1_1RealtimeScoringResult.html',1,'huntmaster']]],
+  ['recommendation_6',['recommendation',['../structhuntmaster_1_1RealtimeScorer_1_1RealtimeFeedback.html#a35be0a4498ed5db3574442aa678df6f1',1,'huntmaster::RealtimeScorer::RealtimeFeedback::recommendation'],['../structhuntmaster_1_1RealtimeFeedback.html#afa3360dc89000cf5a4f83a8f90c8b8bb',1,'huntmaster::RealtimeFeedback::recommendation']]],
+  ['refactored_7',['Modular CMake Architecture (Refactored)',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md50',1,'']]],
+  ['release_8',['release',['../classhuntmaster_1_1AudioBufferPool.html#adb0d52def7e41e73931a3c5da87ec4ee',1,'huntmaster::AudioBufferPool']]],
+  ['required_20components_20strong_200_20complete_9',['� &lt;strong&gt;MVP REQUIRED COMPONENTS&lt;/strong&gt; (0% Complete)',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md78',1,'']]],
+  ['reset_10',['reset',['../classhuntmaster_1_1AudioLevelProcessor.html#a68af12ebc18e759b205690e71d620a88',1,'huntmaster::AudioLevelProcessor::reset()'],['../classhuntmaster_1_1RealtimeScorer.html#a3173b18061e961733e5b00176fb08c96',1,'huntmaster::RealtimeScorer::reset()'],['../classhuntmaster_1_1VoiceActivityDetector.html#ad878e3bf14b4416f96715bfc82cb5183',1,'huntmaster::VoiceActivityDetector::reset()'],['../classhuntmaster_1_1WaveformGenerator.html#af862320ffdfca2acd23084b06d175071',1,'huntmaster::WaveformGenerator::reset()']]],
+  ['resetsession_11',['resetsession',['../classhuntmaster_1_1RealtimeScorer.html#aac974bd5b050cb554b8e48c30b3a2d80',1,'huntmaster::RealtimeScorer::resetSession()'],['../classhuntmaster_1_1UnifiedAudioEngine.html#a4d375c48f7231045530b13b5c9a56807',1,'huntmaster::UnifiedAudioEngine::resetSession()']]],
+  ['resetstats_12',['resetStats',['../classhuntmaster_1_1AudioBufferPool.html#a40459ff1a06d6987a86c8a44822e2e22',1,'huntmaster::AudioBufferPool']]],
+  ['result_13',['Result',['../structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html',1,'huntmaster::UnifiedAudioEngine']]],
+  ['rmsamplitude_14',['rmsAmplitude',['../structhuntmaster_1_1WaveformGenerator_1_1WaveformData.html#ac79d5cdfdc046d84a9cfe2e1d6d75236',1,'huntmaster::WaveformGenerator::WaveformData']]],
+  ['rmsattacktimems_15',['rmsAttackTimeMs',['../structhuntmaster_1_1AudioLevelProcessor_1_1Config.html#a3a4c908ada0770b4e30d81dfe096cfa4',1,'huntmaster::AudioLevelProcessor::Config']]],
+  ['rmsdb_16',['rmsDb',['../structhuntmaster_1_1AudioLevelProcessor_1_1LevelMeasurement.html#ab303fe5d43df1560787cf422ce35a107',1,'huntmaster::AudioLevelProcessor::LevelMeasurement']]],
+  ['rmsenvelope_17',['rmsEnvelope',['../structhuntmaster_1_1WaveformGenerator_1_1WaveformData.html#accbccf25b382a81bed0c05e5c135a119',1,'huntmaster::WaveformGenerator::WaveformData']]],
+  ['rmslinear_18',['rmsLinear',['../structhuntmaster_1_1AudioLevelProcessor_1_1LevelMeasurement.html#a32e8953f29fe38ac3c000b6ed5a0da71',1,'huntmaster::AudioLevelProcessor::LevelMeasurement']]],
+  ['rmsreleasetimems_19',['rmsReleaseTimeMs',['../structhuntmaster_1_1AudioLevelProcessor_1_1Config.html#a7a2f8dba5612605a641340300318bdd3',1,'huntmaster::AudioLevelProcessor::Config']]],
+  ['rmswindowms_20',['rmsWindowMs',['../structhuntmaster_1_1WaveformGenerator_1_1Config.html#ad46c76082bdd8e558aac81cb0013f143',1,'huntmaster::WaveformGenerator::Config']]],
+  ['roadmap_21',['MVP Implementation Roadmap',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md82',1,'']]],
+  ['roadmap_20extensibility_22',['Future Roadmap &amp; Extensibility',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md94',1,'']]]
+];

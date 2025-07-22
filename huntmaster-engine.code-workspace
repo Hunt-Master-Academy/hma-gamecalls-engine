@@ -1,127 +1,129 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"terminal.integrated.defaultProfile.windows": "Ubuntu (WSL)",
-		"terminal.integrated.profiles.windows": {
-			"Ubuntu (WSL)": {
-				"path": "wsl.exe",
-				"args": [
-					"-d",
-					"Ubuntu"
-				],
-				"icon": "terminal-ubuntu",
-				"overrideName": true
-			},
-			"Command Prompt with Conda": {
-				"path": "C:\\Windows\\System32\\cmd.exe",
-				"args": [
-					"/k",
-					"C:\\ProgramData\\miniconda3\\Scripts\\activate.bat && conda activate huntmaster_final_env"
-				],
-				"icon": "terminal-cmd",
-				"overrideName": true
-			},
-			"PowerShell with Conda": {
-				"path": "powershell",
-				"args": [
-					"-NoExit",
-					"-Command",
-					"& 'C:\\ProgramData\\miniconda3\\shell\\condabin\\conda-hook.ps1'; conda activate huntmaster_final_env"
-				],
-				"icon": "terminal-powershell"
-			},
-			"Git Bash": {
-				"path": "C:\\Program Files\\Git\\bin\\bash.exe",
-				"icon": "terminal-bash"
-			}
-		},
-		"files.associations": {
-			"MLTable": "yaml",
-			"*.yml": "yaml",
-			"*.h": "cpp",
-			"*.hpp": "cpp",
-			"*.cpp": "cpp",
-			"*.cc": "cpp",
-			"*.cxx": "cpp",
-			"*.c": "c",
-			"*.tpp": "cpp",
-			"*.ipp": "cpp",
-			"array": "cpp",
-			"atomic": "cpp",
-			"cctype": "cpp",
-			"chrono": "cpp",
-			"clocale": "cpp",
-			"cmath": "cpp",
-			"complex": "cpp",
-			"condition_variable": "cpp",
-			"cstdarg": "cpp",
-			"cstddef": "cpp",
-			"cstdint": "cpp",
-			"cstdio": "cpp",
-			"cstdlib": "cpp",
-			"cstring": "cpp",
-			"ctime": "cpp",
-			"cwchar": "cpp",
-			"cwctype": "cpp",
-			"deque": "cpp",
-			"forward_list": "cpp",
-			"list": "cpp",
-			"unordered_map": "cpp",
-			"unordered_set": "cpp",
-			"vector": "cpp",
-			"exception": "cpp",
-			"algorithm": "cpp",
-			"any": "cpp",
-			"functional": "cpp",
-			"optional": "cpp",
-			"ratio": "cpp",
-			"string_view": "cpp",
-			"system_error": "cpp",
-			"tuple": "cpp",
-			"type_traits": "cpp",
-			"fstream": "cpp",
-			"initializer_list": "cpp",
-			"iomanip": "cpp",
-			"iosfwd": "cpp",
-			"iostream": "cpp",
-			"istream": "cpp",
-			"limits": "cpp",
-			"memory": "cpp",
-			"mutex": "cpp",
-			"new": "cpp",
-			"ostream": "cpp",
-			"numeric": "cpp",
-			"sstream": "cpp",
-			"stdexcept": "cpp",
-			"streambuf": "cpp",
-			"thread": "cpp",
-			"utility": "cpp",
-			"typeinfo": "cpp",
-			"shared_mutex": "cpp",
-			"string": "cpp",
-			"format": "cpp",
-			"ranges": "cpp",
-			"span": "cpp",
-			"text_encoding": "cpp",
-			"__bit_reference": "cpp",
-			"__hash_table": "cpp",
-			"__split_buffer": "cpp",
-			"__tree": "cpp",
-			"map": "cpp",
-			"set": "cpp",
-			"xstring": "cpp",
-			"filesystem": "cpp",
-			"*.inc": "cpp",
-			"expected": "cpp",
-			"__locale": "cpp",
-			"codecvt": "cpp",
-			"xlocale": "cpp",
-			"future": "cpp",
-			"xutility": "cpp"
-		}
-	}
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "terminal.integrated.defaultProfile.windows": "Ubuntu (WSL)",
+    "terminal.integrated.profiles.windows": {
+      "Ubuntu (WSL)": {
+        "path": "wsl.exe",
+        "args": ["-d", "Ubuntu"],
+        "icon": "terminal-ubuntu",
+        "overrideName": true
+      },
+      "Command Prompt with Conda": {
+        "path": "C:\\Windows\\System32\\cmd.exe",
+        "args": [
+          "/k",
+          "C:\\ProgramData\\miniconda3\\Scripts\\activate.bat && conda activate huntmaster_final_env"
+        ],
+        "icon": "terminal-cmd",
+        "overrideName": true
+      },
+      "PowerShell with Conda": {
+        "path": "powershell",
+        "args": [
+          "-NoExit",
+          "-Command",
+          "& 'C:\\ProgramData\\miniconda3\\shell\\condabin\\conda-hook.ps1'; conda activate huntmaster_final_env"
+        ],
+        "icon": "terminal-powershell"
+      },
+      "Git Bash": {
+        "path": "C:\\Program Files\\Git\\bin\\bash.exe",
+        "icon": "terminal-bash"
+      }
+    },
+    "files.associations": {
+      "MLTable": "yaml",
+      "*.yml": "yaml",
+      "*.h": "cpp",
+      "*.hpp": "cpp",
+      "*.cpp": "cpp",
+      "*.cc": "cpp",
+      "*.cxx": "cpp",
+      "*.c": "c",
+      "*.tpp": "cpp",
+      "*.ipp": "cpp",
+      "array": "cpp",
+      "atomic": "cpp",
+      "cctype": "cpp",
+      "chrono": "cpp",
+      "clocale": "cpp",
+      "cmath": "cpp",
+      "complex": "cpp",
+      "condition_variable": "cpp",
+      "cstdarg": "cpp",
+      "cstddef": "cpp",
+      "cstdint": "cpp",
+      "cstdio": "cpp",
+      "cstdlib": "cpp",
+      "cstring": "cpp",
+      "ctime": "cpp",
+      "cwchar": "cpp",
+      "cwctype": "cpp",
+      "deque": "cpp",
+      "forward_list": "cpp",
+      "list": "cpp",
+      "unordered_map": "cpp",
+      "unordered_set": "cpp",
+      "vector": "cpp",
+      "exception": "cpp",
+      "algorithm": "cpp",
+      "any": "cpp",
+      "functional": "cpp",
+      "optional": "cpp",
+      "ratio": "cpp",
+      "string_view": "cpp",
+      "system_error": "cpp",
+      "tuple": "cpp",
+      "type_traits": "cpp",
+      "fstream": "cpp",
+      "initializer_list": "cpp",
+      "iomanip": "cpp",
+      "iosfwd": "cpp",
+      "iostream": "cpp",
+      "istream": "cpp",
+      "limits": "cpp",
+      "memory": "cpp",
+      "mutex": "cpp",
+      "new": "cpp",
+      "ostream": "cpp",
+      "numeric": "cpp",
+      "sstream": "cpp",
+      "stdexcept": "cpp",
+      "streambuf": "cpp",
+      "thread": "cpp",
+      "utility": "cpp",
+      "typeinfo": "cpp",
+      "shared_mutex": "cpp",
+      "string": "cpp",
+      "format": "cpp",
+      "ranges": "cpp",
+      "span": "cpp",
+      "text_encoding": "cpp",
+      "__bit_reference": "cpp",
+      "__hash_table": "cpp",
+      "__split_buffer": "cpp",
+      "__tree": "cpp",
+      "map": "cpp",
+      "set": "cpp",
+      "xstring": "cpp",
+      "filesystem": "cpp",
+      "*.inc": "cpp",
+      "expected": "cpp",
+      "__locale": "cpp",
+      "codecvt": "cpp",
+      "xlocale": "cpp",
+      "future": "cpp",
+      "xutility": "cpp"
+    },
+    "editor.formatOnSave": true,
+    "files.autoSave": "onFocusChange",
+    "editor.defaultFormatter": "xaver.clang-format",
+    "editor.wordWrap": "on",
+    "editor.formatOnPaste": true
+  }
 }

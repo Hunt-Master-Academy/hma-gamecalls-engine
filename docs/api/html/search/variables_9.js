@@ -1,0 +1,14 @@
+var searchData=
+[
+  ['peakattacktimems_0',['peakAttackTimeMs',['../structhuntmaster_1_1AudioLevelProcessor_1_1Config.html#a057d80cb266bab830bf21380c65e7bfd',1,'huntmaster::AudioLevelProcessor::Config']]],
+  ['peakdb_1',['peakDb',['../structhuntmaster_1_1AudioLevelProcessor_1_1LevelMeasurement.html#a06114cbe088f4a86b234e6d5ba264d71',1,'huntmaster::AudioLevelProcessor::LevelMeasurement']]],
+  ['peaklinear_2',['peakLinear',['../structhuntmaster_1_1AudioLevelProcessor_1_1LevelMeasurement.html#a5fbb5f76d2a44d9bdac5027df2601f70',1,'huntmaster::AudioLevelProcessor::LevelMeasurement']]],
+  ['peakreleasetimems_3',['peakReleaseTimeMs',['../structhuntmaster_1_1AudioLevelProcessor_1_1Config.html#a0b2f63970e6141fcac0b1e4023a77cd6',1,'huntmaster::AudioLevelProcessor::Config']]],
+  ['peaks_4',['peaks',['../structhuntmaster_1_1WaveformGenerator_1_1WaveformData.html#a883f0ea6b3a157b5b9020d0add734766',1,'huntmaster::WaveformGenerator::WaveformData']]],
+  ['peakscore_5',['peakscore',['../structhuntmaster_1_1RealtimeScorer_1_1RealtimeFeedback.html#ad42c68d9349e309e674bd5646f964e60',1,'huntmaster::RealtimeScorer::RealtimeFeedback::peakScore'],['../structhuntmaster_1_1RealtimeFeedback.html#a0298f3da7a235223586f8ed9e7b32de4',1,'huntmaster::RealtimeFeedback::peakScore']]],
+  ['pitch_6',['pitch',['../structhuntmaster_1_1RealtimeScoringResult.html#a09c4eacd3d86928973744463152a7797',1,'huntmaster::RealtimeScoringResult::pitch'],['../structhuntmaster_1_1RealtimeScorer_1_1SimilarityScore.html#a0d2402fb31c60114e1a2a84c3259c43a',1,'huntmaster::RealtimeScorer::SimilarityScore::pitch']]],
+  ['pitchweight_7',['pitchweight',['../structhuntmaster_1_1RealtimeScorer_1_1Config.html#a3fdf70b929d49d3e5eda4184d1a1f06a',1,'huntmaster::RealtimeScorer::Config::pitchWeight'],['../structhuntmaster_1_1RealtimeScorerConfig.html#a2c1a72f786c5d357514877c1c02a3735',1,'huntmaster::RealtimeScorerConfig::pitchWeight']]],
+  ['post_5fbuffer_8',['post_buffer',['../structhuntmaster_1_1VADConfig.html#aa7a3f46c54c8225b86b317fbcaa946a2',1,'huntmaster::VADConfig::post_buffer'],['../structhuntmaster_1_1VoiceActivityDetector_1_1Config.html#adddcd4b2c53411abb227316975bd7267',1,'huntmaster::VoiceActivityDetector::Config::post_buffer']]],
+  ['pre_5fbuffer_9',['pre_buffer',['../structhuntmaster_1_1VADConfig.html#a36152d93f9aaf0765af415c7e999fb4a',1,'huntmaster::VADConfig::pre_buffer'],['../structhuntmaster_1_1VoiceActivityDetector_1_1Config.html#a0e54bbedd30a0424ab91c749576b5a9b',1,'huntmaster::VoiceActivityDetector::Config::pre_buffer']]],
+  ['progressratio_10',['progressratio',['../structhuntmaster_1_1RealtimeScorer_1_1RealtimeFeedback.html#ad76d6d06e520cb78c31241cdee9b3423',1,'huntmaster::RealtimeScorer::RealtimeFeedback::progressRatio'],['../structhuntmaster_1_1RealtimeFeedback.html#a3fb925f1309890aad5231cfbbe8a5daf',1,'huntmaster::RealtimeFeedback::progressRatio']]]
+];

@@ -1,0 +1,9 @@
+var searchData=
+[
+  ['sample_5frate_0',['sample_rate',['../structhuntmaster_1_1VoiceActivityDetector_1_1Config.html#a733989a89813034cbb9b62cc17aa7b66',1,'huntmaster::VoiceActivityDetector::Config']]],
+  ['samplerate_1',['samplerate',['../structhuntmaster_1_1AudioLevelProcessor_1_1Config.html#ae139e5a332925085100b4ba6b0cfbb6a',1,'huntmaster::AudioLevelProcessor::Config::sampleRate'],['../structhuntmaster_1_1AudioRecorder_1_1Config.html#ada0d1e2dabcecfb7099f54658efc0088',1,'huntmaster::AudioRecorder::Config::sampleRate'],['../structhuntmaster_1_1RealtimeScorer_1_1Config.html#a0304dc036858f3ed91bd84bfadd189ef',1,'huntmaster::RealtimeScorer::Config::sampleRate'],['../structhuntmaster_1_1WaveformGenerator_1_1Config.html#a5d8139bb36ff8b75016ff323f1e3d24e',1,'huntmaster::WaveformGenerator::Config::sampleRate']]],
+  ['samples_2',['samples',['../structhuntmaster_1_1WaveformGenerator_1_1WaveformData.html#a0c133d6b154528ce71101993f1fa1573',1,'huntmaster::WaveformGenerator::WaveformData']]],
+  ['samplesanalyzed_3',['samplesanalyzed',['../structhuntmaster_1_1RealtimeScorer_1_1SimilarityScore.html#ad61a3ffdbe153bf004bf680d8c9f9e76',1,'huntmaster::RealtimeScorer::SimilarityScore::samplesAnalyzed'],['../structhuntmaster_1_1RealtimeScoringResult.html#af805664ac891e1e8ef2c47ddeb2e5ca3',1,'huntmaster::RealtimeScoringResult::samplesAnalyzed']]],
+  ['scoringhistorysize_4',['scoringhistorysize',['../structhuntmaster_1_1RealtimeScorer_1_1Config.html#acb8a2e434147688d16b85852bbfcfde0',1,'huntmaster::RealtimeScorer::Config::scoringHistorySize'],['../structhuntmaster_1_1RealtimeScorerConfig.html#ac25c47afa02047e78d2a022dfff986c3',1,'huntmaster::RealtimeScorerConfig::scoringHistorySize']]],
+  ['status_5',['status',['../structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html#a385a315574810acabfb07cbeb57f86c1',1,'huntmaster::UnifiedAudioEngine::Result']]]
+];

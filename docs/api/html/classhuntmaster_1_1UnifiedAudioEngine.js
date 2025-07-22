@@ -1,0 +1,36 @@
+var classhuntmaster_1_1UnifiedAudioEngine =
+[
+    [ "Result", "structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html", "structhuntmaster_1_1UnifiedAudioEngine_1_1Result" ],
+    [ "Status", "classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356c", [
+      [ "OK", "classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356cae0aa021e21dddbd6d8cecec71e9cf564", null ],
+      [ "INVALID_PARAMS", "classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356ca23060c3a67b5a18ec0efb6382babc565", null ],
+      [ "SESSION_NOT_FOUND", "classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356ca94cd7c3ce960e79d496085b1d835ad4a", null ],
+      [ "FILE_NOT_FOUND", "classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356cacd54d99c8efb3c2db794197045f5b83c", null ],
+      [ "PROCESSING_ERROR", "classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356cafc52d219a4a9f017c26a80c98a8692a1", null ],
+      [ "INSUFFICIENT_DATA", "classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356caf5d0aa0db6ffc40d938f1412b89d946c", null ],
+      [ "OUT_OF_MEMORY", "classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356cac56ddb8056b120c9d5fee05981f219c6", null ],
+      [ "INIT_FAILED", "classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356caa656b0cae2ef29e5d121c6a1edec670b", null ]
+    ] ],
+    [ "~UnifiedAudioEngine", "classhuntmaster_1_1UnifiedAudioEngine.html#a2a3d6fe12c139cd8305507de0c7d5158", null ],
+    [ "create", "classhuntmaster_1_1UnifiedAudioEngine.html#a0ce7c8a3a7db54110df5bcedf3452c48", null ],
+    [ "createSession", "classhuntmaster_1_1UnifiedAudioEngine.html#a2a04b8753ef2292d8f9943479d93d7e6", null ],
+    [ "destroySession", "classhuntmaster_1_1UnifiedAudioEngine.html#ad9e29d1a559281963081b4b40f7e360d", null ],
+    [ "exportFeedbackToJson", "classhuntmaster_1_1UnifiedAudioEngine.html#a124ca8aa58d44d04d1837ed9ebdcd29f", null ],
+    [ "exportScoreToJson", "classhuntmaster_1_1UnifiedAudioEngine.html#a3808bcdfaf29c1bd773d28c1562ae4d5", null ],
+    [ "exportScoringHistoryToJson", "classhuntmaster_1_1UnifiedAudioEngine.html#ae3d70850ff7514eb9d67e18211a31ecd", null ],
+    [ "getActiveSessions", "classhuntmaster_1_1UnifiedAudioEngine.html#a3e001eefdbb6558fc0a4297552f2b080", null ],
+    [ "getCurrentMasterCall", "classhuntmaster_1_1UnifiedAudioEngine.html#a14c4c76e564aa0cce334cfc5d3ac43e7", null ],
+    [ "getDetailedScore", "classhuntmaster_1_1UnifiedAudioEngine.html#ac351ee96f44a080d50c44baa3866ee5c", null ],
+    [ "getFeatureCount", "classhuntmaster_1_1UnifiedAudioEngine.html#adcaee4959a14d28666e7cf4d5ff1660c", null ],
+    [ "getRealtimeFeedback", "classhuntmaster_1_1UnifiedAudioEngine.html#a0fba038679cd8b6af63b817eb13ee285", null ],
+    [ "getSessionDuration", "classhuntmaster_1_1UnifiedAudioEngine.html#a3e83e9bc2178ebd1965729281f11b787", null ],
+    [ "getSimilarityScore", "classhuntmaster_1_1UnifiedAudioEngine.html#aaf686ea2f1f509a9fcacd7096ad951bd", null ],
+    [ "isSessionActive", "classhuntmaster_1_1UnifiedAudioEngine.html#a5689da7c7c467740741dccd318afe611", null ],
+    [ "loadMasterCall", "classhuntmaster_1_1UnifiedAudioEngine.html#a61e883bd60ad534b2df9c9cc1fb7c9c5", null ],
+    [ "processAudioChunk", "classhuntmaster_1_1UnifiedAudioEngine.html#ac722bca4aca196b520e3d5ed4134a5d1", null ],
+    [ "resetSession", "classhuntmaster_1_1UnifiedAudioEngine.html#a4d375c48f7231045530b13b5c9a56807", null ],
+    [ "setRealtimeScorerConfig", "classhuntmaster_1_1UnifiedAudioEngine.html#a9d0a3fd620d3aaf7cc63550ef27ceda1", null ],
+    [ "startRecording", "classhuntmaster_1_1UnifiedAudioEngine.html#a1ccbe06863622d7ea87ee689e6a43290", null ],
+    [ "stopRecording", "classhuntmaster_1_1UnifiedAudioEngine.html#a7065171695e7450df922c4d114fc1f68", null ],
+    [ "unloadMasterCall", "classhuntmaster_1_1UnifiedAudioEngine.html#a4c1e6567a76d28f95908b1f9e3950c25", null ]
+];

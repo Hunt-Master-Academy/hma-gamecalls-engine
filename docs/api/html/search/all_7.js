@@ -1,0 +1,27 @@
+var searchData=
+[
+  ['acceleration_0',['SIMD Acceleration',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md68',1,'']]],
+  ['acquire_1',['acquire',['../classhuntmaster_1_1AudioBufferPool.html#afb1785fa871ab97607845fea1ae394cc',1,'huntmaster::AudioBufferPool']]],
+  ['advanced_20features_20strong_202_203_20weeks_2',['🎵 &lt;strong&gt;Phase 4: Advanced Features&lt;/strong&gt; (2-3 weeks)',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md86',1,'']]],
+  ['advanced_20features_20strong_20future_20phases_3',['🎯 &lt;strong&gt;MVP ADVANCED FEATURES&lt;/strong&gt; (Future Phases)',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md80',1,'']]],
+  ['api_20documentation_4',['📚 API Documentation',['../index.html#autotoc_md10',1,'']]],
+  ['api_20interfaces_5',['Key API Interfaces',['../index.html#autotoc_md17',1,'']]],
+  ['architecture_6',['architecture',['../index.html#autotoc_md19',1,'Build System Architecture'],['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html',1,'Huntmaster Audio Engine - Cross-Platform Architecture']]],
+  ['architecture_20extensibility_7',['Architecture Extensibility',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md97',1,'']]],
+  ['architecture_20refactored_8',['Modular CMake Architecture (Refactored)',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md50',1,'']]],
+  ['architecture_20strong_9',['architecture strong',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md44',1,'1. &lt;strong&gt;Modern C++20 Architecture&lt;/strong&gt;'],['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md46',1,'3. &lt;strong&gt;Real-Time Processing Architecture&lt;/strong&gt;']]],
+  ['assurance_10',['Testing &amp; Quality Assurance',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md90',1,'']]],
+  ['audio_20engine_11',['Huntmaster Audio Engine',['../index.html',1,'']]],
+  ['audio_20engine_20cross_20platform_20architecture_12',['Huntmaster Audio Engine - Cross-Platform Architecture',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html',1,'']]],
+  ['audio_20processing_20pipeline_13',['Audio Processing Pipeline',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md73',1,'']]],
+  ['audiobufferpool_14',['audiobufferpool',['../classhuntmaster_1_1AudioBufferPool.html',1,'huntmaster::AudioBufferPool'],['../classhuntmaster_1_1AudioBufferPool.html#af16846e71c129ffdd78d5bf966dc44ad',1,'huntmaster::AudioBufferPool::AudioBufferPool(const Config &amp;config)'],['../classhuntmaster_1_1AudioBufferPool.html#a1cb2c971b116275ddad2ea76acbb4cc5',1,'huntmaster::AudioBufferPool::AudioBufferPool(size_t pool_size, size_t buffer_size)']]],
+  ['audiolevelprocessor_15',['audiolevelprocessor',['../classhuntmaster_1_1AudioLevelProcessor.html',1,'huntmaster::AudioLevelProcessor'],['../classhuntmaster_1_1AudioLevelProcessor.html#a737b8b8f31a4592d40112624e47feccc',1,'huntmaster::AudioLevelProcessor::AudioLevelProcessor()'],['../classhuntmaster_1_1AudioLevelProcessor.html#a79adcbbdbe357d421f6bc40f86fdd06e',1,'huntmaster::AudioLevelProcessor::AudioLevelProcessor(const Config &amp;config)']]],
+  ['audioplayer_16',['audioplayer',['../classhuntmaster_1_1AudioPlayer.html#a05b661ba3def50c9157fe6cee5919ec9',1,'huntmaster::AudioPlayer::AudioPlayer()'],['../classhuntmaster_1_1AudioPlayer.html',1,'huntmaster::AudioPlayer']]],
+  ['audioplayer_2eh_17',['AudioPlayer.h',['../AudioPlayer_8h.html',1,'']]],
+  ['audiorecorder_18',['audiorecorder',['../classhuntmaster_1_1AudioRecorder.html#ab9d8b213a9a6d095bcf2a9aa07bf9eed',1,'huntmaster::AudioRecorder::AudioRecorder()'],['../classhuntmaster_1_1AudioRecorder.html',1,'huntmaster::AudioRecorder']]],
+  ['audiorecorder_2eh_19',['AudioRecorder.h',['../AudioRecorder_8h.html',1,'']]],
+  ['auto_20discovered_20',['Development Tools (Auto-discovered)',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md55',1,'']]],
+  ['automation_21',['Build Targets &amp; Automation',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md53',1,'']]],
+  ['available_22',['available',['../classhuntmaster_1_1AudioBufferPool.html#aa5d915bbe5747bc691c3fb36883ff8cd',1,'huntmaster::AudioBufferPool']]],
+  ['available_20tools_23',['Available Tools',['../index.html#autotoc_md7',1,'']]]
+];

@@ -75,31 +75,52 @@ endif()
 # --- Third-Party Dependencies ---
 include(FetchContent)
 
-# KissFFT (Vendored Submodule) - Core dependency for FFT calculations
+# KissFFT - Core dependency for FFT calculations
+message(STATUS "Configuring KissFFT...")
+FetchContent_Declare(
+    kissfft
+    GIT_REPOSITORY "https://github.com/mborgerding/kissfft.git"
+    GIT_TAG        "v131"  # Use stable release tag
+)
+FetchContent_MakeAvailable(kissfft)
+
+# Configure KissFFT library
 if(EMSCRIPTEN)
     # For WASM, we only need the headers. We create an INTERFACE library
     # to propagate the include directory and definitions.
     message(STATUS "Configuring KissFFT as header-only for WASM")
-    add_library(kissfft INTERFACE)
-    target_include_directories(kissfft INTERFACE
-        ${PROJECT_LIBS_DIR}/kissfft
-        ${PROJECT_LIBS_DIR}/kissfft/tools
+    add_library(kissfft_huntmaster INTERFACE)
+    target_include_directories(kissfft_huntmaster INTERFACE
+        ${kissfft_SOURCE_DIR}
+        ${kissfft_SOURCE_DIR}/tools
     )
-    target_compile_definitions(kissfft INTERFACE kiss_fft_scalar=float)
+    target_compile_definitions(kissfft_huntmaster INTERFACE kiss_fft_scalar=float)
+    add_library(kissfft ALIAS kissfft_huntmaster)
 else()
     # For native builds, we compile KissFFT as a static library.
     message(STATUS "Configuring KissFFT as static library for native")
-    add_library(kissfft STATIC
-        ${PROJECT_LIBS_DIR}/kissfft/kiss_fft.c
-        ${PROJECT_LIBS_DIR}/kissfft/tools/kiss_fftr.c
-        ${PROJECT_LIBS_DIR}/kissfft/kiss_fftnd.c
-        ${PROJECT_LIBS_DIR}/kissfft/kiss_fftndr.c
+
+    # Check which source files actually exist
+    set(KISSFFT_SOURCES
+        ${kissfft_SOURCE_DIR}/kiss_fft.c
+        ${kissfft_SOURCE_DIR}/tools/kiss_fftr.c
     )
-    target_include_directories(kissfft PUBLIC
-        ${PROJECT_LIBS_DIR}/kissfft
-        ${PROJECT_LIBS_DIR}/kissfft/tools
+
+    # Add optional source files if they exist
+    if(EXISTS ${kissfft_SOURCE_DIR}/kiss_fftnd.c)
+        list(APPEND KISSFFT_SOURCES ${kissfft_SOURCE_DIR}/kiss_fftnd.c)
+    endif()
+    if(EXISTS ${kissfft_SOURCE_DIR}/kiss_fftndr.c)
+        list(APPEND KISSFFT_SOURCES ${kissfft_SOURCE_DIR}/kiss_fftndr.c)
+    endif()
+
+    add_library(kissfft_huntmaster STATIC ${KISSFFT_SOURCES})
+    target_include_directories(kissfft_huntmaster PUBLIC
+        ${kissfft_SOURCE_DIR}
+        ${kissfft_SOURCE_DIR}/tools
     )
-    target_compile_definitions(kissfft PRIVATE kiss_fft_scalar=float)
+    target_compile_definitions(kissfft_huntmaster PRIVATE kiss_fft_scalar=float)
+    add_library(kissfft ALIAS kissfft_huntmaster)
 endif()
 
 # Google Test & Benchmark (Only for native testing)
@@ -111,7 +132,6 @@ if(HUNTMASTER_BUILD_TESTS AND NOT EMSCRIPTEN)
         googletest
         GIT_REPOSITORY "https://github.com/google/googletest.git"
         GIT_TAG        "v1.14.0"
-        SOURCE_DIR     "${PROJECT_TESTS_DIR}/lib/googletest"
     )
     FetchContent_MakeAvailable(googletest)
 
@@ -122,7 +142,6 @@ if(HUNTMASTER_BUILD_TESTS AND NOT EMSCRIPTEN)
         benchmark
         GIT_REPOSITORY "https://github.com/google/benchmark.git"
         GIT_TAG        "v1.8.3"
-        SOURCE_DIR     "${PROJECT_TESTS_DIR}/lib/benchmark"
     )
     FetchContent_MakeAvailable(benchmark)
 else()

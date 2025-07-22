@@ -38,6 +38,8 @@ This engine is currently under active development for its Minimum Viable Product
 
 **Static Library**: Designed to be compiled into a .lib or .a file for easy integration with other projects.
 
+**Comprehensive API Documentation**: Full Doxygen-style documentation for all public interfaces with examples and best practices.
+
 **Comprehensive Debugging Infrastructure**: Thread-safe, component-specific debugging system with 5 log levels and performance monitoring across all tools.
 
 ## 🔧 Debugging & Development Tools
@@ -99,6 +101,60 @@ The Huntmaster Engine includes a comprehensive debugging infrastructure with 10 
 - **FEATURE_EXTRACTION** - Feature extraction processes
 - **SIMILARITY_ANALYSIS** - Similarity analysis algorithms
 - **PERFORMANCE** - Performance monitoring and metrics
+
+## 📚 API Documentation
+
+The Huntmaster Audio Engine provides comprehensive API documentation for all public interfaces to help developers integrate the engine into their applications.
+
+### Documentation Features
+
+- **Complete API Reference**: Doxygen-generated documentation for all public classes, methods, and functions
+- **Usage Examples**: Code examples for common integration patterns
+- **Algorithm Details**: Technical explanations of MFCC extraction, DTW comparison, and VAD processing
+- **Integration Guides**: Platform-specific integration instructions for mobile and desktop applications
+- **Best Practices**: Recommended patterns for real-time processing and memory management
+
+### Generating Documentation
+
+#### Prerequisites
+
+- **Doxygen** 1.8.13 or higher
+- **Graphviz** (optional, for class diagrams)
+
+#### Generate HTML Documentation
+
+```bash
+# Linux/macOS
+./scripts/generate_docs.sh
+
+# Windows
+scripts\generate_docs.bat
+
+# Manual generation
+doxygen Doxyfile
+```
+
+#### Documentation Output
+
+Generated documentation is available at:
+
+- **Main documentation**: `docs/api/html/index.html`
+- **Class index**: `docs/api/html/annotated.html`
+- **File index**: `docs/api/html/files.html`
+- **Namespace index**: `docs/api/html/namespaces.html`
+
+### Online Documentation
+
+For the latest API documentation, visit our GitHub Pages deployment (available after merging to main branch).
+
+### Key API Interfaces
+
+- **`UnifiedAudioEngine`**: Main engine interface for audio analysis
+- **`MFCCProcessor`**: Feature extraction from audio data
+- **`DTWComparator`**: Audio similarity comparison algorithms
+- **`VoiceActivityDetector`**: Audio activity detection
+- **`AudioRecorder`**: Real-time audio capture
+- **`AudioPlayer`**: Audio playback functionality
 
 ## 🏗️ Build System
 

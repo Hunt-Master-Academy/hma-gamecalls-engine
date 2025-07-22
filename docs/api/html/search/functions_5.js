@@ -1,0 +1,25 @@
+var searchData=
+[
+  ['getactiveduration_0',['getActiveDuration',['../classhuntmaster_1_1VoiceActivityDetector.html#aeabfe57bacaedf42bac05dc7b9c4ede9',1,'huntmaster::VoiceActivityDetector']]],
+  ['getactivesessions_1',['getActiveSessions',['../classhuntmaster_1_1UnifiedAudioEngine.html#a3e001eefdbb6558fc0a4297552f2b080',1,'huntmaster::UnifiedAudioEngine']]],
+  ['getanalysisprogress_2',['getAnalysisProgress',['../classhuntmaster_1_1RealtimeScorer.html#ad7cc45b858d0788f66ba0cb07a4750cd',1,'huntmaster::RealtimeScorer']]],
+  ['getbufferstats_3',['getBufferStats',['../classhuntmaster_1_1WaveformGenerator.html#a973d00dda05614012751092f901d2f2c',1,'huntmaster::WaveformGenerator']]],
+  ['getcompletewaveform_4',['getCompleteWaveform',['../classhuntmaster_1_1WaveformGenerator.html#a0666b35891ed040bb3084a2b62ac7d3d',1,'huntmaster::WaveformGenerator']]],
+  ['getconfig_5',['getconfig',['../classhuntmaster_1_1AudioLevelProcessor.html#a795cd3c38f0c2e0f5ea86befad37cd7e',1,'huntmaster::AudioLevelProcessor::getConfig()'],['../classhuntmaster_1_1RealtimeScorer.html#a90a6032d97bff15babb1464ba657f149',1,'huntmaster::RealtimeScorer::getConfig()']]],
+  ['getcurrentlevel_6',['getcurrentlevel',['../classhuntmaster_1_1AudioLevelProcessor.html#a1285284ae7593093420104a7653b4176',1,'huntmaster::AudioLevelProcessor::getCurrentLevel()'],['../classhuntmaster_1_1AudioRecorder.html#aca233470f3408b355c76d777fbf7cec8',1,'huntmaster::AudioRecorder::getCurrentLevel()'],['../classhuntmaster_1_1DebugConfig.html#ade3dfd7513283bc78d0535b93a72e20e',1,'huntmaster::DebugConfig::getCurrentLevel()']]],
+  ['getcurrentmastercall_7',['getCurrentMasterCall',['../classhuntmaster_1_1UnifiedAudioEngine.html#a14c4c76e564aa0cce334cfc5d3ac43e7',1,'huntmaster::UnifiedAudioEngine']]],
+  ['getcurrentposition_8',['getCurrentPosition',['../classhuntmaster_1_1AudioPlayer.html#a635ffbb768639bd0cf6017bace514ab4',1,'huntmaster::AudioPlayer']]],
+  ['getcurrentscore_9',['getCurrentScore',['../classhuntmaster_1_1RealtimeScorer.html#a9f330ea4a3c616cdf74ca599e367814a',1,'huntmaster::RealtimeScorer']]],
+  ['getdetailedscore_10',['getDetailedScore',['../classhuntmaster_1_1UnifiedAudioEngine.html#ac351ee96f44a080d50c44baa3866ee5c',1,'huntmaster::UnifiedAudioEngine']]],
+  ['getduration_11',['getduration',['../classhuntmaster_1_1AudioPlayer.html#a9dd3d42ff3ad93336a36d71c20e1e133',1,'huntmaster::AudioPlayer::getDuration()'],['../classhuntmaster_1_1AudioRecorder.html#afc688afc06250969d744375cf3e62bef',1,'huntmaster::AudioRecorder::getDuration()']]],
+  ['getfeaturecount_12',['getFeatureCount',['../classhuntmaster_1_1UnifiedAudioEngine.html#adcaee4959a14d28666e7cf4d5ff1660c',1,'huntmaster::UnifiedAudioEngine']]],
+  ['getlevelhistory_13',['getLevelHistory',['../classhuntmaster_1_1AudioLevelProcessor.html#a5eee932469995bdf43afb0f7678dbd01',1,'huntmaster::AudioLevelProcessor']]],
+  ['getqualitydescription_14',['getQualityDescription',['../structhuntmaster_1_1RealtimeScorer_1_1RealtimeFeedback.html#a674d6e0befa16131c1e393bbafdd7326',1,'huntmaster::RealtimeScorer::RealtimeFeedback']]],
+  ['getrealtimefeedback_15',['getrealtimefeedback',['../classhuntmaster_1_1RealtimeScorer.html#a72e7962b79ebdf39aec519fbdad61606',1,'huntmaster::RealtimeScorer::getRealtimeFeedback()'],['../classhuntmaster_1_1UnifiedAudioEngine.html#a0fba038679cd8b6af63b817eb13ee285',1,'huntmaster::UnifiedAudioEngine::getRealtimeFeedback()']]],
+  ['getrecordeddata_16',['getRecordedData',['../classhuntmaster_1_1AudioRecorder.html#a4317e9a8fa87389bf580604cf0fb903a',1,'huntmaster::AudioRecorder']]],
+  ['getscoringhistory_17',['getScoringHistory',['../classhuntmaster_1_1RealtimeScorer.html#ab6864ee689c8a14db25732662a3225de',1,'huntmaster::RealtimeScorer']]],
+  ['getsessionduration_18',['getSessionDuration',['../classhuntmaster_1_1UnifiedAudioEngine.html#a3e83e9bc2178ebd1965729281f11b787',1,'huntmaster::UnifiedAudioEngine']]],
+  ['getsimilarityscore_19',['getSimilarityScore',['../classhuntmaster_1_1UnifiedAudioEngine.html#aaf686ea2f1f509a9fcacd7096ad951bd',1,'huntmaster::UnifiedAudioEngine']]],
+  ['getstats_20',['getStats',['../classhuntmaster_1_1AudioBufferPool.html#a3c3b206823d1455e33b60263eb5084f7',1,'huntmaster::AudioBufferPool']]],
+  ['getwaveformrange_21',['getWaveformRange',['../classhuntmaster_1_1WaveformGenerator.html#a07eb17e16bfad28eb6ab0ebe4bd9e5ad',1,'huntmaster::WaveformGenerator']]]
+];
