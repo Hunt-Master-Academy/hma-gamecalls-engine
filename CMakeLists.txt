@@ -352,6 +352,14 @@ else()
         add_executable(ValidationUnifiedTest "${PROJECT_TESTS_DIR}/unit/test_validation_unified.cpp")
         target_link_libraries(ValidationUnifiedTest PRIVATE UnifiedAudioEngine gtest gtest_main)
         
+        # Integration Tests - End-to-End validation with real audio data
+        add_executable(EndToEndTest "${PROJECT_TESTS_DIR}/integration/EndToEndTest.cpp")
+        target_link_libraries(EndToEndTest PRIVATE UnifiedAudioEngine gtest gtest_main)
+        
+        add_executable(RealWildlifeCallAnalysisTest "${PROJECT_TESTS_DIR}/integration/RealWildlifeCallAnalysisTest.cpp")
+        target_link_libraries(RealWildlifeCallAnalysisTest PRIVATE UnifiedAudioEngine gtest gtest_main)
+        
+        message(STATUS "  -- Integration tests configured for real audio data validation.")
         message(STATUS "  -- Standalone diagnostic tools configured.")
 
         # Benchmarks (gbenchmark)

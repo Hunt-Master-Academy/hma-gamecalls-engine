@@ -10,7 +10,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-#include "huntmaster/core/RealtimeAudioProcessor.h"
+#include "huntmaster/core/RealTimeAudioProcessor.h"
 
 using namespace huntmaster;
 

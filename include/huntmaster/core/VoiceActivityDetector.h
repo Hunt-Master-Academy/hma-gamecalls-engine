@@ -1,63 +1,53 @@
 // File: VoiceActivityDetector.h
 #pragma once
 
-#include "Platform.h"
+#include <chrono>
+#include <expected>
+#include <memory>
+#include <span>
+#include <variant>
+#include <vector>
+
 #include "Expected.h"
 
+namespace huntmaster {
 
-#include <span>
-#include <expected>
-#include <chrono>
-#include <memory>
-#include <variant>
+enum class VADError { INVALID_INPUT, PROCESSING_FAILED, NOT_INITIALIZED };
 
-namespace huntmaster
-{
+struct VADResult {
+    bool is_active{false};
+    float energy_level{0.0f};
+    std::chrono::milliseconds duration{0};
+};
 
-    enum class VADError
-    {
-        INVALID_INPUT,
-        PROCESSING_FAILED,
-        NOT_INITIALIZED
+class VoiceActivityDetector {
+   public:
+    struct Config {
+        float energy_threshold{0.01f};
+        std::chrono::milliseconds window_duration{20};
+        std::chrono::milliseconds min_sound_duration{100};
+        std::chrono::milliseconds pre_buffer{50};
+        std::chrono::milliseconds post_buffer{100};
+        size_t sample_rate{44100};
     };
 
-    struct VADResult
-    {
-        bool is_active{false};
-        float energy_level{0.0f};
-        std::chrono::milliseconds duration{0};
-    };
+    explicit VoiceActivityDetector(const Config &config);
+    ~VoiceActivityDetector();
 
-    class VoiceActivityDetector
-    {
-    public:
-        struct Config
-        {
-            float energy_threshold{0.01f};
-            std::chrono::milliseconds window_duration{20};
-            std::chrono::milliseconds min_sound_duration{100};
-            std::chrono::milliseconds pre_buffer{50};
-            std::chrono::milliseconds post_buffer{100};
-            size_t sample_rate{44100};
-        };
+    VoiceActivityDetector(VoiceActivityDetector &&) noexcept;
+    VoiceActivityDetector &operator=(VoiceActivityDetector &&) noexcept;
 
-        explicit VoiceActivityDetector(const Config &config);
-        ~VoiceActivityDetector();
+    [[nodiscard]] huntmaster::expected<VADResult, VADError> processWindow(
+        std::span<const float> audio);
 
-        VoiceActivityDetector(VoiceActivityDetector &&) noexcept;
-        VoiceActivityDetector &operator=(VoiceActivityDetector &&) noexcept;
+    void reset();
 
-        [[nodiscard]] huntmaster::expected<VADResult, VADError>
-        processWindow(std::span<const float> audio);
+    [[nodiscard]] bool isVoiceActive() const noexcept;
+    [[nodiscard]] std::chrono::milliseconds getActiveDuration() const noexcept;
 
-        void reset();
+   private:
+    class Impl;
+    std::unique_ptr<Impl> pimpl_;
+};
 
-        [[nodiscard]] bool isVoiceActive() const noexcept;
-        [[nodiscard]] std::chrono::milliseconds getActiveDuration() const noexcept;
-
-    private:
-        class Impl;
-        std::unique_ptr<Impl> pimpl_;
-    };
-
-} // namespace huntmaster
+}  // namespace huntmaster

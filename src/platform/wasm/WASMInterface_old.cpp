@@ -17,7 +17,7 @@
 #include <span>
 
 #include "huntmaster/core/HuntmasterEngine.h"
-#include "huntmaster/core/RealtimeAudioProcessor.h"
+#include "huntmaster/core/RealTimeAudioProcessor.h"
 #include "huntmaster/platform/wasm/WASMInterface.h" 
 
 

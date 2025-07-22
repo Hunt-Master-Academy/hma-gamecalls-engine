@@ -1,6 +1,6 @@
 #include <benchmark/benchmark.h>
 
-#include "huntmaster/core/RealtimeAudioProcessor.h"
+#include "huntmaster/core/RealTimeAudioProcessor.h"
 
 using namespace huntmaster;
 
@@ -40,7 +40,7 @@ static void BM_Dequeue(benchmark::State& state) {
         // Pre-fill the buffer so we always have something to dequeue.
         // This setup work is done with timing paused.
         state.PauseTiming();
-        proc.tryEnqueueAudio(data);
+        [[maybe_unused]] bool enqueueSuccess = proc.tryEnqueueAudio(data);
         state.ResumeTiming();
 
         // The operation we are timing.
@@ -63,7 +63,7 @@ static void BM_RoundTrip(benchmark::State& state) {
     std::vector<float> data(512, 1.0f);
 
     for (auto _ : state) {
-        proc.tryEnqueueAudio(data);
+        [[maybe_unused]] bool enqueueSuccess = proc.tryEnqueueAudio(data);
         auto chunk = proc.tryDequeueChunk();
         benchmark::DoNotOptimize(chunk);
     }

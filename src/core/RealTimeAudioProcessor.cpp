@@ -1,5 +1,5 @@
 // File: RealtimeAudioProcessor.cpp
-#include "huntmaster/core/RealtimeAudioProcessor.h"
+#include "huntmaster/core/RealTimeAudioProcessor.h"
 
 #include <algorithm>
 #include <bit>

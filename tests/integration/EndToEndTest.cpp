@@ -4,8 +4,10 @@
 #include <memory>
 #include <span>
 #include <vector>
+#include <filesystem>
 
 #include "huntmaster/core/UnifiedAudioEngine.h"
+#include "dr_wav.h"
 
 using namespace huntmaster;
 using SessionId = uint32_t;
@@ -88,4 +90,68 @@ TEST_F(EndToEndTest, EngineInitializesSuccessfully) {
         auto endResult = engine_->endRealtimeSession(sessionResult.value);
         EXPECT_EQ(endResult, UnifiedAudioEngine::Status::OK) << "Should be able to end session";
     }
+}
+
+/**
+ * Test with real audio file if available
+ */
+TEST_F(EndToEndTest, ProcessRealAudioFileIfAvailable) {
+    const std::string testAudioPath = "../data/test_audio/test_sine_440.wav";
+    
+    if (!std::filesystem::exists(testAudioPath)) {
+        GTEST_SKIP() << "Test audio file not found at: " << testAudioPath;
+    }
+    
+    // Load real audio file
+    unsigned int channels, sample_rate;
+    drwav_uint64 total_frames;
+    float* raw_data = drwav_open_file_and_read_pcm_frames_f32(
+        testAudioPath.c_str(), &channels, &sample_rate, &total_frames, nullptr);
+    
+    ASSERT_NE(raw_data, nullptr) << "Failed to load audio file: " << testAudioPath;
+    
+    // Convert to mono if needed
+    std::vector<float> audio_data(total_frames);
+    if (channels > 1) {
+        for (drwav_uint64 i = 0; i < total_frames; ++i) {
+            float sum = 0.0f;
+            for (unsigned int ch = 0; ch < channels; ++ch) {
+                sum += raw_data[i * channels + ch];
+            }
+            audio_data[i] = sum / static_cast<float>(channels);
+        }
+    } else {
+        std::copy(raw_data, raw_data + total_frames, audio_data.begin());
+    }
+    
+    drwav_free(raw_data, nullptr);
+    
+    // Start session
+    auto sessionResult = engine_->startRealtimeSession(static_cast<float>(sample_rate));
+    ASSERT_TRUE(sessionResult.isOk()) << "Failed to start realtime session";
+    SessionId sessionId = sessionResult.value;
+    
+    // Process audio in chunks
+    const size_t chunk_size = 512;
+    for (size_t i = 0; i < audio_data.size(); i += chunk_size) {
+        size_t actual_size = std::min(chunk_size, audio_data.size() - i);
+        std::span<const float> chunk(audio_data.data() + i, actual_size);
+        
+        auto result = engine_->processAudioChunk(sessionId, chunk);
+        ASSERT_EQ(result, UnifiedAudioEngine::Status::OK) 
+            << "Failed to process audio chunk at position: " << i;
+    }
+    
+    // Verify features were extracted
+    auto featureCountResult = engine_->getFeatureCount(sessionId);
+    ASSERT_TRUE(featureCountResult.isOk()) << "Failed to get feature count";
+    EXPECT_GT(featureCountResult.value, 0) << "Should have extracted some features";
+    
+    std::cout << "Successfully processed real audio file: " << testAudioPath << std::endl;
+    std::cout << "Audio length: " << (audio_data.size() / static_cast<float>(sample_rate)) << " seconds" << std::endl;
+    std::cout << "Features extracted: " << featureCountResult.value << std::endl;
+    
+    // End session
+    auto endResult = engine_->endRealtimeSession(sessionId);
+    EXPECT_EQ(endResult, UnifiedAudioEngine::Status::OK) << "Failed to end session";
 }

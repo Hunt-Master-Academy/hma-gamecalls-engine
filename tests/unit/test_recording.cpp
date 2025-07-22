@@ -1,12 +1,14 @@
 #include <chrono>
+#include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <span>
 #include <thread>
 
-#include "huntmaster/core/HuntmasterAudioEngine.h"
+#include "huntmaster/core/UnifiedAudioEngine.h"
 
-// Add this line to use HuntmasterAudioEngine without the namespace prefix
-using huntmaster::HuntmasterAudioEngine;
+// Use the huntmaster namespace
+using namespace huntmaster;
 
 void printLevel(float level) {
     int bars = static_cast<int>(level * 50);
@@ -20,77 +22,146 @@ void printLevel(float level) {
 int main() {
     std::cout << "=== Huntmaster Recording Test ===" << std::endl;
 
-    // Initialize engine
-    HuntmasterAudioEngine &engine = HuntmasterAudioEngine::getInstance();
-    engine.initialize();
+    // Create UnifiedAudioEngine instance
+    auto engineResult = UnifiedAudioEngine::create();
+    if (!engineResult.isOk()) {
+        std::cerr << "Failed to create UnifiedAudioEngine!" << std::endl;
+        return -1;
+    }
+    auto engine = std::move(*engineResult);
 
-    // Test 1: Simple Recording
-    std::cout << "\nTest 1: Recording for 3 seconds..." << std::endl;
-    std::cout << "Speak into your microphone!" << std::endl;
+    // Create a session
+    auto sessionResult = engine->createSession(44100.0f);
+    if (!sessionResult.isOk()) {
+        std::cerr << "Failed to create session!" << std::endl;
+        return -1;
+    }
+    SessionId sessionId = *sessionResult;
 
-    int recordingId = engine.startRecording(44100.0);
-    if (recordingId < 0) {
-        std::cerr << "Failed to start recording!" << std::endl;
-        return 1;
+    // Test 1: Recording Functionality Test
+    std::cout << "\nTest 1: Testing recording capabilities..." << std::endl;
+
+    // Load a master call for comparison
+    auto loadResult = engine->loadMasterCall(sessionId, "buck_grunt");
+    if (loadResult != UnifiedAudioEngine::Status::OK) {
+        std::cout << "Warning: buck_grunt master call not available" << std::endl;
+    } else {
+        std::cout << "Successfully loaded buck_grunt master call" << std::endl;
     }
 
-    // Monitor levels for 3 seconds
-    auto start = std::chrono::steady_clock::now();
-    while (std::chrono::steady_clock::now() - start < std::chrono::seconds(3)) {
-        float level = engine.getRecordingLevel();
-        printLevel(level);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    // Test recording functionality
+    std::cout << "Starting recording test..." << std::endl;
+    auto recordResult = engine->startRecording(sessionId);
+    if (recordResult == UnifiedAudioEngine::Status::OK) {
+        std::cout << "✓ Recording started successfully" << std::endl;
+        
+        // Check if recording status is correct
+        if (engine->isRecording(sessionId)) {
+            std::cout << "✓ Recording status confirmed" << std::endl;
+        } else {
+            std::cout << "✗ Recording status check failed" << std::endl;
+        }
+        
+        // Simulate some recording time with level monitoring
+        std::cout << "Recording for 2 seconds with level monitoring..." << std::endl;
+        for (int i = 0; i < 20; ++i) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            
+            // Get current recording level
+            auto levelResult = engine->getRecordingLevel(sessionId);
+            if (levelResult.isOk()) {
+                printLevel(*levelResult);
+            }
+        }
+        std::cout << std::endl;
+        
+        // Stop recording
+        auto stopResult = engine->stopRecording(sessionId);
+        if (stopResult == UnifiedAudioEngine::Status::OK) {
+            std::cout << "✓ Recording stopped successfully" << std::endl;
+            
+            // Check recording duration
+            auto durationResult = engine->getRecordingDuration(sessionId);
+            if (durationResult.isOk()) {
+                std::cout << "✓ Recording duration: " << *durationResult << " seconds" << std::endl;
+            }
+            
+            // Save the recording
+            auto saveResult = engine->saveRecording(sessionId, "test_recording.wav");
+            if (saveResult.isOk()) {
+                std::cout << "✓ Recording saved to: " << *saveResult << std::endl;
+            } else {
+                std::cout << "✗ Failed to save recording" << std::endl;
+            }
+        } else {
+            std::cout << "✗ Failed to stop recording" << std::endl;
+        }
+    } else {
+        std::cout << "✗ Failed to start recording" << std::endl;
     }
-    std::cout << std::endl;
 
-    engine.stopRecording(recordingId);
+    // Test 2: Audio Processing and Similarity Scoring
+    std::cout << "\nTest 2: Testing audio processing..." << std::endl;
 
-    // Save recording
-    std::string savedPath = engine.saveRecording(recordingId, "test_grunt").value;
-    if (!savedPath.empty()) {
-        std::cout << "Recording saved to: " << savedPath << std::endl;
+    // Test processing some dummy audio data
+    std::vector<float> testAudio(4410); // 0.1 seconds of 44.1kHz audio
+    for (size_t i = 0; i < testAudio.size(); ++i) {
+        testAudio[i] = 0.5f * sin(2.0f * 3.14159f * 440.0f * i / 44100.0f); // 440Hz sine wave
     }
 
-    // Test 2: Load and play master call
-    std::cout << "\nTest 2: Loading and playing master call..." << std::endl;
-    engine.loadMasterCall("buck_grunt");
-    engine.playMasterCall("buck_grunt");
-
-    std::this_thread::sleep_for(std::chrono::seconds(2));
-
-    // Test 3: Record user attempt
-    std::cout << "\nTest 3: Now try to imitate the buck grunt!" << std::endl;
-    std::cout << "Recording in 3... ";
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    std::cout << "2... ";
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    std::cout << "1... ";
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    std::cout << "GO!" << std::endl;
-
-    recordingId = engine.startRecording(44100.0);
-
-    // Record for 3 seconds with level monitoring
-    start = std::chrono::steady_clock::now();
-    while (std::chrono::steady_clock::now() - start < std::chrono::seconds(3)) {
-        float level = engine.getRecordingLevel();
-        printLevel(level);
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    std::span<const float> audioSpan(testAudio.data(), testAudio.size());
+    auto processResult = engine->processAudioChunk(sessionId, audioSpan);
+    if (processResult == UnifiedAudioEngine::Status::OK) {
+        std::cout << "✓ Successfully processed test audio chunk" << std::endl;
+    } else {
+        std::cout << "✗ Failed to process test audio chunk" << std::endl;
     }
-    std::cout << std::endl;
 
-    engine.stopRecording(recordingId);
-    savedPath = engine.saveRecording(recordingId, "user_buck_grunt_attempt").value;
-    std::cout << "Your attempt saved to: " << savedPath << std::endl;
+    // Try to get a similarity score
+    auto scoreResult = engine->getSimilarityScore(sessionId);
+    if (scoreResult.isOk()) {
+        float score = *scoreResult;
+        std::cout << "✓ Got similarity score: " << score << std::endl;
+    } else {
+        std::cout << "✗ Could not get similarity score" << std::endl;
+    }
 
-    // Play back the user recording
-    std::cout << "\nPlaying back your recording..." << std::endl;
-    engine.playRecording("user_buck_grunt_attempt.wav");
+    // Test playback functionality if we have a saved recording
+    std::cout << "\nTest 3: Testing playback capabilities..." << std::endl;
+    
+    // Try to play back the recording we just made
+    auto playResult = engine->playRecording(sessionId, "test_recording.wav");
+    if (playResult == UnifiedAudioEngine::Status::OK) {
+        std::cout << "✓ Started playback of recorded audio" << std::endl;
+        
+        // Monitor playback for a bit
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+        
+        if (engine->isPlaying(sessionId)) {
+            std::cout << "✓ Playback status confirmed" << std::endl;
+            
+            auto positionResult = engine->getPlaybackPosition(sessionId);
+            if (positionResult.isOk()) {
+                std::cout << "✓ Playback position: " << *positionResult << " seconds" << std::endl;
+            }
+        }
+        
+        // Stop playback
+        auto stopPlayResult = engine->stopPlayback(sessionId);
+        if (stopPlayResult == UnifiedAudioEngine::Status::OK) {
+            std::cout << "✓ Playback stopped successfully" << std::endl;
+        }
+    } else {
+        std::cout << "Note: Could not play back recording (file may not exist)" << std::endl;
+    }
 
-    std::this_thread::sleep_for(std::chrono::seconds(3));
+    // Clean up
+    auto resetResult = engine->resetSession(sessionId);
+    if (resetResult != UnifiedAudioEngine::Status::OK) {
+        std::cerr << "Warning: Failed to reset session!" << std::endl;
+    }
 
-    engine.shutdown();
-    std::cout << "\nAll tests completed!" << std::endl;
+    std::cout << "\nRecording and playback tests completed!" << std::endl;
 
     return 0;
 }

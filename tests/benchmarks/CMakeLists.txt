@@ -13,6 +13,6 @@ add_executable(
 target_link_libraries(
     RunBenchmarks
     PRIVATE
-    HuntmasterEngine
+    UnifiedAudioEngine
     benchmark::benchmark_main
 )

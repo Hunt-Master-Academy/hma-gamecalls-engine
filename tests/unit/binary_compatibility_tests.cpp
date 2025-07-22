@@ -1,10 +1,11 @@
 #include <gtest/gtest.h>
 
 #include <fstream>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "huntmaster/core/HuntmasterAudioEngine.h"
+#include "huntmaster/core/UnifiedAudioEngine.h"
 
 using namespace huntmaster;
 
@@ -15,32 +16,39 @@ struct TestCase {
 
 class BinaryCompatibilityTest : public ::testing::Test {
    protected:
-    void SetUp() override { engine.initialize(); }
+    void SetUp() override {
+        auto engineResult = UnifiedAudioEngine::create();
+        ASSERT_TRUE(engineResult.isOk()) << "Failed to create UnifiedAudioEngine";
+        engine = std::move(*engineResult);
+    }
 
-    void TearDown() override { engine.shutdown(); }
+    void TearDown() override { engine.reset(); }
 
-    HuntmasterAudioEngine& engine = HuntmasterAudioEngine::getInstance();
+    std::unique_ptr<UnifiedAudioEngine> engine;
 };
 
 // Simple test to verify basic functionality
 TEST_F(BinaryCompatibilityTest, BasicEngineOperations) {
-    // Test that the engine can start and stop sessions
-    auto result = engine.startRealtimeSession(44100.0f, 1024);
-    EXPECT_TRUE(result.isOk());
+    // Test that the engine can create sessions
+    auto sessionResult = engine->createSession(44100.0f);
+    EXPECT_TRUE(sessionResult.isOk());
 
-    if (result.isOk()) {
-        int sessionId = result.value;
-        engine.endRealtimeSession(sessionId);
+    if (sessionResult.isOk()) {
+        SessionId sessionId = *sessionResult;
+        auto resetResult = engine->resetSession(sessionId);
+        EXPECT_EQ(resetResult, UnifiedAudioEngine::Status::OK);
     }
 }
 
 // Test audio recording functionality
 TEST_F(BinaryCompatibilityTest, RecordingOperations) {
-    auto result = engine.startRecording(44100.0);
-    EXPECT_TRUE(result.isOk());
+    auto sessionResult = engine->createSession(44100.0);
+    EXPECT_TRUE(sessionResult.isOk());
 
-    if (result.isOk()) {
-        int recordingId = result.value;
-        engine.stopRecording(recordingId);
+    if (sessionResult.isOk()) {
+        SessionId sessionId = *sessionResult;
+        // Test basic session operations
+        auto resetResult = engine->resetSession(sessionId);
+        EXPECT_EQ(resetResult, UnifiedAudioEngine::Status::OK);
     }
 }

@@ -5,8 +5,6 @@
 #include <type_traits>
 #include <variant>
 
-#include "Platform.h"
-
 // Check if std::expected is available
 #if defined(__cpp_lib_expected) && __cpp_lib_expected >= 202202L
 #include <expected>

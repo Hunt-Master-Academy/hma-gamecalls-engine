@@ -563,7 +563,7 @@ std::vector<RealtimeScorer::SimilarityScore> RealtimeScorer::getScoringHistory(
     }
 }
 
-std::string RealtimeScorer::exportScoresToJson() const {
+std::string RealtimeScorer::exportScoreToJson() const {
     std::stringstream ss;
     ss << "{\n";
     ss << "  \"overall\": " << impl_->currentScore_.overall << ",\n";
@@ -595,7 +595,7 @@ std::string RealtimeScorer::exportFeedbackToJson() const {
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(6);
     oss << "{"
-        << "\"currentScore\":" << exportScoresToJson() << ","
+        << "\"currentScore\":" << exportScoreToJson() << ","
         << "\"trendingScore\":" << feedback.trendingScore.overall << ","
         << "\"peakScore\":" << feedback.peakScore.overall << ","
         << "\"progressRatio\":" << feedback.progressRatio << ","

@@ -9,7 +9,7 @@
 #include "huntmaster/core/AudioBufferPool.h"
 #include "huntmaster/core/DTWComparator.h"
 #include "huntmaster/core/MFCCProcessor.h"
-#include "huntmaster/core/RealtimeAudioProcessor.h"
+#include "huntmaster/core/RealTimeAudioProcessor.h"
 #include "huntmaster/core/VoiceActivityDetector.h"
 #include "dr_wav.h"  // For loading master calls
 

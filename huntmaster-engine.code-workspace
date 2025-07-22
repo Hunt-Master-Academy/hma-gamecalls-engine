@@ -5,8 +5,17 @@
 		}
 	],
 	"settings": {
-		"terminal.integrated.defaultProfile.windows": "Command Prompt with Conda",
+		"terminal.integrated.defaultProfile.windows": "Ubuntu (WSL)",
 		"terminal.integrated.profiles.windows": {
+			"Ubuntu (WSL)": {
+				"path": "wsl.exe",
+				"args": [
+					"-d",
+					"Ubuntu"
+				],
+				"icon": "terminal-ubuntu",
+				"overrideName": true
+			},
 			"Command Prompt with Conda": {
 				"path": "C:\\Windows\\System32\\cmd.exe",
 				"args": [
@@ -103,7 +112,16 @@
 			"__split_buffer": "cpp",
 			"__tree": "cpp",
 			"map": "cpp",
-			"set": "cpp"
+			"set": "cpp",
+			"xstring": "cpp",
+			"filesystem": "cpp",
+			"*.inc": "cpp",
+			"expected": "cpp",
+			"__locale": "cpp",
+			"codecvt": "cpp",
+			"xlocale": "cpp",
+			"future": "cpp",
+			"xutility": "cpp"
 		}
 	}
 }

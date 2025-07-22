@@ -144,7 +144,8 @@
         "__locale": "cpp",
         "codecvt": "cpp",
         "xlocale": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "xutility": "cpp"
     },
 
 

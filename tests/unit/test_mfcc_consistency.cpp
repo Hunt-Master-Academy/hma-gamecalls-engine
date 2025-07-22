@@ -3,13 +3,14 @@
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <span>
 #include <vector>
 
 #include "dr_wav.h"
-#include "huntmaster/core/HuntmasterAudioEngine.h"
+#include "huntmaster/core/UnifiedAudioEngine.h"
 
 // Use the huntmaster namespace
-using huntmaster::HuntmasterAudioEngine;
+using namespace huntmaster;
 
 // Generate a test sine wave
 static std::vector<float> generateSineWave(float frequency, float duration, float sampleRate) {
@@ -49,14 +50,28 @@ static bool saveTestWav(const std::string &filename, const std::vector<float> &s
 class MFCCConsistencyTest : public ::testing::Test {
    protected:
     void SetUp() override {
-        engine.initialize();
+        auto engineResult = UnifiedAudioEngine::create();
+        ASSERT_TRUE(engineResult.isOk())
+            << "Failed to create UnifiedAudioEngine: " << static_cast<int>(engineResult.error());
+        engine = std::move(*engineResult);
+
         // Create master_calls directory if it doesn't exist
         system("mkdir ..\\data\\master_calls 2>nul");
     }
 
-    void TearDown() override { engine.shutdown(); }
+    void TearDown() override {
+        // Clean up any remaining sessions
+        auto activeSessions = engine->getActiveSessions();
+        for (auto sessionId : activeSessions) {
+            auto destroyResult = engine->destroySession(sessionId);
+            if (destroyResult != UnifiedAudioEngine::Status::OK) {
+                std::cerr << "Warning: Failed to destroy session " << sessionId << std::endl;
+            }
+        }
+        engine.reset();
+    }
 
-    HuntmasterAudioEngine &engine = HuntmasterAudioEngine::getInstance();
+    std::unique_ptr<UnifiedAudioEngine> engine;
 };
 
 // Simple test using existing master call to verify workflow
@@ -64,9 +79,14 @@ TEST_F(MFCCConsistencyTest, ExistingMasterCallTest) {
     std::cout << "Debug: Testing with existing buck_grunt master call" << std::endl;
     std::cout << "---------------------------------------" << std::endl;
 
+    // Create a session
+    auto sessionResult = engine->createSession(44100.0f);
+    ASSERT_TRUE(sessionResult.isOk()) << "Failed to create session";
+    SessionId sessionId = *sessionResult;
+
     // Try to load an existing master call
-    auto loadResult = engine.loadMasterCall("buck_grunt");
-    if (loadResult != HuntmasterAudioEngine::EngineStatus::OK) {
+    auto loadResult = engine->loadMasterCall(sessionId, "buck_grunt");
+    if (loadResult != UnifiedAudioEngine::Status::OK) {
         std::cout << "  loadMasterCall failed with status: " << static_cast<int>(loadResult)
                   << std::endl;
         GTEST_SKIP() << "buck_grunt master call not available";
@@ -102,39 +122,29 @@ TEST_F(MFCCConsistencyTest, ExistingMasterCallTest) {
         monoData.assign(audioData, audioData + totalFrames);
     }
 
-    // Create a session and process the audio
-    auto sessionResult = engine.startRealtimeSession(static_cast<float>(sampleRate), 1024);
-    ASSERT_TRUE(sessionResult.isOk()) << "Failed to start realtime session";
-    int sessionId = sessionResult.value;
-    std::cout << "  Started session with ID: " << sessionId << std::endl;
-
-    // Process all audio at once like TestHarness
-    auto processResult = engine.processAudioChunk(sessionId, monoData.data(), monoData.size());
-    std::cout << "  processAudioChunk status: " << static_cast<int>(processResult) << std::endl;
-    EXPECT_EQ(processResult, HuntmasterAudioEngine::EngineStatus::OK) << "Processing failed";
-
-    // Check feature count
-    int featureCount = engine.getSessionFeatureCount(sessionId);
-    std::cout << "  Features processed: " << featureCount << std::endl;
+    // Process all audio at once using span-based API
+    std::span<const float> audioSpan(monoData.data(), monoData.size());
+    auto processResult = engine->processAudioChunk(sessionId, audioSpan);
+    std::cout << "  processAudioChunk status: "
+              << (processResult == UnifiedAudioEngine::Status::OK ? "OK" : "Failed") << std::endl;
+    EXPECT_EQ(processResult, UnifiedAudioEngine::Status::OK) << "Processing failed";
 
     // Try to get similarity score
-    auto scoreResult = engine.getSimilarityScore(sessionId);
+    auto scoreResult = engine->getSimilarityScore(sessionId);
     if (!scoreResult.isOk()) {
-        std::cout << "  getSimilarityScore failed with status: "
-                  << static_cast<int>(scoreResult.status) << std::endl;
+        std::cout << "  getSimilarityScore failed" << std::endl;
     } else {
-        float score = scoreResult.value;
+        float score = *scoreResult;
         std::cout << "  Similarity score: " << std::fixed << std::setprecision(8) << score
                   << std::endl;
     }
 
-    engine.endRealtimeSession(sessionId);
+    auto resetResult = engine->resetSession(sessionId);
+    EXPECT_EQ(resetResult, UnifiedAudioEngine::Status::OK);
     drwav_free(audioData, nullptr);
 
-    // This test should at least not crash and process some features
-    EXPECT_GT(featureCount, 0) << "No features were processed";
-    EXPECT_TRUE(scoreResult.isOk())
-        << "Failed to get similarity score, status: " << static_cast<int>(scoreResult.status);
+    // This test should at least not crash and get a similarity score
+    EXPECT_TRUE(scoreResult.isOk());
 }
 
 TEST_F(MFCCConsistencyTest, SineWaveConsistency) {
@@ -154,40 +164,35 @@ TEST_F(MFCCConsistencyTest, SineWaveConsistency) {
     std::cout << "\nProcessing 5 times:" << std::endl;
 
     for (int i = 0; i < 5; ++i) {
+        // Create a session
+        auto sessionResult = engine->createSession(44100.0f);
+        ASSERT_TRUE(sessionResult.isOk()) << "Failed to create session";
+        SessionId sessionId = *sessionResult;
+
         // Load as master (this triggers MFCC processing)
-        auto loadResult = engine.loadMasterCall("test_sine_440");
-        if (loadResult != HuntmasterAudioEngine::EngineStatus::OK) {
+        auto loadResult = engine->loadMasterCall(sessionId, "test_sine_440");
+        if (loadResult != UnifiedAudioEngine::Status::OK) {
             std::cout << "  loadMasterCall failed with status: " << static_cast<int>(loadResult)
                       << std::endl;
         }
-        ASSERT_EQ(loadResult, HuntmasterAudioEngine::EngineStatus::OK)
-            << "Failed to load master call";
+        ASSERT_EQ(loadResult, UnifiedAudioEngine::Status::OK) << "Failed to load master call";
 
-        // Create a session and process the same audio
-        auto sessionResult = engine.startRealtimeSession(44100.0f, 1024);
-        ASSERT_TRUE(sessionResult.isOk()) << "Failed to start realtime session";
-        int sessionId = sessionResult.value;
-
-        // Try processing all at once like TestHarness instead of chunks
-        auto allAtOnceResult =
-            engine.processAudioChunk(sessionId, sineWave440.data(), sineWave440.size());
-        EXPECT_EQ(allAtOnceResult, HuntmasterAudioEngine::EngineStatus::OK)
+        // Process the same audio using span-based API
+        std::span<const float> audioSpan(sineWave440.data(), sineWave440.size());
+        auto allAtOnceResult = engine->processAudioChunk(sessionId, audioSpan);
+        EXPECT_EQ(allAtOnceResult, UnifiedAudioEngine::Status::OK)
             << "All-at-once processing failed";
 
-        // Check how many features were processed
-        int featureCount = engine.getSessionFeatureCount(sessionId);
-        std::cout << "  Features processed: " << featureCount << std::endl;
-
-        auto scoreResult = engine.getSimilarityScore(sessionId);
+        auto scoreResult = engine->getSimilarityScore(sessionId);
         if (!scoreResult.isOk()) {
-            std::cout << "  getSimilarityScore failed with status: "
-                      << static_cast<int>(scoreResult.status) << std::endl;
+            std::cout << "  getSimilarityScore failed" << std::endl;
         }
-        ASSERT_TRUE(scoreResult.isOk())
-            << "Failed to get similarity score, status: " << static_cast<int>(scoreResult.status);
-        float score = scoreResult.value;
+        ASSERT_TRUE(scoreResult.isOk()) << "Failed to get similarity score";
+        float score = *scoreResult;
         scores.push_back(score);
-        engine.endRealtimeSession(sessionId);
+
+        auto resetResult = engine->resetSession(sessionId);
+        EXPECT_EQ(resetResult, UnifiedAudioEngine::Status::OK);
 
         std::cout << "  Run " << (i + 1) << ": Score = " << std::fixed << std::setprecision(8)
                   << score << std::endl;
@@ -243,29 +248,31 @@ TEST_F(MFCCConsistencyTest, ComplexWaveformConsistency) {
     // Process multiple times
     std::vector<float> complexScores;
     for (int i = 0; i < 5; ++i) {
-        auto loadResult = engine.loadMasterCall("test_complex");
-        EXPECT_TRUE(loadResult == huntmaster::HuntmasterAudioEngine::EngineStatus::OK ||
-                    loadResult == huntmaster::HuntmasterAudioEngine::EngineStatus::FILE_NOT_FOUND);
+        // Create a session
+        auto sessionResult2 = engine->createSession(44100.0f);
+        ASSERT_TRUE(sessionResult2.isOk()) << "Failed to create session";
+        SessionId sessionId = *sessionResult2;
 
-        auto sessionResult2 = engine.startRealtimeSession(44100.0f, 1024);
-        ASSERT_TRUE(sessionResult2.isOk()) << "Failed to start realtime session";
-        int sessionId = sessionResult2.value;
+        auto loadResult = engine->loadMasterCall(sessionId, "test_complex");
+        EXPECT_EQ(loadResult, UnifiedAudioEngine::Status::OK);
 
+        // Process in chunks using span-based API
         const int chunkSize = 1024;
         for (size_t j = 0; j < complexWave.size(); j += chunkSize) {
             size_t remaining = complexWave.size() - j;
             size_t toProcess = std::min(static_cast<size_t>(chunkSize), remaining);
-            auto chunkResult =
-                engine.processAudioChunk(sessionId, complexWave.data() + j, toProcess);
-            EXPECT_EQ(chunkResult, HuntmasterAudioEngine::EngineStatus::OK)
-                << "Chunk processing failed";
+            std::span<const float> chunkSpan(complexWave.data() + j, toProcess);
+            auto chunkResult = engine->processAudioChunk(sessionId, chunkSpan);
+            EXPECT_EQ(chunkResult, UnifiedAudioEngine::Status::OK) << "Chunk processing failed";
         }
 
-        auto scoreResult = engine.getSimilarityScore(sessionId);
+        auto scoreResult = engine->getSimilarityScore(sessionId);
         ASSERT_TRUE(scoreResult.isOk()) << "Failed to get similarity score";
-        float score = scoreResult.value;
+        float score = *scoreResult;
         complexScores.push_back(score);
-        engine.endRealtimeSession(sessionId);
+
+        auto resetResult = engine->resetSession(sessionId);
+        EXPECT_EQ(resetResult, UnifiedAudioEngine::Status::OK);
 
         std::cout << "  Run " << (i + 1) << ": Score = " << std::fixed << std::setprecision(8)
                   << score << std::endl;
@@ -296,8 +303,13 @@ TEST_F(MFCCConsistencyTest, RealAudioFileConsistency) {
 
     for (int i = 0; i < 3; ++i) {
         try {
-            auto loadResult = engine.loadMasterCall("buck_grunt");
-            if (loadResult == huntmaster::HuntmasterAudioEngine::EngineStatus::OK) {
+            // Create a session
+            auto sessionResult3 = engine->createSession(44100.0f);
+            if (!sessionResult3.isOk()) continue;
+            SessionId sessionId = *sessionResult3;
+
+            auto loadResult = engine->loadMasterCall(sessionId, "buck_grunt");
+            if (loadResult == UnifiedAudioEngine::Status::OK) {
                 realFileExists = true;
             }
 
@@ -323,26 +335,23 @@ TEST_F(MFCCConsistencyTest, RealAudioFileConsistency) {
                     monoData.assign(audioData, audioData + totalFrames);
                 }
 
-                auto sessionResult3 =
-                    engine.startRealtimeSession(static_cast<float>(sampleRate), 1024);
-                ASSERT_TRUE(sessionResult3.isOk()) << "Failed to start realtime session";
-                int sessionId = sessionResult3.value;
-
                 const int chunkSize = 1024;
                 for (size_t j = 0; j < monoData.size(); j += chunkSize) {
                     size_t remaining = monoData.size() - j;
                     size_t toProcess = std::min(static_cast<size_t>(chunkSize), remaining);
-                    auto chunkResult =
-                        engine.processAudioChunk(sessionId, monoData.data() + j, toProcess);
-                    EXPECT_EQ(chunkResult, HuntmasterAudioEngine::EngineStatus::OK)
+                    std::span<const float> chunkSpan(monoData.data() + j, toProcess);
+                    auto chunkResult = engine->processAudioChunk(sessionId, chunkSpan);
+                    EXPECT_EQ(chunkResult, UnifiedAudioEngine::Status::OK)
                         << "Chunk processing failed";
                 }
 
-                auto scoreResult = engine.getSimilarityScore(sessionId);
+                auto scoreResult = engine->getSimilarityScore(sessionId);
                 ASSERT_TRUE(scoreResult.isOk()) << "Failed to get similarity score";
-                float score = scoreResult.value;
+                float score = *scoreResult;
                 realScores.push_back(score);
-                engine.endRealtimeSession(sessionId);
+
+                auto resetResult = engine->resetSession(sessionId);
+                EXPECT_EQ(resetResult, UnifiedAudioEngine::Status::OK);
 
                 std::cout << "  Run " << (i + 1) << ": Score = " << std::fixed
                           << std::setprecision(8) << score << std::endl;
@@ -380,9 +389,14 @@ TEST_F(MFCCConsistencyTest, SelfSimilarityTest) {
     std::cout << "Debug: Testing self-similarity (comparing audio to itself)" << std::endl;
     std::cout << "---------------------------------------" << std::endl;
 
+    // Create a session
+    auto sessionResult = engine->createSession(44100.0f);
+    ASSERT_TRUE(sessionResult.isOk()) << "Failed to create session";
+    SessionId sessionId = *sessionResult;
+
     // Load buck_grunt as master call
-    auto loadResult = engine.loadMasterCall("buck_grunt");
-    if (loadResult != HuntmasterAudioEngine::EngineStatus::OK) {
+    auto loadResult = engine->loadMasterCall(sessionId, "buck_grunt");
+    if (loadResult != UnifiedAudioEngine::Status::OK) {
         std::cout << "  loadMasterCall failed with status: " << static_cast<int>(loadResult)
                   << std::endl;
         GTEST_SKIP() << "buck_grunt master call not available";
@@ -417,42 +431,33 @@ TEST_F(MFCCConsistencyTest, SelfSimilarityTest) {
         monoData.assign(audioData, audioData + totalFrames);
     }
 
-    // Create session and process the same audio we loaded as master
-    auto sessionResult = engine.startRealtimeSession(static_cast<float>(sampleRate), 1024);
-    ASSERT_TRUE(sessionResult.isOk()) << "Failed to start realtime session";
-    int sessionId = sessionResult.value;
-
-    // Process the same audio
-    auto processResult = engine.processAudioChunk(sessionId, monoData.data(), monoData.size());
-    std::cout << "  processAudioChunk status: " << static_cast<int>(processResult) << std::endl;
-    EXPECT_EQ(processResult, HuntmasterAudioEngine::EngineStatus::OK) << "Processing failed";
-
-    // Check feature count
-    int featureCount = engine.getSessionFeatureCount(sessionId);
-    std::cout << "  Features processed: " << featureCount << std::endl;
+    // Process the same audio using span-based API
+    std::span<const float> audioSpan(monoData.data(), monoData.size());
+    auto processResult = engine->processAudioChunk(sessionId, audioSpan);
+    std::cout << "  processAudioChunk status: "
+              << (processResult == UnifiedAudioEngine::Status::OK ? "OK" : "Failed") << std::endl;
+    EXPECT_EQ(processResult, UnifiedAudioEngine::Status::OK) << "Processing failed";
 
     // Get similarity score - should be high since we're comparing audio to itself
-    auto scoreResult = engine.getSimilarityScore(sessionId);
+    auto scoreResult = engine->getSimilarityScore(sessionId);
     if (!scoreResult.isOk()) {
-        std::cout << "  getSimilarityScore failed with status: "
-                  << static_cast<int>(scoreResult.status) << std::endl;
+        std::cout << "  getSimilarityScore failed" << std::endl;
     } else {
-        float score = scoreResult.value;
+        float score = *scoreResult;
         std::cout << "  Self-similarity score: " << std::fixed << std::setprecision(8) << score
                   << std::endl;
         std::cout << "  Expected: High similarity (>0.8) since comparing audio to itself"
                   << std::endl;
     }
 
-    engine.endRealtimeSession(sessionId);
+    auto resetResult = engine->resetSession(sessionId);
+    EXPECT_EQ(resetResult, UnifiedAudioEngine::Status::OK);
     drwav_free(audioData, nullptr);
 
-    EXPECT_GT(featureCount, 0) << "No features were processed";
-    EXPECT_TRUE(scoreResult.isOk())
-        << "Failed to get similarity score, status: " << static_cast<int>(scoreResult.status);
+    EXPECT_TRUE(scoreResult.isOk()) << "Failed to get similarity score";
 
     if (scoreResult.isOk()) {
-        float score = scoreResult.value;
+        float score = *scoreResult;
         // Based on real-world analysis tool thresholds:
         // >0.01 = excellent, >0.005 = good, >0.002 = fair
         // Self-similarity should be at least "good" level

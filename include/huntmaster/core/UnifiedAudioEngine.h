@@ -17,9 +17,57 @@ namespace huntmaster {
 class AudioPlayer;
 class AudioRecorder;
 class AudioLevelProcessor;
+class RealtimeScorer;
 
 using SessionId = uint32_t;
 constexpr SessionId INVALID_SESSION_ID = 0;
+
+// Configuration for RealtimeScorer integration
+struct RealtimeScorerConfig {
+    float mfccWeight = 0.5f;           ///< Weight for MFCC similarity (0.0-1.0)
+    float volumeWeight = 0.2f;         ///< Weight for volume matching (0.0-1.0)
+    float timingWeight = 0.2f;         ///< Weight for timing accuracy (0.0-1.0)
+    float pitchWeight = 0.1f;          ///< Weight for pitch similarity (0.0-1.0)
+    float confidenceThreshold = 0.7f;  ///< Minimum confidence for reliable score
+    float minScoreForMatch = 0.005f;   ///< Minimum similarity score for match
+    bool enablePitchAnalysis = false;  ///< Enable pitch-based scoring
+    size_t scoringHistorySize = 50;    ///< Number of historical scores to retain
+};
+
+// Detailed similarity score breakdown from RealtimeScorer
+struct RealtimeScoringResult {
+    float overall = 0.0f;                             ///< Overall weighted similarity score
+    float mfcc = 0.0f;                                ///< MFCC pattern similarity
+    float volume = 0.0f;                              ///< Volume level matching
+    float timing = 0.0f;                              ///< Timing/rhythm accuracy
+    float pitch = 0.0f;                               ///< Pitch similarity
+    float confidence = 0.0f;                          ///< Confidence in score (0.0-1.0)
+    bool isReliable = false;                          ///< Whether score meets confidence threshold
+    bool isMatch = false;                             ///< Whether score indicates a match
+    size_t samplesAnalyzed = 0;                       ///< Number of samples analyzed
+    std::chrono::steady_clock::time_point timestamp;  ///< Score timestamp
+};
+
+// Real-time feedback for user guidance
+struct RealtimeFeedback {
+    RealtimeScoringResult currentScore;   ///< Current similarity score
+    RealtimeScoringResult trendingScore;  ///< Trending average over recent history
+    RealtimeScoringResult peakScore;      ///< Best score achieved so far
+    float progressRatio = 0.0f;           ///< Progress through master call (0.0-1.0)
+    std::string qualityAssessment;        ///< Text description of match quality
+    std::string recommendation;           ///< Suggestion for improvement
+    bool isImproving = false;             ///< Whether score is trending upward
+};
+
+// Voice Activity Detection Configuration
+struct VADConfig {
+    float energy_threshold = 0.01f;   ///< Energy threshold for voice detection
+    float window_duration = 0.025f;   ///< Analysis window duration in seconds
+    float min_sound_duration = 0.1f;  ///< Minimum duration for valid voice activity
+    float pre_buffer = 0.1f;          ///< Pre-buffer duration for voice start
+    float post_buffer = 0.2f;         ///< Post-buffer duration for voice end
+    bool enabled = true;              ///< Whether VAD is enabled
+};
 
 class UnifiedAudioEngine {
    public:
@@ -65,6 +113,16 @@ class UnifiedAudioEngine {
     [[nodiscard]] Result<float> getSimilarityScore(SessionId sessionId);
     [[nodiscard]] Result<int> getFeatureCount(SessionId sessionId) const;
 
+    // Real-time scoring features using RealtimeScorer toolset
+    [[nodiscard]] Status setRealtimeScorerConfig(SessionId sessionId,
+                                                 const struct RealtimeScorerConfig& config);
+    [[nodiscard]] Result<struct RealtimeScoringResult> getDetailedScore(SessionId sessionId);
+    [[nodiscard]] Result<struct RealtimeFeedback> getRealtimeFeedback(SessionId sessionId);
+    [[nodiscard]] Result<std::string> exportScoreToJson(SessionId sessionId);
+    [[nodiscard]] Result<std::string> exportFeedbackToJson(SessionId sessionId);
+    [[nodiscard]] Result<std::string> exportScoringHistoryToJson(SessionId sessionId,
+                                                                 size_t maxCount = 20);
+
     // Session state queries
     [[nodiscard]] bool isSessionActive(SessionId sessionId) const;
     [[nodiscard]] Result<float> getSessionDuration(SessionId sessionId) const;
@@ -91,6 +149,17 @@ class UnifiedAudioEngine {
                                                          int bufferSize = 512);
     [[nodiscard]] Status endRealtimeSession(SessionId sessionId);
     [[nodiscard]] bool isRealtimeSession(SessionId sessionId) const;
+
+    // Voice Activity Detection Configuration (per session)
+    [[nodiscard]] Status configureVAD(SessionId sessionId, const VADConfig& config);
+    [[nodiscard]] Result<VADConfig> getVADConfig(SessionId sessionId) const;
+    [[nodiscard]] bool isVADActive(SessionId sessionId) const;
+    [[nodiscard]] Status enableVAD(SessionId sessionId, bool enable);
+    [[nodiscard]] Status disableVAD(SessionId sessionId);
+
+    // DTW Configuration for advanced pattern matching tuning (per session)
+    [[nodiscard]] Status configureDTW(SessionId sessionId, float windowRatio, bool enableSIMD = true);
+    [[nodiscard]] Result<float> getDTWWindowRatio(SessionId sessionId) const;
 
    private:
     UnifiedAudioEngine();
@@ -133,6 +202,7 @@ class UnifiedAudioEngine {
         std::unique_ptr<class AudioPlayer> audioPlayer;
         std::unique_ptr<class AudioRecorder> audioRecorder;
         std::unique_ptr<class AudioLevelProcessor> levelProcessor;
+        std::unique_ptr<class RealtimeScorer> realtimeScorer;
     };
 
     class Impl;

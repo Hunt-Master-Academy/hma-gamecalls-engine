@@ -110,12 +110,66 @@ Target Platforms
 - **Instance-Based**: No singleton pattern - supports multiple engine instances
 - **Consistent API**: All methods follow the same session-scoped pattern
 
+**Recording & Playback API:**
+```cpp
+// Complete recording workflow with file-based data access
+auto engine = UnifiedAudioEngine::create();
+auto sessionResult = engine->createSession(44100.0f);
+SessionId sessionId = *sessionResult;
+
+// 1. Load master call for comparison
+engine->loadMasterCall(sessionId, "buck_grunt");
+
+// 2. Recording workflow - file-based data access
+engine->startRecording(sessionId);
+float level = *engine->getRecordingLevel(sessionId);  // Real-time monitoring
+engine->stopRecording(sessionId);
+std::string filename = *engine->saveRecording(sessionId, "user_call.wav");
+
+// 3. Playback workflow
+engine->playRecording(sessionId, filename);
+engine->stopPlayback(sessionId);
+
+// 4. Analysis and scoring
+engine->processAudioChunk(sessionId, audioBuffer);
+float score = *engine->getSimilarityScore(sessionId);
+```
+
+**Note:** The UnifiedAudioEngine uses a **file-based recording model** where recorded audio is saved to disk rather than providing direct memory access via `getRecordedData()`. This design supports cross-platform deployment and persistent storage requirements.
+
 ### **HuntmasterAudioEngine** (Legacy - Deprecated)
 
 - **Location**: `src/core/HuntmasterAudioEngine.cpp`
 - **Purpose**: Original singleton-based engine implementation
 - **Status**: 🔄 **DEPRECATED** - Maintained for backward compatibility
 - **Migration Path**: Replace with `UnifiedAudioEngine` for new development
+
+### **Recording & Playback API Reference**
+
+The UnifiedAudioEngine provides comprehensive recording and playback capabilities through a **file-based workflow**:
+
+**Recording Methods:**
+- `startRecording(SessionId)` - Begin audio capture for the session
+- `stopRecording(SessionId)` - End audio capture
+- `saveRecording(SessionId, filename)` - Save recorded audio to WAV file
+- `isRecording(SessionId)` - Check current recording status
+- `getRecordingLevel(SessionId)` - Get real-time audio level (RMS)
+- `getRecordingDuration(SessionId)` - Get total recording time
+
+**Playback Methods:**
+- `playRecording(SessionId, filename)` - Play saved recording file
+- `playMasterCall(SessionId, masterCallId)` - Play loaded master call
+- `stopPlayback(SessionId)` - Stop current playback
+- `isPlaying(SessionId)` - Check playback status
+- `getPlaybackPosition(SessionId)` - Get playback position in seconds
+- `setPlaybackVolume(SessionId, volume)` - Control playback volume
+
+**Key Design Notes:**
+- **No direct memory access**: Recorded data is not exposed via `getRecordedData()`
+- **File-based workflow**: All recordings must be saved to disk for access
+- **Per-session isolation**: Each session has independent recording/playback state
+- **Real-time monitoring**: Recording levels available during capture
+- **Cross-platform compatibility**: WAV format ensures platform interoperability
 
 ### **MFCCProcessor** (Feature Extraction)
 
@@ -234,10 +288,25 @@ SessionId sessionId = *sessionResult;
 // Load master call for this specific session
 auto loadResult = engine->loadMasterCall(sessionId, "buck_grunt");
 if (loadResult == UnifiedAudioEngine::Status::OK) {
-    // Process audio for this session
-    engine->processAudioChunk(sessionId, audioData);
+    // Recording workflow with proper error handling
+    auto recordResult = engine->startRecording(sessionId);
+    if (recordResult == UnifiedAudioEngine::Status::OK) {
+        // Monitor recording level
+        auto levelResult = engine->getRecordingLevel(sessionId);
+        if (levelResult.isOk()) {
+            float level = *levelResult;
+        }
 
-    // Get similarity score for this session
+        // Stop and save recording
+        engine->stopRecording(sessionId);
+        auto saveResult = engine->saveRecording(sessionId, "user_call.wav");
+        if (saveResult.isOk()) {
+            std::string savedFile = *saveResult;
+        }
+    }
+
+    // Process audio for similarity analysis
+    engine->processAudioChunk(sessionId, audioData);
     auto scoreResult = engine->getSimilarityScore(sessionId);
     if (scoreResult.isOk()) {
         float score = *scoreResult;
