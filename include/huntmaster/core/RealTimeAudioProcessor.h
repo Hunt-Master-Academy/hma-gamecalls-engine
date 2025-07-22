@@ -47,7 +47,7 @@ struct ProcessorStats {
 };
 
 class RealtimeAudioProcessor {
-   public:
+  public:
     struct Config {
         size_t ring_buffer_size{1024};  // Must be power of 2
         size_t chunk_size{512};
@@ -58,15 +58,15 @@ class RealtimeAudioProcessor {
         size_t low_water_mark{256};   // 25% full
     };
 
-    explicit RealtimeAudioProcessor(const Config &config);
+    explicit RealtimeAudioProcessor(const Config& config);
     ~RealtimeAudioProcessor();
 
-    RealtimeAudioProcessor(RealtimeAudioProcessor &&) noexcept;
-    RealtimeAudioProcessor &operator=(RealtimeAudioProcessor &&) noexcept;
+    RealtimeAudioProcessor(RealtimeAudioProcessor&&) noexcept;
+    RealtimeAudioProcessor& operator=(RealtimeAudioProcessor&&) noexcept;
 
     // Producer interface (audio input thread)
-    [[nodiscard]] huntmaster::expected<void, ProcessorError> enqueueAudio(
-        std::span<const float> audio_data);
+    [[nodiscard]] huntmaster::expected<void, ProcessorError>
+    enqueueAudio(std::span<const float> audio_data);
 
     [[nodiscard]] bool tryEnqueueAudio(std::span<const float> audio_data);
 
@@ -93,7 +93,7 @@ class RealtimeAudioProcessor {
     void waitForSpace(std::chrono::milliseconds timeout);
     void waitForData(std::chrono::milliseconds timeout);
 
-   private:
+  private:
     class Impl;
     std::unique_ptr<Impl> pimpl_;
 };

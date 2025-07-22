@@ -1,12 +1,12 @@
-#include <huntmaster/core/DebugConfig.h>
-#include <huntmaster/core/DebugLogger.h>
-#include <huntmaster/core/UnifiedAudioEngine.h>
-
 #include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <string>
 #include <thread>
+
+#include <huntmaster/core/DebugConfig.h>
+#include <huntmaster/core/DebugLogger.h>
+#include <huntmaster/core/UnifiedAudioEngine.h>
 
 using huntmaster::UnifiedAudioEngine;
 
@@ -91,12 +91,12 @@ struct DebugOptions {
 
 // Performance monitoring class
 class PerformanceMonitor {
-   private:
+  private:
     std::string name;
     std::chrono::high_resolution_clock::time_point startTime;
     bool enabled;
 
-   public:
+  public:
     PerformanceMonitor(const std::string& testName, bool enable = true)
         : name(testName), enabled(enable) {
         if (enabled) {
@@ -113,7 +113,8 @@ class PerformanceMonitor {
             auto duration =
                 std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
             huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::PERFORMANCE, huntmaster::DebugLevel::INFO,
+                huntmaster::DebugComponent::PERFORMANCE,
+                huntmaster::DebugLevel::INFO,
                 "Completed: " + name + " in " + std::to_string(duration.count()) + " μs");
         }
     }
@@ -123,10 +124,11 @@ class PerformanceMonitor {
             auto currentTime = std::chrono::high_resolution_clock::now();
             auto duration =
                 std::chrono::duration_cast<std::chrono::microseconds>(currentTime - startTime);
-            huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::PERFORMANCE, huntmaster::DebugLevel::DEBUG,
-                name + " checkpoint: " + message + " at " + std::to_string(duration.count()) +
-                    " μs");
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::PERFORMANCE,
+                                                       huntmaster::DebugLevel::DEBUG,
+                                                       name + " checkpoint: " + message + " at "
+                                                           + std::to_string(duration.count())
+                                                           + " μs");
         }
     }
 };
@@ -143,8 +145,10 @@ void printLevel(float level) {
 
     int bars = static_cast<int>(level * 50);
     std::cout << "\rLevel: [";
-    for (int j = 0; j < bars; ++j) std::cout << "=";
-    for (int j = bars; j < 50; ++j) std::cout << " ";
+    for (int j = 0; j < bars; ++j)
+        std::cout << "=";
+    for (int j = bars; j < 50; ++j)
+        std::cout << " ";
     std::cout << "] " << std::fixed << std::setprecision(2) << level;
     std::cout.flush();
 }
@@ -161,13 +165,13 @@ void showMenu() {
 
 // Enhanced interactive recorder class
 class InteractiveRecorder {
-   private:
+  private:
     std::unique_ptr<UnifiedAudioEngine> engine;
     uint32_t currentSessionId;
     std::string lastRecordingFile;
     bool sessionActive;
 
-   public:
+  public:
     InteractiveRecorder() : currentSessionId(huntmaster::INVALID_SESSION_ID), sessionActive(false) {
         auto engineResult = UnifiedAudioEngine::create();
         if (!engineResult.isOk()) {
@@ -176,7 +180,8 @@ class InteractiveRecorder {
         engine = std::move(engineResult.value);
 
         huntmaster::DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+            huntmaster::DebugComponent::TOOLS,
+            huntmaster::DebugLevel::INFO,
             "InteractiveRecorder initialized with UnifiedAudioEngine");
     }
     void recordAudio() {
@@ -188,9 +193,10 @@ class InteractiveRecorder {
         std::cin.ignore();
 
         if (g_debugOptions.enableRecordingDebug) {
-            huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                "Starting audio recording for " + std::to_string(seconds) + " seconds");
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                       huntmaster::DebugLevel::DEBUG,
+                                                       "Starting audio recording for "
+                                                           + std::to_string(seconds) + " seconds");
         }
 
         // Create real-time session for interactive recording
@@ -220,9 +226,10 @@ class InteractiveRecorder {
         monitor.checkpoint("Recording started");
 
         if (g_debugOptions.enableRecordingDebug) {
-            huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::INFO,
-                "Recording started for session: " + std::to_string(currentSessionId));
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                                       huntmaster::DebugLevel::INFO,
+                                                       "Recording started for session: "
+                                                           + std::to_string(currentSessionId));
         }
 
         // Monitor for the specified duration with live level monitoring
@@ -248,9 +255,10 @@ class InteractiveRecorder {
         }
 
         if (g_debugOptions.enableRecordingDebug) {
-            huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::INFO,
-                "Recording stopped for session: " + std::to_string(currentSessionId));
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                                       huntmaster::DebugLevel::INFO,
+                                                       "Recording stopped for session: "
+                                                           + std::to_string(currentSessionId));
         }
 
         std::cout << "Enter filename (without .wav): ";
@@ -284,7 +292,8 @@ class InteractiveRecorder {
 
             if (g_debugOptions.enablePlaybackDebug) {
                 huntmaster::DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::WARN,
+                    huntmaster::DebugComponent::TOOLS,
+                    huntmaster::DebugLevel::WARN,
                     "Attempted to play recording but none available");
             }
             return;
@@ -317,7 +326,8 @@ class InteractiveRecorder {
 
         if (g_debugOptions.enablePlaybackDebug) {
             huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::DEBUG,
+                huntmaster::DebugComponent::AUDIO_ENGINE,
+                huntmaster::DebugLevel::DEBUG,
                 "Playback status: " + std::to_string(static_cast<int>(status)));
         }
 
@@ -335,9 +345,10 @@ class InteractiveRecorder {
         monitor.checkpoint("Playback completed");
 
         if (g_debugOptions.enablePlaybackDebug) {
-            huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::INFO,
-                "Playback completed for: " + lastRecordingFile);
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                                       huntmaster::DebugLevel::INFO,
+                                                       "Playback completed for: "
+                                                           + lastRecordingFile);
         }
     }
 
@@ -373,10 +384,11 @@ class InteractiveRecorder {
         monitor.checkpoint("Master call loaded");
 
         if (g_debugOptions.enablePlaybackDebug) {
-            huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::INFO,
-                "Master call loaded: " + callId +
-                    " for session: " + std::to_string(currentSessionId));
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                                       huntmaster::DebugLevel::INFO,
+                                                       "Master call loaded: " + callId
+                                                           + " for session: "
+                                                           + std::to_string(currentSessionId));
         }
 
         std::cout << "Master call '" << callId << "' loaded successfully!" << std::endl;
@@ -414,9 +426,10 @@ class InteractiveRecorder {
         std::getline(std::cin, callId);
 
         if (g_debugOptions.enableAnalysisDebug) {
-            huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                "Starting record and compare with master: " + callId);
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                       huntmaster::DebugLevel::DEBUG,
+                                                       "Starting record and compare with master: "
+                                                           + callId);
         }
 
         // Create session if needed
@@ -439,9 +452,10 @@ class InteractiveRecorder {
 
         if (g_debugOptions.enableAnalysisDebug) {
             huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::INFO,
-                "Master call loaded for comparison: " + callId +
-                    " for session: " + std::to_string(currentSessionId));
+                huntmaster::DebugComponent::AUDIO_ENGINE,
+                huntmaster::DebugLevel::INFO,
+                "Master call loaded for comparison: " + callId
+                    + " for session: " + std::to_string(currentSessionId));
         }
 
         // Play master first
@@ -478,9 +492,10 @@ class InteractiveRecorder {
         monitor.checkpoint("Real-time recording started");
 
         if (g_debugOptions.enableAnalysisDebug) {
-            huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::INFO,
-                "Real-time recording started for session: " + std::to_string(currentSessionId));
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                                       huntmaster::DebugLevel::INFO,
+                                                       "Real-time recording started for session: "
+                                                           + std::to_string(currentSessionId));
         }
 
         // Record for 3 seconds with real-time level monitoring
@@ -497,9 +512,10 @@ class InteractiveRecorder {
             analysisUpdates++;
 
             if (g_debugOptions.enableAnalysisDebug && analysisUpdates % 20 == 0) {
-                huntmaster::DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::TRACE,
-                    "Real-time analysis update " + std::to_string(analysisUpdates));
+                huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                                           huntmaster::DebugLevel::TRACE,
+                                                           "Real-time analysis update "
+                                                               + std::to_string(analysisUpdates));
             }
 
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -543,10 +559,11 @@ class InteractiveRecorder {
         }
 
         if (g_debugOptions.enableAnalysisDebug) {
-            huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::INFO,
-                "Comparison analysis completed with " + std::to_string(analysisUpdates) +
-                    " updates");
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                                       huntmaster::DebugLevel::INFO,
+                                                       "Comparison analysis completed with "
+                                                           + std::to_string(analysisUpdates)
+                                                           + " updates");
         }
 
         monitor.checkpoint("Comparison analysis completed");
@@ -569,10 +586,11 @@ class InteractiveRecorder {
             menuSelections++;
 
             if (g_debugOptions.enableVerbose) {
-                huntmaster::DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                    "Menu selection " + std::to_string(menuSelections) + ": " +
-                        std::to_string(choice));
+                huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                           huntmaster::DebugLevel::DEBUG,
+                                                           "Menu selection "
+                                                               + std::to_string(menuSelections)
+                                                               + ": " + std::to_string(choice));
             }
 
             switch (choice) {
@@ -594,17 +612,19 @@ class InteractiveRecorder {
 
                 case 5:
                     running = false;
-                    huntmaster::DebugLogger::getInstance().log(
-                        huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-                        "User selected exit after " + std::to_string(menuSelections) +
-                            " menu interactions");
+                    huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                               huntmaster::DebugLevel::INFO,
+                                                               "User selected exit after "
+                                                                   + std::to_string(menuSelections)
+                                                                   + " menu interactions");
                     break;
 
                 default:
                     std::cout << "Invalid choice!" << std::endl;
-                    huntmaster::DebugLogger::getInstance().log(
-                        huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::WARN,
-                        "Invalid menu choice: " + std::to_string(choice));
+                    huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                               huntmaster::DebugLevel::WARN,
+                                                               "Invalid menu choice: "
+                                                                   + std::to_string(choice));
                     break;
             }
         }
@@ -720,7 +740,8 @@ int main(int argc, char* argv[]) {
         totalMonitor.checkpoint("Interactive recorder session completed");
 
         huntmaster::DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+            huntmaster::DebugComponent::TOOLS,
+            huntmaster::DebugLevel::INFO,
             "=== Interactive Recorder Tool Completed Successfully ===");
 
     } catch (const std::exception& e) {

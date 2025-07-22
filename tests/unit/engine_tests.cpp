@@ -1,6 +1,6 @@
-#include <gtest/gtest.h>
-
 #include <memory>  // For std::unique_ptr
+
+#include <gtest/gtest.h>
 
 #include "huntmaster/core/UnifiedAudioEngine.h"
 
@@ -8,7 +8,7 @@ using huntmaster::UnifiedAudioEngine;
 
 // A simple test fixture for the main engine.
 class HuntmasterEngineTest : public ::testing::Test {
-   protected:
+  protected:
     void SetUp() override {
         auto engineResult = UnifiedAudioEngine::create();
         ASSERT_TRUE(engineResult.isOk()) << "Failed to create UnifiedAudioEngine";

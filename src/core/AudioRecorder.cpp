@@ -12,7 +12,7 @@
 namespace huntmaster {
 
 class AudioRecorder::Impl {
-   public:
+  public:
     // Configuration for Voice Activity Detection (VAD) and trimming
     struct TrimConfig {
         float silenceThreshold = 0.01f;         // Amplitude threshold for silence detection
@@ -33,35 +33,40 @@ class AudioRecorder::Impl {
     std::atomic<float> currentLevel{0.0f};
     mutable std::mutex dataMutex;
 
-    static void dataCallback(ma_device *pDevice, void *pOutput, const void *pInput,
-                             ma_uint32 frameCount) {
-        auto *impl = static_cast<Impl *>(pDevice->pUserData);
-        if (!impl || !impl->recording) return;
+    static void
+    dataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
+        auto* impl = static_cast<Impl*>(pDevice->pUserData);
+        if (!impl || !impl->recording)
+            return;
 
-        const float *input = static_cast<const float *>(pInput);
+        const float* input = static_cast<const float*>(pInput);
 
         // Calculate level
         float maxLevel = 0.0f;
         for (ma_uint32 i = 0; i < frameCount * impl->config.channels; ++i) {
             float absValue = std::abs(input[i]);
-            if (absValue > maxLevel) maxLevel = absValue;
+            if (absValue > maxLevel)
+                maxLevel = absValue;
         }
         impl->currentLevel = maxLevel;
 
         // Store data
         {
             std::lock_guard<std::mutex> lock(impl->dataMutex);
-            impl->recordedData.insert(impl->recordedData.end(), input,
-                                      input + frameCount * impl->config.channels);
+            impl->recordedData.insert(
+                impl->recordedData.end(), input, input + frameCount * impl->config.channels);
         }
     }
 };
 
 AudioRecorder::AudioRecorder() : pImpl(std::make_unique<Impl>()) {}
-AudioRecorder::~AudioRecorder() { stopRecording(); }
+AudioRecorder::~AudioRecorder() {
+    stopRecording();
+}
 
-bool AudioRecorder::startRecording(const Config &config) {
-    if (pImpl->recording) return false;
+bool AudioRecorder::startRecording(const Config& config) {
+    if (pImpl->recording)
+        return false;
 
     pImpl->config = config;
     pImpl->recordedData.clear();
@@ -91,20 +96,23 @@ bool AudioRecorder::startRecording(const Config &config) {
 }
 
 void AudioRecorder::stopRecording() {
-    if (!pImpl->recording) return;
+    if (!pImpl->recording)
+        return;
 
     pImpl->recording = false;
     ma_device_uninit(&pImpl->device);
     std::cout << "Recording stopped. Captured " << getDuration() << " seconds." << std::endl;
 }
 
-bool AudioRecorder::isRecording() const { return pImpl->recording; }
+bool AudioRecorder::isRecording() const {
+    return pImpl->recording;
+}
 
 std::vector<float> AudioRecorder::getRecordedData() const {
     std::lock_guard<std::mutex> lock(pImpl->dataMutex);
     return pImpl->recordedData;
 }
-bool AudioRecorder::saveToWavTrimmed(const std::string &filename) const {
+bool AudioRecorder::saveToWavTrimmed(const std::string& filename) const {
     std::lock_guard<std::mutex> lock(pImpl->dataMutex);
 
     if (pImpl->recordedData.empty()) {
@@ -124,8 +132,8 @@ bool AudioRecorder::saveToWavTrimmed(const std::string &filename) const {
 
     // Find start
     int consecutiveSoundFrames = 0;
-    int requiredFrames = static_cast<int>(pImpl->config.sampleRate *
-                                          pImpl->trimConfig.requiredSoundDurationMs / 1000.0f);
+    int requiredFrames = static_cast<int>(pImpl->config.sampleRate
+                                          * pImpl->trimConfig.requiredSoundDurationMs / 1000.0f);
 
     for (size_t i = 0; i < pImpl->recordedData.size(); i += windowSize / 2) {
         float energy = 0.0f;
@@ -133,7 +141,8 @@ bool AudioRecorder::saveToWavTrimmed(const std::string &filename) const {
         int count = 0;
 
         for (size_t j = i;
-             j < std::min(i + static_cast<size_t>(windowSize), pImpl->recordedData.size()); ++j) {
+             j < std::min(i + static_cast<size_t>(windowSize), pImpl->recordedData.size());
+             ++j) {
             energy += pImpl->recordedData[j] * pImpl->recordedData[j];
             peak = std::max(peak, std::abs(pImpl->recordedData[j]));
             count++;
@@ -227,15 +236,15 @@ bool AudioRecorder::saveToWavTrimmed(const std::string &filename) const {
 
     // RAII for drwav to ensure uninit is called
     struct DrWavGuard {
-        drwav *wav;
-        DrWavGuard(drwav *w) : wav(w) {}
+        drwav* wav;
+        DrWavGuard(drwav* w) : wav(w) {}
         ~DrWavGuard() {
             if (wav) {
                 drwav_uninit(wav);
             }
         }
-        DrWavGuard(const DrWavGuard &) = delete;
-        DrWavGuard &operator=(const DrWavGuard &) = delete;
+        DrWavGuard(const DrWavGuard&) = delete;
+        DrWavGuard& operator=(const DrWavGuard&) = delete;
     };
 
     if (!drwav_init_file_write(&wav, filename.c_str(), &format, NULL)) {
@@ -247,10 +256,10 @@ bool AudioRecorder::saveToWavTrimmed(const std::string &filename) const {
     drwav_uint64 expectedFrames = trimmedData.size() / pImpl->config.channels;
     drwav_uint64 samplesWritten = drwav_write_pcm_frames(&wav, expectedFrames, trimmedData.data());
 
-    float originalDuration = static_cast<float>(pImpl->recordedData.size()) /
-                             (pImpl->config.sampleRate * pImpl->config.channels);
-    float trimmedDuration = static_cast<float>(trimmedData.size()) /
-                            (pImpl->config.sampleRate * pImpl->config.channels);
+    float originalDuration = static_cast<float>(pImpl->recordedData.size())
+                             / (pImpl->config.sampleRate * pImpl->config.channels);
+    float trimmedDuration = static_cast<float>(trimmedData.size())
+                            / (pImpl->config.sampleRate * pImpl->config.channels);
 
     std::cout << "Saved trimmed audio to " << filename << std::endl;
     std::cout << "  Original: " << std::fixed << std::setprecision(2) << originalDuration << "s"
@@ -262,7 +271,7 @@ bool AudioRecorder::saveToWavTrimmed(const std::string &filename) const {
 
     return samplesWritten == expectedFrames;
 }
-bool AudioRecorder::saveToWav(const std::string &filename) const {
+bool AudioRecorder::saveToWav(const std::string& filename) const {
     std::lock_guard<std::mutex> lock(pImpl->dataMutex);
 
     drwav wav;
@@ -275,15 +284,15 @@ bool AudioRecorder::saveToWav(const std::string &filename) const {
 
     // RAII for drwav to ensure uninit is called
     struct DrWavGuard {
-        drwav *wav;
-        DrWavGuard(drwav *w) : wav(w) {}
+        drwav* wav;
+        DrWavGuard(drwav* w) : wav(w) {}
         ~DrWavGuard() {
             if (wav) {
                 drwav_uninit(wav);
             }
         }
-        DrWavGuard(const DrWavGuard &) = delete;
-        DrWavGuard &operator=(const DrWavGuard &) = delete;
+        DrWavGuard(const DrWavGuard&) = delete;
+        DrWavGuard& operator=(const DrWavGuard&) = delete;
     };
 
     if (!drwav_init_file_write(&wav, filename.c_str(), &format, NULL)) {
@@ -300,13 +309,16 @@ bool AudioRecorder::saveToWav(const std::string &filename) const {
     return samplesWritten == expectedFrames;
 }
 
-float AudioRecorder::getCurrentLevel() const { return pImpl->currentLevel; }
+float AudioRecorder::getCurrentLevel() const {
+    return pImpl->currentLevel;
+}
 
 double AudioRecorder::getDuration() const {
     std::lock_guard<std::mutex> lock(pImpl->dataMutex);
-    if (pImpl->config.sampleRate == 0 || pImpl->config.channels == 0) return 0.0;
-    return static_cast<double>(pImpl->recordedData.size()) /
-           (pImpl->config.sampleRate * pImpl->config.channels);
+    if (pImpl->config.sampleRate == 0 || pImpl->config.channels == 0)
+        return 0.0;
+    return static_cast<double>(pImpl->recordedData.size())
+           / (pImpl->config.sampleRate * pImpl->config.channels);
 }
 
 }  // namespace huntmaster

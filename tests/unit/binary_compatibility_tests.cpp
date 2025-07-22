@@ -1,9 +1,9 @@
-#include <gtest/gtest.h>
-
 #include <fstream>
 #include <memory>
 #include <string>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "huntmaster/core/UnifiedAudioEngine.h"
 
@@ -15,14 +15,16 @@ struct TestCase {
 };
 
 class BinaryCompatibilityTest : public ::testing::Test {
-   protected:
+  protected:
     void SetUp() override {
         auto engineResult = UnifiedAudioEngine::create();
         ASSERT_TRUE(engineResult.isOk()) << "Failed to create UnifiedAudioEngine";
         engine = std::move(*engineResult);
     }
 
-    void TearDown() override { engine.reset(); }
+    void TearDown() override {
+        engine.reset();
+    }
 
     std::unique_ptr<UnifiedAudioEngine> engine;
 };

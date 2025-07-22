@@ -6,19 +6,19 @@
  * using the new UnifiedEngine session-based architecture.
  */
 
-#include <gtest/gtest.h>
-
 #include <cmath>
 #include <iostream>
 #include <span>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "huntmaster/core/UnifiedAudioEngine.h"
 
 using namespace huntmaster;
 
 class ValidationUnifiedTest : public ::testing::Test {
-   protected:
+  protected:
     void SetUp() override {
         // Create engine instance using the new UnifiedEngine API
         auto engineResult = UnifiedAudioEngine::create();
@@ -135,8 +135,8 @@ TEST_F(ValidationUnifiedTest, SessionLifecycleValidation) {
 
     // Check that session appears in active sessions list
     auto activeSessions = engine->getActiveSessions();
-    EXPECT_TRUE(std::find(activeSessions.begin(), activeSessions.end(), sessionId) !=
-                activeSessions.end())
+    EXPECT_TRUE(std::find(activeSessions.begin(), activeSessions.end(), sessionId)
+                != activeSessions.end())
         << "Session should appear in active sessions list";
 
     // Test session duration (should be zero or very small initially)
@@ -164,8 +164,8 @@ TEST_F(ValidationUnifiedTest, SessionLifecycleValidation) {
 
     // Check that session no longer appears in active sessions list
     activeSessions = engine->getActiveSessions();
-    EXPECT_TRUE(std::find(activeSessions.begin(), activeSessions.end(), sessionId) ==
-                activeSessions.end())
+    EXPECT_TRUE(std::find(activeSessions.begin(), activeSessions.end(), sessionId)
+                == activeSessions.end())
         << "Session should not appear in active sessions list after destruction";
 
     std::cout << "Session lifecycle validation completed successfully" << std::endl;
@@ -292,8 +292,8 @@ TEST_F(ValidationUnifiedTest, AudioProcessingValidation) {
     std::vector<float> emptyAudio;
     auto emptyResult = engine->processAudioChunk(sessionId, std::span<const float>(emptyAudio));
     // Empty audio should either succeed (no-op) or return appropriate error
-    EXPECT_TRUE(emptyResult == UnifiedAudioEngine::Status::OK ||
-                emptyResult == UnifiedAudioEngine::Status::INVALID_PARAMS)
+    EXPECT_TRUE(emptyResult == UnifiedAudioEngine::Status::OK
+                || emptyResult == UnifiedAudioEngine::Status::INVALID_PARAMS)
         << "Empty audio processing should handle gracefully";
 
     // Test normal audio processing

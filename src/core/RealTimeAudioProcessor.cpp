@@ -18,7 +18,7 @@
 namespace huntmaster {
 
 class RealtimeAudioProcessor::Impl {
-   public:
+  public:
     Config config_;
 
     // Performance metrics
@@ -41,8 +41,8 @@ class RealtimeAudioProcessor::Impl {
 
     explicit Impl(const Config& config) : config_(config) {}
 
-    [[nodiscard]] huntmaster::expected<void, ProcessorError> enqueue(
-        std::span<const float> audio_data) {
+    [[nodiscard]] huntmaster::expected<void, ProcessorError>
+    enqueue(std::span<const float> audio_data) {
         if (audio_data.size() > AudioChunk::MAX_CHUNK_SIZE) {
 #if DEBUG_REALTIME_PROCESSOR
             std::cout << "[DEBUG] Single-threaded enqueue: INVALID_SIZE - data size "
@@ -68,10 +68,12 @@ class RealtimeAudioProcessor::Impl {
         std::copy(audio_data.begin(), audio_data.end(), chunk.data.begin());
 
         // Calculate energy for audio metadata
-        chunk.energy_level =
-            std::sqrt(std::transform_reduce(audio_data.begin(), audio_data.end(), 0.0f, std::plus{},
-                                            [](float x) { return x * x; }) /
-                      audio_data.size());
+        chunk.energy_level = std::sqrt(std::transform_reduce(audio_data.begin(),
+                                                             audio_data.end(),
+                                                             0.0f,
+                                                             std::plus{},
+                                                             [](float x) { return x * x; })
+                                       / audio_data.size());
 
         // Simple voice detection
         chunk.contains_voice = chunk.energy_level > 0.01f;
@@ -90,8 +92,8 @@ class RealtimeAudioProcessor::Impl {
             total_processing_ns_.fetch_add(ns, std::memory_order_relaxed);
             auto max_ns = max_processing_ns_.load(std::memory_order_relaxed);
             while (ns > max_ns) {
-                if (max_processing_ns_.compare_exchange_weak(max_ns, ns, std::memory_order_relaxed,
-                                                             std::memory_order_relaxed)) {
+                if (max_processing_ns_.compare_exchange_weak(
+                        max_ns, ns, std::memory_order_relaxed, std::memory_order_relaxed)) {
                     break;
                 }
             }
@@ -207,8 +209,8 @@ class RealtimeAudioProcessor::Impl {
         return can_read;
     }
 
-    [[nodiscard]] huntmaster::expected<void, ProcessorError> enqueue(
-        std::span<const float> audio_data) {
+    [[nodiscard]] huntmaster::expected<void, ProcessorError>
+    enqueue(std::span<const float> audio_data) {
         if (audio_data.size() > AudioChunk::MAX_CHUNK_SIZE) {
 #if DEBUG_REALTIME_PROCESSOR
             std::cout << "[DEBUG] Multi-threaded enqueue: INVALID_SIZE - data size "
@@ -233,10 +235,12 @@ class RealtimeAudioProcessor::Impl {
         std::copy(audio_data.begin(), audio_data.end(), chunk.data.begin());
 
         // Calculate energy for audio metadata
-        chunk.energy_level =
-            std::sqrt(std::transform_reduce(audio_data.begin(), audio_data.end(), 0.0f, std::plus{},
-                                            [](float x) { return x * x; }) /
-                      audio_data.size());
+        chunk.energy_level = std::sqrt(std::transform_reduce(audio_data.begin(),
+                                                             audio_data.end(),
+                                                             0.0f,
+                                                             std::plus{},
+                                                             [](float x) { return x * x; })
+                                       / audio_data.size());
 
         // Simple voice detection
         chunk.contains_voice = chunk.energy_level > 0.01f;
@@ -255,8 +259,8 @@ class RealtimeAudioProcessor::Impl {
             total_processing_ns_.fetch_add(ns, std::memory_order_relaxed);
             auto max_ns = max_processing_ns_.load(std::memory_order_relaxed);
             while (ns > max_ns) {
-                if (max_processing_ns_.compare_exchange_weak(max_ns, ns, std::memory_order_relaxed,
-                                                             std::memory_order_relaxed)) {
+                if (max_processing_ns_.compare_exchange_weak(
+                        max_ns, ns, std::memory_order_relaxed, std::memory_order_relaxed)) {
                     break;
                 }
             }
@@ -267,7 +271,8 @@ class RealtimeAudioProcessor::Impl {
         item_count_.fetch_add(1, std::memory_order_relaxed);
 
         total_chunks_.fetch_add(1, std::memory_order_relaxed);
-        if (config_.enable_backpressure) cv_data_.notify_one();
+        if (config_.enable_backpressure)
+            cv_data_.notify_one();
         return {};
     }
 
@@ -291,11 +296,14 @@ class RealtimeAudioProcessor::Impl {
                   << ", samples=" << chunk.valid_samples << std::endl;
 #endif
 
-        if (config_.enable_backpressure) cv_space_.notify_one();
+        if (config_.enable_backpressure)
+            cv_space_.notify_one();
         return chunk;
     }
 
-    [[nodiscard]] bool isEmpty() const noexcept { return !canRead(); }
+    [[nodiscard]] bool isEmpty() const noexcept {
+        return !canRead();
+    }
     [[nodiscard]] bool isFull() const noexcept {
         bool full = !canWrite();
 #if DEBUG_REALTIME_PROCESSOR
@@ -318,11 +326,11 @@ RealtimeAudioProcessor::RealtimeAudioProcessor(const Config& config)
     : pimpl_(std::make_unique<Impl>(config)) {}
 RealtimeAudioProcessor::~RealtimeAudioProcessor() = default;
 RealtimeAudioProcessor::RealtimeAudioProcessor(RealtimeAudioProcessor&&) noexcept = default;
-RealtimeAudioProcessor& RealtimeAudioProcessor::operator=(RealtimeAudioProcessor&&) noexcept =
-    default;
+RealtimeAudioProcessor&
+RealtimeAudioProcessor::operator=(RealtimeAudioProcessor&&) noexcept = default;
 
-huntmaster::expected<void, ProcessorError> RealtimeAudioProcessor::enqueueAudio(
-    std::span<const float> audio_data) {
+huntmaster::expected<void, ProcessorError>
+RealtimeAudioProcessor::enqueueAudio(std::span<const float> audio_data) {
     return pimpl_->enqueue(audio_data);
 }
 
@@ -336,7 +344,8 @@ huntmaster::expected<AudioChunk, ProcessorError> RealtimeAudioProcessor::dequeue
 
 std::optional<AudioChunk> RealtimeAudioProcessor::tryDequeueChunk() {
     auto result = pimpl_->dequeue();
-    if (result) return std::move(*result);
+    if (result)
+        return std::move(*result);
     return std::nullopt;
 }
 
@@ -357,15 +366,22 @@ std::vector<AudioChunk> RealtimeAudioProcessor::dequeueBatch(size_t max_chunks) 
     chunks.reserve(std::min(max_chunks, available()));
     while (chunks.size() < max_chunks) {
         auto chunk = tryDequeueChunk();
-        if (!chunk) break;
+        if (!chunk)
+            break;
         chunks.push_back(std::move(*chunk));
     }
     return chunks;
 }
 
-bool RealtimeAudioProcessor::isEmpty() const noexcept { return pimpl_->isEmpty(); }
-bool RealtimeAudioProcessor::isFull() const noexcept { return pimpl_->isFull(); }
-size_t RealtimeAudioProcessor::available() const noexcept { return pimpl_->available(); }
+bool RealtimeAudioProcessor::isEmpty() const noexcept {
+    return pimpl_->isEmpty();
+}
+bool RealtimeAudioProcessor::isFull() const noexcept {
+    return pimpl_->isFull();
+}
+size_t RealtimeAudioProcessor::available() const noexcept {
+    return pimpl_->available();
+}
 size_t RealtimeAudioProcessor::capacity() const noexcept {
     return pimpl_->config_.ring_buffer_size;
 }
@@ -382,8 +398,8 @@ ProcessorStats RealtimeAudioProcessor::getStats() const noexcept {
         std::chrono::nanoseconds(pimpl_->max_processing_ns_.load(std::memory_order_relaxed));
     stats.current_buffer_usage = available();
     if (stats.total_chunks_processed > 0) {
-        stats.average_latency_ms = static_cast<float>(stats.total_processing_time.count()) /
-                                   stats.total_chunks_processed / 1e6f;
+        stats.average_latency_ms = static_cast<float>(stats.total_processing_time.count())
+                                   / stats.total_chunks_processed / 1e6f;
     }
 
 #if DEBUG_REALTIME_PROCESSOR

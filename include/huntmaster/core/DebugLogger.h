@@ -53,7 +53,7 @@ using DebugLevel = LogLevel;
  * @brief Thread-safe, configurable debug logger with component-specific levels
  */
 class DebugLogger {
-   public:
+  public:
     static DebugLogger& getInstance();
 
     // Global log level control
@@ -77,31 +77,58 @@ class DebugLogger {
     void enableThreadIds(bool enable = true);
 
     // Main logging function
-    void log(Component component, LogLevel level, const std::string& message,
-             const char* file = nullptr, int line = 0, const char* function = nullptr);
+    void log(Component component,
+             LogLevel level,
+             const std::string& message,
+             const char* file = nullptr,
+             int line = 0,
+             const char* function = nullptr);
 
     // Convenience methods
-    void error(Component component, const std::string& message, const char* file = nullptr,
-               int line = 0, const char* function = nullptr);
-    void warn(Component component, const std::string& message, const char* file = nullptr,
-              int line = 0, const char* function = nullptr);
-    void info(Component component, const std::string& message, const char* file = nullptr,
-              int line = 0, const char* function = nullptr);
-    void debug(Component component, const std::string& message, const char* file = nullptr,
-               int line = 0, const char* function = nullptr);
-    void trace(Component component, const std::string& message, const char* file = nullptr,
-               int line = 0, const char* function = nullptr);
+    void error(Component component,
+               const std::string& message,
+               const char* file = nullptr,
+               int line = 0,
+               const char* function = nullptr);
+    void warn(Component component,
+              const std::string& message,
+              const char* file = nullptr,
+              int line = 0,
+              const char* function = nullptr);
+    void info(Component component,
+              const std::string& message,
+              const char* file = nullptr,
+              int line = 0,
+              const char* function = nullptr);
+    void debug(Component component,
+               const std::string& message,
+               const char* file = nullptr,
+               int line = 0,
+               const char* function = nullptr);
+    void trace(Component component,
+               const std::string& message,
+               const char* file = nullptr,
+               int line = 0,
+               const char* function = nullptr);
 
-   private:
+  private:
     DebugLogger() = default;
     ~DebugLogger();
 
     // Thread-safe logging implementation
-    void logImpl(Component component, LogLevel level, const std::string& message, const char* file,
-                 int line, const char* function);
+    void logImpl(Component component,
+                 LogLevel level,
+                 const std::string& message,
+                 const char* file,
+                 int line,
+                 const char* function);
 
-    std::string formatMessage(Component component, LogLevel level, const std::string& message,
-                              const char* file, int line, const char* function) const;
+    std::string formatMessage(Component component,
+                              LogLevel level,
+                              const std::string& message,
+                              const char* file,
+                              int line,
+                              const char* function) const;
 
     std::string getLevelString(LogLevel level) const;
     std::string getComponentString(Component component) const;
@@ -138,29 +165,29 @@ class DebugLogger {
     huntmaster::DebugLogger::getInstance().trace(component, message, __FILE__, __LINE__, __func__)
 
 // Conditional logging macros (only log if component level allows)
-#define LOG_IF_ERROR(component, message)                                          \
-    if (huntmaster::DebugLogger::getInstance().getComponentLogLevel(component) >= \
-        huntmaster::LogLevel::ERROR)                                              \
+#define LOG_IF_ERROR(component, message)                                       \
+    if (huntmaster::DebugLogger::getInstance().getComponentLogLevel(component) \
+        >= huntmaster::LogLevel::ERROR)                                        \
     LOG_ERROR(component, message)
 
-#define LOG_IF_WARN(component, message)                                           \
-    if (huntmaster::DebugLogger::getInstance().getComponentLogLevel(component) >= \
-        huntmaster::LogLevel::WARN)                                               \
+#define LOG_IF_WARN(component, message)                                        \
+    if (huntmaster::DebugLogger::getInstance().getComponentLogLevel(component) \
+        >= huntmaster::LogLevel::WARN)                                         \
     LOG_WARN(component, message)
 
-#define LOG_IF_INFO(component, message)                                           \
-    if (huntmaster::DebugLogger::getInstance().getComponentLogLevel(component) >= \
-        huntmaster::LogLevel::INFO)                                               \
+#define LOG_IF_INFO(component, message)                                        \
+    if (huntmaster::DebugLogger::getInstance().getComponentLogLevel(component) \
+        >= huntmaster::LogLevel::INFO)                                         \
     LOG_INFO(component, message)
 
-#define LOG_IF_DEBUG(component, message)                                          \
-    if (huntmaster::DebugLogger::getInstance().getComponentLogLevel(component) >= \
-        huntmaster::LogLevel::DEBUG)                                              \
+#define LOG_IF_DEBUG(component, message)                                       \
+    if (huntmaster::DebugLogger::getInstance().getComponentLogLevel(component) \
+        >= huntmaster::LogLevel::DEBUG)                                        \
     LOG_DEBUG(component, message)
 
-#define LOG_IF_TRACE(component, message)                                          \
-    if (huntmaster::DebugLogger::getInstance().getComponentLogLevel(component) >= \
-        huntmaster::LogLevel::TRACE)                                              \
+#define LOG_IF_TRACE(component, message)                                       \
+    if (huntmaster::DebugLogger::getInstance().getComponentLogLevel(component) \
+        >= huntmaster::LogLevel::TRACE)                                        \
     LOG_TRACE(component, message)
 
 // Stream-style logging macros
@@ -171,7 +198,7 @@ class DebugLogger {
  * @brief Stream-style logging helper
  */
 class LogStream {
-   public:
+  public:
     LogStream(Component component, LogLevel level, const char* file, int line, const char* function)
         : component_(component), level_(level), file_(file), line_(line), function_(function) {}
 
@@ -185,7 +212,7 @@ class LogStream {
         return *this;
     }
 
-   private:
+  private:
     Component component_;
     LogLevel level_;
     const char* file_;

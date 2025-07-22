@@ -1,7 +1,7 @@
-#include <gtest/gtest.h>
-
 #include <chrono>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "huntmaster/core/VoiceActivityDetector.h"
 
@@ -10,7 +10,7 @@ using namespace std::chrono_literals;
 
 // Test fixture for VAD tests
 class VADStateTransitionTest : public ::testing::Test {
-   protected:
+  protected:
     // Generates a silent audio chunk
     std::vector<float> generateSilentChunk(size_t samples) {
         return std::vector<float>(samples, 0.0f);

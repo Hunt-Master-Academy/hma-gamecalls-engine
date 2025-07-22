@@ -7,13 +7,13 @@
  * session-based architecture.
  */
 
-#include <gtest/gtest.h>
-
 #include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <span>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "dr_wav.h"
 #include "huntmaster/core/UnifiedAudioEngine.h"
@@ -34,8 +34,8 @@ static std::vector<float> generateSineWave(float frequency, float duration, floa
 }
 
 // Save audio to WAV file
-static bool saveTestWav(const std::string &filename, const std::vector<float> &samples,
-                        float sampleRate) {
+static bool
+saveTestWav(const std::string& filename, const std::vector<float>& samples, float sampleRate) {
     drwav wav;
     drwav_data_format format;
     format.container = drwav_container_riff;
@@ -56,7 +56,7 @@ static bool saveTestWav(const std::string &filename, const std::vector<float> &s
 }
 
 class MFCCConsistencyUnifiedTest : public ::testing::Test {
-   protected:
+  protected:
     void SetUp() override {
         // Create engine instance using the new UnifiedEngine API
         auto engineResult = UnifiedAudioEngine::create();
@@ -108,7 +108,7 @@ TEST_F(MFCCConsistencyUnifiedTest, ExistingMasterCallTest) {
     // Load the actual audio file
     unsigned int channels, sampleRate;
     drwav_uint64 totalFrames;
-    float *audioData = drwav_open_file_and_read_pcm_frames_f32(
+    float* audioData = drwav_open_file_and_read_pcm_frames_f32(
         "../data/master_calls/buck_grunt.wav", &channels, &sampleRate, &totalFrames, nullptr);
 
     if (!audioData) {
@@ -285,8 +285,8 @@ TEST_F(MFCCConsistencyUnifiedTest, ComplexWaveformConsistency) {
         SessionId sessionId = sessionResult.value;
 
         auto loadResult = engine->loadMasterCall(sessionId, "test_complex");
-        EXPECT_TRUE(loadResult == UnifiedAudioEngine::Status::OK ||
-                    loadResult == UnifiedAudioEngine::Status::FILE_NOT_FOUND);
+        EXPECT_TRUE(loadResult == UnifiedAudioEngine::Status::OK
+                    || loadResult == UnifiedAudioEngine::Status::FILE_NOT_FOUND);
 
         // Process audio in chunks to simulate real-time processing
         const size_t chunkSize = 1024;
@@ -351,9 +351,12 @@ TEST_F(MFCCConsistencyUnifiedTest, RealAudioFileConsistency) {
             // Load the actual audio file
             unsigned int channels, sampleRate;
             drwav_uint64 totalFrames;
-            float *audioData = drwav_open_file_and_read_pcm_frames_f32(
-                "../data/master_calls/buck_grunt.wav", &channels, &sampleRate, &totalFrames,
-                nullptr);
+            float* audioData =
+                drwav_open_file_and_read_pcm_frames_f32("../data/master_calls/buck_grunt.wav",
+                                                        &channels,
+                                                        &sampleRate,
+                                                        &totalFrames,
+                                                        nullptr);
 
             if (audioData) {
                 // Convert to mono if needed
@@ -447,7 +450,7 @@ TEST_F(MFCCConsistencyUnifiedTest, SelfSimilarityTest) {
     // Load the SAME audio file that we just loaded as master
     unsigned int channels, sampleRate;
     drwav_uint64 totalFrames;
-    float *audioData = drwav_open_file_and_read_pcm_frames_f32(
+    float* audioData = drwav_open_file_and_read_pcm_frames_f32(
         "data/master_calls/buck_grunt.wav", &channels, &sampleRate, &totalFrames, nullptr);
 
     if (!audioData) {

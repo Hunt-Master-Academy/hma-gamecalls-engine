@@ -6,11 +6,11 @@
  * using the new UnifiedEngine session-based architecture.
  */
 
-#include <gtest/gtest.h>
-
 #include <iostream>
 #include <span>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "dr_wav.h"
 #include "huntmaster/core/UnifiedAudioEngine.h"
@@ -18,7 +18,7 @@
 using namespace huntmaster;
 
 class DTWUnifiedTest : public ::testing::Test {
-   protected:
+  protected:
     void SetUp() override {
         // Create engine instance using the new UnifiedEngine API
         auto engineResult = UnifiedAudioEngine::create();
@@ -31,16 +31,17 @@ class DTWUnifiedTest : public ::testing::Test {
         // Clean up any remaining sessions
         auto activeSessions = engine->getActiveSessions();
         for (auto sessionId : activeSessions) {
-            auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+            auto destroyResult = engine->destroySession(sessionId);
+            (void)destroyResult;
         }
         engine.reset();
     }
 
     // Helper function to load audio file
-    std::vector<float> loadAudioFile(const std::string &filePath, unsigned int &channels,
-                                     unsigned int &sampleRate) {
+    std::vector<float>
+    loadAudioFile(const std::string& filePath, unsigned int& channels, unsigned int& sampleRate) {
         drwav_uint64 totalPCMFrameCount = 0;
-        float *pSampleData = drwav_open_file_and_read_pcm_frames_f32(
+        float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(
             filePath.c_str(), &channels, &sampleRate, &totalPCMFrameCount, nullptr);
 
         if (pSampleData == nullptr) {
@@ -82,7 +83,8 @@ TEST_F(DTWUnifiedTest, BasicDTWFunctionality) {
     if (loadResult != UnifiedAudioEngine::Status::OK) {
         std::cout << "  loadMasterCall failed with status: " << static_cast<int>(loadResult)
                   << std::endl;
-        auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+        auto destroyResult = engine->destroySession(sessionId);
+        (void)destroyResult;
         GTEST_SKIP() << "buck_grunt master call not available";
         return;
     }
@@ -93,7 +95,8 @@ TEST_F(DTWUnifiedTest, BasicDTWFunctionality) {
     auto audioData = loadAudioFile("../data/master_calls/buck_grunt.wav", channels, sampleRate);
 
     if (audioData.empty()) {
-        auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+        auto destroyResult = engine->destroySession(sessionId);
+        (void)destroyResult;
         GTEST_SKIP() << "buck_grunt.wav file not found";
         return;
     }
@@ -124,7 +127,8 @@ TEST_F(DTWUnifiedTest, BasicDTWFunctionality) {
     }
 
     // Clean up
-    auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+    auto destroyResult = engine->destroySession(sessionId);
+    (void)destroyResult;
 
     // Validate results
     EXPECT_GT(featureCount, 0) << "No features were processed";
@@ -144,7 +148,8 @@ TEST_F(DTWUnifiedTest, DTWWithChunkedProcessing) {
     // Try to load a master call
     auto loadResult = engine->loadMasterCall(sessionId, "buck_grunt");
     if (loadResult != UnifiedAudioEngine::Status::OK) {
-        auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+        auto destroyResult = engine->destroySession(sessionId);
+        (void)destroyResult;
         GTEST_SKIP() << "buck_grunt master call not available";
         return;
     }
@@ -154,7 +159,8 @@ TEST_F(DTWUnifiedTest, DTWWithChunkedProcessing) {
     auto audioData = loadAudioFile("../data/master_calls/buck_grunt.wav", channels, sampleRate);
 
     if (audioData.empty()) {
-        auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+        auto destroyResult = engine->destroySession(sessionId);
+        (void)destroyResult;
         GTEST_SKIP() << "buck_grunt.wav file not found";
         return;
     }
@@ -193,7 +199,8 @@ TEST_F(DTWUnifiedTest, DTWWithChunkedProcessing) {
               << std::endl;
 
     // Clean up
-    auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+    auto destroyResult = engine->destroySession(sessionId);
+    (void)destroyResult;
 
     // Validate results
     EXPECT_GT(featureCount, 0) << "No features were processed";
@@ -220,7 +227,8 @@ TEST_F(DTWUnifiedTest, DTWConsistencyTest) {
         // Load master call
         auto loadResult = engine->loadMasterCall(sessionId, "buck_grunt");
         if (loadResult != UnifiedAudioEngine::Status::OK) {
-            auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+            auto destroyResult = engine->destroySession(sessionId);
+            (void)destroyResult;
             GTEST_SKIP() << "buck_grunt master call not available";
             return;
         }
@@ -230,7 +238,8 @@ TEST_F(DTWUnifiedTest, DTWConsistencyTest) {
         auto audioData = loadAudioFile("../data/master_calls/buck_grunt.wav", channels, sampleRate);
 
         if (audioData.empty()) {
-            auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+            auto destroyResult = engine->destroySession(sessionId);
+            (void)destroyResult;
             GTEST_SKIP() << "buck_grunt.wav file not found";
             return;
         }
@@ -249,7 +258,8 @@ TEST_F(DTWUnifiedTest, DTWConsistencyTest) {
         std::cout << "    Score: " << std::fixed << std::setprecision(8) << score << std::endl;
 
         // Clean up
-        auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+        auto destroyResult = engine->destroySession(sessionId);
+        (void)destroyResult;
     }
 
     // Analyze consistency
@@ -295,7 +305,8 @@ TEST_F(DTWUnifiedTest, SelfSimilarityTest) {
     // Load master call
     auto loadResult = engine->loadMasterCall(sessionId, "buck_grunt");
     if (loadResult != UnifiedAudioEngine::Status::OK) {
-        auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+        auto destroyResult = engine->destroySession(sessionId);
+        (void)destroyResult;
         GTEST_SKIP() << "buck_grunt master call not available";
         return;
     }
@@ -305,7 +316,8 @@ TEST_F(DTWUnifiedTest, SelfSimilarityTest) {
     auto audioData = loadAudioFile("../data/master_calls/buck_grunt.wav", channels, sampleRate);
 
     if (audioData.empty()) {
-        auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+        auto destroyResult = engine->destroySession(sessionId);
+        (void)destroyResult;
         GTEST_SKIP() << "buck_grunt.wav file not found";
         return;
     }
@@ -325,7 +337,8 @@ TEST_F(DTWUnifiedTest, SelfSimilarityTest) {
               << std::endl;
 
     // Clean up
-    auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+    auto destroyResult = engine->destroySession(sessionId);
+    (void)destroyResult;
 
     // Self-similarity should be relatively high
     // Based on real-world thresholds: >0.01 = excellent, >0.005 = good, >0.002 = fair

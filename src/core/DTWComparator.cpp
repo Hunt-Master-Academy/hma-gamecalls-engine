@@ -15,14 +15,14 @@
 namespace huntmaster {
 
 class DTWComparator::Impl {
-   public:
+  public:
     Config config_;
 
     // Reusable buffers to avoid allocations
     std::vector<std::vector<float>> cost_matrix_;
     std::vector<std::vector<size_t>> path_matrix_;
 
-    explicit Impl(const Config &config) : config_(config) {}
+    explicit Impl(const Config& config) : config_(config) {}
 
     [[nodiscard]] float euclideanDistance(std::span<const float> vec1,
                                           std::span<const float> vec2) {
@@ -37,11 +37,11 @@ class DTWComparator::Impl {
 
     [[nodiscard]] float euclideanDistanceScalar(std::span<const float> vec1,
                                                 std::span<const float> vec2) {
-        return std::sqrt(std::transform_reduce(vec1.begin(), vec1.end(), vec2.begin(), 0.0f,
-                                               std::plus{}, [](float a, float b) {
-                                                   float diff = a - b;
-                                                   return diff * diff;
-                                               }));
+        return std::sqrt(std::transform_reduce(
+            vec1.begin(), vec1.end(), vec2.begin(), 0.0f, std::plus{}, [](float a, float b) {
+                float diff = a - b;
+                return diff * diff;
+            }));
     }
 
 #ifdef __AVX2__
@@ -70,9 +70,9 @@ class DTWComparator::Impl {
     }
 #endif
 
-    [[nodiscard]] float computeDTW(const std::vector<std::vector<float>> &seq1,
-                                   const std::vector<std::vector<float>> &seq2,
-                                   std::vector<std::pair<size_t, size_t>> *path_out = nullptr) {
+    [[nodiscard]] float computeDTW(const std::vector<std::vector<float>>& seq1,
+                                   const std::vector<std::vector<float>>& seq2,
+                                   std::vector<std::pair<size_t, size_t>>* path_out = nullptr) {
         const size_t len1 = seq1.size();
         const size_t len2 = seq2.size();
 
@@ -82,13 +82,13 @@ class DTWComparator::Impl {
 
         // Resize matrices
         cost_matrix_.resize(len1 + 1);
-        for (auto &row : cost_matrix_) {
+        for (auto& row : cost_matrix_) {
             row.resize(len2 + 1, std::numeric_limits<float>::infinity());
         }
 
         if (path_out) {
             path_matrix_.resize(len1 + 1);
-            for (auto &row : path_matrix_) {
+            for (auto& row : path_matrix_) {
                 row.resize(len2 + 1);
             }
         }
@@ -139,7 +139,7 @@ class DTWComparator::Impl {
 
         // Reconstruct path if requested
         if (path_out) {
-            auto &path = *path_out;
+            auto& path = *path_out;
             path.clear();
 
             size_t i = len1, j = len2;
@@ -167,16 +167,16 @@ class DTWComparator::Impl {
     }
 };
 
-DTWComparator::DTWComparator(const Config &config) : pimpl_(std::make_unique<Impl>(config)) {}
+DTWComparator::DTWComparator(const Config& config) : pimpl_(std::make_unique<Impl>(config)) {}
 
 DTWComparator::~DTWComparator() = default;
 
-DTWComparator::DTWComparator(DTWComparator &&) noexcept = default;
+DTWComparator::DTWComparator(DTWComparator&&) noexcept = default;
 
-DTWComparator &DTWComparator::operator=(DTWComparator &&) noexcept = default;
+DTWComparator& DTWComparator::operator=(DTWComparator&&) noexcept = default;
 
-float DTWComparator::compare(const std::vector<std::vector<float>> &sequence1,
-                             const std::vector<std::vector<float>> &sequence2) {
+float DTWComparator::compare(const std::vector<std::vector<float>>& sequence1,
+                             const std::vector<std::vector<float>>& sequence2) {
     // DTW_LOG_DEBUG("compare called with sequence1 size: " + std::to_string(sequence1.size()) +
     //               ", sequence2 size: " + std::to_string(sequence2.size()));
     float result = pimpl_->computeDTW(sequence1, sequence2);
@@ -184,9 +184,9 @@ float DTWComparator::compare(const std::vector<std::vector<float>> &sequence1,
     return result;
 }
 
-float DTWComparator::compareWithPath(const std::vector<std::vector<float>> &sequence1,
-                                     const std::vector<std::vector<float>> &sequence2,
-                                     std::vector<std::pair<size_t, size_t>> &alignment_path) {
+float DTWComparator::compareWithPath(const std::vector<std::vector<float>>& sequence1,
+                                     const std::vector<std::vector<float>>& sequence2,
+                                     std::vector<std::pair<size_t, size_t>>& alignment_path) {
     // DTW_LOG_DEBUG("compareWithPath called with sequence1 size: " +
     // std::to_string(sequence1.size()) +
     //               ", sequence2 size: " + std::to_string(sequence2.size()));

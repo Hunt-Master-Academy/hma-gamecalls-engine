@@ -12,7 +12,7 @@ namespace huntmaster {
  * different levels of debugging output for different components.
  */
 class DebugConfig {
-   public:
+  public:
     /**
      * @brief Initialize debug configuration with default settings
      */
@@ -53,7 +53,9 @@ class DebugConfig {
     /**
      * @brief Get current debug level
      */
-    static LogLevel getCurrentLevel() { return DebugLogger::getInstance().getGlobalLogLevel(); }
+    static LogLevel getCurrentLevel() {
+        return DebugLogger::getInstance().getGlobalLogLevel();
+    }
 
     /**
      * @brief Enable component-specific debugging
@@ -95,16 +97,18 @@ class DebugConfig {
  * restores the previous logging level when the scope ends.
  */
 class DebugScope {
-   private:
+  private:
     LogLevel previous_level_;
 
-   public:
+  public:
     explicit DebugScope(LogLevel temp_level) {
         previous_level_ = DebugConfig::getCurrentLevel();
         DebugLogger::getInstance().setGlobalLogLevel(temp_level);
     }
 
-    ~DebugScope() { DebugLogger::getInstance().setGlobalLogLevel(previous_level_); }
+    ~DebugScope() {
+        DebugLogger::getInstance().setGlobalLogLevel(previous_level_);
+    }
 
     // Non-copyable and non-movable
     DebugScope(const DebugScope&) = delete;
@@ -117,11 +121,11 @@ class DebugScope {
  * @brief Component-specific debug scope
  */
 class ComponentDebugScope {
-   private:
+  private:
     Component component_;
     LogLevel previous_level_;
 
-   public:
+  public:
     explicit ComponentDebugScope(Component component, LogLevel temp_level) : component_(component) {
         previous_level_ = DebugLogger::getInstance().getComponentLogLevel(component);
         DebugLogger::getInstance().setComponentLogLevel(component, temp_level);

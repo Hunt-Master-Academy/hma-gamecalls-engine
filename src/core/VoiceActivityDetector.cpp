@@ -19,7 +19,7 @@ namespace huntmaster {
 enum class VADState { SILENCE, VOICE_CANDIDATE, VOICE_ACTIVE, HANGOVER };
 
 class VoiceActivityDetector::Impl {
-   public:
+  public:
     Config config_;
     VADState state_ = VADState::SILENCE;
 
@@ -43,7 +43,8 @@ class VoiceActivityDetector::Impl {
     }
 
     float computeEnergy(std::span<const float> audio) {
-        if (audio.empty()) return 0.0f;
+        if (audio.empty())
+            return 0.0f;
         double sum_sq = 0.0;
         for (float sample : audio) {
             sum_sq += static_cast<double>(sample) * sample;
@@ -129,8 +130,8 @@ VoiceActivityDetector::~VoiceActivityDetector() = default;
 VoiceActivityDetector::VoiceActivityDetector(VoiceActivityDetector&&) noexcept = default;
 VoiceActivityDetector& VoiceActivityDetector::operator=(VoiceActivityDetector&&) noexcept = default;
 
-huntmaster::expected<VADResult, VADError> VoiceActivityDetector::processWindow(
-    std::span<const float> audio) {
+huntmaster::expected<VADResult, VADError>
+VoiceActivityDetector::processWindow(std::span<const float> audio) {
     if (audio.empty()) {
         return huntmaster::unexpected(VADError::INVALID_INPUT);
     }

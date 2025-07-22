@@ -24,8 +24,10 @@ int main() {
         float level = recorder.getCurrentLevel();
         int bars = static_cast<int>(level * 50);
         std::cout << "\rLevel: [";
-        for (int j = 0; j < bars; ++j) std::cout << "=";
-        for (int j = bars; j < 50; ++j) std::cout << " ";
+        for (int j = 0; j < bars; ++j)
+            std::cout << "=";
+        for (int j = bars; j < 50; ++j)
+            std::cout << " ";
         std::cout << "] " << level;
         std::cout.flush();
     }

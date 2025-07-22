@@ -17,16 +17,16 @@
  * - Migration from legacy singleton patterns
  */
 
-#include <gtest/gtest.h>
-#include <huntmaster/core/UnifiedAudioEngine.h>
-
 #include <chrono>
 #include <thread>
+
+#include <gtest/gtest.h>
+#include <huntmaster/core/UnifiedAudioEngine.h>
 
 using namespace huntmaster;
 
 class UnifiedEngineTest : public ::testing::Test {
-   protected:
+  protected:
     void SetUp() override {
         // Create engine instance for testing using the static factory method
         auto result = UnifiedAudioEngine::create();
@@ -90,10 +90,10 @@ TEST_F(UnifiedEngineTest, PerSessionMasterCallLoading) {
 
     // Note: These might fail if the files don't exist, but the API should work
     // The important thing is that we get consistent Status responses
-    EXPECT_TRUE(load1Result == UnifiedAudioEngine::Status::OK ||
-                load1Result == UnifiedAudioEngine::Status::FILE_NOT_FOUND);
-    EXPECT_TRUE(load2Result == UnifiedAudioEngine::Status::OK ||
-                load2Result == UnifiedAudioEngine::Status::FILE_NOT_FOUND);
+    EXPECT_TRUE(load1Result == UnifiedAudioEngine::Status::OK
+                || load1Result == UnifiedAudioEngine::Status::FILE_NOT_FOUND);
+    EXPECT_TRUE(load2Result == UnifiedAudioEngine::Status::OK
+                || load2Result == UnifiedAudioEngine::Status::FILE_NOT_FOUND);
 
     // Clean up
     auto result1 = engine->destroySession(session1);
@@ -276,8 +276,8 @@ TEST_F(UnifiedEngineTest, LegacyMigrationPattern) {
     // Load master call for this specific session
     auto loadResult = engine->loadMasterCall(session, "data/master_calls/buck_grunt_master.mfc");
     // Note: File might not exist in test environment
-    EXPECT_TRUE(loadResult == UnifiedAudioEngine::Status::OK ||
-                loadResult == UnifiedAudioEngine::Status::FILE_NOT_FOUND);
+    EXPECT_TRUE(loadResult == UnifiedAudioEngine::Status::OK
+                || loadResult == UnifiedAudioEngine::Status::FILE_NOT_FOUND);
 
     // Process audio for this specific session
     std::vector<float> audioChunk(4096, 0.2f);

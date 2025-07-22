@@ -74,12 +74,12 @@ struct DebugOptions {
 
 // Performance monitoring class
 class PerformanceMonitor {
-   private:
+  private:
     std::string name;
     std::chrono::high_resolution_clock::time_point startTime;
     bool enabled;
 
-   public:
+  public:
     PerformanceMonitor(const std::string& testName, bool enable = true)
         : name(testName), enabled(enable) {
         if (enabled) {
@@ -96,7 +96,8 @@ class PerformanceMonitor {
             auto duration =
                 std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
             huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::PERFORMANCE, huntmaster::DebugLevel::INFO,
+                huntmaster::DebugComponent::PERFORMANCE,
+                huntmaster::DebugLevel::INFO,
                 "Completed: " + name + " in " + std::to_string(duration.count()) + " μs");
         }
     }
@@ -106,10 +107,11 @@ class PerformanceMonitor {
             auto currentTime = std::chrono::high_resolution_clock::now();
             auto duration =
                 std::chrono::duration_cast<std::chrono::microseconds>(currentTime - startTime);
-            huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::PERFORMANCE, huntmaster::DebugLevel::DEBUG,
-                name + " checkpoint: " + message + " at " + std::to_string(duration.count()) +
-                    " μs");
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::PERFORMANCE,
+                                                       huntmaster::DebugLevel::DEBUG,
+                                                       name + " checkpoint: " + message + " at "
+                                                           + std::to_string(duration.count())
+                                                           + " μs");
         }
     }
 };
@@ -119,8 +121,8 @@ DebugOptions g_debugOptions;
 
 // For now, we'll include the function directly until we make the shared header
 namespace AudioUtils {
-std::vector<float> load_audio_file(const std::string& filePath, unsigned int& channels,
-                                   unsigned int& sampleRate) {
+std::vector<float>
+load_audio_file(const std::string& filePath, unsigned int& channels, unsigned int& sampleRate) {
     PerformanceMonitor monitor("Loading audio file: " + filePath,
                                g_debugOptions.enablePerformanceMetrics);
 
@@ -150,9 +152,10 @@ std::vector<float> load_audio_file(const std::string& filePath, unsigned int& ch
 
     if (g_debugOptions.enableAudioDebug) {
         huntmaster::DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-            "Audio file loaded - Channels: " + std::to_string(channels) + ", Sample Rate: " +
-                std::to_string(sampleRate) + ", Frames: " + std::to_string(totalPCMFrameCount));
+            huntmaster::DebugComponent::TOOLS,
+            huntmaster::DebugLevel::INFO,
+            "Audio file loaded - Channels: " + std::to_string(channels) + ", Sample Rate: "
+                + std::to_string(sampleRate) + ", Frames: " + std::to_string(totalPCMFrameCount));
     }
 
     std::vector<float> monoSamples(totalPCMFrameCount);
@@ -188,9 +191,10 @@ std::vector<float> load_audio_file(const std::string& filePath, unsigned int& ch
         avgSample /= monoSamples.size();
 
         huntmaster::DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Audio statistics - Min: " + std::to_string(minSample) + ", Max: " +
-                std::to_string(maxSample) + ", Avg Magnitude: " + std::to_string(avgSample));
+            huntmaster::DebugComponent::TOOLS,
+            huntmaster::DebugLevel::DEBUG,
+            "Audio statistics - Min: " + std::to_string(minSample) + ", Max: "
+                + std::to_string(maxSample) + ", Avg Magnitude: " + std::to_string(avgSample));
     }
 
     return monoSamples;
@@ -201,7 +205,7 @@ using huntmaster::UnifiedAudioEngine;
 
 // Enhanced detailed analysis class
 class DetailedAnalyzer {
-   private:
+  private:
     std::unique_ptr<UnifiedAudioEngine> engine_;
 
     struct AnalysisResult {
@@ -214,7 +218,7 @@ class DetailedAnalyzer {
             : masterCallId(id), score(s), success(suc), errorMessage(err) {}
     };
 
-   public:
+  public:
     DetailedAnalyzer() {
         auto engineResult = UnifiedAudioEngine::create();
         if (!engineResult.isOk()) {
@@ -228,9 +232,10 @@ class DetailedAnalyzer {
         PerformanceMonitor monitor("Complete recording analysis",
                                    g_debugOptions.enablePerformanceMetrics);
 
-        huntmaster::DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-            "Starting detailed analysis of: " + recordingPath);
+        huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                   huntmaster::DebugLevel::INFO,
+                                                   "Starting detailed analysis of: "
+                                                       + recordingPath);
 
         std::vector<AnalysisResult> results;
 
@@ -239,9 +244,10 @@ class DetailedAnalyzer {
         std::vector<float> recordingAudio =
             AudioUtils::load_audio_file(recordingPath, channels, sampleRate);
         if (recordingAudio.empty()) {
-            huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::ERROR,
-                "Failed to load recording: " + recordingPath);
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                       huntmaster::DebugLevel::ERROR,
+                                                       "Failed to load recording: "
+                                                           + recordingPath);
             return results;
         }
 
@@ -267,32 +273,35 @@ class DetailedAnalyzer {
                           << masterId << std::endl;
             }
 
-            AnalysisResult result = analyzeSingleMasterCall(masterId, recordingAudio, sampleRate,
-                                                            i + 1, masterCalls.size());
+            AnalysisResult result = analyzeSingleMasterCall(
+                masterId, recordingAudio, sampleRate, i + 1, masterCalls.size());
             results.push_back(result);
         }
 
         monitor.checkpoint("All master calls analyzed");
 
         huntmaster::DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+            huntmaster::DebugComponent::TOOLS,
+            huntmaster::DebugLevel::INFO,
             "Analysis completed for " + std::to_string(results.size()) + " master calls");
 
         return results;
     }
 
-   private:
+  private:
     AnalysisResult analyzeSingleMasterCall(const std::string& masterId,
                                            const std::vector<float>& recordingAudio,
-                                           unsigned int sampleRate, size_t currentIndex,
+                                           unsigned int sampleRate,
+                                           size_t currentIndex,
                                            size_t totalCount) {
         PerformanceMonitor monitor("Analysis of " + masterId,
                                    g_debugOptions.enablePerformanceMetrics);
 
         if (g_debugOptions.enableAnalysisDebug) {
-            huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                "Starting analysis of master call: " + masterId);
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                       huntmaster::DebugLevel::DEBUG,
+                                                       "Starting analysis of master call: "
+                                                           + masterId);
         }
 
         // A. Create a session for this comparison
@@ -301,9 +310,10 @@ class DetailedAnalyzer {
             std::cerr << "Could not create session for " << masterId << ". Skipping." << std::endl;
 
             if (g_debugOptions.enableAnalysisDebug) {
-                huntmaster::DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
-                    "Failed to create session for " + masterId);
+                huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                                           huntmaster::DebugLevel::ERROR,
+                                                           "Failed to create session for "
+                                                               + masterId);
             }
 
             return AnalysisResult(masterId, 0.0f, false, "Failed to create session");
@@ -314,7 +324,8 @@ class DetailedAnalyzer {
 
         if (g_debugOptions.enableAnalysisDebug) {
             huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::INFO,
+                huntmaster::DebugComponent::AUDIO_ENGINE,
+                huntmaster::DebugLevel::INFO,
                 "Session created for " + masterId + " with ID: " + std::to_string(sessionId));
         }
 
@@ -324,9 +335,10 @@ class DetailedAnalyzer {
             std::cerr << "Could not load master call: " << masterId << ". Skipping." << std::endl;
 
             if (g_debugOptions.enableAnalysisDebug) {
-                huntmaster::DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
-                    "Failed to load master call: " + masterId);
+                huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                                           huntmaster::DebugLevel::ERROR,
+                                                           "Failed to load master call: "
+                                                               + masterId);
             }
 
             auto destroyResult = engine_->destroySession(sessionId);
@@ -339,9 +351,10 @@ class DetailedAnalyzer {
         monitor.checkpoint("Master call loaded");
 
         if (g_debugOptions.enableAnalysisDebug) {
-            huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::INFO,
-                "Master call loaded successfully: " + masterId);
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                                       huntmaster::DebugLevel::INFO,
+                                                       "Master call loaded successfully: "
+                                                           + masterId);
         }
 
         // C. Process the entire user recording
@@ -351,9 +364,10 @@ class DetailedAnalyzer {
             std::cerr << "Could not process audio for " << masterId << ". Skipping." << std::endl;
 
             if (g_debugOptions.enableAnalysisDebug) {
-                huntmaster::DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::ERROR,
-                    "Failed to process audio for " + masterId);
+                huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                                           huntmaster::DebugLevel::ERROR,
+                                                           "Failed to process audio for "
+                                                               + masterId);
             }
 
             auto destroyResult = engine_->destroySession(sessionId);
@@ -367,9 +381,10 @@ class DetailedAnalyzer {
 
         if (g_debugOptions.enableAnalysisDebug) {
             huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::DEBUG,
-                "Audio processing completed for " + masterId + " (" +
-                    std::to_string(recordingAudio.size()) + " samples)");
+                huntmaster::DebugComponent::AUDIO_ENGINE,
+                huntmaster::DebugLevel::DEBUG,
+                "Audio processing completed for " + masterId + " ("
+                    + std::to_string(recordingAudio.size()) + " samples)");
         }
 
         // D. Get the score
@@ -388,7 +403,8 @@ class DetailedAnalyzer {
 
             if (g_debugOptions.enableScoreDebug) {
                 huntmaster::DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::SIMILARITY_ANALYSIS, huntmaster::DebugLevel::INFO,
+                    huntmaster::DebugComponent::SIMILARITY_ANALYSIS,
+                    huntmaster::DebugLevel::INFO,
                     "Score calculated for " + masterId + ": " + std::to_string(currentScore));
             }
         } else {
@@ -398,7 +414,8 @@ class DetailedAnalyzer {
 
             if (g_debugOptions.enableScoreDebug) {
                 huntmaster::DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::SIMILARITY_ANALYSIS, huntmaster::DebugLevel::ERROR,
+                    huntmaster::DebugComponent::SIMILARITY_ANALYSIS,
+                    huntmaster::DebugLevel::ERROR,
                     "Failed to calculate score for " + masterId);
             }
         }
@@ -409,9 +426,10 @@ class DetailedAnalyzer {
         auto destroyResult = engine_->destroySession(sessionId);
         if (destroyResult != UnifiedAudioEngine::Status::OK) {
             if (g_debugOptions.enableAnalysisDebug) {
-                huntmaster::DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::AUDIO_ENGINE, huntmaster::DebugLevel::WARN,
-                    "Warning: Failed to destroy session for " + masterId);
+                huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
+                                                           huntmaster::DebugLevel::WARN,
+                                                           "Warning: Failed to destroy session for "
+                                                               + masterId);
             }
         } else if (g_debugOptions.enableAnalysisDebug) {
             huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::AUDIO_ENGINE,
@@ -493,9 +511,10 @@ int main(int argc, char* argv[]) {
     std::cout << "\nAnalyzing recording: " << recordingPath << std::endl;
 
     if (g_debugOptions.enableVerbose) {
-        huntmaster::DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-            "Starting detailed analysis of: " + recordingPath);
+        huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                   huntmaster::DebugLevel::INFO,
+                                                   "Starting detailed analysis of: "
+                                                       + recordingPath);
     }
 
     try {
@@ -504,8 +523,13 @@ int main(int argc, char* argv[]) {
 
         // --- 2. Define Master Calls ---
         std::vector<std::string> masterCalls = {
-            "buck_grunt",     "doe-grunt",    "buck-bawl", "breeding_bellow",
-            "contact-bleatr", "estrus_bleat", "fawn-bleat"
+            "buck_grunt",
+            "doe-grunt",
+            "buck-bawl",
+            "breeding_bellow",
+            "contact-bleatr",
+            "estrus_bleat",
+            "fawn-bleat"
             // Add all your master call IDs here
         };
 
@@ -515,10 +539,11 @@ int main(int argc, char* argv[]) {
         }
 
         if (g_debugOptions.enableAnalysisDebug) {
-            huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-                "Configured " + std::to_string(masterCalls.size()) +
-                    " master calls for comparison");
+            huntmaster::DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                       huntmaster::DebugLevel::INFO,
+                                                       "Configured "
+                                                           + std::to_string(masterCalls.size())
+                                                           + " master calls for comparison");
         }
 
         // --- 3. Perform Analysis ---
@@ -556,10 +581,11 @@ int main(int argc, char* argv[]) {
 
         if (g_debugOptions.enableVerbose) {
             huntmaster::DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-                "Analysis complete - Best match: " + bestMatchName + " with score: " +
-                    std::to_string(bestScore) + " (" + std::to_string(successfulAnalyses) + "/" +
-                    std::to_string(results.size()) + " successful)");
+                huntmaster::DebugComponent::TOOLS,
+                huntmaster::DebugLevel::INFO,
+                "Analysis complete - Best match: " + bestMatchName + " with score: "
+                    + std::to_string(bestScore) + " (" + std::to_string(successfulAnalyses) + "/"
+                    + std::to_string(results.size()) + " successful)");
         }
 
         // Optional: Show detailed breakdown if verbose
@@ -579,7 +605,8 @@ int main(int argc, char* argv[]) {
         totalMonitor.checkpoint("Results reported");
 
         huntmaster::DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+            huntmaster::DebugComponent::TOOLS,
+            huntmaster::DebugLevel::INFO,
             "=== Detailed Analysis Tool Completed Successfully ===");
 
     } catch (const std::exception& e) {

@@ -78,12 +78,12 @@ struct DebugOptions {
 
 // Performance monitoring class
 class PerformanceMonitor {
-   private:
+  private:
     std::chrono::high_resolution_clock::time_point startTime;
     std::string operationName;
     bool enabled;
 
-   public:
+  public:
     PerformanceMonitor(const std::string& name, bool enable = true)
         : operationName(name), enabled(enable) {
         if (enabled) {
@@ -100,9 +100,10 @@ class PerformanceMonitor {
             auto duration =
                 std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
 
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-                operationName + " completed in " + std::to_string(duration.count()) + "ms");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::INFO,
+                                           operationName + " completed in "
+                                               + std::to_string(duration.count()) + "ms");
         }
     }
 
@@ -112,20 +113,21 @@ class PerformanceMonitor {
             auto duration =
                 std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime);
 
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                operationName + " - " + message + " (+" + std::to_string(duration.count()) + "ms)");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::DEBUG,
+                                           operationName + " - " + message + " (+"
+                                               + std::to_string(duration.count()) + "ms)");
         }
     }
 };
 
 // Feature generation class
 class FeatureGenerator {
-   private:
+  private:
     std::unique_ptr<UnifiedAudioEngine> engine;
     DebugOptions& options;
 
-   public:
+  public:
     FeatureGenerator(DebugOptions& opts) : options(opts) {
         auto engineResult = UnifiedAudioEngine::create();
         if (!engineResult.isOk()) {
@@ -193,9 +195,10 @@ class FeatureGenerator {
             auto destroyResult = engine->destroySession(sessionId);
             if (destroyResult != UnifiedAudioEngine::Status::OK) {
                 if (options.enableFeatureDebug) {
-                    DebugLogger::getInstance().log(
-                        huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::WARN,
-                        "Warning: Failed to destroy session for: " + callName);
+                    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                   huntmaster::DebugLevel::WARN,
+                                                   "Warning: Failed to destroy session for: "
+                                                       + callName);
                 }
             }
 
@@ -204,17 +207,19 @@ class FeatureGenerator {
             if (std::filesystem::exists(featurePath)) {
                 if (options.enableFeatureDebug) {
                     auto fileSize = std::filesystem::file_size(featurePath);
-                    DebugLogger::getInstance().log(
-                        huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                        "Feature file generated: " + featurePath +
-                            " (Size: " + std::to_string(fileSize) + " bytes)");
+                    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                   huntmaster::DebugLevel::DEBUG,
+                                                   "Feature file generated: " + featurePath
+                                                       + " (Size: " + std::to_string(fileSize)
+                                                       + " bytes)");
                 }
                 std::cout << "  ✓ Features generated: " << featurePath << std::endl;
             } else {
                 if (options.enableFeatureDebug) {
-                    DebugLogger::getInstance().log(
-                        huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::WARN,
-                        "Feature file not found after processing: " + featurePath);
+                    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                   huntmaster::DebugLevel::WARN,
+                                                   "Feature file not found after processing: "
+                                                       + featurePath);
                 }
                 std::cout << "  ⚠ Feature file not found: " << featurePath << std::endl;
             }
@@ -222,9 +227,10 @@ class FeatureGenerator {
             return true;
 
         } catch (const std::exception& e) {
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::ERROR,
-                "Exception during feature generation for " + callName + ": " + e.what());
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::ERROR,
+                                           "Exception during feature generation for " + callName
+                                               + ": " + e.what());
             std::cerr << "Error processing " << callName << ": " << e.what() << std::endl;
             return false;
         }
@@ -267,7 +273,8 @@ int main(int argc, char* argv[]) {
                                     huntmaster::DebugLevel::DEBUG);
     }
 
-    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                   huntmaster::DebugLevel::INFO,
                                    "=== MFCC Feature Generator Started ===");
 
     PerformanceMonitor totalMonitor("Total execution", debugOptions.enablePerformanceMetrics);
@@ -287,15 +294,24 @@ int main(int argc, char* argv[]) {
 
     // If no specific calls provided, use default list
     if (!foundCalls) {
-        callsToProcess = {"breeding_bellow", "buck_grunt",     "buck_rage_grunts", "buck-bawl",
-                          "contact-bleatr",  "doe-grunt",      "doebleat",         "estrus_bleat",
-                          "fawn-bleat",      "sparring_bucks", "tending_grunts"};
+        callsToProcess = {"breeding_bellow",
+                          "buck_grunt",
+                          "buck_rage_grunts",
+                          "buck-bawl",
+                          "contact-bleatr",
+                          "doe-grunt",
+                          "doebleat",
+                          "estrus_bleat",
+                          "fawn-bleat",
+                          "sparring_bucks",
+                          "tending_grunts"};
     }
 
     if (debugOptions.enableBatchDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Processing " + std::to_string(callsToProcess.size()) + " calls");
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Processing " + std::to_string(callsToProcess.size())
+                                           + " calls");
 
         for (const auto& call : callsToProcess) {
             DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
@@ -334,10 +350,11 @@ int main(int argc, char* argv[]) {
     }
 
     DebugLogger::getInstance().log(
-        huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-        "=== MFCC Feature Generator " +
-            std::string(failureCount == 0 ? "Completed Successfully" : "Completed with Errors") +
-            " ===");
+        huntmaster::DebugComponent::TOOLS,
+        huntmaster::DebugLevel::INFO,
+        "=== MFCC Feature Generator "
+            + std::string(failureCount == 0 ? "Completed Successfully" : "Completed with Errors")
+            + " ===");
 
     return failureCount == 0 ? 0 : 1;
 }

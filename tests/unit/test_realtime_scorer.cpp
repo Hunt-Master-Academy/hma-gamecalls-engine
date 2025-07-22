@@ -1,9 +1,9 @@
-#include <gtest/gtest.h>
-
 #include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "huntmaster/core/DebugLogger.h"
 #include "huntmaster/core/RealtimeScorer.h"
@@ -11,7 +11,7 @@
 namespace huntmaster {
 
 class RealtimeScorerTest : public ::testing::Test {
-   protected:
+  protected:
     void SetUp() override {
         config_.sampleRate = 44100.0f;
         config_.updateRateMs = 100.0f;
@@ -319,48 +319,58 @@ TEST_F(RealtimeScorerTest, DISABLED_ResetFunctionalityTest) {
                                                "ResetFunctionalityTest: Setting master call");
     ASSERT_TRUE(scorer_->setMasterCall(testMasterCallPath_));
     huntmaster::DebugLogger::getInstance().log(
-        huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
+        huntmaster::Component::REALTIME_SCORER,
+        huntmaster::LogLevel::DEBUG,
         "ResetFunctionalityTest: Master call set successfully");
 
     // Process some audio and generate history
     huntmaster::DebugLogger::getInstance().log(
-        huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
+        huntmaster::Component::REALTIME_SCORER,
+        huntmaster::LogLevel::DEBUG,
         "ResetFunctionalityTest: Processing audio to generate history");
     for (int i = 0; i < 3; ++i) {
-        huntmaster::DebugLogger::getInstance().log(
-            huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
-            "ResetFunctionalityTest: Processing audio chunk " + std::to_string(i));
+        huntmaster::DebugLogger::getInstance().log(huntmaster::Component::REALTIME_SCORER,
+                                                   huntmaster::LogLevel::DEBUG,
+                                                   "ResetFunctionalityTest: Processing audio chunk "
+                                                       + std::to_string(i));
         std::vector<float> audio(1024, 0.5f);
         auto result = scorer_->processAudio(audio, 1);
-        huntmaster::DebugLogger::getInstance().log(
-            huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
-            "ResetFunctionalityTest: Audio chunk " + std::to_string(i) + " processed");
+        huntmaster::DebugLogger::getInstance().log(huntmaster::Component::REALTIME_SCORER,
+                                                   huntmaster::LogLevel::DEBUG,
+                                                   "ResetFunctionalityTest: Audio chunk "
+                                                       + std::to_string(i) + " processed");
     }
     huntmaster::DebugLogger::getInstance().log(
-        huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
+        huntmaster::Component::REALTIME_SCORER,
+        huntmaster::LogLevel::DEBUG,
         "ResetFunctionalityTest: All audio chunks processed");
 
     // Verify we have history and progress
     huntmaster::DebugLogger::getInstance().log(
-        huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
+        huntmaster::Component::REALTIME_SCORER,
+        huntmaster::LogLevel::DEBUG,
         "ResetFunctionalityTest: Getting scoring history before reset");
     auto historyBefore = scorer_->getScoringHistory(3);
     huntmaster::DebugLogger::getInstance().log(
-        huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
+        huntmaster::Component::REALTIME_SCORER,
+        huntmaster::LogLevel::DEBUG,
         "ResetFunctionalityTest: Got " + std::to_string(historyBefore.size()) + " history items");
 
     huntmaster::DebugLogger::getInstance().log(
-        huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
+        huntmaster::Component::REALTIME_SCORER,
+        huntmaster::LogLevel::DEBUG,
         "ResetFunctionalityTest: Getting analysis progress before reset");
     auto progressBefore = scorer_->getAnalysisProgress();
-    huntmaster::DebugLogger::getInstance().log(
-        huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
-        "ResetFunctionalityTest: Progress before reset: " + std::to_string(progressBefore));
+    huntmaster::DebugLogger::getInstance().log(huntmaster::Component::REALTIME_SCORER,
+                                               huntmaster::LogLevel::DEBUG,
+                                               "ResetFunctionalityTest: Progress before reset: "
+                                                   + std::to_string(progressBefore));
 
     EXPECT_GT(historyBefore.size(), 0);
     EXPECT_GT(progressBefore, 0.0f);
     huntmaster::DebugLogger::getInstance().log(
-        huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
+        huntmaster::Component::REALTIME_SCORER,
+        huntmaster::LogLevel::DEBUG,
         "ResetFunctionalityTest: Pre-reset verification complete");
 
     // Reset scorer (but keep master call)
@@ -374,31 +384,37 @@ TEST_F(RealtimeScorerTest, DISABLED_ResetFunctionalityTest) {
 
     // Verify state is reset but master call is preserved
     huntmaster::DebugLogger::getInstance().log(
-        huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
+        huntmaster::Component::REALTIME_SCORER,
+        huntmaster::LogLevel::DEBUG,
         "ResetFunctionalityTest: Getting scoring history after reset");
     auto historyAfter = scorer_->getScoringHistory(1);
-    huntmaster::DebugLogger::getInstance().log(
-        huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
-        "ResetFunctionalityTest: Got " + std::to_string(historyAfter.size()) +
-            " history items after reset");
+    huntmaster::DebugLogger::getInstance().log(huntmaster::Component::REALTIME_SCORER,
+                                               huntmaster::LogLevel::DEBUG,
+                                               "ResetFunctionalityTest: Got "
+                                                   + std::to_string(historyAfter.size())
+                                                   + " history items after reset");
 
     huntmaster::DebugLogger::getInstance().log(
-        huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
+        huntmaster::Component::REALTIME_SCORER,
+        huntmaster::LogLevel::DEBUG,
         "ResetFunctionalityTest: Getting analysis progress after reset");
     auto progressAfter = scorer_->getAnalysisProgress();
-    huntmaster::DebugLogger::getInstance().log(
-        huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
-        "ResetFunctionalityTest: Progress after reset: " + std::to_string(progressAfter));
+    huntmaster::DebugLogger::getInstance().log(huntmaster::Component::REALTIME_SCORER,
+                                               huntmaster::LogLevel::DEBUG,
+                                               "ResetFunctionalityTest: Progress after reset: "
+                                                   + std::to_string(progressAfter));
 
     EXPECT_EQ(historyAfter.size(), 0);
     EXPECT_EQ(progressAfter, 0.0f);
 
     huntmaster::DebugLogger::getInstance().log(
-        huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
+        huntmaster::Component::REALTIME_SCORER,
+        huntmaster::LogLevel::DEBUG,
         "ResetFunctionalityTest: Checking if master call is preserved");
     EXPECT_TRUE(scorer_->hasMasterCall());  // Master call should be preserved
     huntmaster::DebugLogger::getInstance().log(
-        huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
+        huntmaster::Component::REALTIME_SCORER,
+        huntmaster::LogLevel::DEBUG,
         "ResetFunctionalityTest: Master call preservation verified");
 
     // Test session reset (clears everything)
@@ -411,11 +427,13 @@ TEST_F(RealtimeScorerTest, DISABLED_ResetFunctionalityTest) {
                                                "ResetFunctionalityTest: resetSession() completed");
 
     huntmaster::DebugLogger::getInstance().log(
-        huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
+        huntmaster::Component::REALTIME_SCORER,
+        huntmaster::LogLevel::DEBUG,
         "ResetFunctionalityTest: Verifying master call is cleared");
     EXPECT_FALSE(scorer_->hasMasterCall());
     huntmaster::DebugLogger::getInstance().log(
-        huntmaster::Component::REALTIME_SCORER, huntmaster::LogLevel::DEBUG,
+        huntmaster::Component::REALTIME_SCORER,
+        huntmaster::LogLevel::DEBUG,
         "ResetFunctionalityTest: Test completed successfully");
 }
 

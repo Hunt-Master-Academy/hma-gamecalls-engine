@@ -100,19 +100,186 @@ The Huntmaster Engine includes a comprehensive debugging infrastructure with 10 
 - **SIMILARITY_ANALYSIS** - Similarity analysis algorithms
 - **PERFORMANCE** - Performance monitoring and metrics
 
+## 🏗️ Build System
+
+The Huntmaster Engine uses a **modular CMake build system** that supports both native and WebAssembly builds from a unified configuration. The build system has been refactored into a hierarchical structure for improved maintainability and scalability.
+
+### Build System Architecture
+
+The CMake configuration is organized across multiple specialized files:
+
+- **Root `CMakeLists.txt`**: Project-wide configuration and build coordination
+- **`src/CMakeLists.txt`**: Core UnifiedAudioEngine library configuration
+- **`tests/CMakeLists.txt`**: Complete test suite (unit tests, integration tests, benchmarks)
+- **`tools/CMakeLists.txt`**: Command-line development tools
+
+### Prerequisites
+
+- **CMake** 3.16 or higher
+- **C++20** compatible compiler (GCC 10+, Clang 12+, MSVC 2019+)
+- **Git** for submodule management
+
+### Quick Start
+
+#### Native Build (Windows, Linux, macOS)
+
+```bash
+# Clone with submodules
+git clone --recursive https://github.com/tescolopio/huntmaster-engine.git
+cd huntmaster-engine
+
+# Configure and build
+cmake -B build
+cmake --build build
+
+# Run tests
+cd build && ctest
+```
+
+#### WebAssembly Build
+
+```bash
+# Setup Emscripten SDK (first time only)
+cd tools/emsdk
+./emsdk install latest
+./emsdk activate latest
+source ./emsdk_env.sh
+
+# Build for WebAssembly
+cd ../..
+emcmake cmake -B build-wasm
+cmake --build build-wasm
+```
+
+### Build Configuration Options
+
+| Option                   | Default | Description                                |
+| ------------------------ | ------- | ------------------------------------------ |
+| `HUNTMASTER_BUILD_TESTS` | `ON`    | Enable unit tests and benchmarks           |
+| `HUNTMASTER_BUILD_TOOLS` | `ON`    | Enable command-line development tools      |
+| `CMAKE_BUILD_TYPE`       | `Debug` | Build type: Debug, Release, RelWithDebInfo |
+
+#### Custom Configuration Examples
+
+```bash
+# Release build with optimizations
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+
+# Build without tests for faster compilation
+cmake -B build -DHUNTMASTER_BUILD_TESTS=OFF
+cmake --build build
+
+# Build only the core library
+cmake -B build -DHUNTMASTER_BUILD_TESTS=OFF -DHUNTMASTER_BUILD_TOOLS=OFF
+cmake --build build
+```
+
+### Build Targets
+
+The modular build system automatically discovers and configures:
+
+#### Core Library
+
+- **`UnifiedAudioEngine`**: Main static library for all platforms
+
+#### Development Tools (10 tools)
+
+- **`interactive_recorder`**: Interactive audio recording with live monitoring
+- **`debug_dtw_similarity`**: DTW similarity analysis debugging
+- **`analyze_recording`**: Audio file analysis tool
+- **`audio_trimmer`**: Audio preprocessing utility
+- **`simple_unified_test`**: Core engine functionality testing
+- And 5 additional specialized tools...
+
+#### Test Suite
+
+- **`RunEngineTests`**: Main Google Test runner
+- **Standalone diagnostic tools**: Individual test executables
+- **Integration tests**: Real wildlife call validation
+- **Benchmarks**: Performance testing with Google Benchmark
+
+### Platform-Specific Notes
+
+#### Windows
+
+```bash
+# Visual Studio 2019/2022
+cmake -B build -G "Visual Studio 16 2019"
+cmake --build build --config Release
+```
+
+#### Linux/macOS
+
+```bash
+# Debug build with detailed output
+cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=ON
+make -C build -j$(nproc)
+```
+
+### Troubleshooting
+
+#### Common Issues
+
+1. **Submodules not initialized**: Run `git submodule update --init --recursive`
+2. **CMake version too old**: Ensure CMake 3.16+
+3. **C++20 not supported**: Update to GCC 10+, Clang 12+, or MSVC 2019+
+
+#### Getting Help
+
+```bash
+# View all available targets
+cmake --build build --target help
+
+# Detailed build configuration
+cmake -B build -DCMAKE_VERBOSE_MAKEFILE=ON
+```
+
 ## Dependencies
 
 This project uses git submodules for external dependencies:
 
 - **KissFFT**: Fast Fourier Transform library (`libs/kissfft`)
 - **GoogleTest**: Testing framework (`tests/lib/googletest`)
+- **Google Benchmark**: Performance benchmarking (`tests/lib/benchmark`)
 - **Emscripten SDK**: WebAssembly compilation (`tools/emsdk`)
 
-### Cloning with Submodules
+### Dependency Management
 
 ```bash
+# Initial clone with all dependencies
 git clone --recursive https://github.com/tescolopio/huntmaster-engine.git
 
-# Or if already cloned:
+# Update existing repository
+git pull
 git submodule update --init --recursive
+```
+
+## 📚 Documentation
+
+Comprehensive documentation is available in the [`docs/`](docs/) directory:
+
+- **[Architecture Guide](docs/architecture.md)** - Technical design and system architecture
+- **[Debugging Guide](docs/DEBUGGING.md)** - Debug tools and troubleshooting
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment and configuration
+- **[Feature Implementation](docs/FeatureImplementationGuide.md)** - Guide for adding new features
+- **[Development Progress](docs/Dev_Progress.md)** - Project milestones and progress
+
+For a complete documentation index, see [`docs/README.md`](docs/README.md).
+
+## 🏗️ Project Structure
+
+```
+huntmaster-engine/
+├── src/              # Core engine source code
+├── include/          # Public header files
+├── tests/            # Unit tests, integration tests, benchmarks
+├── tools/            # Development and diagnostic tools
+├── docs/             # Project documentation
+├── libs/             # Third-party libraries (git submodules)
+├── scripts/          # Build and utility scripts
+├── .vscode/          # VS Code configuration
+└── build/            # Build output directory
+    ├── bin/          # Compiled executables
+    └── lib/          # Static libraries
 ```

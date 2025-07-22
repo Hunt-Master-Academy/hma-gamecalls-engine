@@ -36,7 +36,7 @@ namespace huntmaster {
 
 // Private implementation class
 class MFCCProcessor::Impl {
-   public:
+  public:
     Config config;
 
 #ifdef HAVE_KISSFFT
@@ -147,8 +147,8 @@ class MFCCProcessor::Impl {
         }
     }
 
-    huntmaster::expected<FeatureVector, MFCCError> extractFeatures(
-        std::span<const float> audio_frame) {
+    huntmaster::expected<FeatureVector, MFCCError>
+    extractFeatures(std::span<const float> audio_frame) {
         if (audio_frame.size() != config.frame_size) {
             return huntmaster::unexpected(MFCCError::INVALID_INPUT);
         }
@@ -168,10 +168,11 @@ class MFCCProcessor::Impl {
         for (size_t i = 0; i < config.num_filters; ++i) {
             // Use std::inner_product for a clearer and more robust dot product calculation.
             auto filter_row_start = melFilterBank.begin() + i * powerSpectrum.size();
-            melEnergies[i] =
-                logf(std::inner_product(filter_row_start, filter_row_start + powerSpectrum.size(),
-                                        powerSpectrum.begin(), 0.0f) +
-                     1e-10f);
+            melEnergies[i] = logf(std::inner_product(filter_row_start,
+                                                     filter_row_start + powerSpectrum.size(),
+                                                     powerSpectrum.begin(),
+                                                     0.0f)
+                                  + 1e-10f);
         }
 
         FeatureVector coefficients(config.num_coefficients, 0.0f);
@@ -193,13 +194,13 @@ MFCCProcessor::~MFCCProcessor() = default;
 MFCCProcessor::MFCCProcessor(MFCCProcessor&&) noexcept = default;
 MFCCProcessor& MFCCProcessor::operator=(MFCCProcessor&&) noexcept = default;
 
-huntmaster::expected<MFCCProcessor::FeatureVector, MFCCError> MFCCProcessor::extractFeatures(
-    std::span<const float> audio_frame) {
+huntmaster::expected<MFCCProcessor::FeatureVector, MFCCError>
+MFCCProcessor::extractFeatures(std::span<const float> audio_frame) {
     MFCC_LOG_DEBUG("extractFeatures called with frame size: " + std::to_string(audio_frame.size()));
     auto result = pimpl_->extractFeatures(audio_frame);
     if (result.has_value()) {
-        MFCC_LOG_DEBUG("extractFeatures successful, feature vector size: " +
-                       std::to_string(result->size()));
+        MFCC_LOG_DEBUG("extractFeatures successful, feature vector size: "
+                       + std::to_string(result->size()));
     } else {
         MFCC_LOG_ERROR("extractFeatures failed with error");
     }
@@ -208,8 +209,9 @@ huntmaster::expected<MFCCProcessor::FeatureVector, MFCCError> MFCCProcessor::ext
 
 huntmaster::expected<MFCCProcessor::FeatureMatrix, MFCCError>
 MFCCProcessor::extractFeaturesFromBuffer(std::span<const float> audio_buffer, size_t hop_size) {
-    MFCC_LOG_DEBUG("extractFeaturesFromBuffer called with buffer size: " +
-                   std::to_string(audio_buffer.size()) + ", hop_size: " + std::to_string(hop_size));
+    MFCC_LOG_DEBUG("extractFeaturesFromBuffer called with buffer size: "
+                   + std::to_string(audio_buffer.size())
+                   + ", hop_size: " + std::to_string(hop_size));
     if (audio_buffer.empty()) {
         MFCC_LOG_ERROR("extractFeaturesFromBuffer: empty buffer provided");
         return huntmaster::unexpected(MFCCError::INVALID_INPUT);
@@ -233,6 +235,8 @@ MFCCProcessor::extractFeaturesFromBuffer(std::span<const float> audio_buffer, si
 }
 
 void MFCCProcessor::clearCache() { /* Caching logic to be implemented */ }
-size_t MFCCProcessor::getCacheSize() const noexcept { return 0; }
+size_t MFCCProcessor::getCacheSize() const noexcept {
+    return 0;
+}
 
 }  // namespace huntmaster

@@ -26,7 +26,7 @@ namespace huntmaster {
  * - Memory-efficient processing for real-time performance
  */
 class WaveformGenerator {
-   public:
+  public:
     /// Configuration parameters for waveform generation
     struct Config {
         float sampleRate = 44100.0f;   ///< Audio sample rate in Hz
@@ -40,8 +40,8 @@ class WaveformGenerator {
 
         /// Validate configuration parameters
         [[nodiscard]] bool isValid() const noexcept {
-            return sampleRate > 0.0f && maxSamples > 0 && downsampleRatio > 0 &&
-                   updateRateMs > 0.0f && rmsWindowMs > 0.0f;
+            return sampleRate > 0.0f && maxSamples > 0 && downsampleRatio > 0 && updateRateMs > 0.0f
+                   && rmsWindowMs > 0.0f;
         }
     };
 
@@ -190,7 +190,7 @@ class WaveformGenerator {
      */
     void setZoomLevel(float zoomLevel) noexcept;
 
-   private:
+  private:
     /**
      * @brief Internal helper to get complete waveform without acquiring mutex
      *
@@ -217,7 +217,8 @@ class WaveformGenerator {
  * @param sampleRate Audio sample rate
  * @return Optimal downsampling ratio
  */
-[[nodiscard]] size_t calculateOptimalDownsampleRatio(size_t totalSamples, size_t displayWidthPixels,
+[[nodiscard]] size_t calculateOptimalDownsampleRatio(size_t totalSamples,
+                                                     size_t displayWidthPixels,
                                                      float sampleRate) noexcept;
 
 /**

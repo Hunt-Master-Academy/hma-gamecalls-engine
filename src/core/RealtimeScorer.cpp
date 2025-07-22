@@ -40,7 +40,7 @@ namespace huntmaster {
 
 /// Implementation details for RealtimeScorer
 class RealtimeScorer::Impl {
-   public:
+  public:
     Config config_;
     mutable std::mutex mutex_;
 
@@ -82,8 +82,8 @@ class RealtimeScorer::Impl {
 };
 
 // Helper functions for scoring logic, scoped to this file.
-static float calculateVolumeSimilarity(float liveRms, float masterRms,
-                                       float tolerance = 0.3f) noexcept {
+static float
+calculateVolumeSimilarity(float liveRms, float masterRms, float tolerance = 0.3f) noexcept {
     if (masterRms < 1e-6f) {
         return (liveRms < 1e-6f) ? 1.0f : 0.0f;
     }
@@ -101,7 +101,8 @@ static float calculateVolumeSimilarity(float liveRms, float masterRms,
 }
 
 static float calculateTimingAccuracy(float liveDuration, float masterDuration) noexcept {
-    if (masterDuration <= 0.0f) return 0.5f;  // Neutral score if master duration is unknown
+    if (masterDuration <= 0.0f)
+        return 0.5f;  // Neutral score if master duration is unknown
     const float ratio = liveDuration / masterDuration;
     // Penalize for being too short or too long
     if (ratio < 1.0f) {
@@ -111,11 +112,12 @@ static float calculateTimingAccuracy(float liveDuration, float masterDuration) n
     return std::max(0.0f, 1.0f - (ratio - 1.0f) * 0.5f);
 }
 
-static float calculateConfidence(size_t samplesAnalyzed, float signalQuality,
+static float calculateConfidence(size_t samplesAnalyzed,
+                                 float signalQuality,
                                  size_t minSamplesForConfidence) noexcept {
     if (samplesAnalyzed < minSamplesForConfidence) {
-        return static_cast<float>(samplesAnalyzed) / static_cast<float>(minSamplesForConfidence) *
-               signalQuality;
+        return static_cast<float>(samplesAnalyzed) / static_cast<float>(minSamplesForConfidence)
+               * signalQuality;
     }
     return signalQuality;
 }
@@ -154,10 +156,12 @@ void RealtimeScorer::Impl::initializeComponents() {
     levelProcessor_ = std::make_unique<AudioLevelProcessor>(levelConfig);
 }
 
-float RealtimeScorer::Impl::calculateWeightedScore(float mfcc, float volume, float timing,
+float RealtimeScorer::Impl::calculateWeightedScore(float mfcc,
+                                                   float volume,
+                                                   float timing,
                                                    float pitch) const {
-    return config_.mfccWeight * mfcc + config_.volumeWeight * volume +
-           config_.timingWeight * timing + config_.pitchWeight * pitch;
+    return config_.mfccWeight * mfcc + config_.volumeWeight * volume + config_.timingWeight * timing
+           + config_.pitchWeight * pitch;
 }
 
 float RealtimeScorer::Impl::calculateProgressRatio() const {
@@ -190,7 +194,8 @@ std::string RealtimeScorer::Impl::generateRecommendation(const SimilarityScore& 
 
 bool RealtimeScorer::Impl::isScoreTrendingUp() const {
     // Require at least 6 scores to compare 3 recent and 3 older
-    if (scoringHistory_.size() < 6) return false;
+    if (scoringHistory_.size() < 6)
+        return false;
 
     const size_t recentCount = 3;
     const size_t olderCount = 3;
@@ -218,8 +223,8 @@ bool RealtimeScorer::setMasterCall(const std::string& masterCallPath) noexcept {
         std::lock_guard<std::mutex> lock(impl_->mutex_);
 
         // Try to load as feature file first (.mfc)
-        if (masterCallPath.size() >= 4 &&
-            masterCallPath.compare(masterCallPath.size() - 4, 4, ".mfc") == 0) {
+        if (masterCallPath.size() >= 4
+            && masterCallPath.compare(masterCallPath.size() - 4, 4, ".mfc") == 0) {
             std::ifstream file(masterCallPath, std::ios::binary);
             if (!file.is_open()) {
                 return false;
@@ -375,8 +380,8 @@ RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> sampl
         }
 
         // Accumulate live audio for analysis
-        impl_->liveAudioBuffer_.insert(impl_->liveAudioBuffer_.end(), monoSamples.begin(),
-                                       monoSamples.end());
+        impl_->liveAudioBuffer_.insert(
+            impl_->liveAudioBuffer_.end(), monoSamples.begin(), monoSamples.end());
 
         // Update duration
         impl_->liveAudioDuration_ += static_cast<float>(frameCount) / impl_->config_.sampleRate;
@@ -459,7 +464,8 @@ RealtimeScorer::Result RealtimeScorer::processAudio(std::span<const float> sampl
 
         // Calculate confidence based on data quantity and quality
         const float signalQuality = std::min(1.0f, levelMeasurement.rmsLinear * 10.0f);
-        score.confidence = calculateConfidence(impl_->totalSamplesProcessed_.load(), signalQuality,
+        score.confidence = calculateConfidence(impl_->totalSamplesProcessed_.load(),
+                                               signalQuality,
                                                impl_->config_.minSamplesForConfidence);
 
         // Determine reliability and match status
@@ -533,8 +539,8 @@ RealtimeScorer::FeedbackResult RealtimeScorer::getRealtimeFeedback() const noexc
     }
 }
 
-std::vector<RealtimeScorer::SimilarityScore> RealtimeScorer::getScoringHistory(
-    size_t count) const noexcept {
+std::vector<RealtimeScorer::SimilarityScore>
+RealtimeScorer::getScoringHistory(size_t count) const noexcept {
     SCORER_LOG_DEBUG("getScoringHistory() called with count=" + std::to_string(count));
     try {
         SCORER_LOG_DEBUG("getScoringHistory() acquiring lock");
@@ -543,16 +549,16 @@ std::vector<RealtimeScorer::SimilarityScore> RealtimeScorer::getScoringHistory(
 
         std::vector<SimilarityScore> history;
         size_t numToCopy = std::min(count, impl_->scoringHistory_.size());
-        SCORER_LOG_DEBUG("getScoringHistory() numToCopy=" + std::to_string(numToCopy) +
-                         ", history size=" + std::to_string(impl_->scoringHistory_.size()));
+        SCORER_LOG_DEBUG("getScoringHistory() numToCopy=" + std::to_string(numToCopy)
+                         + ", history size=" + std::to_string(impl_->scoringHistory_.size()));
 
         history.reserve(numToCopy);
         for (size_t i = 0; i < numToCopy; ++i) {
             history.push_back(impl_->scoringHistory_[i]);
         }
 
-        SCORER_LOG_DEBUG("getScoringHistory() returning " + std::to_string(history.size()) +
-                         " items");
+        SCORER_LOG_DEBUG("getScoringHistory() returning " + std::to_string(history.size())
+                         + " items");
         return history;
     } catch (const std::exception& e) {
         SCORER_LOG_ERROR("getScoringHistory() exception: " + std::string(e.what()));
@@ -594,14 +600,12 @@ std::string RealtimeScorer::exportFeedbackToJson() const {
 
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(6);
-    oss << "{"
-        << "\"currentScore\":" << exportScoreToJson() << ","
+    oss << "{" << "\"currentScore\":" << exportScoreToJson() << ","
         << "\"trendingScore\":" << feedback.trendingScore.overall << ","
         << "\"peakScore\":" << feedback.peakScore.overall << ","
-        << "\"progressRatio\":" << feedback.progressRatio << ","
-        << "\"qualityAssessment\":\"" << feedback.qualityAssessment << "\","
-        << "\"recommendation\":\"" << feedback.recommendation << "\","
-        << "\"isImproving\":" << (feedback.isImproving ? "true" : "false") << "}";
+        << "\"progressRatio\":" << feedback.progressRatio << "," << "\"qualityAssessment\":\""
+        << feedback.qualityAssessment << "\"," << "\"recommendation\":\"" << feedback.recommendation
+        << "\"," << "\"isImproving\":" << (feedback.isImproving ? "true" : "false") << "}";
 
     return oss.str();
 }
@@ -614,19 +618,16 @@ std::string RealtimeScorer::exportHistoryToJson(size_t maxCount) const {
     oss << "[";
 
     for (size_t i = 0; i < history.size(); ++i) {
-        if (i > 0) oss << ",";
+        if (i > 0)
+            oss << ",";
 
         const auto& score = history[i];
         const auto epoch = score.timestamp.time_since_epoch();
         const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(epoch).count();
 
-        oss << "{"
-            << "\"overall\":" << score.overall << ","
-            << "\"mfcc\":" << score.mfcc << ","
-            << "\"volume\":" << score.volume << ","
-            << "\"timing\":" << score.timing << ","
-            << "\"pitch\":" << score.pitch << ","
-            << "\"confidence\":" << score.confidence << ","
+        oss << "{" << "\"overall\":" << score.overall << "," << "\"mfcc\":" << score.mfcc << ","
+            << "\"volume\":" << score.volume << "," << "\"timing\":" << score.timing << ","
+            << "\"pitch\":" << score.pitch << "," << "\"confidence\":" << score.confidence << ","
             << "\"timestamp\":" << millis << "}";
     }
 
@@ -760,13 +761,15 @@ RealtimeScorer::Config RealtimeScorer::getConfig() const noexcept {
     return impl_->config_;
 }
 
-bool RealtimeScorer::isInitialized() const noexcept { return impl_->initialized_.load(); }
+bool RealtimeScorer::isInitialized() const noexcept {
+    return impl_->initialized_.load();
+}
 
 bool RealtimeScorer::hasMasterCall() const noexcept {
     SCORER_LOG_DEBUG("hasMasterCall() called - acquiring lock");
     std::lock_guard<std::mutex> lock(impl_->mutex_);
-    SCORER_LOG_DEBUG("hasMasterCall() lock acquired - returning " +
-                     std::to_string(impl_->hasMasterCall_));
+    SCORER_LOG_DEBUG("hasMasterCall() lock acquired - returning "
+                     + std::to_string(impl_->hasMasterCall_));
     return impl_->hasMasterCall_;
 }
 

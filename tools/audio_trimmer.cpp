@@ -26,7 +26,7 @@ struct DebugOptions {
     bool enableBatchDebug = false;
     bool printHelp = false;
 
-    void parseArgs(int argc, char *argv[]) {
+    void parseArgs(int argc, char* argv[]) {
         for (int i = 1; i < argc; i++) {
             std::string arg = argv[i];
             if (arg == "--debug" || arg == "-d") {
@@ -51,7 +51,7 @@ struct DebugOptions {
         }
     }
 
-    void printUsage(const char *programName) {
+    void printUsage(const char* programName) {
         std::cout << "=== Audio Trimming Tool ===" << std::endl;
         std::cout << "Usage: " << programName << " <input.wav> [output.wav] [options]" << std::endl;
         std::cout << std::endl;
@@ -84,13 +84,13 @@ struct DebugOptions {
 
 // Performance monitoring class
 class PerformanceMonitor {
-   private:
+  private:
     std::chrono::high_resolution_clock::time_point startTime;
     std::string operationName;
     bool enabled;
 
-   public:
-    PerformanceMonitor(const std::string &name, bool enable = true)
+  public:
+    PerformanceMonitor(const std::string& name, bool enable = true)
         : operationName(name), enabled(enable) {
         if (enabled) {
             startTime = std::chrono::high_resolution_clock::now();
@@ -106,21 +106,23 @@ class PerformanceMonitor {
             auto duration =
                 std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
 
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-                operationName + " completed in " + std::to_string(duration.count()) + "ms");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::INFO,
+                                           operationName + " completed in "
+                                               + std::to_string(duration.count()) + "ms");
         }
     }
 
-    void checkpoint(const std::string &message) {
+    void checkpoint(const std::string& message) {
         if (enabled) {
             auto currentTime = std::chrono::high_resolution_clock::now();
             auto duration =
                 std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime);
 
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                operationName + " - " + message + " (+" + std::to_string(duration.count()) + "ms)");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::DEBUG,
+                                           operationName + " - " + message + " (+"
+                                               + std::to_string(duration.count()) + "ms)");
         }
     }
 };
@@ -137,28 +139,33 @@ struct VADConfig {
     void printConfig() const {
         if (enableDebug) {
             DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::DEBUG, "VAD Configuration:");
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                "  Silence threshold: " + std::to_string(silenceThreshold));
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                "  Energy threshold: " + std::to_string(energyThreshold));
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                "  Min silence frames: " + std::to_string(minSilenceFrames));
+                                           huntmaster::DebugLevel::DEBUG,
+                                           "VAD Configuration:");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::DEBUG,
+                                           "  Silence threshold: "
+                                               + std::to_string(silenceThreshold));
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::DEBUG,
+                                           "  Energy threshold: "
+                                               + std::to_string(energyThreshold));
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::DEBUG,
+                                           "  Min silence frames: "
+                                               + std::to_string(minSilenceFrames));
             DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
                                            huntmaster::DebugLevel::DEBUG,
                                            "  Min sound frames: " + std::to_string(minSoundFrames));
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                "  Hangover time: " + std::to_string(hangoverTime) + "s");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::DEBUG,
+                                           "  Hangover time: " + std::to_string(hangoverTime)
+                                               + "s");
         }
     }
 };
 
 // Calculate RMS energy for a window
-float calculateEnergy(const std::vector<float> &samples, size_t start, size_t windowSize) {
+float calculateEnergy(const std::vector<float>& samples, size_t start, size_t windowSize) {
     float sum = 0.0f;
     size_t end = std::min(start + windowSize, samples.size());
 
@@ -170,8 +177,8 @@ float calculateEnergy(const std::vector<float> &samples, size_t start, size_t wi
 }
 
 // Find the start of actual audio (first non-silence)
-size_t findAudioStart(const std::vector<float> &samples, float sampleRate,
-                      const VADConfig &config) {
+size_t
+findAudioStart(const std::vector<float>& samples, float sampleRate, const VADConfig& config) {
     PerformanceMonitor monitor("Audio start detection", config.enableDebug);
 
     int windowSize = static_cast<int>(sampleRate * 0.01f);  // 10ms windows
@@ -180,9 +187,10 @@ size_t findAudioStart(const std::vector<float> &samples, float sampleRate,
 
     if (config.enableDebug) {
         DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Finding audio start - Window size: " + std::to_string(windowSize) +
-                ", Required frames: " + std::to_string(requiredFrames));
+            huntmaster::DebugComponent::TOOLS,
+            huntmaster::DebugLevel::DEBUG,
+            "Finding audio start - Window size: " + std::to_string(windowSize)
+                + ", Required frames: " + std::to_string(requiredFrames));
     }
 
     int windowsProcessed = 0;
@@ -200,11 +208,12 @@ size_t findAudioStart(const std::vector<float> &samples, float sampleRate,
         bool isSound = (energy > config.energyThreshold || peakInWindow > config.silenceThreshold);
 
         if (config.enableDebug && windowsProcessed % 200 == 0) {
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::TRACE,
-                "Window " + std::to_string(windowsProcessed) + " - Energy: " +
-                    std::to_string(energy) + ", Peak: " + std::to_string(peakInWindow) +
-                    ", Sound: " + (isSound ? "YES" : "NO"));
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::TRACE,
+                                           "Window " + std::to_string(windowsProcessed)
+                                               + " - Energy: " + std::to_string(energy)
+                                               + ", Peak: " + std::to_string(peakInWindow)
+                                               + ", Sound: " + (isSound ? "YES" : "NO"));
         }
 
         if (isSound) {
@@ -215,9 +224,10 @@ size_t findAudioStart(const std::vector<float> &samples, float sampleRate,
 
                 if (config.enableDebug) {
                     DebugLogger::getInstance().log(
-                        huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-                        "Audio start found at sample " + std::to_string(startIdx) + " (" +
-                            std::to_string(startIdx / sampleRate) + "s)");
+                        huntmaster::DebugComponent::TOOLS,
+                        huntmaster::DebugLevel::INFO,
+                        "Audio start found at sample " + std::to_string(startIdx) + " ("
+                            + std::to_string(startIdx / sampleRate) + "s)");
                 }
 
                 return startIdx;
@@ -232,15 +242,15 @@ size_t findAudioStart(const std::vector<float> &samples, float sampleRate,
     if (config.enableDebug) {
         DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
                                        huntmaster::DebugLevel::WARN,
-                                       "No audio start found after processing " +
-                                           std::to_string(windowsProcessed) + " windows");
+                                       "No audio start found after processing "
+                                           + std::to_string(windowsProcessed) + " windows");
     }
 
     return 0;  // No sound found
 }
 
 // Find the end of actual audio (last non-silence)
-size_t findAudioEnd(const std::vector<float> &samples, float sampleRate, const VADConfig &config) {
+size_t findAudioEnd(const std::vector<float>& samples, float sampleRate, const VADConfig& config) {
     PerformanceMonitor monitor("Audio end detection", config.enableDebug);
 
     int windowSize = static_cast<int>(sampleRate * 0.01f);  // 10ms windows
@@ -249,9 +259,10 @@ size_t findAudioEnd(const std::vector<float> &samples, float sampleRate, const V
 
     if (config.enableDebug) {
         DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Finding audio end - Window size: " + std::to_string(windowSize) +
-                ", Hangover samples: " + std::to_string(hangoverSamples));
+            huntmaster::DebugComponent::TOOLS,
+            huntmaster::DebugLevel::DEBUG,
+            "Finding audio end - Window size: " + std::to_string(windowSize)
+                + ", Hangover samples: " + std::to_string(hangoverSamples));
     }
 
     int windowsProcessed = 0;
@@ -270,11 +281,12 @@ size_t findAudioEnd(const std::vector<float> &samples, float sampleRate, const V
         bool isSound = (energy > config.energyThreshold || peakInWindow > config.silenceThreshold);
 
         if (config.enableDebug && windowsProcessed % 200 == 0) {
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::TRACE,
-                "Backward window " + std::to_string(windowsProcessed) + " - Energy: " +
-                    std::to_string(energy) + ", Peak: " + std::to_string(peakInWindow) +
-                    ", Sound: " + (isSound ? "YES" : "NO"));
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::TRACE,
+                                           "Backward window " + std::to_string(windowsProcessed)
+                                               + " - Energy: " + std::to_string(energy)
+                                               + ", Peak: " + std::to_string(peakInWindow)
+                                               + ", Sound: " + (isSound ? "YES" : "NO"));
         }
 
         if (isSound) {
@@ -284,9 +296,10 @@ size_t findAudioEnd(const std::vector<float> &samples, float sampleRate, const V
 
             if (config.enableDebug) {
                 DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-                    "Audio end found at sample " + std::to_string(lastSoundFrame) + " (" +
-                        std::to_string(lastSoundFrame / sampleRate) + "s)");
+                    huntmaster::DebugComponent::TOOLS,
+                    huntmaster::DebugLevel::INFO,
+                    "Audio end found at sample " + std::to_string(lastSoundFrame) + " ("
+                        + std::to_string(lastSoundFrame / sampleRate) + "s)");
             }
 
             break;
@@ -298,16 +311,16 @@ size_t findAudioEnd(const std::vector<float> &samples, float sampleRate, const V
     if (config.enableDebug) {
         DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
                                        huntmaster::DebugLevel::DEBUG,
-                                       "End detection completed after processing " +
-                                           std::to_string(windowsProcessed) + " windows");
+                                       "End detection completed after processing "
+                                           + std::to_string(windowsProcessed) + " windows");
     }
 
     return lastSoundFrame;
 }
 
 // Trim silence from audio
-std::vector<float> trimSilence(const std::vector<float> &samples, float sampleRate,
-                               const VADConfig &config) {
+std::vector<float>
+trimSilence(const std::vector<float>& samples, float sampleRate, const VADConfig& config) {
     if (samples.empty()) {
         DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
                                        huntmaster::DebugLevel::WARN,
@@ -318,9 +331,10 @@ std::vector<float> trimSilence(const std::vector<float> &samples, float sampleRa
     PerformanceMonitor monitor("Silence trimming", config.enableDebug);
 
     if (config.enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Trimming silence from " + std::to_string(samples.size()) + " samples");
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Trimming silence from " + std::to_string(samples.size())
+                                           + " samples");
         config.printConfig();
     }
 
@@ -329,19 +343,21 @@ std::vector<float> trimSilence(const std::vector<float> &samples, float sampleRa
 
     // Ensure valid range
     if (start >= end || start >= samples.size()) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::WARN,
-            "No significant audio detected! Start: " + std::to_string(start) +
-                ", End: " + std::to_string(end));
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::WARN,
+                                       "No significant audio detected! Start: "
+                                           + std::to_string(start)
+                                           + ", End: " + std::to_string(end));
         std::cout << "Warning: No significant audio detected!" << std::endl;
         return samples;  // Return original if no valid audio found
     }
 
     if (config.enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Trimming audio from sample " + std::to_string(start) + " to " + std::to_string(end) +
-                " (" + std::to_string((end - start) / sampleRate) + "s)");
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Trimming audio from sample " + std::to_string(start)
+                                           + " to " + std::to_string(end) + " ("
+                                           + std::to_string((end - start) / sampleRate) + "s)");
         monitor.checkpoint("Audio boundaries identified");
     }
 
@@ -352,9 +368,10 @@ std::vector<float> trimSilence(const std::vector<float> &samples, float sampleRa
     int fadeLength = static_cast<int>(sampleRate * 0.005f);  // 5ms fade
 
     if (config.enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Applying fade in/out with " + std::to_string(fadeLength) + " samples");
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Applying fade in/out with " + std::to_string(fadeLength)
+                                           + " samples");
     }
 
     for (int i = 0; i < fadeLength && i < trimmed.size(); ++i) {
@@ -367,10 +384,11 @@ std::vector<float> trimSilence(const std::vector<float> &samples, float sampleRa
     }
 
     if (config.enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-            "Trimming completed - Removed " + std::to_string(samples.size() - trimmed.size()) +
-                " samples");
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::INFO,
+                                       "Trimming completed - Removed "
+                                           + std::to_string(samples.size() - trimmed.size())
+                                           + " samples");
         monitor.checkpoint("Fade applied");
     }
 
@@ -378,8 +396,10 @@ std::vector<float> trimSilence(const std::vector<float> &samples, float sampleRa
 }
 
 // Visualize audio with silence regions marked
-void visualizeWithSilence(const std::vector<float> &samples, float sampleRate,
-                          const std::string &label, bool enableDebug = false) {
+void visualizeWithSilence(const std::vector<float>& samples,
+                          float sampleRate,
+                          const std::string& label,
+                          bool enableDebug = false) {
     if (samples.empty()) {
         DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
                                        huntmaster::DebugLevel::WARN,
@@ -393,9 +413,10 @@ void visualizeWithSilence(const std::vector<float> &samples, float sampleRate,
     const int height = 10;
 
     if (enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Visualizing " + label + " with " + std::to_string(samples.size()) + " samples");
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Visualizing " + label + " with "
+                                           + std::to_string(samples.size()) + " samples");
     }
 
     std::cout << "\n" << label << std::endl;
@@ -424,27 +445,31 @@ void visualizeWithSilence(const std::vector<float> &samples, float sampleRate,
     if (enableDebug) {
         DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
                                        huntmaster::DebugLevel::DEBUG,
-                                       "Duration analysis - Original: " + std::to_string(duration) +
-                                           "s, Trimmed: " + std::to_string(trimmedDuration) +
-                                           "s, Removed: " + std::to_string(removedDuration) + "s");
+                                       "Duration analysis - Original: " + std::to_string(duration)
+                                           + "s, Trimmed: " + std::to_string(trimmedDuration)
+                                           + "s, Removed: " + std::to_string(removedDuration)
+                                           + "s");
     }
 
     // Draw waveform with regions
     int samplesPerColumn = samples.size() / width;
-    if (samplesPerColumn < 1) samplesPerColumn = 1;
+    if (samplesPerColumn < 1)
+        samplesPerColumn = 1;
 
     if (enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Visualization parameters - Samples per column: " + std::to_string(samplesPerColumn));
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Visualization parameters - Samples per column: "
+                                           + std::to_string(samplesPerColumn));
     }
 
     // Find max amplitude
     float maxAmp = 0.0f;
-    for (const auto &s : samples) {
+    for (const auto& s : samples) {
         maxAmp = std::max(maxAmp, std::abs(s));
     }
-    if (maxAmp == 0.0f) maxAmp = 1.0f;
+    if (maxAmp == 0.0f)
+        maxAmp = 1.0f;
 
     if (enableDebug) {
         DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
@@ -468,10 +493,11 @@ void visualizeWithSilence(const std::vector<float> &samples, float sampleRate,
     std::cout << std::endl;
 
     if (enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Silence visualization - " + std::to_string(silenceColumns) + " out of " +
-                std::to_string(width) + " columns are silence");
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Silence visualization - " + std::to_string(silenceColumns)
+                                           + " out of " + std::to_string(width)
+                                           + " columns are silence");
     }
 
     // Draw waveform
@@ -485,7 +511,8 @@ void visualizeWithSilence(const std::vector<float> &samples, float sampleRate,
             float rms = 0.0f;
             int count = 0;
             for (int i_inner = 0;
-                 i_inner < samplesPerColumn && sampleIdx + i_inner < samples.size(); ++i_inner) {
+                 i_inner < samplesPerColumn && sampleIdx + i_inner < samples.size();
+                 ++i_inner) {
                 rms += samples[sampleIdx + i_inner] * samples[sampleIdx + i_inner];
                 count++;
             }
@@ -513,13 +540,17 @@ void visualizeWithSilence(const std::vector<float> &samples, float sampleRate,
 
     if (enableDebug) {
         DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                       huntmaster::DebugLevel::DEBUG, "Visualization completed");
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Visualization completed");
     }
 }
 
 // Load and process audio file
-bool processAudioFile(const std::string &inputPath, const std::string &outputPath,
-                      VADConfig &config, bool visualize = false, bool enableDebug = false) {
+bool processAudioFile(const std::string& inputPath,
+                      const std::string& outputPath,
+                      VADConfig& config,
+                      bool visualize = false,
+                      bool enableDebug = false) {
     PerformanceMonitor monitor("Audio file processing", enableDebug);
 
     if (enableDebug) {
@@ -531,7 +562,7 @@ bool processAudioFile(const std::string &inputPath, const std::string &outputPat
     // Load audio
     unsigned int channels, sampleRate;
     drwav_uint64 totalFrames;
-    float *pSampleData = drwav_open_file_and_read_pcm_frames_f32(
+    float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(
         inputPath.c_str(), &channels, &sampleRate, &totalFrames, nullptr);
 
     if (!pSampleData) {
@@ -543,10 +574,11 @@ bool processAudioFile(const std::string &inputPath, const std::string &outputPat
     }
 
     if (enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Audio loaded - Channels: " + std::to_string(channels) + ", Sample Rate: " +
-                std::to_string(sampleRate) + ", Total Frames: " + std::to_string(totalFrames));
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Audio loaded - Channels: " + std::to_string(channels)
+                                           + ", Sample Rate: " + std::to_string(sampleRate)
+                                           + ", Total Frames: " + std::to_string(totalFrames));
         monitor.checkpoint("Audio file loaded");
     }
 
@@ -554,9 +586,10 @@ bool processAudioFile(const std::string &inputPath, const std::string &outputPat
     std::vector<float> samples(totalFrames);
     if (channels > 1) {
         if (enableDebug) {
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                "Converting " + std::to_string(channels) + " channels to mono");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::DEBUG,
+                                           "Converting " + std::to_string(channels)
+                                               + " channels to mono");
         }
 
         for (drwav_uint64 i = 0; i < totalFrames; ++i) {
@@ -573,7 +606,8 @@ bool processAudioFile(const std::string &inputPath, const std::string &outputPat
     } else {
         if (enableDebug) {
             DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::DEBUG, "Audio is already mono");
+                                           huntmaster::DebugLevel::DEBUG,
+                                           "Audio is already mono");
         }
 
         samples.assign(pSampleData, pSampleData + totalFrames);
@@ -612,9 +646,10 @@ bool processAudioFile(const std::string &inputPath, const std::string &outputPat
 
     if (enableDebug) {
         DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-            "Trimming analysis - Compression ratio: " + std::to_string(compressionRatio) +
-                ", Size reduction: " + std::to_string(100.0f * (1.0f - compressionRatio)) + "%");
+            huntmaster::DebugComponent::TOOLS,
+            huntmaster::DebugLevel::INFO,
+            "Trimming analysis - Compression ratio: " + std::to_string(compressionRatio)
+                + ", Size reduction: " + std::to_string(100.0f * (1.0f - compressionRatio)) + "%");
     }
 
     // Visualize trimmed
@@ -643,9 +678,10 @@ bool processAudioFile(const std::string &inputPath, const std::string &outputPat
     drwav_uninit(&wav);
 
     if (enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Wrote " + std::to_string(framesWritten) + " frames to output file");
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Wrote " + std::to_string(framesWritten)
+                                           + " frames to output file");
         monitor.checkpoint("Audio file saved");
     }
 
@@ -654,15 +690,16 @@ bool processAudioFile(const std::string &inputPath, const std::string &outputPat
     bool success = framesWritten > 0;
 
     if (enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-            std::string("Audio processing ") + (success ? "completed successfully" : "failed"));
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::INFO,
+                                       std::string("Audio processing ")
+                                           + (success ? "completed successfully" : "failed"));
     }
 
     return success;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     // Parse debug options
     DebugOptions debugOptions;
     debugOptions.parseArgs(argc, argv);
@@ -680,7 +717,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Configure component-specific debug levels
-    auto &logger = DebugLogger::getInstance();
+    auto& logger = DebugLogger::getInstance();
     if (debugOptions.enableVADDebug) {
         logger.setComponentLogLevel(huntmaster::DebugComponent::AUDIO_ENGINE,
                                     huntmaster::DebugLevel::DEBUG);
@@ -694,7 +731,8 @@ int main(int argc, char *argv[]) {
                                     huntmaster::DebugLevel::DEBUG);
     }
 
-    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                   huntmaster::DebugLevel::INFO,
                                    "=== Audio Trimming Tool Started ===");
 
     PerformanceMonitor totalMonitor("Total execution", debugOptions.enablePerformanceMetrics);
@@ -718,9 +756,10 @@ int main(int argc, char *argv[]) {
             config.silenceThreshold = std::stof(argv[++i]);
 
             if (debugOptions.enableDebug) {
-                DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                    "Silence threshold set to: " + std::to_string(config.silenceThreshold));
+                DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                               huntmaster::DebugLevel::DEBUG,
+                                               "Silence threshold set to: "
+                                                   + std::to_string(config.silenceThreshold));
             }
         } else if (arg == "-batch") {
             batchMode = true;
@@ -729,9 +768,10 @@ int main(int argc, char *argv[]) {
 
     if (debugOptions.enableDebug) {
         DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Configuration - Visualize: " + std::string(visualize ? "true" : "false") +
-                ", Batch mode: " + std::string(batchMode ? "true" : "false"));
+            huntmaster::DebugComponent::TOOLS,
+            huntmaster::DebugLevel::DEBUG,
+            "Configuration - Visualize: " + std::string(visualize ? "true" : "false")
+                + ", Batch mode: " + std::string(batchMode ? "true" : "false"));
     }
 
     bool allSuccessful = true;
@@ -754,16 +794,17 @@ int main(int argc, char *argv[]) {
             {"../data/recordings/test_grunt.wav", "../data/recordings/test_grunt_trimmed.wav"}};
 
         // Process test recordings
-        for (const auto &filePair : filesToProcess) {
+        for (const auto& filePair : filesToProcess) {
             if (debugOptions.enableBatchDebug) {
-                DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                    "Processing: " + filePair.first + " -> " + filePair.second);
+                DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                               huntmaster::DebugLevel::DEBUG,
+                                               "Processing: " + filePair.first + " -> "
+                                                   + filePair.second);
             }
 
             if (std::filesystem::exists(filePair.first)) {
-                bool success = processAudioFile(filePair.first, filePair.second, config, visualize,
-                                                debugOptions.enableDebug);
+                bool success = processAudioFile(
+                    filePair.first, filePair.second, config, visualize, debugOptions.enableDebug);
                 if (!success) {
                     allSuccessful = false;
                     if (debugOptions.enableBatchDebug) {
@@ -785,14 +826,15 @@ int main(int argc, char *argv[]) {
 
         // Process master calls
         std::vector<std::string> masters = {"buck_grunt", "doe-grunt", "buck-bawl"};
-        for (const auto &master : masters) {
+        for (const auto& master : masters) {
             std::string input = "../data/master_calls/" + master + ".wav";
             std::string output = "../data/master_calls/" + master + "_trimmed.wav";
 
             if (debugOptions.enableBatchDebug) {
-                DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                    "Processing master call: " + input + " -> " + output);
+                DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                               huntmaster::DebugLevel::DEBUG,
+                                               "Processing master call: " + input + " -> "
+                                                   + output);
             }
 
             if (std::filesystem::exists(input)) {
@@ -819,9 +861,10 @@ int main(int argc, char *argv[]) {
 
         if (debugOptions.enableBatchDebug) {
             DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-                "Batch processing completed - " +
-                    std::string(allSuccessful ? "All successful" : "Some files failed"));
+                huntmaster::DebugComponent::TOOLS,
+                huntmaster::DebugLevel::INFO,
+                "Batch processing completed - "
+                    + std::string(allSuccessful ? "All successful" : "Some files failed"));
         }
     } else {
         // Single file mode
@@ -838,14 +881,15 @@ int main(int argc, char *argv[]) {
         }
 
         if (debugOptions.enableDebug) {
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                "Single file mode - Input: " + inputPath + ", Output: " + outputPath);
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::DEBUG,
+                                           "Single file mode - Input: " + inputPath
+                                               + ", Output: " + outputPath);
         }
 
         if (std::filesystem::exists(inputPath)) {
-            allSuccessful = processAudioFile(inputPath, outputPath, config, visualize,
-                                             debugOptions.enableDebug);
+            allSuccessful = processAudioFile(
+                inputPath, outputPath, config, visualize, debugOptions.enableDebug);
         } else {
             std::cerr << "Input file not found: " << inputPath << std::endl;
             DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
@@ -858,10 +902,11 @@ int main(int argc, char *argv[]) {
     totalMonitor.checkpoint("Processing completed");
 
     DebugLogger::getInstance().log(
-        huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-        "=== Audio Trimming Tool " +
-            std::string(allSuccessful ? "Completed Successfully" : "Completed with Errors") +
-            " ===");
+        huntmaster::DebugComponent::TOOLS,
+        huntmaster::DebugLevel::INFO,
+        "=== Audio Trimming Tool "
+            + std::string(allSuccessful ? "Completed Successfully" : "Completed with Errors")
+            + " ===");
 
     return allSuccessful ? 0 : 1;
 }

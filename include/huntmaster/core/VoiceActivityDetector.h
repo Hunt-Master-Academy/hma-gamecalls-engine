@@ -21,7 +21,7 @@ struct VADResult {
 };
 
 class VoiceActivityDetector {
-   public:
+  public:
     struct Config {
         float energy_threshold{0.01f};
         std::chrono::milliseconds window_duration{20};
@@ -31,21 +31,21 @@ class VoiceActivityDetector {
         size_t sample_rate{44100};
     };
 
-    explicit VoiceActivityDetector(const Config &config);
+    explicit VoiceActivityDetector(const Config& config);
     ~VoiceActivityDetector();
 
-    VoiceActivityDetector(VoiceActivityDetector &&) noexcept;
-    VoiceActivityDetector &operator=(VoiceActivityDetector &&) noexcept;
+    VoiceActivityDetector(VoiceActivityDetector&&) noexcept;
+    VoiceActivityDetector& operator=(VoiceActivityDetector&&) noexcept;
 
-    [[nodiscard]] huntmaster::expected<VADResult, VADError> processWindow(
-        std::span<const float> audio);
+    [[nodiscard]] huntmaster::expected<VADResult, VADError>
+    processWindow(std::span<const float> audio);
 
     void reset();
 
     [[nodiscard]] bool isVoiceActive() const noexcept;
     [[nodiscard]] std::chrono::milliseconds getActiveDuration() const noexcept;
 
-   private:
+  private:
     class Impl;
     std::unique_ptr<Impl> pimpl_;
 };

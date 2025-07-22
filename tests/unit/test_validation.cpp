@@ -1,14 +1,14 @@
-#include <gtest/gtest.h>
-
 #include <cmath>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "huntmaster/core/UnifiedAudioEngine.h"
 
 using namespace huntmaster;
 
 class MFCCValidationTest : public ::testing::Test {
-   protected:
+  protected:
     std::unique_ptr<UnifiedAudioEngine> engine;
 
     void SetUp() override {

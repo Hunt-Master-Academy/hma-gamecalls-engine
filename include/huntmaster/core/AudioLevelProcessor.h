@@ -26,7 +26,7 @@ namespace huntmaster {
  * - Efficient circular buffer for level history
  */
 class AudioLevelProcessor {
-   public:
+  public:
     /// Configuration parameters for level processing
     struct Config {
         float sampleRate = 44100.0f;       ///< Audio sample rate in Hz
@@ -41,9 +41,9 @@ class AudioLevelProcessor {
 
         /// Validate configuration parameters
         [[nodiscard]] bool isValid() const noexcept {
-            return sampleRate > 0.0f && updateRateMs > 0.0f && rmsAttackTimeMs > 0.0f &&
-                   rmsReleaseTimeMs > 0.0f && peakAttackTimeMs > 0.0f && peakReleaseTimeMs > 0.0f &&
-                   dbFloor < dbCeiling && historySize > 0;
+            return sampleRate > 0.0f && updateRateMs > 0.0f && rmsAttackTimeMs > 0.0f
+                   && rmsReleaseTimeMs > 0.0f && peakAttackTimeMs > 0.0f && peakReleaseTimeMs > 0.0f
+                   && dbFloor < dbCeiling && historySize > 0;
         }
     };
 
@@ -170,7 +170,7 @@ class AudioLevelProcessor {
      */
     [[nodiscard]] bool isInitialized() const noexcept;
 
-   private:
+  private:
     /// Internal implementation details
     class Impl;
     std::unique_ptr<Impl> impl_;

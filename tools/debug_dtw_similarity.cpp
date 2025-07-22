@@ -29,13 +29,13 @@ using huntmaster::UnifiedAudioEngine;
  * @brief Enhanced DTW debugging with detailed feature analysis
  */
 class DTWDebugger {
-   private:
+  private:
     std::unique_ptr<UnifiedAudioEngine> engine_;
     huntmaster::SessionId sessionId_;
     bool verbose_;
     bool trace_;
 
-   public:
+  public:
     DTWDebugger(bool verbose = false, bool trace = false) : verbose_(verbose), trace_(trace) {
         if (trace) {
             DebugConfig::setupFullDebug();
@@ -65,7 +65,7 @@ class DTWDebugger {
         return performDetailedSimilarityAnalysis();
     }
 
-   private:
+  private:
     bool initializeEngine() {
         LOG_DEBUG(Component::TOOLS, "Creating UnifiedAudioEngine");
 
@@ -80,7 +80,7 @@ class DTWDebugger {
         return true;
     }
 
-   private:
+  private:
     bool loadAndAnalyzeAudio(const std::string& audioFile, const std::string& masterCallId) {
         LOG_DEBUG(Component::TOOLS, "Loading audio file for analysis");
 
@@ -121,8 +121,8 @@ class DTWDebugger {
         LOG_INFO(Component::TOOLS, "  - Channels: " + std::to_string(channels));
         LOG_INFO(Component::TOOLS, "  - Sample Rate: " + std::to_string(sampleRate) + " Hz");
         LOG_INFO(Component::TOOLS,
-                 "  - Duration: " + std::to_string(static_cast<float>(totalFrames) / sampleRate) +
-                     " seconds");
+                 "  - Duration: " + std::to_string(static_cast<float>(totalFrames) / sampleRate)
+                     + " seconds");
 
         // Convert to mono and analyze
         std::vector<float> monoData = convertToMono(audioData, totalFrames, channels);
@@ -137,8 +137,8 @@ class DTWDebugger {
         return processAudioThroughEngine(monoData);
     }
 
-    std::vector<float> convertToMono(float* audioData, drwav_uint64 totalFrames,
-                                     unsigned int channels) {
+    std::vector<float>
+    convertToMono(float* audioData, drwav_uint64 totalFrames, unsigned int channels) {
         std::vector<float> monoData(totalFrames);
 
         if (channels > 1) {
@@ -161,7 +161,8 @@ class DTWDebugger {
     }
 
     void analyzeAudioCharacteristics(const std::vector<float>& audioData, unsigned int sampleRate) {
-        if (!verbose_) return;
+        if (!verbose_)
+            return;
 
         LOG_DEBUG(Component::TOOLS, "Analyzing audio characteristics...");
 
@@ -193,8 +194,9 @@ class DTWDebugger {
                      "⚠️  Audio level is very low (RMS: " + std::to_string(rms) + ")");
         }
         if (maxVal > 0.95f || minVal < -0.95f) {
-            LOG_WARN(Component::TOOLS, "⚠️  Audio may be clipping (Max: " + std::to_string(maxVal) +
-                                           ", Min: " + std::to_string(minVal) + ")");
+            LOG_WARN(Component::TOOLS,
+                     "⚠️  Audio may be clipping (Max: " + std::to_string(maxVal)
+                         + ", Min: " + std::to_string(minVal) + ")");
         }
         if (dynamicRange < 0.1f) {
             LOG_WARN(Component::TOOLS,
@@ -209,18 +211,19 @@ class DTWDebugger {
         const size_t chunkSize = 1024;
         size_t totalChunks = (audioData.size() + chunkSize - 1) / chunkSize;
 
-        LOG_DEBUG(Component::TOOLS, "Processing " + std::to_string(totalChunks) + " chunks of " +
-                                        std::to_string(chunkSize) + " samples each");
+        LOG_DEBUG(Component::TOOLS,
+                  "Processing " + std::to_string(totalChunks) + " chunks of "
+                      + std::to_string(chunkSize) + " samples each");
 
         for (size_t i = 0; i < audioData.size(); i += chunkSize) {
             size_t remainingSamples = audioData.size() - i;
             size_t samplesToProcess = std::min(chunkSize, remainingSamples);
 
             if (trace_) {
-                LOG_TRACE(Component::TOOLS, "Processing chunk " +
-                                                std::to_string(i / chunkSize + 1) + "/" +
-                                                std::to_string(totalChunks) + " (" +
-                                                std::to_string(samplesToProcess) + " samples)");
+                LOG_TRACE(Component::TOOLS,
+                          "Processing chunk " + std::to_string(i / chunkSize + 1) + "/"
+                              + std::to_string(totalChunks) + " ("
+                              + std::to_string(samplesToProcess) + " samples)");
             }
 
             // Process audio chunk using span

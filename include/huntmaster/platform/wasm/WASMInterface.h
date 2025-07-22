@@ -2,21 +2,21 @@
 
 #ifdef __EMSCRIPTEN__
 
-#include <emscripten/bind.h>
-#include <emscripten/val.h>
-
 #include <memory>
 #include <vector>
+
+#include <emscripten/bind.h>
+#include <emscripten/val.h>
 
 #include "huntmaster/core/UnifiedAudioEngine.h"
 
 namespace wasm {
 class WASMEngine {
-   private:
+  private:
     std::unique_ptr<UnifiedAudioEngine> engine;
     std::string sessionId;
 
-   public:
+  public:
     WASMEngine();
     ~WASMEngine() = default;
 

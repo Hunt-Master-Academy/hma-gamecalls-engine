@@ -13,8 +13,10 @@ using namespace huntmaster;
 void printLevel(float level) {
     int bars = static_cast<int>(level * 50);
     std::cout << "\rLevel: [";
-    for (int j = 0; j < bars; ++j) std::cout << "=";
-    for (int j = bars; j < 50; ++j) std::cout << " ";
+    for (int j = 0; j < bars; ++j)
+        std::cout << "=";
+    for (int j = bars; j < 50; ++j)
+        std::cout << " ";
     std::cout << "] " << std::fixed << std::setprecision(2) << level;
     std::cout.flush();
 }
@@ -54,19 +56,19 @@ int main() {
     auto recordResult = engine->startRecording(sessionId);
     if (recordResult == UnifiedAudioEngine::Status::OK) {
         std::cout << "✓ Recording started successfully" << std::endl;
-        
+
         // Check if recording status is correct
         if (engine->isRecording(sessionId)) {
             std::cout << "✓ Recording status confirmed" << std::endl;
         } else {
             std::cout << "✗ Recording status check failed" << std::endl;
         }
-        
+
         // Simulate some recording time with level monitoring
         std::cout << "Recording for 2 seconds with level monitoring..." << std::endl;
         for (int i = 0; i < 20; ++i) {
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
-            
+
             // Get current recording level
             auto levelResult = engine->getRecordingLevel(sessionId);
             if (levelResult.isOk()) {
@@ -74,18 +76,18 @@ int main() {
             }
         }
         std::cout << std::endl;
-        
+
         // Stop recording
         auto stopResult = engine->stopRecording(sessionId);
         if (stopResult == UnifiedAudioEngine::Status::OK) {
             std::cout << "✓ Recording stopped successfully" << std::endl;
-            
+
             // Check recording duration
             auto durationResult = engine->getRecordingDuration(sessionId);
             if (durationResult.isOk()) {
                 std::cout << "✓ Recording duration: " << *durationResult << " seconds" << std::endl;
             }
-            
+
             // Save the recording
             auto saveResult = engine->saveRecording(sessionId, "test_recording.wav");
             if (saveResult.isOk()) {
@@ -104,9 +106,9 @@ int main() {
     std::cout << "\nTest 2: Testing audio processing..." << std::endl;
 
     // Test processing some dummy audio data
-    std::vector<float> testAudio(4410); // 0.1 seconds of 44.1kHz audio
+    std::vector<float> testAudio(4410);  // 0.1 seconds of 44.1kHz audio
     for (size_t i = 0; i < testAudio.size(); ++i) {
-        testAudio[i] = 0.5f * sin(2.0f * 3.14159f * 440.0f * i / 44100.0f); // 440Hz sine wave
+        testAudio[i] = 0.5f * sin(2.0f * 3.14159f * 440.0f * i / 44100.0f);  // 440Hz sine wave
     }
 
     std::span<const float> audioSpan(testAudio.data(), testAudio.size());
@@ -128,24 +130,24 @@ int main() {
 
     // Test playback functionality if we have a saved recording
     std::cout << "\nTest 3: Testing playback capabilities..." << std::endl;
-    
+
     // Try to play back the recording we just made
     auto playResult = engine->playRecording(sessionId, "test_recording.wav");
     if (playResult == UnifiedAudioEngine::Status::OK) {
         std::cout << "✓ Started playback of recorded audio" << std::endl;
-        
+
         // Monitor playback for a bit
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        
+
         if (engine->isPlaying(sessionId)) {
             std::cout << "✓ Playback status confirmed" << std::endl;
-            
+
             auto positionResult = engine->getPlaybackPosition(sessionId);
             if (positionResult.isOk()) {
                 std::cout << "✓ Playback position: " << *positionResult << " seconds" << std::endl;
             }
         }
-        
+
         // Stop playback
         auto stopPlayResult = engine->stopPlayback(sessionId);
         if (stopPlayResult == UnifiedAudioEngine::Status::OK) {

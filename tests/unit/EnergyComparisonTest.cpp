@@ -1,8 +1,8 @@
-#include <gtest/gtest.h>
-
 #include <chrono>
 #include <cmath>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "huntmaster/core/VoiceActivityDetector.h"
 

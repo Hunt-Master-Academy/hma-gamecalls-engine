@@ -47,7 +47,7 @@ struct TestVector {
 };
 
 // Generate reference test vectors
-void generateTestVectors(std::unique_ptr<UnifiedAudioEngine> &engine) {
+void generateTestVectors(std::unique_ptr<UnifiedAudioEngine>& engine) {
     std::cout << "=== Generating Test Vectors ===" << std::endl;
 
     // Create test directory
@@ -58,7 +58,7 @@ void generateTestVectors(std::unique_ptr<UnifiedAudioEngine> &engine) {
         {"Sine Wave 440Hz", "test_sine_440.wav", "sine_440_vector.bin", 1.0f, 83},
         {"Complex Wave", "test_complex.wav", "complex_vector.bin", 1.0f, 83}};
 
-    for (const auto &test : testCases) {
+    for (const auto& test : testCases) {
         std::cout << "\nGenerating vector for: " << test.name << std::endl;
 
         // Load as master using session-based approach
@@ -89,8 +89,8 @@ void generateTestVectors(std::unique_ptr<UnifiedAudioEngine> &engine) {
             outFile.write(&nullTerminator, 1);
 
             // Write expected values
-            outFile.write(reinterpret_cast<const char *>(&test.expectedScore), sizeof(float));
-            outFile.write(reinterpret_cast<const char *>(&test.expectedMFCCFrames), sizeof(int));
+            outFile.write(reinterpret_cast<const char*>(&test.expectedScore), sizeof(float));
+            outFile.write(reinterpret_cast<const char*>(&test.expectedMFCCFrames), sizeof(int));
 
             std::cout << "  Vector saved to: " << vectorPath << std::endl;
             outFile.close();
@@ -106,7 +106,7 @@ void generateTestVectors(std::unique_ptr<UnifiedAudioEngine> &engine) {
 }
 
 // Verify consistency across different processing methods
-bool verifyProcessingConsistency(std::unique_ptr<UnifiedAudioEngine> &engine) {
+bool verifyProcessingConsistency(std::unique_ptr<UnifiedAudioEngine>& engine) {
     std::cout << "\n=== Verifying Processing Consistency ===" << std::endl;
 
     // Test 1: Same audio processed different ways should give same result
@@ -273,7 +273,7 @@ bool verifyProcessingConsistency(std::unique_ptr<UnifiedAudioEngine> &engine) {
 }
 
 // Test edge cases
-bool testEdgeCases(std::unique_ptr<UnifiedAudioEngine> &engine) {
+bool testEdgeCases(std::unique_ptr<UnifiedAudioEngine>& engine) {
     std::cout << "\n=== Testing Edge Cases ===" << std::endl;
 
     // Test 1: Empty audio
@@ -414,7 +414,7 @@ bool testEdgeCases(std::unique_ptr<UnifiedAudioEngine> &engine) {
 }
 
 // Test different sample rates
-bool testSampleRates(std::unique_ptr<UnifiedAudioEngine> &engine) {
+bool testSampleRates(std::unique_ptr<UnifiedAudioEngine>& engine) {
     std::cout << "\n=== Testing Different Sample Rates ===" << std::endl;
 
     std::vector<float> sampleRates = {16000.0f, 22050.0f, 44100.0f, 48000.0f};

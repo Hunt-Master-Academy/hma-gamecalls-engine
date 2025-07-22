@@ -1,8 +1,8 @@
-#include <gtest/gtest.h>
-
 #include <chrono>
 #include <thread>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "huntmaster/core/VoiceActivityDetector.h"
 
@@ -10,20 +10,22 @@ using namespace huntmaster;
 
 // Use a test fixture for better structure and to avoid code duplication.
 class VoiceActivityDetectorTest : public ::testing::Test {
-   protected:
+  protected:
     void SetUp() override {
         // This configuration is used by default for all tests in this fixture.
         config_.energy_threshold = 0.01f;
         config_.window_duration = std::chrono::milliseconds(20);
         config_.sample_rate = 16000;
         config_.pre_buffer = std::chrono::milliseconds(40);
-        config_.post_buffer = std::chrono::milliseconds(40); // Hangover for 2 frames
-        config_.min_sound_duration = std::chrono::milliseconds(40); // Requires 2 frames to activate
+        config_.post_buffer = std::chrono::milliseconds(40);  // Hangover for 2 frames
+        config_.min_sound_duration =
+            std::chrono::milliseconds(40);  // Requires 2 frames to activate
         vad_ = std::make_unique<VoiceActivityDetector>(config_);
-
     }
 
-    std::vector<float> MakeAudio(size_t n, float value) { return std::vector<float>(n, value); }
+    std::vector<float> MakeAudio(size_t n, float value) {
+        return std::vector<float>(n, value);
+    }
 
     VoiceActivityDetector::Config config_;
     std::unique_ptr<VoiceActivityDetector> vad_;
@@ -44,7 +46,8 @@ TEST_F(VoiceActivityDetectorTest, VoiceIsDetectedAfterMinDuration) {
     // The result's is_active flag will be false because the state is not yet VOICE_ACTIVE.
     auto result1 = vad_->processWindow(voice);
     ASSERT_TRUE(result1.has_value());
-    EXPECT_FALSE(result1->is_active) << "VAD should be in CANDIDATE state, not ACTIVE, after one frame.";
+    EXPECT_FALSE(result1->is_active)
+        << "VAD should be in CANDIDATE state, not ACTIVE, after one frame.";
     EXPECT_FALSE(vad_->isVoiceActive()) << "isVoiceActive() should be false in CANDIDATE state.";
 
     // Frame 2: The VAD sees another voice frame, meets min_sound_duration (40ms),
@@ -60,15 +63,12 @@ TEST_F(VoiceActivityDetectorTest, PreAndPostBuffering) {
     auto voice = MakeAudio(320, 0.2f);
 
     // Silence first
-    ASSERT_TRUE(vad_->processWindow(silence).has_value())
-        << "Initial silence processing failed";
+    ASSERT_TRUE(vad_->processWindow(silence).has_value()) << "Initial silence processing failed";
 
     // Voice onset - requires 2 frames (40ms) to become active
-    ASSERT_TRUE(vad_->processWindow(voice).has_value())
-        << "First voice frame processing failed";
+    ASSERT_TRUE(vad_->processWindow(voice).has_value()) << "First voice frame processing failed";
     EXPECT_FALSE(vad_->isVoiceActive()) << "Should not be active after one voice frame.";
-    ASSERT_TRUE(vad_->processWindow(voice).has_value())
-        << "Second voice frame processing failed";
+    ASSERT_TRUE(vad_->processWindow(voice).has_value()) << "Second voice frame processing failed";
     EXPECT_TRUE(vad_->isVoiceActive()) << "Should be active after two voice frames.";
 
     // Voice offset (back to silence)
@@ -77,9 +77,11 @@ TEST_F(VoiceActivityDetectorTest, PreAndPostBuffering) {
     EXPECT_TRUE(vad_->isVoiceActive()) << "Should be in HANGOVER state after first silent frame.";
     ASSERT_TRUE(vad_->processWindow(silence).has_value())
         << "Post-buffer window 2 processing failed";
-    EXPECT_TRUE(vad_->isVoiceActive()) << "Should still be in HANGOVER state after second silent frame (post_buffer is 40ms).";
+    EXPECT_TRUE(vad_->isVoiceActive())
+        << "Should still be in HANGOVER state after second silent frame (post_buffer is 40ms).";
 
-    // Post-buffer period (40ms) has now elapsed. The next silent window should transition to inactive.
+    // Post-buffer period (40ms) has now elapsed. The next silent window should transition to
+    // inactive.
     ASSERT_TRUE(vad_->processWindow(silence).has_value()) << "Final silence processing failed";
     EXPECT_FALSE(vad_->isVoiceActive());
 }

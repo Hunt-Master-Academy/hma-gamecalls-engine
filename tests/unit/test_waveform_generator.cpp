@@ -1,10 +1,10 @@
-#include <gtest/gtest.h>
-
 #include <chrono>
 #include <cmath>
 #include <memory>
 #include <thread>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "huntmaster/core/DebugLogger.h"
 #include "huntmaster/core/WaveformGenerator.h"
@@ -12,7 +12,7 @@
 namespace huntmaster {
 
 class WaveformGeneratorTest : public ::testing::Test {
-   protected:
+  protected:
     void SetUp() override {
         config_.sampleRate = 44100.0f;
         config_.maxSamples = 4096;
@@ -23,7 +23,9 @@ class WaveformGeneratorTest : public ::testing::Test {
         generator_ = std::make_unique<WaveformGenerator>(config_);
     }
 
-    void TearDown() override { generator_.reset(); }
+    void TearDown() override {
+        generator_.reset();
+    }
 
     WaveformGenerator::Config config_;
     std::unique_ptr<WaveformGenerator> generator_;
@@ -189,9 +191,9 @@ TEST_F(WaveformGeneratorTest, JsonExportTest) {
     try {
         json = generator_->exportToJson(true);
         if (json.length() > 100) {
-            huntmaster::DebugLogger::getInstance().info(
-                huntmaster::Component::WAVEFORM_GENERATOR,
-                "JSON preview: " + json.substr(0, 100) + "...");
+            huntmaster::DebugLogger::getInstance().info(huntmaster::Component::WAVEFORM_GENERATOR,
+                                                        "JSON preview: " + json.substr(0, 100)
+                                                            + "...");
         } else {
             huntmaster::DebugLogger::getInstance().info(huntmaster::Component::WAVEFORM_GENERATOR,
                                                         "Full JSON: " + json);

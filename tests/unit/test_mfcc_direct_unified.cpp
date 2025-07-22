@@ -6,12 +6,12 @@
  * UnifiedEngine session-based architecture.
  */
 
-#include <gtest/gtest.h>
-
 #include <cmath>
 #include <iostream>
 #include <span>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "huntmaster/core/UnifiedAudioEngine.h"
 
@@ -31,7 +31,7 @@ static std::vector<float> generateSineWave(float frequency, float duration, floa
 }
 
 class MFCCDirectUnifiedTest : public ::testing::Test {
-   protected:
+  protected:
     void SetUp() override {
         // Create engine instance using the new UnifiedEngine API
         auto engineResult = UnifiedAudioEngine::create();
@@ -44,7 +44,8 @@ class MFCCDirectUnifiedTest : public ::testing::Test {
         // Clean up any remaining sessions
         auto activeSessions = engine->getActiveSessions();
         for (auto sessionId : activeSessions) {
-            auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+            auto destroyResult = engine->destroySession(sessionId);
+            (void)destroyResult;
         }
         engine.reset();
     }
@@ -107,7 +108,8 @@ TEST_F(MFCCDirectUnifiedTest, SineWaveProcessingTest) {
     }
 
     // Clean up
-    auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+    auto destroyResult = engine->destroySession(sessionId);
+    (void)destroyResult;
 
     // Validate results
     EXPECT_GT(featureCount, 0) << "No MFCC features were extracted";
@@ -149,7 +151,8 @@ TEST_F(MFCCDirectUnifiedTest, MultipleFrequencyTest) {
         std::cout << "  Features extracted: " << featureCount << std::endl;
 
         // Clean up
-        auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+        auto destroyResult = engine->destroySession(sessionId);
+        (void)destroyResult;
 
         // Validate each frequency produces features
         EXPECT_GT(featureCount, 0) << "No features extracted for " << freq << " Hz";
@@ -221,7 +224,8 @@ TEST_F(MFCCDirectUnifiedTest, ComplexWaveformTest) {
     std::cout << "Features extracted: " << featureCount << std::endl;
 
     // Clean up
-    auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+    auto destroyResult = engine->destroySession(sessionId);
+    (void)destroyResult;
 
     // Validate results
     EXPECT_GT(featureCount, 0) << "No MFCC features were extracted from complex waveform";
@@ -328,7 +332,8 @@ TEST_F(MFCCDirectUnifiedTest, SessionResetTest) {
     std::cout << "Features after processing again: " << countAfterProcess << std::endl;
 
     // Clean up
-    auto destroyResult = engine->destroySession(sessionId); (void)destroyResult;
+    auto destroyResult = engine->destroySession(sessionId);
+    (void)destroyResult;
 
     // Validate results
     EXPECT_GT(countBefore, 0) << "No features before reset";

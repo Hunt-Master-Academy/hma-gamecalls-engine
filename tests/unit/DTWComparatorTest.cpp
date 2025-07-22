@@ -1,11 +1,13 @@
-#include <gtest/gtest.h>
 #include <cmath>
 #include <vector>
+
+#include <gtest/gtest.h>
+
 #include "huntmaster/core/DTWComparator.h"
 
 // Use a test fixture to reduce boilerplate and set up a common environment.
 class DTWComparatorTest : public ::testing::Test {
-protected:
+  protected:
     // This method is called before each test.
     void SetUp() override {
         // Initialize with a default, non-normalizing, non-windowed config.

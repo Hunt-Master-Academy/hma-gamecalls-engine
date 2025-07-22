@@ -16,7 +16,7 @@ namespace huntmaster {
 
 /// Implementation details for AudioLevelProcessor
 class AudioLevelProcessor::Impl {
-   public:
+  public:
     Config config_;
     mutable std::mutex mutex_;
 
@@ -188,8 +188,8 @@ AudioLevelProcessor::LevelMeasurement AudioLevelProcessor::getCurrentLevel() con
     return current;
 }
 
-std::vector<AudioLevelProcessor::LevelMeasurement> AudioLevelProcessor::getLevelHistory(
-    size_t maxCount) const {
+std::vector<AudioLevelProcessor::LevelMeasurement>
+AudioLevelProcessor::getLevelHistory(size_t maxCount) const {
     std::lock_guard<std::mutex> lock(impl_->mutex_);
 
     const size_t count = (maxCount > 0) ? std::min(maxCount, impl_->levelHistory_.size())
@@ -215,12 +215,9 @@ std::string AudioLevelProcessor::exportToJson() const {
 
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(3);
-    oss << "{"
-        << "\"rms\":" << current.rmsDb << ","
-        << "\"peak\":" << current.peakDb << ","
-        << "\"rmsLinear\":" << current.rmsLinear << ","
-        << "\"peakLinear\":" << current.peakLinear << ","
-        << "\"timestamp\":" << millis << "}";
+    oss << "{" << "\"rms\":" << current.rmsDb << "," << "\"peak\":" << current.peakDb << ","
+        << "\"rmsLinear\":" << current.rmsLinear << "," << "\"peakLinear\":" << current.peakLinear
+        << "," << "\"timestamp\":" << millis << "}";
 
     return oss.str();
 }
@@ -233,18 +230,17 @@ std::string AudioLevelProcessor::exportHistoryToJson(size_t maxCount) const {
     oss << "[";
 
     for (size_t i = 0; i < history.size(); ++i) {
-        if (i > 0) oss << ",";
+        if (i > 0)
+            oss << ",";
 
         const auto& measurement = history[i];
         const auto epoch = measurement.timestamp.time_since_epoch();
         const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(epoch).count();
 
-        oss << "{"
-            << "\"rms\":" << measurement.rmsDb << ","
-            << "\"peak\":" << measurement.peakDb << ","
-            << "\"rmsLinear\":" << measurement.rmsLinear << ","
-            << "\"peakLinear\":" << measurement.peakLinear << ","
-            << "\"timestamp\":" << millis << "}";
+        oss << "{" << "\"rms\":" << measurement.rmsDb << "," << "\"peak\":" << measurement.peakDb
+            << "," << "\"rmsLinear\":" << measurement.rmsLinear << ","
+            << "\"peakLinear\":" << measurement.peakLinear << "," << "\"timestamp\":" << millis
+            << "}";
     }
 
     oss << "]";
@@ -293,7 +289,9 @@ AudioLevelProcessor::Config AudioLevelProcessor::getConfig() const noexcept {
     return impl_->config_;
 }
 
-bool AudioLevelProcessor::isInitialized() const noexcept { return impl_->initialized_.load(); }
+bool AudioLevelProcessor::isInitialized() const noexcept {
+    return impl_->initialized_.load();
+}
 
 // Utility functions
 float linearToDb(float linear, float floor, float ceiling) noexcept {
@@ -305,6 +303,8 @@ float linearToDb(float linear, float floor, float ceiling) noexcept {
     return std::clamp(db, floor, ceiling);
 }
 
-float dbToLinear(float db) noexcept { return std::pow(10.0f, db / 20.0f); }
+float dbToLinear(float db) noexcept {
+    return std::pow(10.0f, db / 20.0f);
+}
 
 }  // namespace huntmaster

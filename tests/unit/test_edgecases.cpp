@@ -1,7 +1,7 @@
-#include <gtest/gtest.h>
-
 #include <iostream>
 #include <random>
+
+#include <gtest/gtest.h>
 
 #include "huntmaster/core/UnifiedAudioEngine.h"
 #include "huntmaster/core/WaveformGenerator.h"
@@ -9,7 +9,7 @@
 namespace huntmaster {
 
 class EdgeCaseTest : public ::testing::Test {
-   protected:
+  protected:
     WaveformGenerator::Config config;
     std::unique_ptr<WaveformGenerator> generator;
 
@@ -111,7 +111,8 @@ TEST_F(EdgeCaseTest, RandomNoise) {
     std::vector<float> audio(1024);
     std::mt19937 rng(42);  // Fixed seed for reproducibility
     std::uniform_real_distribution<float> dist(0.0f, 1.0f);
-    for (auto& sample : audio) sample = dist(rng);
+    for (auto& sample : audio)
+        sample = dist(rng);
     auto result = generator->processAudio(audio, 1);
     auto waveform = generator->getCompleteWaveform();
     std::cout << "[RandomNoise] maxAmplitude: " << waveform.maxAmplitude

@@ -43,7 +43,9 @@ void DebugLogger::enableConsoleOutput(bool enable) {
     consoleOutputEnabled_ = enable;
 }
 
-void DebugLogger::disableConsoleOutput() { enableConsoleOutput(false); }
+void DebugLogger::disableConsoleOutput() {
+    enableConsoleOutput(false);
+}
 
 void DebugLogger::enableFileLogging(const std::string& filename) {
     std::lock_guard<std::mutex> lock(logMutex_);
@@ -70,8 +72,12 @@ void DebugLogger::enableThreadIds(bool enable) {
     threadIdsEnabled_ = enable;
 }
 
-void DebugLogger::log(Component component, LogLevel level, const std::string& message,
-                      const char* file, int line, const char* function) {
+void DebugLogger::log(Component component,
+                      LogLevel level,
+                      const std::string& message,
+                      const char* file,
+                      int line,
+                      const char* function) {
     // Quick check before expensive operations
     LogLevel componentLevel = getComponentLogLevel(component);
     if (level > componentLevel) {
@@ -81,33 +87,52 @@ void DebugLogger::log(Component component, LogLevel level, const std::string& me
     logImpl(component, level, message, file, line, function);
 }
 
-void DebugLogger::error(Component component, const std::string& message, const char* file, int line,
+void DebugLogger::error(Component component,
+                        const std::string& message,
+                        const char* file,
+                        int line,
                         const char* function) {
     log(component, LogLevel::ERROR, message, file, line, function);
 }
 
-void DebugLogger::warn(Component component, const std::string& message, const char* file, int line,
+void DebugLogger::warn(Component component,
+                       const std::string& message,
+                       const char* file,
+                       int line,
                        const char* function) {
     log(component, LogLevel::WARN, message, file, line, function);
 }
 
-void DebugLogger::info(Component component, const std::string& message, const char* file, int line,
+void DebugLogger::info(Component component,
+                       const std::string& message,
+                       const char* file,
+                       int line,
                        const char* function) {
     log(component, LogLevel::INFO, message, file, line, function);
 }
 
-void DebugLogger::debug(Component component, const std::string& message, const char* file, int line,
+void DebugLogger::debug(Component component,
+                        const std::string& message,
+                        const char* file,
+                        int line,
                         const char* function) {
     log(component, LogLevel::DEBUG, message, file, line, function);
 }
 
-void DebugLogger::trace(Component component, const std::string& message, const char* file, int line,
+void DebugLogger::trace(Component component,
+                        const std::string& message,
+                        const char* file,
+                        int line,
                         const char* function) {
     log(component, LogLevel::TRACE, message, file, line, function);
 }
 
-void DebugLogger::logImpl(Component component, LogLevel level, const std::string& message,
-                          const char* file, int line, const char* function) {
+void DebugLogger::logImpl(Component component,
+                          LogLevel level,
+                          const std::string& message,
+                          const char* file,
+                          int line,
+                          const char* function) {
     std::lock_guard<std::mutex> lock(logMutex_);
 
     std::string formattedMessage = formatMessage(component, level, message, file, line, function);
@@ -143,8 +168,11 @@ void DebugLogger::logImpl(Component component, LogLevel level, const std::string
     }
 }
 
-std::string DebugLogger::formatMessage(Component component, LogLevel level,
-                                       const std::string& message, const char* file, int line,
+std::string DebugLogger::formatMessage(Component component,
+                                       LogLevel level,
+                                       const std::string& message,
+                                       const char* file,
+                                       int line,
                                        const char* function) const {
     std::ostringstream oss;
 
@@ -168,7 +196,8 @@ std::string DebugLogger::formatMessage(Component component, LogLevel level,
     if (level >= LogLevel::DEBUG) {
         // Extract filename from full path
         const char* filename = strrchr(file, '/');
-        if (!filename) filename = strrchr(file, '\\');
+        if (!filename)
+            filename = strrchr(file, '\\');
         if (!filename)
             filename = file;
         else

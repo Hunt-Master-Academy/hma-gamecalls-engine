@@ -1,16 +1,18 @@
-#include <gtest/gtest.h>
-
-#include <thread>
 #include <latch>
+#include <thread>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "huntmaster/core/AudioBufferPool.h"
 
 using namespace huntmaster;
 
 class AudioBufferPoolTest : public ::testing::Test {
-   protected:
-    void SetUp() override { pool = std::make_unique<AudioBufferPool>(4, 1024); }
+  protected:
+    void SetUp() override {
+        pool = std::make_unique<AudioBufferPool>(4, 1024);
+    }
 
     std::unique_ptr<AudioBufferPool> pool;
 };
@@ -76,27 +78,27 @@ TEST_F(AudioBufferPoolTest, ThreadSafety) {
     const int num_threads = 4;
     const int operations_per_thread = 50;
     std::atomic<int> success_count{0};
-    std::latch start_gate(num_threads + 1); // Gate to start all threads at once
-    std::latch end_gate(num_threads);       // Gate to wait for all threads to finish
+    std::latch start_gate(num_threads + 1);  // Gate to start all threads at once
+    std::latch end_gate(num_threads);        // Gate to wait for all threads to finish
 
     std::vector<std::thread> threads;
     threads.reserve(num_threads);
 
     for (int t = 0; t < num_threads; ++t) {
         threads.emplace_back([&]() {
-            start_gate.arrive_and_wait(); // Wait for the signal to start
+            start_gate.arrive_and_wait();  // Wait for the signal to start
             for (int i = 0; i < operations_per_thread; ++i) {
                 auto result = pool->tryAcquireFor(std::chrono::milliseconds(10));
                 if (result.has_value()) {
                     success_count++;
                 }
             }
-            end_gate.count_down(); // Signal that this thread is done
+            end_gate.count_down();  // Signal that this thread is done
         });
     }
 
-    start_gate.arrive_and_wait(); // Open the gate, starting all threads
-    end_gate.wait();              // Wait for all threads to complete
+    start_gate.arrive_and_wait();  // Open the gate, starting all threads
+    end_gate.wait();               // Wait for all threads to complete
 
     for (auto& t : threads) {
         t.join();

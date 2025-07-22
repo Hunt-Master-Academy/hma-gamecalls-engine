@@ -11,19 +11,20 @@ namespace huntmaster {
 
 // Using the Pimpl idiom to hide miniaudio implementation details.
 class AudioPlayer::Impl {
-   public:
+  public:
     ma_device device;
     ma_decoder decoder;
     bool isDeviceInitialized = false;
     std::atomic<bool> playing{false};
 
     // This callback is called by miniaudio when it needs more audio data to play.
-    static void dataCallback(ma_device *pDevice, void *pOutput, const void *pInput,
-                             ma_uint32 frameCount) {
+    static void
+    dataCallback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
         (void)pInput;  // Unused for playback.
 
-        auto *pImpl = static_cast<Impl *>(pDevice->pUserData);
-        if (pImpl == nullptr) return;
+        auto* pImpl = static_cast<Impl*>(pDevice->pUserData);
+        if (pImpl == nullptr)
+            return;
 
         // Read decoded frames from our decoder into the output buffer.
         ma_uint64 framesRead = 0;
@@ -50,7 +51,7 @@ class AudioPlayer::Impl {
 AudioPlayer::AudioPlayer() : pImpl(std::make_unique<Impl>()) {}
 AudioPlayer::~AudioPlayer() = default;
 
-bool AudioPlayer::loadFile(const std::string &filename) {
+bool AudioPlayer::loadFile(const std::string& filename) {
     if (pImpl->playing.load()) {
         stop();
     }
@@ -66,7 +67,8 @@ bool AudioPlayer::loadFile(const std::string &filename) {
 }
 
 bool AudioPlayer::play() {
-    if (pImpl->playing.load()) return true;  // Already playing
+    if (pImpl->playing.load())
+        return true;  // Already playing
 
     ma_device_config deviceConfig = ma_device_config_init(ma_device_type_playback);
     deviceConfig.playback.format = pImpl->decoder.outputFormat;
@@ -101,7 +103,9 @@ void AudioPlayer::stop() {
     pImpl->playing = false;
 }
 
-bool AudioPlayer::isPlaying() const { return pImpl->playing.load(); }
+bool AudioPlayer::isPlaying() const {
+    return pImpl->playing.load();
+}
 
 double AudioPlayer::getDuration() const {
     ma_uint64 lengthInPCMFrames;

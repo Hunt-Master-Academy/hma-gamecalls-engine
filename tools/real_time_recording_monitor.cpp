@@ -49,7 +49,7 @@ std::string statusToString(UnifiedAudioEngine::Status status) {
  * @brief Enhanced real-time recording monitor with comprehensive debugging
  */
 class RealTimeRecordingMonitor {
-   private:
+  private:
     std::unique_ptr<UnifiedAudioEngine> engine_;
     SessionId sessionId_;
     bool verbose_;
@@ -60,7 +60,7 @@ class RealTimeRecordingMonitor {
     std::vector<float> levelHistory_;
     std::chrono::steady_clock::time_point startTime_;
 
-   public:
+  public:
     RealTimeRecordingMonitor(bool verbose = false, bool trace = false, bool enableMetrics = false)
         : verbose_(verbose), trace_(trace), enableMetrics_(enableMetrics) {
         // Configure debug logging
@@ -103,7 +103,7 @@ class RealTimeRecordingMonitor {
         cleanupEngine();
     }
 
-   private:
+  private:
     bool initializeEngine() {
         LOG_DEBUG(DebugComponent::TOOLS, "Initializing UnifiedAudioEngine");
 
@@ -119,8 +119,9 @@ class RealTimeRecordingMonitor {
             // Start realtime session
             auto sessionResult = engine_->startRealtimeSession(44100.0f);
             if (!sessionResult.isOk()) {
-                LOG_ERROR(DebugComponent::TOOLS, "❌ Failed to start realtime session: " +
-                                                     statusToString(sessionResult.error()));
+                LOG_ERROR(DebugComponent::TOOLS,
+                          "❌ Failed to start realtime session: "
+                              + statusToString(sessionResult.error()));
                 return false;
             }
             sessionId_ = sessionResult.value;
@@ -166,8 +167,9 @@ class RealTimeRecordingMonitor {
     }
 
     void monitorRecording(int durationSeconds) {
-        LOG_DEBUG(DebugComponent::TOOLS, "Starting real-time monitoring for " +
-                                             std::to_string(durationSeconds) + " seconds");
+        LOG_DEBUG(DebugComponent::TOOLS,
+                  "Starting real-time monitoring for " + std::to_string(durationSeconds)
+                      + " seconds");
 
         auto endTime = std::chrono::steady_clock::now() + std::chrono::seconds(durationSeconds);
 
@@ -207,9 +209,8 @@ class RealTimeRecordingMonitor {
             // Trace logging
             if (trace_ && updateCount % 20 == 0) {
                 LOG_TRACE(DebugComponent::TOOLS,
-                          "Level: " + std::to_string(level) +
-                              ", Peak: " + std::to_string(peakLevel) +
-                              ", Avg: " + std::to_string(avgLevel / sampleCount));
+                          "Level: " + std::to_string(level) + ", Peak: " + std::to_string(peakLevel)
+                              + ", Avg: " + std::to_string(avgLevel / sampleCount));
             }
 
             updateCount++;
@@ -226,8 +227,8 @@ class RealTimeRecordingMonitor {
                  "Average level: " + std::to_string(avgLevel * 100.0f) + "%");
         LOG_DEBUG(DebugComponent::TOOLS, "Total samples: " + std::to_string(sampleCount));
         LOG_DEBUG(DebugComponent::TOOLS,
-                  "Update rate: " +
-                      std::to_string(updateCount / static_cast<float>(durationSeconds)) + " Hz");
+                  "Update rate: "
+                      + std::to_string(updateCount / static_cast<float>(durationSeconds)) + " Hz");
 
         // Performance analysis
         if (enableMetrics_) {
@@ -304,17 +305,18 @@ class RealTimeRecordingMonitor {
         LOG_DEBUG(DebugComponent::TOOLS,
                   "  - SNR estimate: " + std::to_string(snrEstimate) + " dB");
         LOG_DEBUG(DebugComponent::TOOLS, "  - Clipping events: " + std::to_string(clippingEvents));
-        LOG_DEBUG(DebugComponent::TOOLS, "  - Clipping rate: " +
-                                             std::to_string(static_cast<float>(clippingEvents) /
-                                                            levelHistory_.size() * 100.0f) +
-                                             "%");
+        LOG_DEBUG(
+            DebugComponent::TOOLS,
+            "  - Clipping rate: "
+                + std::to_string(static_cast<float>(clippingEvents) / levelHistory_.size() * 100.0f)
+                + "%");
 
         // Generate recommendations
         generateRecommendations(avgLevel, peakLevel, stdDev, clippingEvents);
     }
 
-    void generateRecommendations(float avgLevel, float peakLevel, float stdDev,
-                                 int clippingEvents) {
+    void
+    generateRecommendations(float avgLevel, float peakLevel, float stdDev, int clippingEvents) {
         LOG_DEBUG(DebugComponent::TOOLS, "=== Recording Quality Recommendations ===");
 
         bool hasIssues = false;
@@ -367,8 +369,9 @@ class RealTimeRecordingMonitor {
         std::getline(std::cin, filename);
 
         if (filename.empty()) {
-            filename = "recording_" +
-                       std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
+            filename =
+                "recording_"
+                + std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
             LOG_INFO(DebugComponent::TOOLS, "Using auto-generated filename: " + filename);
         }
 

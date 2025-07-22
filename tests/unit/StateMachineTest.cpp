@@ -1,14 +1,14 @@
-#include <gtest/gtest.h>
-
 #include <iostream>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "huntmaster/core/VoiceActivityDetector.h"
 
 using namespace huntmaster;
 
 class StateMachineTest : public ::testing::Test {
-   protected:
+  protected:
     void SetUp() override {
         VoiceActivityDetector::Config config;
         config.energy_threshold = 0.01f;

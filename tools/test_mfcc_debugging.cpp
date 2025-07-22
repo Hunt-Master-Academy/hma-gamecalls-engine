@@ -7,16 +7,16 @@
  */
 
 #define _USE_MATH_DEFINES
-#include <huntmaster/core/DebugConfig.h>
-#include <huntmaster/core/DebugLogger.h>
-#include <huntmaster/core/MFCCProcessor.h>
-
 #include <chrono>
 #include <cmath>
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <vector>
+
+#include <huntmaster/core/DebugConfig.h>
+#include <huntmaster/core/DebugLogger.h>
+#include <huntmaster/core/MFCCProcessor.h>
 
 using huntmaster::DebugConfig;
 using huntmaster::DebugLogger;
@@ -88,12 +88,12 @@ struct DebugOptions {
 
 // Performance monitoring class
 class PerformanceMonitor {
-   private:
+  private:
     std::chrono::high_resolution_clock::time_point startTime;
     std::string operationName;
     bool enabled;
 
-   public:
+  public:
     PerformanceMonitor(const std::string& name, bool enable = true)
         : operationName(name), enabled(enable) {
         if (enabled) {
@@ -110,9 +110,10 @@ class PerformanceMonitor {
             auto duration =
                 std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
 
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-                operationName + " completed in " + std::to_string(duration.count()) + "ms");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::INFO,
+                                           operationName + " completed in "
+                                               + std::to_string(duration.count()) + "ms");
         }
     }
 
@@ -122,9 +123,10 @@ class PerformanceMonitor {
             auto duration =
                 std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime);
 
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                operationName + " - " + message + " (+" + std::to_string(duration.count()) + "ms)");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::DEBUG,
+                                           operationName + " - " + message + " (+"
+                                               + std::to_string(duration.count()) + "ms)");
         }
     }
 };
@@ -175,10 +177,11 @@ struct WAVData {
 
         if (enableDebug) {
             DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                "WAV properties - Sample Rate: " + std::to_string(sampleRate) +
-                    " Hz, Channels: " + std::to_string(channels) +
-                    ", Bits per sample: " + std::to_string(bitsPerSample));
+                huntmaster::DebugComponent::TOOLS,
+                huntmaster::DebugLevel::DEBUG,
+                "WAV properties - Sample Rate: " + std::to_string(sampleRate)
+                    + " Hz, Channels: " + std::to_string(channels)
+                    + ", Bits per sample: " + std::to_string(bitsPerSample));
             monitor.checkpoint("WAV header parsed");
         }
 
@@ -191,10 +194,11 @@ struct WAVData {
         size_t dataSize = fileSize - 44;  // Subtract header size
 
         if (enableDebug) {
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                "File size: " + std::to_string(fileSize) +
-                    " bytes, Data size: " + std::to_string(dataSize) + " bytes");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::DEBUG,
+                                           "File size: " + std::to_string(fileSize)
+                                               + " bytes, Data size: " + std::to_string(dataSize)
+                                               + " bytes");
         }
 
         if (bitsPerSample == 16) {
@@ -203,9 +207,10 @@ struct WAVData {
             file.read(reinterpret_cast<char*>(rawSamples.data()), dataSize);
 
             if (enableDebug) {
-                DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                    "Read " + std::to_string(rawSamples.size()) + " raw samples");
+                DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                               huntmaster::DebugLevel::DEBUG,
+                                               "Read " + std::to_string(rawSamples.size())
+                                                   + " raw samples");
                 monitor.checkpoint("Raw samples read");
             }
 
@@ -216,16 +221,18 @@ struct WAVData {
             }
 
             if (enableDebug) {
-                DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                    "Converted to " + std::to_string(samples.size()) + " float samples");
+                DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                               huntmaster::DebugLevel::DEBUG,
+                                               "Converted to " + std::to_string(samples.size())
+                                                   + " float samples");
                 monitor.checkpoint("Sample conversion completed");
             }
         } else {
             std::cerr << "Unsupported bit depth: " << bitsPerSample << std::endl;
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::ERROR,
-                "Unsupported bit depth: " + std::to_string(bitsPerSample));
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::ERROR,
+                                           "Unsupported bit depth: "
+                                               + std::to_string(bitsPerSample));
             return false;
         }
 
@@ -239,10 +246,11 @@ struct WAVData {
             }
             avgVal /= samples.size();
 
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                "Sample statistics - Min: " + std::to_string(minVal) + ", Max: " +
-                    std::to_string(maxVal) + ", Avg magnitude: " + std::to_string(avgVal));
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::DEBUG,
+                                           "Sample statistics - Min: " + std::to_string(minVal)
+                                               + ", Max: " + std::to_string(maxVal)
+                                               + ", Avg magnitude: " + std::to_string(avgVal));
         }
 
         std::cout << "Loaded " << samples.size() << " samples" << std::endl;
@@ -252,10 +260,10 @@ struct WAVData {
 
 // MFCC debugging class
 class MFCCDebugger {
-   private:
+  private:
     DebugOptions& options;
 
-   public:
+  public:
     MFCCDebugger(DebugOptions& opts) : options(opts) {}
 
     void testAudioFile(const std::string& filename) {
@@ -289,11 +297,12 @@ class MFCCDebugger {
 
         if (options.enableMFCCDebug) {
             DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                "MFCC Config - Sample Rate: " + std::to_string(config.sample_rate) +
-                    ", Frame Size: " + std::to_string(config.frame_size) +
-                    ", Filters: " + std::to_string(config.num_filters) +
-                    ", Coefficients: " + std::to_string(config.num_coefficients));
+                huntmaster::DebugComponent::TOOLS,
+                huntmaster::DebugLevel::DEBUG,
+                "MFCC Config - Sample Rate: " + std::to_string(config.sample_rate)
+                    + ", Frame Size: " + std::to_string(config.frame_size)
+                    + ", Filters: " + std::to_string(config.num_filters)
+                    + ", Coefficients: " + std::to_string(config.num_coefficients));
         }
 
         std::cout << "MFCC Config:" << std::endl;
@@ -312,9 +321,10 @@ class MFCCDebugger {
             std::cout << "❌ Audio too short for single frame test" << std::endl;
             if (options.enableMFCCDebug) {
                 DebugLogger::getInstance().log(
-                    huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::WARN,
-                    "Audio too short - Size: " + std::to_string(audio.samples.size()) +
-                        ", Required: " + std::to_string(config.frame_size));
+                    huntmaster::DebugComponent::TOOLS,
+                    huntmaster::DebugLevel::WARN,
+                    "Audio too short - Size: " + std::to_string(audio.samples.size())
+                        + ", Required: " + std::to_string(config.frame_size));
             }
         }
 
@@ -325,8 +335,9 @@ class MFCCDebugger {
         }
     }
 
-   private:
-    void testSingleFrame(huntmaster::MFCCProcessor& processor, const WAVData& audio,
+  private:
+    void testSingleFrame(huntmaster::MFCCProcessor& processor,
+                         const WAVData& audio,
                          const huntmaster::MFCCProcessor::Config& config) {
         PerformanceMonitor monitor("Single frame test", options.enableFrameDebug);
 
@@ -335,8 +346,8 @@ class MFCCDebugger {
         if (options.enableFrameDebug) {
             DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
                                            huntmaster::DebugLevel::DEBUG,
-                                           "Testing single frame extraction with " +
-                                               std::to_string(config.frame_size) + " samples");
+                                           "Testing single frame extraction with "
+                                               + std::to_string(config.frame_size) + " samples");
         }
 
         std::cout << "Testing single frame extraction..." << std::endl;
@@ -350,8 +361,8 @@ class MFCCDebugger {
             if (options.enableFrameDebug) {
                 DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
                                                huntmaster::DebugLevel::INFO,
-                                               "Single frame extraction successful - " +
-                                                   std::to_string(features.size()) + " features");
+                                               "Single frame extraction successful - "
+                                                   + std::to_string(features.size()) + " features");
             }
 
             // Print first few coefficients
@@ -385,8 +396,10 @@ class MFCCDebugger {
         }
     }
 
-    void testBufferExtraction(huntmaster::MFCCProcessor& processor, const WAVData& audio,
-                              size_t hopSize, const huntmaster::MFCCProcessor::Config& config) {
+    void testBufferExtraction(huntmaster::MFCCProcessor& processor,
+                              const WAVData& audio,
+                              size_t hopSize,
+                              const huntmaster::MFCCProcessor::Config& config) {
         PerformanceMonitor monitor("Buffer extraction (hop=" + std::to_string(hopSize) + ")",
                                    options.enablePerformanceMetrics);
 
@@ -394,10 +407,11 @@ class MFCCDebugger {
 
         if (options.enableMFCCDebug) {
             DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                "Testing buffer extraction - Audio size: " + std::to_string(audio.samples.size()) +
-                    ", Hop size: " + std::to_string(hopSize) +
-                    ", Frame size: " + std::to_string(config.frame_size));
+                huntmaster::DebugComponent::TOOLS,
+                huntmaster::DebugLevel::DEBUG,
+                "Testing buffer extraction - Audio size: " + std::to_string(audio.samples.size())
+                    + ", Hop size: " + std::to_string(hopSize)
+                    + ", Frame size: " + std::to_string(config.frame_size));
         }
 
         auto bufferResult = processor.extractFeaturesFromBuffer(audio.samples, hopSize);
@@ -410,8 +424,8 @@ class MFCCDebugger {
             if (options.enableMFCCDebug) {
                 DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
                                                huntmaster::DebugLevel::INFO,
-                                               "Buffer extraction successful - " +
-                                                   std::to_string(features.size()) + " frames");
+                                               "Buffer extraction successful - "
+                                                   + std::to_string(features.size()) + " frames");
             }
 
             if (!features.empty()) {
@@ -424,9 +438,10 @@ class MFCCDebugger {
                 std::cout << "  Total feature count: " << totalFeatures << std::endl;
 
                 if (options.enableMFCCDebug) {
-                    DebugLogger::getInstance().log(
-                        huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                        "Total features: " + std::to_string(totalFeatures));
+                    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                   huntmaster::DebugLevel::DEBUG,
+                                                   "Total features: "
+                                                       + std::to_string(totalFeatures));
                 }
 
                 if (totalFeatures == 0) {
@@ -450,10 +465,11 @@ class MFCCDebugger {
                         std::cout << "    Frame " << i << ": " << energy << std::endl;
 
                         if (options.enableFrameDebug) {
-                            DebugLogger::getInstance().log(
-                                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::TRACE,
-                                "Frame " + std::to_string(i) +
-                                    " energy: " + std::to_string(energy));
+                            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                           huntmaster::DebugLevel::TRACE,
+                                                           "Frame " + std::to_string(i)
+                                                               + " energy: "
+                                                               + std::to_string(energy));
                         }
                     }
                 }
@@ -476,10 +492,10 @@ class MFCCDebugger {
                     std::cout << "  ❌ Audio buffer too short for even one frame!" << std::endl;
                     if (options.enableMFCCDebug) {
                         DebugLogger::getInstance().log(
-                            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::ERROR,
-                            "Audio buffer too short - Size: " +
-                                std::to_string(audio.samples.size()) +
-                                ", Required: " + std::to_string(config.frame_size));
+                            huntmaster::DebugComponent::TOOLS,
+                            huntmaster::DebugLevel::ERROR,
+                            "Audio buffer too short - Size: " + std::to_string(audio.samples.size())
+                                + ", Required: " + std::to_string(config.frame_size));
                     }
                 }
             }
@@ -515,17 +531,19 @@ int main(int argc, char* argv[]) {
     auto& logger = DebugLogger::getInstance();
     if (debugOptions.enableMFCCDebug) {
         logger.setComponentLogLevel(huntmaster::DebugComponent::FEATURE_EXTRACTION,
-                                 huntmaster::DebugLevel::DEBUG);
+                                    huntmaster::DebugLevel::DEBUG);
     }
     if (debugOptions.enableFrameDebug) {
-        logger.setComponentLogLevel(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::TRACE);
+        logger.setComponentLogLevel(huntmaster::DebugComponent::TOOLS,
+                                    huntmaster::DebugLevel::TRACE);
     }
     if (debugOptions.enablePerformanceMetrics) {
         logger.setComponentLogLevel(huntmaster::DebugComponent::PERFORMANCE,
-                                 huntmaster::DebugLevel::DEBUG);
+                                    huntmaster::DebugLevel::DEBUG);
     }
 
-    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                   huntmaster::DebugLevel::INFO,
                                    "=== MFCC Debugging Tool Started ===");
 
     PerformanceMonitor totalMonitor("Total execution", debugOptions.enablePerformanceMetrics);
@@ -582,10 +600,11 @@ int main(int argc, char* argv[]) {
         }
 
         if (debugOptions.enableSynthDebug) {
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                "Generated sine wave - " + std::to_string(sineWave.size()) + " samples at " +
-                    std::to_string(sampleRate) + " Hz");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::DEBUG,
+                                           "Generated sine wave - "
+                                               + std::to_string(sineWave.size()) + " samples at "
+                                               + std::to_string(sampleRate) + " Hz");
             synthMonitor.checkpoint("Sine wave generated");
         }
 
@@ -612,8 +631,8 @@ int main(int argc, char* argv[]) {
             if (debugOptions.enableSynthDebug) {
                 DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
                                                huntmaster::DebugLevel::INFO,
-                                               "Synthetic audio extraction successful - " +
-                                                   std::to_string(features.size()) + " frames");
+                                               "Synthetic audio extraction successful - "
+                                                   + std::to_string(features.size()) + " frames");
             }
 
             if (!features.empty()) {
@@ -623,9 +642,10 @@ int main(int argc, char* argv[]) {
                 std::cout << "  Total feature count: " << totalFeatures << std::endl;
 
                 if (debugOptions.enableSynthDebug) {
-                    DebugLogger::getInstance().log(
-                        huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                        "Synthetic audio total features: " + std::to_string(totalFeatures));
+                    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                                   huntmaster::DebugLevel::DEBUG,
+                                                   "Synthetic audio total features: "
+                                                       + std::to_string(totalFeatures));
                 }
 
                 // Show energy in first few frames
@@ -641,8 +661,8 @@ int main(int argc, char* argv[]) {
                     if (debugOptions.enableSynthDebug) {
                         DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
                                                        huntmaster::DebugLevel::TRACE,
-                                                       "Synthetic frame " + std::to_string(i) +
-                                                           " energy: " + std::to_string(energy));
+                                                       "Synthetic frame " + std::to_string(i)
+                                                           + " energy: " + std::to_string(energy));
                     }
                 }
             }

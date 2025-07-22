@@ -10,10 +10,10 @@
 using namespace huntmaster;
 
 // This helper function is duplicated in other tools. See the architectural tip below.
-std::vector<float> load_audio_file(const std::string &filePath, unsigned int &channels,
-                                   unsigned int &sampleRate) {
+std::vector<float>
+load_audio_file(const std::string& filePath, unsigned int& channels, unsigned int& sampleRate) {
     drwav_uint64 totalPCMFrameCount = 0;
-    float *pSampleData = drwav_open_file_and_read_pcm_frames_f32(
+    float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(
         filePath.c_str(), &channels, &sampleRate, &totalPCMFrameCount, nullptr);
 
     if (pSampleData == nullptr) {

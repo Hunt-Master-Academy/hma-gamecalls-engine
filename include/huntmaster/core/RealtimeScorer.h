@@ -29,7 +29,7 @@ class AudioLevelProcessor;
  * - Integration with existing engine components
  */
 class RealtimeScorer {
-   public:
+  public:
     /// Configuration parameters for realtime scoring
     struct Config {
         float sampleRate = 44100.0f;             ///< Audio sample rate in Hz
@@ -48,12 +48,10 @@ class RealtimeScorer {
         /// Validate configuration parameters
         [[nodiscard]] bool isValid() const noexcept {
             const float totalWeight = mfccWeight + volumeWeight + timingWeight + pitchWeight;
-            return sampleRate > 0.0f && updateRateMs > 0.0f &&
-                   std::abs(totalWeight - 1.0f) <
-                       0.01f &&  // Weights should sum to 1.0 within a tolerance of 0.01
-                   confidenceThreshold >= 0.0f &&
-                   confidenceThreshold <= 1.0f && minScoreForMatch >= 0.0f &&
-                   scoringHistorySize > 0;
+            return sampleRate > 0.0f && updateRateMs > 0.0f && std::abs(totalWeight - 1.0f) < 0.01f
+                   &&  // Weights should sum to 1.0 within a tolerance of 0.01
+                   confidenceThreshold >= 0.0f && confidenceThreshold <= 1.0f
+                   && minScoreForMatch >= 0.0f && scoringHistorySize > 0;
         }
     };
 
@@ -85,10 +83,14 @@ class RealtimeScorer {
 
         /// Get quality assessment based on score
         [[nodiscard]] static std::string getQualityDescription(float score) noexcept {
-            if (score >= 0.020f) return "Excellent match";
-            if (score >= 0.010f) return "Very good match";
-            if (score >= 0.005f) return "Good match";
-            if (score >= 0.002f) return "Fair match";
+            if (score >= 0.020f)
+                return "Excellent match";
+            if (score >= 0.010f)
+                return "Very good match";
+            if (score >= 0.005f)
+                return "Good match";
+            if (score >= 0.002f)
+                return "Fair match";
             return "Needs improvement";
         }
     };
@@ -273,7 +275,7 @@ class RealtimeScorer {
      */
     [[nodiscard]] float getAnalysisProgress() const noexcept;
 
-   private:
+  private:
     /// Internal implementation details
     class Impl;
     std::unique_ptr<Impl> impl_;

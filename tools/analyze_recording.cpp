@@ -74,12 +74,12 @@ struct DebugOptions {
  * @brief Performance monitoring helper
  */
 class PerformanceMonitor {
-   private:
+  private:
     std::chrono::high_resolution_clock::time_point startTime_;
     std::string operationName_;
     bool enabled_;
 
-   public:
+  public:
     PerformanceMonitor(const std::string& operationName, bool enabled = true)
         : operationName_(operationName), enabled_(enabled) {
         if (enabled_) {
@@ -93,15 +93,18 @@ class PerformanceMonitor {
             auto endTime = std::chrono::high_resolution_clock::now();
             auto duration =
                 std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime_);
-            LOG_INFO(Component::TOOLS, operationName_ + " completed in " +
-                                           std::to_string(duration.count()) + " microseconds");
+            LOG_INFO(Component::TOOLS,
+                     operationName_ + " completed in " + std::to_string(duration.count())
+                         + " microseconds");
         }
     }
 };
 
 // Helper function to load an audio file into a float vector with enhanced debugging
-std::vector<float> load_audio_file(const std::string& filePath, unsigned int& channels,
-                                   unsigned int& sampleRate, const DebugOptions& debugOpts) {
+std::vector<float> load_audio_file(const std::string& filePath,
+                                   unsigned int& channels,
+                                   unsigned int& sampleRate,
+                                   const DebugOptions& debugOpts) {
     LOG_IF_TRACE(Component::TOOLS, "Attempting to load audio file: " + filePath);
 
     PerformanceMonitor perfMon("Audio file loading", debugOpts.verbose);
@@ -121,8 +124,8 @@ std::vector<float> load_audio_file(const std::string& filePath, unsigned int& ch
     LOG_INFO(Component::TOOLS, "  - Sample Rate: " + std::to_string(sampleRate) + " Hz");
     LOG_INFO(Component::TOOLS, "  - Channels: " + std::to_string(channels));
     LOG_INFO(Component::TOOLS,
-             "  - Duration: " +
-                 std::to_string(static_cast<float>(totalPCMFrameCount) / sampleRate) + " seconds");
+             "  - Duration: " + std::to_string(static_cast<float>(totalPCMFrameCount) / sampleRate)
+                 + " seconds");
 
     // Convert to mono with detailed logging
     std::vector<float> monoSamples(totalPCMFrameCount);
@@ -166,11 +169,11 @@ std::vector<float> load_audio_file(const std::string& filePath, unsigned int& ch
  * @brief Enhanced audio analysis with comprehensive debugging
  */
 class AudioAnalyzer {
-   private:
+  private:
     std::unique_ptr<UnifiedAudioEngine> engine_;
     DebugOptions debugOpts_;
 
-   public:
+  public:
     AudioAnalyzer(const DebugOptions& debugOpts) : debugOpts_(debugOpts) {
         LOG_DEBUG(Component::TOOLS, "Initializing AudioAnalyzer");
     }
@@ -231,8 +234,9 @@ class AudioAnalyzer {
         }
     }
 
-   private:
-    bool processAudioChunks(huntmaster::SessionId sessionId, const std::vector<float>& audioData,
+  private:
+    bool processAudioChunks(huntmaster::SessionId sessionId,
+                            const std::vector<float>& audioData,
                             unsigned int sampleRate) {
         PerformanceMonitor perfMon("Audio chunk processing", debugOpts_.verbose);
 
@@ -247,10 +251,10 @@ class AudioAnalyzer {
             size_t remainingSamples = audioData.size() - i;
             size_t samplesToProcess = std::min(static_cast<size_t>(chunkSize), remainingSamples);
 
-            LOG_IF_TRACE(Component::TOOLS, "Processing chunk " +
-                                               std::to_string(processedChunks + 1) + "/" +
-                                               std::to_string(totalChunks) + " (" +
-                                               std::to_string(samplesToProcess) + " samples)");
+            LOG_IF_TRACE(Component::TOOLS,
+                         "Processing chunk " + std::to_string(processedChunks + 1) + "/"
+                             + std::to_string(totalChunks) + " (" + std::to_string(samplesToProcess)
+                             + " samples)");
 
             // Process audio chunk using span
             std::span<const float> audioChunk(audioData.data() + i, samplesToProcess);
@@ -288,7 +292,8 @@ class AudioAnalyzer {
     }
 
     bool calculateSimilarityScore(huntmaster::SessionId sessionId,
-                                  const std::vector<float>& audioData, unsigned int sampleRate) {
+                                  const std::vector<float>& audioData,
+                                  unsigned int sampleRate) {
         PerformanceMonitor perfMon("Similarity score calculation", debugOpts_.verbose);
 
         LOG_INFO(Component::TOOLS, "5. Calculating similarity score...");

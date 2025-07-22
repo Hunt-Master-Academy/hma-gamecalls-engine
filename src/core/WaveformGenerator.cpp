@@ -56,7 +56,8 @@ struct WaveformGenerator::Impl {
         if (config_.enableRmsOverlay) {
             rmsWindowSamples_ =
                 static_cast<size_t>(config_.sampleRate * config_.rmsWindowMs / 1000.0f);
-            if (rmsWindowSamples_ == 0) rmsWindowSamples_ = 1;
+            if (rmsWindowSamples_ == 0)
+                rmsWindowSamples_ = 1;
             rmsWindow_.assign(rmsWindowSamples_, 0.0f);
             rmsSum_ = 0.0f;
             rmsIndex_ = 0;
@@ -70,9 +71,9 @@ struct WaveformGenerator::Impl {
         float currentMax = currentMaxAmplitude_.load();
         int retryCount = 0;
         const int maxRetries = 100;  // Safety limit
-        while (absSample > currentMax &&
-               !currentMaxAmplitude_.compare_exchange_weak(currentMax, absSample) &&
-               retryCount < maxRetries) {
+        while (absSample > currentMax
+               && !currentMaxAmplitude_.compare_exchange_weak(currentMax, absSample)
+               && retryCount < maxRetries) {
             retryCount++;
             // Loop until we successfully update or find a larger value
         }

@@ -30,7 +30,7 @@ struct DebugOptions {
     bool enableExportDebug = false;
     bool printHelp = false;
 
-    void parseArgs(int argc, char *argv[]) {
+    void parseArgs(int argc, char* argv[]) {
         for (int i = 1; i < argc; i++) {
             std::string arg = argv[i];
             if (arg == "--debug" || arg == "-d") {
@@ -55,7 +55,7 @@ struct DebugOptions {
         }
     }
 
-    void printUsage(const char *programName) {
+    void printUsage(const char* programName) {
         std::cout << "=== Huntmaster Audio Visualization Tool ===" << std::endl;
         std::cout << "Usage: " << programName
                   << " <master_call_name> <user_recording.wav> [options]" << std::endl;
@@ -84,13 +84,13 @@ struct DebugOptions {
 
 // Performance monitoring class
 class PerformanceMonitor {
-   private:
+  private:
     std::chrono::high_resolution_clock::time_point startTime;
     std::string operationName;
     bool enabled;
 
-   public:
-    PerformanceMonitor(const std::string &name, bool enable = true)
+  public:
+    PerformanceMonitor(const std::string& name, bool enable = true)
         : operationName(name), enabled(enable) {
         if (enabled) {
             startTime = std::chrono::high_resolution_clock::now();
@@ -106,34 +106,37 @@ class PerformanceMonitor {
             auto duration =
                 std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime);
 
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-                operationName + " completed in " + std::to_string(duration.count()) + "ms");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::INFO,
+                                           operationName + " completed in "
+                                               + std::to_string(duration.count()) + "ms");
         }
     }
 
-    void checkpoint(const std::string &message) {
+    void checkpoint(const std::string& message) {
         if (enabled) {
             auto currentTime = std::chrono::high_resolution_clock::now();
             auto duration =
                 std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - startTime);
 
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                operationName + " - " + message + " (+" + std::to_string(duration.count()) + "ms)");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::DEBUG,
+                                           operationName + " - " + message + " (+"
+                                               + std::to_string(duration.count()) + "ms)");
         }
     }
 };
 
-std::vector<float> loadAudioFile(const std::string &filePath, unsigned int &channels,
-                                 unsigned int &sampleRate) {
+std::vector<float>
+loadAudioFile(const std::string& filePath, unsigned int& channels, unsigned int& sampleRate) {
     PerformanceMonitor monitor("Audio file loading", true);
 
-    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                   huntmaster::DebugLevel::INFO,
                                    "Loading audio file: " + filePath);
 
     drwav_uint64 totalPCMFrameCount = 0;
-    float *pSampleData = drwav_open_file_and_read_pcm_frames_f32(
+    float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(
         filePath.c_str(), &channels, &sampleRate, &totalPCMFrameCount, nullptr);
 
     if (pSampleData == nullptr) {
@@ -143,17 +146,19 @@ std::vector<float> loadAudioFile(const std::string &filePath, unsigned int &chan
         return {};
     }
 
-    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-                                   "Audio file loaded - Channels: " + std::to_string(channels) +
-                                       ", Sample Rate: " + std::to_string(sampleRate) +
-                                       ", Frames: " + std::to_string(totalPCMFrameCount));
+    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                   huntmaster::DebugLevel::DEBUG,
+                                   "Audio file loaded - Channels: " + std::to_string(channels)
+                                       + ", Sample Rate: " + std::to_string(sampleRate)
+                                       + ", Frames: " + std::to_string(totalPCMFrameCount));
 
     // Convert to mono if needed
     std::vector<float> monoSamples(totalPCMFrameCount);
     if (channels > 1) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Converting " + std::to_string(channels) + " channels to mono");
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Converting " + std::to_string(channels)
+                                           + " channels to mono");
         monitor.checkpoint("Starting channel conversion");
 
         for (drwav_uint64 i = 0; i < totalPCMFrameCount; ++i) {
@@ -174,15 +179,16 @@ std::vector<float> loadAudioFile(const std::string &filePath, unsigned int &chan
 
     drwav_free(pSampleData, nullptr);
 
-    DebugLogger::getInstance().log(
-        huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-        "Audio file processing completed - " + std::to_string(monoSamples.size()) + " samples");
+    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                   huntmaster::DebugLevel::INFO,
+                                   "Audio file processing completed - "
+                                       + std::to_string(monoSamples.size()) + " samples");
 
     return monoSamples;
 }
 
 // Calculate RMS energy for a window
-float calculateRMS(const std::vector<float> &samples, size_t start, size_t windowSize) {
+float calculateRMS(const std::vector<float>& samples, size_t start, size_t windowSize) {
     float sum = 0.0f;
     size_t end = std::min(start + windowSize, samples.size());
 
@@ -194,7 +200,9 @@ float calculateRMS(const std::vector<float> &samples, size_t start, size_t windo
 }
 
 // Generate ASCII waveform visualization
-void visualizeWaveform(const std::vector<float> &samples, const std::string &label, int width = 80,
+void visualizeWaveform(const std::vector<float>& samples,
+                       const std::string& label,
+                       int width = 80,
                        bool enableDebug = false) {
     if (samples.empty()) {
         DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
@@ -206,10 +214,11 @@ void visualizeWaveform(const std::vector<float> &samples, const std::string &lab
     PerformanceMonitor monitor("Waveform visualization", enableDebug);
 
     if (enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Visualizing waveform: " + label + " (" + std::to_string(samples.size()) +
-                " samples, width=" + std::to_string(width) + ")");
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Visualizing waveform: " + label + " ("
+                                           + std::to_string(samples.size())
+                                           + " samples, width=" + std::to_string(width) + ")");
     }
 
     std::cout << "\n" << label << " (" << samples.size() << " samples)" << std::endl;
@@ -217,17 +226,19 @@ void visualizeWaveform(const std::vector<float> &samples, const std::string &lab
 
     // Downsample to fit width
     int samplesPerColumn = samples.size() / width;
-    if (samplesPerColumn < 1) samplesPerColumn = 1;
+    if (samplesPerColumn < 1)
+        samplesPerColumn = 1;
 
     if (enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Downsampling: " + std::to_string(samplesPerColumn) + " samples per column");
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Downsampling: " + std::to_string(samplesPerColumn)
+                                           + " samples per column");
     }
 
     // Find max amplitude for scaling
     float maxAmp = 0.0f;
-    for (const auto &s : samples) {
+    for (const auto& s : samples) {
         maxAmp = std::max(maxAmp, std::abs(s));
     }
 
@@ -282,9 +293,12 @@ void visualizeWaveform(const std::vector<float> &samples, const std::string &lab
         std::cout << "|";
 
         // Add scale labels
-        if (row == height / 2) std::cout << " +" << std::fixed << std::setprecision(2) << maxAmp;
-        if (row == 0) std::cout << " 0.0";
-        if (row == -height / 2) std::cout << " -" << std::fixed << std::setprecision(2) << maxAmp;
+        if (row == height / 2)
+            std::cout << " +" << std::fixed << std::setprecision(2) << maxAmp;
+        if (row == 0)
+            std::cout << " 0.0";
+        if (row == -height / 2)
+            std::cout << " -" << std::fixed << std::setprecision(2) << maxAmp;
 
         std::cout << std::endl;
     }
@@ -292,15 +306,18 @@ void visualizeWaveform(const std::vector<float> &samples, const std::string &lab
     std::cout << std::string(width + 2, '-') << std::endl;
 
     if (enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Visualization completed - Drew " + std::to_string(drawnPixels) + " pixels");
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Visualization completed - Drew "
+                                           + std::to_string(drawnPixels) + " pixels");
     }
 }
 
 // Analyze and display audio characteristics
-void analyzeAudioCharacteristics(const std::vector<float> &samples, float sampleRate,
-                                 const std::string &label, bool enableDebug = false) {
+void analyzeAudioCharacteristics(const std::vector<float>& samples,
+                                 float sampleRate,
+                                 const std::string& label,
+                                 bool enableDebug = false) {
     if (samples.empty()) {
         DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
                                        huntmaster::DebugLevel::WARN,
@@ -340,18 +357,20 @@ void analyzeAudioCharacteristics(const std::vector<float> &samples, float sample
         maxAmp = std::max(maxAmp, absAmp);
         avgAmp += absAmp;
 
-        if (i > 0 &&
-            ((samples[i - 1] < 0 && samples[i] >= 0) || (samples[i - 1] >= 0 && samples[i] < 0))) {
+        if (i > 0
+            && ((samples[i - 1] < 0 && samples[i] >= 0)
+                || (samples[i - 1] >= 0 && samples[i] < 0))) {
             zeroCrossings++;
         }
     }
     avgAmp /= samples.size();
 
     if (enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Statistics - Max: " + std::to_string(maxAmp) + ", Avg: " + std::to_string(avgAmp) +
-                ", Zero crossings: " + std::to_string(zeroCrossings));
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Statistics - Max: " + std::to_string(maxAmp)
+                                           + ", Avg: " + std::to_string(avgAmp)
+                                           + ", Zero crossings: " + std::to_string(zeroCrossings));
         monitor.checkpoint("Statistics calculation");
     }
 
@@ -364,14 +383,16 @@ void analyzeAudioCharacteristics(const std::vector<float> &samples, float sample
     if (enableDebug) {
         if (estimatedPitch < 50) {
             DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::WARN,
-                "Estimated pitch very low (" + std::to_string(estimatedPitch) +
-                    " Hz) - possible noise or very low frequency content");
+                huntmaster::DebugComponent::TOOLS,
+                huntmaster::DebugLevel::WARN,
+                "Estimated pitch very low (" + std::to_string(estimatedPitch)
+                    + " Hz) - possible noise or very low frequency content");
         } else if (estimatedPitch > 2000) {
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::WARN,
-                "Estimated pitch very high (" + std::to_string(estimatedPitch) +
-                    " Hz) - possible noise or artifacts");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::WARN,
+                                           "Estimated pitch very high ("
+                                               + std::to_string(estimatedPitch)
+                                               + " Hz) - possible noise or artifacts");
         }
     }
 
@@ -381,10 +402,11 @@ void analyzeAudioCharacteristics(const std::vector<float> &samples, float sample
     int hopSize = samples.size() / numWindows;
 
     if (enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Energy envelope analysis - Window size: " + std::to_string(windowSize) +
-                ", Hop size: " + std::to_string(hopSize));
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Energy envelope analysis - Window size: "
+                                           + std::to_string(windowSize)
+                                           + ", Hop size: " + std::to_string(hopSize));
         monitor.checkpoint("Starting energy envelope");
     }
 
@@ -421,28 +443,34 @@ void analyzeAudioCharacteristics(const std::vector<float> &samples, float sample
 
     if (enableDebug) {
         float avgEnergy = totalEnergy / numWindows;
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Energy envelope completed - Average energy: " + std::to_string(avgEnergy));
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Energy envelope completed - Average energy: "
+                                           + std::to_string(avgEnergy));
 
         if (avgEnergy < 0.01f) {
             DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::WARN,
+                huntmaster::DebugComponent::TOOLS,
+                huntmaster::DebugLevel::WARN,
                 "Very low average energy detected - possible silence or very quiet audio");
         }
     }
 }
 
 // Generate comparison report
-void generateComparisonReport(const std::vector<float> &master, const std::vector<float> &user,
-                              float masterSR, float userSR, bool enableDebug = false) {
+void generateComparisonReport(const std::vector<float>& master,
+                              const std::vector<float>& user,
+                              float masterSR,
+                              float userSR,
+                              bool enableDebug = false) {
     PerformanceMonitor monitor("Comparison report generation", enableDebug);
 
     if (enableDebug) {
         DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Generating comparison report - Master: " + std::to_string(master.size()) +
-                " samples, User: " + std::to_string(user.size()) + " samples");
+            huntmaster::DebugComponent::TOOLS,
+            huntmaster::DebugLevel::DEBUG,
+            "Generating comparison report - Master: " + std::to_string(master.size())
+                + " samples, User: " + std::to_string(user.size()) + " samples");
     }
 
     std::cout << "\n=== COMPARISON REPORT ===" << std::endl;
@@ -456,17 +484,21 @@ void generateComparisonReport(const std::vector<float> &master, const std::vecto
               << "% of master)" << std::endl;
 
     if (enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Duration analysis - Master: " + std::to_string(masterDuration) + "s, User: " +
-                std::to_string(userDuration) + "s, Ratio: " + std::to_string(durationRatio) + "%");
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Duration analysis - Master: "
+                                           + std::to_string(masterDuration)
+                                           + "s, User: " + std::to_string(userDuration)
+                                           + "s, Ratio: " + std::to_string(durationRatio) + "%");
         monitor.checkpoint("Duration analysis");
     }
 
     // Compare energy profiles
     float masterEnergy = 0.0f, userEnergy = 0.0f;
-    for (const auto &s : master) masterEnergy += s * s;
-    for (const auto &s : user) userEnergy += s * s;
+    for (const auto& s : master)
+        masterEnergy += s * s;
+    for (const auto& s : user)
+        userEnergy += s * s;
 
     masterEnergy = std::sqrt(masterEnergy / master.size());
     userEnergy = std::sqrt(userEnergy / user.size());
@@ -475,10 +507,11 @@ void generateComparisonReport(const std::vector<float> &master, const std::vecto
     std::cout << "Energy ratio (user/master): " << energyRatio << std::endl;
 
     if (enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Energy analysis - Master: " + std::to_string(masterEnergy) + ", User: " +
-                std::to_string(userEnergy) + ", Ratio: " + std::to_string(energyRatio));
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Energy analysis - Master: " + std::to_string(masterEnergy)
+                                           + ", User: " + std::to_string(userEnergy)
+                                           + ", Ratio: " + std::to_string(energyRatio));
         monitor.checkpoint("Energy analysis");
     }
 
@@ -492,20 +525,22 @@ void generateComparisonReport(const std::vector<float> &master, const std::vecto
         suggestionCount++;
 
         if (enableDebug) {
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-                "Coaching: User call too long (" + std::to_string(userDuration) + "s vs " +
-                    std::to_string(masterDuration) + "s)");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::INFO,
+                                           "Coaching: User call too long ("
+                                               + std::to_string(userDuration) + "s vs "
+                                               + std::to_string(masterDuration) + "s)");
         }
     } else if (userDuration < masterDuration * 0.8f) {
         std::cout << "• Your call is too short. Try to sustain it longer." << std::endl;
         suggestionCount++;
 
         if (enableDebug) {
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-                "Coaching: User call too short (" + std::to_string(userDuration) + "s vs " +
-                    std::to_string(masterDuration) + "s)");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::INFO,
+                                           "Coaching: User call too short ("
+                                               + std::to_string(userDuration) + "s vs "
+                                               + std::to_string(masterDuration) + "s)");
         }
     }
 
@@ -514,10 +549,10 @@ void generateComparisonReport(const std::vector<float> &master, const std::vecto
         suggestionCount++;
 
         if (enableDebug) {
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
-                "Coaching: User call too quiet (energy ratio: " + std::to_string(energyRatio) +
-                    ")");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::INFO,
+                                           "Coaching: User call too quiet (energy ratio: "
+                                               + std::to_string(energyRatio) + ")");
         }
     } else if (userEnergy > masterEnergy * 1.5f) {
         std::cout << "• Your call might be too loud or distorted. Try a more controlled volume."
@@ -526,7 +561,8 @@ void generateComparisonReport(const std::vector<float> &master, const std::vecto
 
         if (enableDebug) {
             DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+                huntmaster::DebugComponent::TOOLS,
+                huntmaster::DebugLevel::INFO,
                 "Coaching: User call too loud (energy ratio: " + std::to_string(energyRatio) + ")");
         }
     }
@@ -543,23 +579,29 @@ void generateComparisonReport(const std::vector<float> &master, const std::vecto
     }
 
     if (enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Comparison report completed - " + std::to_string(suggestionCount) +
-                " suggestions generated");
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Comparison report completed - "
+                                           + std::to_string(suggestionCount)
+                                           + " suggestions generated");
     }
 }
 
 // Export visualization data to HTML
-void exportToHTML(const std::vector<float> &master, const std::vector<float> &user, float masterSR,
-                  float userSR, const std::string &masterName, const std::string &userFile,
+void exportToHTML(const std::vector<float>& master,
+                  const std::vector<float>& user,
+                  float masterSR,
+                  float userSR,
+                  const std::string& masterName,
+                  const std::string& userFile,
                   bool enableDebug = false) {
     PerformanceMonitor monitor("HTML export", enableDebug);
 
     if (enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Exporting to HTML - Master: " + masterName + ", User: " + userFile);
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Exporting to HTML - Master: " + masterName
+                                           + ", User: " + userFile);
     }
 
     std::ofstream html("audio_comparison.html");
@@ -638,7 +680,7 @@ void exportToHTML(const std::vector<float> &master, const std::vector<float> &us
     std::cout << "\nVisualization exported to: audio_comparison.html" << std::endl;
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
     // Parse debug options
     DebugOptions debugOptions;
     debugOptions.parseArgs(argc, argv);
@@ -656,7 +698,7 @@ int main(int argc, char *argv[]) {
     }
 
     // Configure component-specific debug levels
-    auto &logger = DebugLogger::getInstance();
+    auto& logger = DebugLogger::getInstance();
     if (debugOptions.enableVisualizationDebug) {
         logger.setComponentLogLevel(huntmaster::DebugComponent::TOOLS,
                                     huntmaster::DebugLevel::TRACE);
@@ -670,7 +712,8 @@ int main(int argc, char *argv[]) {
                                     huntmaster::DebugLevel::DEBUG);
     }
 
-    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                   huntmaster::DebugLevel::INFO,
                                    "=== Huntmaster Audio Visualization Tool Started ===");
 
     PerformanceMonitor totalMonitor("Total execution", debugOptions.enablePerformanceMetrics);
@@ -686,9 +729,10 @@ int main(int argc, char *argv[]) {
     std::string userRecordingPath = argv[2];
 
     if (debugOptions.enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Processing files - Master: " + masterCallName + ", User: " + userRecordingPath);
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Processing files - Master: " + masterCallName
+                                           + ", User: " + userRecordingPath);
     }
 
     // Load master call
@@ -722,29 +766,36 @@ int main(int argc, char *argv[]) {
 
     // Visual comparison
     std::cout << "\n=== WAVEFORM COMPARISON ===" << std::endl;
-    visualizeWaveform(masterAudio, "Master Call: " + masterCallName, 80,
-                      debugOptions.enableVisualizationDebug);
-    visualizeWaveform(userAudio, "Your Recording: " + userRecordingPath, 80,
+    visualizeWaveform(
+        masterAudio, "Master Call: " + masterCallName, 80, debugOptions.enableVisualizationDebug);
+    visualizeWaveform(userAudio,
+                      "Your Recording: " + userRecordingPath,
+                      80,
                       debugOptions.enableVisualizationDebug);
 
     totalMonitor.checkpoint("Waveform visualization completed");
 
     // Detailed analysis
-    analyzeAudioCharacteristics(masterAudio, masterSR, "Master Call",
-                                debugOptions.enableAudioAnalysis);
-    analyzeAudioCharacteristics(userAudio, userSR, "Your Recording",
-                                debugOptions.enableAudioAnalysis);
+    analyzeAudioCharacteristics(
+        masterAudio, masterSR, "Master Call", debugOptions.enableAudioAnalysis);
+    analyzeAudioCharacteristics(
+        userAudio, userSR, "Your Recording", debugOptions.enableAudioAnalysis);
 
     totalMonitor.checkpoint("Audio analysis completed");
 
     // Comparison report
-    generateComparisonReport(masterAudio, userAudio, masterSR, userSR,
-                             debugOptions.enableComparisonDebug);
+    generateComparisonReport(
+        masterAudio, userAudio, masterSR, userSR, debugOptions.enableComparisonDebug);
 
     totalMonitor.checkpoint("Comparison report generated");
 
     // Export to HTML for better visualization
-    exportToHTML(masterAudio, userAudio, masterSR, userSR, masterCallName, userRecordingPath,
+    exportToHTML(masterAudio,
+                 userAudio,
+                 masterSR,
+                 userSR,
+                 masterCallName,
+                 userRecordingPath,
                  debugOptions.enableExportDebug);
 
     totalMonitor.checkpoint("HTML export completed");
@@ -763,9 +814,10 @@ int main(int argc, char *argv[]) {
     auto engine = std::move(engineResult.value);
 
     if (debugOptions.enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Engine initialized, loading master call: " + masterCallName);
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Engine initialized, loading master call: "
+                                           + masterCallName);
     }
 
     // Create session
@@ -810,18 +862,20 @@ int main(int argc, char *argv[]) {
         chunksProcessed++;
 
         if (debugOptions.enableTrace && chunksProcessed % 100 == 0) {
-            DebugLogger::getInstance().log(
-                huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::TRACE,
-                "Processed " + std::to_string(chunksProcessed) + " chunks");
+            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                           huntmaster::DebugLevel::TRACE,
+                                           "Processed " + std::to_string(chunksProcessed)
+                                               + " chunks");
         }
     }
 
     engineMonitor.checkpoint("Audio processing completed");
 
     if (debugOptions.enableDebug) {
-        DebugLogger::getInstance().log(
-            huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::DEBUG,
-            "Processed " + std::to_string(chunksProcessed) + " audio chunks");
+        DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                       huntmaster::DebugLevel::DEBUG,
+                                       "Processed " + std::to_string(chunksProcessed)
+                                           + " audio chunks");
     }
 
     auto scoreResult = engine->getSimilarityScore(sessionId);
@@ -858,7 +912,8 @@ int main(int argc, char *argv[]) {
 
     engineMonitor.checkpoint("Engine shutdown completed");
 
-    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS, huntmaster::DebugLevel::INFO,
+    DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
+                                   huntmaster::DebugLevel::INFO,
                                    "=== Audio Visualization Tool Completed Successfully ===");
 
     return 0;

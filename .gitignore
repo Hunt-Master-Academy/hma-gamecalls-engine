@@ -23,6 +23,41 @@ CMakeUserPresets.json
 *.dylib
 *.exe
 
+# === Root Directory Build Artifacts ===
+# These should be built into build/bin/ instead
+/analyze_recording
+/audio_trimmer
+/audio_visualization
+/CrossPlatformTest
+/debug_dtw_similarity
+/detailed_analysis
+/DTWUnifiedTest
+/EndToEndTest
+/engine_integration_test
+/generate_features
+/interactive_recorder
+/MFCCConsistencyUnifiedTest
+/MFCCDirectUnifiedTest
+/PerformanceTest
+/RealWildlifeCallAnalysisTest
+/real_time_recording_monitor
+/RecorderTest
+/RecordingTest
+/RunEngineTests
+/simple_unified_test
+/TestHarness
+/test_mfcc_debugging
+/UnifiedEngineTest
+/ValidationUnifiedTest
+
+# Build system generated files in root
+/build.log
+/waveform_range_debug.txt
+/test_*.xml
+/test_debug_macros*
+/debug_scorer*
+/RunEngineTests*.cmake
+
 # === IDE Files ===
 .vscode/
 .vscode-data/

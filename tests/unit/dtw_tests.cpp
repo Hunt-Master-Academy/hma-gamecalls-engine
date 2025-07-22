@@ -1,9 +1,9 @@
-#include <gtest/gtest.h>
-
 #include <iostream>  // For std::cerr
 #include <memory>    // For std::unique_ptr
 #include <span>      // For std::span
 #include <vector>    // For std::vector
+
+#include <gtest/gtest.h>
 
 #include "dr_wav.h"  // For loading WAV files
 #include "huntmaster/core/UnifiedAudioEngine.h"
@@ -11,15 +11,15 @@
 using namespace huntmaster;
 
 class CoreValidationTest : public ::testing::Test {
-   protected:
+  protected:
     std::unique_ptr<UnifiedAudioEngine> engine;
 
     // Helper function to load audio file (duplicate from analyze_recording.cpp for self-contained
     // test)
-    std::vector<float> load_audio_file(const std::string &filePath, unsigned int &channels,
-                                       unsigned int &sampleRate) {
+    std::vector<float>
+    load_audio_file(const std::string& filePath, unsigned int& channels, unsigned int& sampleRate) {
         drwav_uint64 totalPCMFrameCount = 0;
-        float *pSampleData = drwav_open_file_and_read_pcm_frames_f32(
+        float* pSampleData = drwav_open_file_and_read_pcm_frames_f32(
             filePath.c_str(), &channels, &sampleRate, &totalPCMFrameCount, nullptr);
 
         if (pSampleData == nullptr) {

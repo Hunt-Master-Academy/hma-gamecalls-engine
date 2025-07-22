@@ -1,8 +1,8 @@
-#include <gtest/gtest.h>
-
 #include <cmath>
 #include <iostream>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "huntmaster/core/UnifiedAudioEngine.h"
 
@@ -22,7 +22,7 @@ static std::vector<float> generateSineWave(float frequency, float duration, floa
 }
 
 class MFCCDirectTest : public ::testing::Test {
-   protected:
+  protected:
     void SetUp() override {
         auto engineResult = UnifiedAudioEngine::create();
         ASSERT_TRUE(engineResult.isOk())

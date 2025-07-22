@@ -1,13 +1,14 @@
 #ifdef __EMSCRIPTEN__
 
-#include <emscripten/emscripten.h>
+#include "huntmaster/platform/wasm/WASMInterface.h"
 
 #include <memory>
 #include <stdexcept>
 #include <vector>
 
+#include <emscripten/emscripten.h>
+
 #include "huntmaster/factories/UnifiedAudioEngineFactory.h"
-#include "huntmaster/platform/wasm/WASMInterface.h"
 
 using namespace huntmaster;
 
@@ -43,7 +44,8 @@ bool WASMEngine::initialize(int sampleRate, int bufferSize) {
 }
 
 bool WASMEngine::loadMasterCall(const std::string& audioPath) {
-    if (!engine) return false;
+    if (!engine)
+        return false;
 
     try {
         auto status = engine->loadMasterCall(audioPath);
@@ -54,7 +56,8 @@ bool WASMEngine::loadMasterCall(const std::string& audioPath) {
 }
 
 bool WASMEngine::startSession(const std::string& newSessionId) {
-    if (!engine) return false;
+    if (!engine)
+        return false;
 
     try {
         auto status = engine->startRealtimeSession(newSessionId);
@@ -69,7 +72,8 @@ bool WASMEngine::startSession(const std::string& newSessionId) {
 }
 
 bool WASMEngine::endSession() {
-    if (!engine || sessionId.empty()) return false;
+    if (!engine || sessionId.empty())
+        return false;
 
     try {
         auto status = engine->endRealtimeSession(sessionId);
@@ -84,7 +88,8 @@ bool WASMEngine::endSession() {
 }
 
 bool WASMEngine::processAudio(const emscripten::val& audioData) {
-    if (!engine || sessionId.empty()) return false;
+    if (!engine || sessionId.empty())
+        return false;
 
     try {
         // Convert JavaScript array to vector
@@ -192,7 +197,9 @@ emscripten::val WASMEngine::getRecentFeatures() {
     }
 }
 
-std::string WASMEngine::getSessionId() const { return sessionId; }
+std::string WASMEngine::getSessionId() const {
+    return sessionId;
+}
 
 emscripten::val WASMEngine::getEngineStatus() {
     emscripten::val status = emscripten::val::object();

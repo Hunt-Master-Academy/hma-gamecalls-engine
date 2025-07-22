@@ -11,7 +11,7 @@
 namespace huntmaster {
 
 class DTWComparator {
-   public:
+  public:
     struct Config {
         float window_ratio{0.1f};  // Sakoe-Chiba band width
         bool use_window{true};
@@ -20,22 +20,22 @@ class DTWComparator {
         bool enable_simd{true};
     };
 
-    explicit DTWComparator(const Config &config);
+    explicit DTWComparator(const Config& config);
     ~DTWComparator();
 
-    DTWComparator(DTWComparator &&) noexcept;
-    DTWComparator &operator=(DTWComparator &&) noexcept;
+    DTWComparator(DTWComparator&&) noexcept;
+    DTWComparator& operator=(DTWComparator&&) noexcept;
 
-    [[nodiscard]] float compare(const std::vector<std::vector<float>> &sequence1,
-                                const std::vector<std::vector<float>> &sequence2);
+    [[nodiscard]] float compare(const std::vector<std::vector<float>>& sequence1,
+                                const std::vector<std::vector<float>>& sequence2);
 
-    [[nodiscard]] float compareWithPath(const std::vector<std::vector<float>> &sequence1,
-                                        const std::vector<std::vector<float>> &sequence2,
-                                        std::vector<std::pair<size_t, size_t>> &alignment_path);
+    [[nodiscard]] float compareWithPath(const std::vector<std::vector<float>>& sequence1,
+                                        const std::vector<std::vector<float>>& sequence2,
+                                        std::vector<std::pair<size_t, size_t>>& alignment_path);
 
     void setWindowRatio(float ratio);
 
-   private:
+  private:
     class Impl;
     std::unique_ptr<Impl> pimpl_;
 };

@@ -16,7 +16,7 @@ namespace huntmaster {
 enum class MFCCError { INVALID_INPUT, FFT_FAILED, INVALID_CONFIG, PROCESSING_FAILED };
 
 class MFCCProcessor {
-   public:
+  public:
     struct Config {
         size_t sample_rate{44100};
         size_t frame_size{512};
@@ -34,22 +34,22 @@ class MFCCProcessor {
     using FeatureVector = std::vector<float>;
     using FeatureMatrix = std::vector<FeatureVector>;
 
-    explicit MFCCProcessor(const Config &config);
+    explicit MFCCProcessor(const Config& config);
     ~MFCCProcessor();
 
-    MFCCProcessor(MFCCProcessor &&) noexcept;
-    MFCCProcessor &operator=(MFCCProcessor &&) noexcept;
+    MFCCProcessor(MFCCProcessor&&) noexcept;
+    MFCCProcessor& operator=(MFCCProcessor&&) noexcept;
 
-    [[nodiscard]] huntmaster::expected<FeatureVector, MFCCError> extractFeatures(
-        std::span<const float> audio_frame);
+    [[nodiscard]] huntmaster::expected<FeatureVector, MFCCError>
+    extractFeatures(std::span<const float> audio_frame);
 
-    [[nodiscard]] huntmaster::expected<FeatureMatrix, MFCCError> extractFeaturesFromBuffer(
-        std::span<const float> audio_buffer, size_t hop_size);
+    [[nodiscard]] huntmaster::expected<FeatureMatrix, MFCCError>
+    extractFeaturesFromBuffer(std::span<const float> audio_buffer, size_t hop_size);
 
     void clearCache();
     [[nodiscard]] size_t getCacheSize() const noexcept;
 
-   private:
+  private:
     class Impl;
     std::unique_ptr<Impl> pimpl_;
 };

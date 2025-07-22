@@ -1,16 +1,16 @@
-#include <gtest/gtest.h>
-
 #include <chrono>
 #include <cmath>
 #include <thread>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "huntmaster/core/AudioLevelProcessor.h"
 
 namespace huntmaster {
 
 class AudioLevelProcessorTest : public ::testing::Test {
-   protected:
+  protected:
     void SetUp() override {
         config_.sampleRate = 44100.0f;
         config_.updateRateMs = 50.0f;
@@ -23,7 +23,9 @@ class AudioLevelProcessorTest : public ::testing::Test {
         processor_ = std::make_unique<AudioLevelProcessor>(config_);
     }
 
-    void TearDown() override { processor_.reset(); }
+    void TearDown() override {
+        processor_.reset();
+    }
 
     AudioLevelProcessor::Config config_;
     std::unique_ptr<AudioLevelProcessor> processor_;

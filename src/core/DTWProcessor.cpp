@@ -6,8 +6,8 @@
 
 namespace huntmaster {
 
-float DTWProcessor::euclideanDistanceSquared(const std::vector<float> &v1,
-                                             const std::vector<float> &v2) {
+float DTWProcessor::euclideanDistanceSquared(const std::vector<float>& v1,
+                                             const std::vector<float>& v2) {
     float distance = 0.0f;
     // Note: For simplicity and performance, we assume vectors are the same size.
     // A robust implementation might add a size check.
@@ -18,8 +18,8 @@ float DTWProcessor::euclideanDistanceSquared(const std::vector<float> &v1,
     return distance;
 }
 
-float DTWProcessor::calculateDistance(const std::vector<std::vector<float>> &seq1,
-                                      const std::vector<std::vector<float>> &seq2) {
+float DTWProcessor::calculateDistance(const std::vector<std::vector<float>>& seq1,
+                                      const std::vector<std::vector<float>>& seq2) {
     if (seq1.empty() || seq2.empty()) {
         return std::numeric_limits<float>::infinity();  // Cannot compare empty sequences.
     }

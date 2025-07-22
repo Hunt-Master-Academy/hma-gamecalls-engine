@@ -49,7 +49,7 @@ struct BufferPoolStats {
  * availability tracking and custom memory resources for allocation.
  */
 class AudioBufferPool {
-   public:
+  public:
     /**
      * @brief Configuration for buffer pool initialization
      */
@@ -57,7 +57,7 @@ class AudioBufferPool {
         size_t pool_size{32};                                 // Number of buffers in pool
         size_t buffer_size{4096};                             // Size of each buffer in bytes
         size_t alignment{64};                                 // Memory alignment (cache line)
-        std::pmr::memory_resource *memory_resource{nullptr};  // Custom allocator
+        std::pmr::memory_resource* memory_resource{nullptr};  // Custom allocator
         std::chrono::milliseconds acquire_timeout{100};       // Acquisition timeout
     };
 
@@ -65,7 +65,7 @@ class AudioBufferPool {
      * @brief Constructs a buffer pool with the specified configuration
      * @param config Pool configuration parameters
      */
-    explicit AudioBufferPool(const Config &config);
+    explicit AudioBufferPool(const Config& config);
 
     /**
      * @brief Alternative constructor for backward compatibility
@@ -80,24 +80,24 @@ class AudioBufferPool {
     ~AudioBufferPool();
 
     // Delete copy operations, allow move
-    AudioBufferPool(const AudioBufferPool &) = delete;
-    AudioBufferPool &operator=(const AudioBufferPool &) = delete;
-    AudioBufferPool(AudioBufferPool &&) noexcept;
-    AudioBufferPool &operator=(AudioBufferPool &&) noexcept;
+    AudioBufferPool(const AudioBufferPool&) = delete;
+    AudioBufferPool& operator=(const AudioBufferPool&) = delete;
+    AudioBufferPool(AudioBufferPool&&) noexcept;
+    AudioBufferPool& operator=(AudioBufferPool&&) noexcept;
 
     /**
      * @brief Buffer handle for RAII-style buffer management
      */
     class BufferHandle {
-       public:
+      public:
         BufferHandle() = default;
         ~BufferHandle();
 
         // Move-only semantics
-        BufferHandle(const BufferHandle &) = delete;
-        BufferHandle &operator=(const BufferHandle &) = delete;
-        BufferHandle(BufferHandle &&) noexcept;
-        BufferHandle &operator=(BufferHandle &&) noexcept;
+        BufferHandle(const BufferHandle&) = delete;
+        BufferHandle& operator=(const BufferHandle&) = delete;
+        BufferHandle(BufferHandle&&) noexcept;
+        BufferHandle& operator=(BufferHandle&&) noexcept;
 
         /**
          * @brief Get a span view of the buffer as float samples
@@ -123,22 +123,26 @@ class AudioBufferPool {
          * @brief Check if the handle contains a valid buffer
          * @return True if valid
          */
-        [[nodiscard]] bool valid() const noexcept { return buffer_ != nullptr; }
-        [[nodiscard]] explicit operator bool() const noexcept { return valid(); }
+        [[nodiscard]] bool valid() const noexcept {
+            return buffer_ != nullptr;
+        }
+        [[nodiscard]] explicit operator bool() const noexcept {
+            return valid();
+        }
 
         // Iterator support for range-based for loops
-        [[nodiscard]] float *begin() noexcept;
-        [[nodiscard]] float *end() noexcept;
-        [[nodiscard]] const float *begin() const noexcept;
-        [[nodiscard]] const float *end() const noexcept;
+        [[nodiscard]] float* begin() noexcept;
+        [[nodiscard]] float* end() noexcept;
+        [[nodiscard]] const float* begin() const noexcept;
+        [[nodiscard]] const float* end() const noexcept;
 
-       private:
+      private:
         friend class AudioBufferPool;
 
-        BufferHandle(AudioBufferPool *pool, void *buffer, size_t index);
+        BufferHandle(AudioBufferPool* pool, void* buffer, size_t index);
 
-        AudioBufferPool *pool_{nullptr};
-        void *buffer_{nullptr};
+        AudioBufferPool* pool_{nullptr};
+        void* buffer_{nullptr};
         size_t index_{0};
     };
 
@@ -153,14 +157,14 @@ class AudioBufferPool {
      * @param timeout Maximum time to wait
      * @return Buffer handle or error
      */
-    [[nodiscard]] huntmaster::expected<BufferHandle, BufferPoolError> tryAcquireFor(
-        std::chrono::milliseconds timeout);
+    [[nodiscard]] huntmaster::expected<BufferHandle, BufferPoolError>
+    tryAcquireFor(std::chrono::milliseconds timeout);
 
     /**
      * @brief Release a buffer back to the pool (called automatically by BufferHandle)
      * @param handle Buffer to release
      */
-    void release(BufferHandle &&handle);
+    void release(BufferHandle&& handle);
 
     /**
      * @brief Factory method for creating an AudioBufferPool.
@@ -169,7 +173,7 @@ class AudioBufferPool {
      * @return An expected containing a unique_ptr to the created pool or a BufferPoolError.
      */
     [[nodiscard]] static huntmaster::expected<std::unique_ptr<AudioBufferPool>, BufferPoolError>
-    create(const Config &config);
+    create(const Config& config);
 
     /**
      * @brief Get current pool statistics
@@ -188,7 +192,7 @@ class AudioBufferPool {
      */
     void resetStats() noexcept;
 
-   private:
+  private:
     class Impl;
     std::unique_ptr<Impl> pimpl_;
 };

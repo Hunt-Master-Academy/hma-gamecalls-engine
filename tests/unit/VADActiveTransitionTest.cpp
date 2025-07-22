@@ -1,7 +1,7 @@
-#include <gtest/gtest.h>
-
 #include <chrono>
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "huntmaster/core/VoiceActivityDetector.h"
 
@@ -9,7 +9,7 @@ using namespace huntmaster;
 using namespace std::chrono_literals;
 
 class VADActiveTransitionTest : public ::testing::Test {
-   protected:
+  protected:
     std::vector<float> generateSignalChunk(size_t samples, float level) {
         return std::vector<float>(samples, level);
     }

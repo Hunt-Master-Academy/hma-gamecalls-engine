@@ -70,7 +70,7 @@ struct VADConfig {
 };
 
 class UnifiedAudioEngine {
-   public:
+  public:
     enum class Status {
         OK = 0,
         INVALID_PARAMS = -1,
@@ -87,11 +87,21 @@ class UnifiedAudioEngine {
         T value{};
         Status status = Status::OK;
 
-        bool isOk() const { return status == Status::OK; }
-        operator bool() const { return isOk(); }
-        Status error() const { return status; }
-        const T& operator*() const { return value; }
-        T& operator*() { return value; }
+        bool isOk() const {
+            return status == Status::OK;
+        }
+        operator bool() const {
+            return isOk();
+        }
+        Status error() const {
+            return status;
+        }
+        const T& operator*() const {
+            return value;
+        }
+        T& operator*() {
+            return value;
+        }
     };
 
     // Engine lifecycle - instance-based, not singleton
@@ -158,10 +168,11 @@ class UnifiedAudioEngine {
     [[nodiscard]] Status disableVAD(SessionId sessionId);
 
     // DTW Configuration for advanced pattern matching tuning (per session)
-    [[nodiscard]] Status configureDTW(SessionId sessionId, float windowRatio, bool enableSIMD = true);
+    [[nodiscard]] Status
+    configureDTW(SessionId sessionId, float windowRatio, bool enableSIMD = true);
     [[nodiscard]] Result<float> getDTWWindowRatio(SessionId sessionId) const;
 
-   private:
+  private:
     UnifiedAudioEngine();
 
     // Non-copyable, moveable
@@ -227,8 +238,8 @@ void unified_destroy_engine(int engineId);
 [[nodiscard]] int unified_load_master_call(int engineId, int sessionId, const char* masterCallId);
 
 // Audio processing
-[[nodiscard]] int unified_process_audio_chunk(int engineId, int sessionId, const float* audioBuffer,
-                                              int bufferSize);
+[[nodiscard]] int
+unified_process_audio_chunk(int engineId, int sessionId, const float* audioBuffer, int bufferSize);
 [[nodiscard]] float unified_get_similarity_score(int engineId, int sessionId);
 [[nodiscard]] int unified_get_feature_count(int engineId, int sessionId);
 
