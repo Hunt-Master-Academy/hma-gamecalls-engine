@@ -2,7 +2,32 @@
 
 > ⚠️ **License: All Rights Reserved**
 >
-> The source code for this project is made available for **portfolio review and evaluation purposes only.** It is not licensed for use of any kind, commercial or non-commercial, without express written permission from the author. For licensing inquiries, please contact time@3dtechsolutions.us.
+> The source code for this project is made available for **portfolio review and evaluation purposes only.** It is not licensed for use of any kind, commercial or non-commercial, without express written permission from the authorThis project uses **CMake FetchContent** for automatic dependency management:
+
+- **KissFFT**: Fast Fourier Transform library (automatically downloaded)
+- **GoogleTest**: Testing framework (automatically downloaded)
+- **Google Benchmark**: Performance benchmarking (automatically downloaded)
+- **Emscripten SDK**: WebAssembly compilation toolchain (`tools/emsdk`)
+
+## Dependency Management
+
+The project uses **FetchContent** for automatic dependency management. No manual dependency setup is required:
+
+```bash
+# Simple clone and build - no submodules needed!
+git clone https://github.com/tescolopio/huntmaster-engine.git
+cd huntmaster-engine
+
+# Build with automatic dependency download
+cmake -B build
+cmake --build build
+```
+
+**Benefits:**
+- ✅ **Zero setup friction** - dependencies downloaded automatically
+- ✅ **No submodule management** - CMake handles everything
+- ✅ **Consistent versions** - locked dependency versions across builds
+- ✅ **CI/CD friendly** - reliable automated buildsnquiries, please contact time@3dtechsolutions.us.
 
 ---
 
@@ -173,18 +198,18 @@ The CMake configuration is organized across multiple specialized files:
 
 - **CMake** 3.16 or higher
 - **C++20** compatible compiler (GCC 10+, Clang 12+, MSVC 2019+)
-- **Git** for submodule management
+- **Git** (dependencies are automatically downloaded by CMake)
 
 ### Quick Start
 
 #### Native Build (Windows, Linux, macOS)
 
 ```bash
-# Clone with submodules
-git clone --recursive https://github.com/tescolopio/huntmaster-engine.git
+# Simple clone and build - dependencies handled automatically!
+git clone https://github.com/tescolopio/huntmaster-engine.git
 cd huntmaster-engine
 
-# Configure and build
+# Configure and build with automatic dependency download
 cmake -B build
 cmake --build build
 
