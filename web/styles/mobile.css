@@ -1,0 +1,1112 @@
+/**
+ * Mobile-Specific CSS Styles
+ *
+ * This file contains responsive design and mobile-optimized styles
+ * for the Huntmaster Engine Web Application.
+ *
+ * @author Huntmaster Engine Team
+ * @version 2.0
+ * @date July 24, 2025
+ */
+
+/* TODO: Phase 2.2 - User Interface Enhancement - COMPREHENSIVE FILE TODO */
+/* ===================================================================== */
+
+/* TODO 2.2.45: Mobile Responsive Design Foundation */
+/* ------------------------------------------------- */
+/**
+ * TODO: Implement mobile responsive design with:
+ * [ ] Flexible grid system with breakpoint management
+ * [ ] Touch-friendly interface elements with proper sizing
+ * [ ] Mobile-first design approach with progressive enhancement
+ * [ ] Responsive typography with scalable text and spacing
+ * [ ] Optimized layouts for portrait and landscape orientations
+ * [ ] Performance optimization for mobile devices
+ * [ ] Cross-device compatibility testing and validation
+ * [ ] Gesture support with touch event handling
+ * [ ] Mobile-specific navigation patterns
+ * [ ] Adaptive content loading for limited bandwidth
+ */
+
+/* Mobile-First Base Styles */
+@media screen and (max-width: 767px) {
+
+    /* TODO: Base mobile layout */
+    html {
+        font-size: 14px;
+        /* Slightly smaller base font for mobile readability */
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        /* Prevent horizontal scroll on mobile */
+        -webkit-overflow-scrolling: touch;
+        /* Smooth scrolling on iOS */
+        touch-action: manipulation;
+        /* Prevent double-tap zoom */
+    }
+
+    /* TODO: Mobile container optimization */
+    .container {
+        width: 100%;
+        padding: 10px 15px;
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    .main-content {
+        padding: 10px;
+        margin: 0;
+        min-height: calc(100vh - 120px);
+        /* Account for header/footer */
+    }
+}
+
+/* TODO 2.2.46: Touch-Friendly Interface Elements */
+/* ----------------------------------------------- */
+/**
+ * TODO: Implement touch-friendly controls with:
+ * [ ] Minimum 44px touch targets for accessibility compliance
+ * [ ] Increased spacing between interactive elements
+ * [ ] Visual feedback for touch interactions
+ * [ ] Optimized button sizes and padding
+ * [ ] Touch gesture support for common actions
+ * [ ] Swipe navigation implementation
+ * [ ] Haptic feedback integration where supported
+ * [ ] Multi-touch gesture handling
+ * [ ] Touch event debouncing for performance
+ * [ ] Context-sensitive touch actions
+ */
+
+@media screen and (max-width: 767px) {
+
+    /* TODO: Touch-optimized buttons */
+    .btn,
+    button,
+    .button {
+        min-height: 44px;
+        /* Apple HIG minimum touch target */
+        min-width: 44px;
+        padding: 12px 20px;
+        margin: 8px 4px;
+        font-size: 16px;
+        /* Prevent zoom on iOS */
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+        transition: all 0.2s ease;
+    }
+
+    .btn:active,
+    button:active,
+    .button:active {
+        transform: scale(0.98);
+        /* Visual feedback for touch */
+        opacity: 0.8;
+    }
+
+    /* TODO: Primary action buttons */
+    .btn-primary {
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+        color: white;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    }
+
+    .btn-primary:active {
+        box-shadow: 0 2px 6px rgba(76, 175, 80, 0.4);
+    }
+
+    /* TODO: Secondary action buttons */
+    .btn-secondary {
+        background: linear-gradient(135deg, #607D8B, #546E7A);
+        color: white;
+        font-weight: 500;
+    }
+
+    /* TODO: Danger/warning buttons */
+    .btn-danger {
+        background: linear-gradient(135deg, #f44336, #d32f2f);
+        color: white;
+        font-weight: 500;
+    }
+
+    /* TODO: Large touch areas for critical actions */
+    .recording-controls .btn {
+        min-height: 60px;
+        min-width: 60px;
+        border-radius: 50%;
+        font-size: 18px;
+        margin: 10px;
+    }
+
+    .record-button {
+        min-height: 80px;
+        min-width: 80px;
+        background: radial-gradient(circle, #ff4444, #cc0000);
+        position: relative;
+    }
+
+    .record-button:active {
+        background: radial-gradient(circle, #ff6666, #cc0000);
+    }
+
+    .record-button::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+    }
+}
+
+/* TODO 2.2.47: Mobile Navigation and Menu System */
+/* ----------------------------------------------- */
+/**
+ * TODO: Implement mobile navigation with:
+ * [ ] Collapsible navigation menu with hamburger icon
+ * [ ] Swipe-based navigation between sections
+ * [ ] Bottom navigation bar for easy thumb access
+ * [ ] Breadcrumb navigation for deep hierarchies
+ * [ ] Tab-based navigation with visual indicators
+ * [ ] Pull-to-refresh functionality
+ * [ ] Navigation state persistence
+ * [ ] Smooth transitions and animations
+ * [ ] Gesture-based back navigation
+ * [ ] Voice navigation integration
+ */
+
+@media screen and (max-width: 767px) {
+
+    /* TODO: Mobile header */
+    .header {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: linear-gradient(135deg, #2c3e50, #34495e);
+        color: white;
+        padding: 10px 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .header-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0;
+        text-align: center;
+        line-height: 44px;
+        /* Match touch target height */
+    }
+
+    /* TODO: Hamburger menu */
+    .mobile-menu-toggle {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: white;
+        font-size: 20px;
+        min-height: 44px;
+        min-width: 44px;
+        cursor: pointer;
+        z-index: 1001;
+    }
+
+    .hamburger {
+        display: inline-block;
+        width: 24px;
+        height: 18px;
+        position: relative;
+        transform: rotate(0deg);
+        transition: 0.3s ease-in-out;
+    }
+
+    .hamburger span {
+        display: block;
+        position: absolute;
+        height: 3px;
+        width: 100%;
+        background: white;
+        border-radius: 2px;
+        left: 0;
+        transform: rotate(0deg);
+        transition: 0.3s ease-in-out;
+    }
+
+    .hamburger span:nth-child(1) {
+        top: 0px;
+    }
+
+    .hamburger span:nth-child(2) {
+        top: 7px;
+    }
+
+    .hamburger span:nth-child(3) {
+        top: 14px;
+    }
+
+    /* TODO: Animated hamburger to X */
+    .mobile-menu-toggle.active .hamburger span:nth-child(1) {
+        top: 7px;
+        transform: rotate(135deg);
+    }
+
+    .mobile-menu-toggle.active .hamburger span:nth-child(2) {
+        opacity: 0;
+        left: -30px;
+    }
+
+    .mobile-menu-toggle.active .hamburger span:nth-child(3) {
+        top: 7px;
+        transform: rotate(-135deg);
+    }
+
+    /* TODO: Slide-out navigation menu */
+    .mobile-nav {
+        position: fixed;
+        top: 0;
+        left: -280px;
+        width: 280px;
+        height: 100vh;
+        background: linear-gradient(180deg, #34495e, #2c3e50);
+        transition: left 0.3s ease-in-out;
+        z-index: 999;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .mobile-nav.active {
+        left: 0;
+    }
+
+    .mobile-nav-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease-in-out;
+        z-index: 998;
+    }
+
+    .mobile-nav-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* TODO: Navigation menu items */
+    .mobile-nav ul {
+        list-style: none;
+        padding: 80px 0 20px 0;
+        /* Space for header */
+        margin: 0;
+    }
+
+    .mobile-nav li {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .mobile-nav a {
+        display: block;
+        color: white;
+        text-decoration: none;
+        padding: 15px 20px;
+        font-size: 16px;
+        transition: background 0.2s ease;
+        min-height: 44px;
+        line-height: 1.5;
+    }
+
+    .mobile-nav a:active {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .mobile-nav .nav-icon {
+        margin-right: 15px;
+        width: 20px;
+        display: inline-block;
+        text-align: center;
+    }
+}
+
+/* TODO 2.2.48: Audio Player Mobile Optimization */
+/* ---------------------------------------------- */
+/**
+ * TODO: Implement mobile-optimized audio player with:
+ * [ ] Large, touch-friendly playback controls
+ * [ ] Simplified interface with essential controls only
+ * [ ] Gesture-based seeking and volume control
+ * [ ] Visual waveform with zoom and pan support
+ * [ ] Mobile-specific audio format optimization
+ * [ ] Background playback capability
+ * [ ] Lock screen media controls integration
+ * [ ] Audio session management for phone calls
+ * [ ] Battery usage optimization
+ * [ ] Offline audio caching and playback
+ */
+
+@media screen and (max-width: 767px) {
+
+    /* TODO: Mobile audio player container */
+    .audio-player {
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 12px;
+        padding: 20px 15px;
+        margin: 15px 0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* TODO: Waveform display */
+    .waveform-container {
+        height: 80px;
+        /* Reduced height for mobile */
+        margin: 15px 0;
+        background: #fff;
+        border-radius: 8px;
+        overflow: hidden;
+        position: relative;
+        cursor: pointer;
+        touch-action: pan-x;
+        /* Allow horizontal panning only */
+    }
+
+    .waveform-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+
+    .waveform-progress {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        background: linear-gradient(90deg, rgba(76, 175, 80, 0.3), rgba(76, 175, 80, 0.6));
+        pointer-events: none;
+        transition: width 0.1s ease;
+    }
+
+    /* TODO: Mobile playback controls */
+    .audio-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 15px;
+        margin: 20px 0;
+    }
+
+    .play-pause-btn {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+    }
+
+    .play-pause-btn:active {
+        transform: scale(0.95);
+        box-shadow: 0 2px 8px rgba(76, 175, 80, 0.6);
+    }
+
+    .skip-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #607D8B, #546E7A);
+        border: none;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .skip-btn:active {
+        transform: scale(0.95);
+    }
+
+    /* TODO: Time display */
+    .time-display {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        color: #666;
+        margin: 10px 0;
+        font-family: 'Roboto Mono', monospace;
+    }
+
+    .current-time,
+    .total-time {
+        min-width: 45px;
+        text-align: center;
+    }
+
+    /* TODO: Volume control (mobile-optimized) */
+    .volume-control {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 15px 0;
+    }
+
+    .volume-slider {
+        flex: 1;
+        height: 6px;
+        background: #ddd;
+        border-radius: 3px;
+        outline: none;
+        -webkit-appearance: none;
+        appearance: none;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 20px;
+        height: 20px;
+        background: #4CAF50;
+        border-radius: 50%;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .volume-slider::-moz-range-thumb {
+        width: 20px;
+        height: 20px;
+        background: #4CAF50;
+        border-radius: 50%;
+        cursor: pointer;
+        border: none;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .volume-icon {
+        width: 24px;
+        height: 24px;
+        color: #666;
+        cursor: pointer;
+    }
+}
+
+/* TODO 2.2.49: Recording Interface Mobile Layout */
+/* ----------------------------------------------- */
+/**
+ * TODO: Implement mobile recording interface with:
+ * [ ] Large, prominent record button with visual feedback
+ * [ ] Real-time waveform display during recording
+ * [ ] Touch-friendly recording controls and settings
+ * [ ] Visual recording level meters
+ * [ ] Countdown timer and recording duration display
+ * [ ] Quick playback and re-record options
+ * [ ] Mobile-optimized file management
+ * [ ] Gesture-based recording operations
+ * [ ] Voice-activated recording controls
+ * [ ] Background recording capability
+ */
+
+@media screen and (max-width: 767px) {
+
+    /* TODO: Recording interface container */
+    .recording-interface {
+        padding: 20px 15px;
+        background: linear-gradient(135deg, #263238, #37474f);
+        color: white;
+        border-radius: 12px;
+        margin: 15px 0;
+    }
+
+    /* TODO: Recording status display */
+    .recording-status {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .recording-status h3 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+        font-weight: 600;
+    }
+
+    .recording-timer {
+        font-size: 24px;
+        font-weight: bold;
+        font-family: 'Roboto Mono', monospace;
+        color: #ff4444;
+        margin: 10px 0;
+    }
+
+    .recording-timer.recording {
+        animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 1;
+        }
+
+        50% {
+            opacity: 0.6;
+        }
+    }
+
+    /* TODO: Main record button */
+    .record-button-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 30px 0;
+    }
+
+    .record-button {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        border: 4px solid #fff;
+        background: linear-gradient(135deg, #ff4444, #cc0000);
+        cursor: pointer;
+        position: relative;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(255, 68, 68, 0.4);
+    }
+
+    .record-button:active {
+        transform: scale(0.95);
+        box-shadow: 0 4px 15px rgba(255, 68, 68, 0.6);
+    }
+
+    .record-button.recording {
+        background: linear-gradient(135deg, #ff6666, #ff0000);
+        animation: recordPulse 2s infinite;
+    }
+
+    @keyframes recordPulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+            box-shadow: 0 6px 20px rgba(255, 68, 68, 0.4);
+        }
+
+        50% {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(255, 68, 68, 0.6);
+        }
+    }
+
+    .record-button::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 30px;
+        height: 30px;
+        background: white;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+
+    .record-button.recording::after {
+        border-radius: 6px;
+        width: 24px;
+        height: 24px;
+    }
+
+    /* TODO: Recording controls */
+    .recording-controls {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        margin: 25px 0;
+    }
+
+    .control-btn {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .control-btn:active {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(0.95);
+    }
+
+    .control-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    /* TODO: Audio level meter */
+    .audio-level-meter {
+        margin: 20px 0;
+        padding: 0 20px;
+    }
+
+    .level-meter-label {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 8px;
+        text-align: center;
+    }
+
+    .level-meter-bars {
+        display: flex;
+        justify-content: space-between;
+        height: 40px;
+        gap: 2px;
+    }
+
+    .level-bar {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 2px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .level-bar-fill {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        background: linear-gradient(to top,
+                #4CAF50 0%,
+                #FFC107 70%,
+                #ff4444 90%);
+        transition: height 0.1s ease;
+        border-radius: 2px;
+    }
+}
+
+/* TODO 2.2.50: Results and Analysis Mobile Layout */
+/* ------------------------------------------------ */
+/**
+ * TODO: Implement mobile results interface with:
+ * [ ] Simplified scoring display with clear visual hierarchy
+ * [ ] Touch-optimized comparison controls
+ * [ ] Swipeable result sections
+ * [ ] Mobile-friendly charts and graphs
+ * [ ] Condensed feedback with expandable details
+ * [ ] Quick action buttons for common tasks
+ * [ ] Share functionality with mobile platforms
+ * [ ] Gesture-based navigation between results
+ * [ ] Optimized loading states for slower connections
+ * [ ] Offline result caching and synchronization
+ */
+
+@media screen and (max-width: 767px) {
+
+    /* TODO: Results container */
+    .results-container {
+        padding: 15px;
+        background: white;
+        border-radius: 12px;
+        margin: 15px 0;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* TODO: Score display */
+    .score-display {
+        text-align: center;
+        padding: 25px 15px;
+        background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+
+    .score-value {
+        font-size: 48px;
+        font-weight: bold;
+        color: #4CAF50;
+        margin: 0;
+        line-height: 1;
+    }
+
+    .score-label {
+        font-size: 14px;
+        color: #666;
+        margin: 5px 0 0 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .score-description {
+        font-size: 16px;
+        color: #333;
+        margin: 15px 0 0 0;
+        font-weight: 500;
+    }
+
+    /* TODO: Analysis sections */
+    .analysis-sections {
+        margin: 20px 0;
+    }
+
+    .analysis-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin: 10px 0;
+        overflow: hidden;
+    }
+
+    .section-header {
+        padding: 15px;
+        background: linear-gradient(135deg, #607D8B, #546E7A);
+        color: white;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        min-height: 44px;
+    }
+
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .section-toggle {
+        font-size: 18px;
+        transition: transform 0.3s ease;
+    }
+
+    .section-header.expanded .section-toggle {
+        transform: rotate(180deg);
+    }
+
+    .section-content {
+        padding: 0 15px;
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .section-content.expanded {
+        padding: 15px;
+        max-height: 500px;
+        /* Adjust based on content */
+    }
+
+    /* TODO: Comparison interface */
+    .comparison-interface {
+        margin: 20px 0;
+    }
+
+    .comparison-controls {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        margin: 15px 0;
+    }
+
+    .comparison-btn {
+        flex: 1;
+        max-width: 120px;
+        padding: 12px;
+        background: linear-gradient(135deg, #2196F3, #1976D2);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .comparison-btn:active {
+        transform: scale(0.98);
+    }
+
+    .comparison-btn.active {
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+    }
+
+    /* TODO: Action buttons */
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 25px 0;
+        justify-content: center;
+    }
+
+    .action-btn {
+        flex: 1;
+        min-width: 140px;
+        padding: 12px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .action-btn-primary {
+        background: linear-gradient(135deg, #4CAF50, #45a049);
+        color: white;
+    }
+
+    .action-btn-secondary {
+        background: linear-gradient(135deg, #607D8B, #546E7A);
+        color: white;
+    }
+
+    .action-btn-outline {
+        background: transparent;
+        border: 2px solid #607D8B;
+        color: #607D8B;
+    }
+
+    .action-btn:active {
+        transform: scale(0.98);
+    }
+}
+
+/* TODO 2.2.51: Landscape Orientation Optimizations */
+/* ------------------------------------------------- */
+/**
+ * TODO: Implement landscape orientation optimizations with:
+ * [ ] Horizontal layout adjustments for better space utilization
+ * [ ] Side-by-side content arrangement where appropriate
+ * [ ] Optimized navigation for landscape use
+ * [ ] Waveform display expansion for better visibility
+ * [ ] Control repositioning for thumb accessibility
+ * [ ] Content reflow for landscape aspect ratios
+ * [ ] Media player enhancements for video content
+ * [ ] Split-screen functionality support
+ * [ ] Orientation change handling and state persistence
+ * [ ] Performance optimization for layout changes
+ */
+
+@media screen and (max-width: 767px) and (orientation: landscape) {
+
+    /* TODO: Landscape-specific adjustments */
+    .container {
+        padding: 8px 20px;
+    }
+
+    .main-content {
+        padding: 8px 15px;
+    }
+
+    /* TODO: Horizontal layout for controls */
+    .recording-interface {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding: 15px 20px;
+    }
+
+    .record-button-container {
+        margin: 0;
+        flex-shrink: 0;
+    }
+
+    .record-button {
+        width: 80px;
+        height: 80px;
+    }
+
+    .recording-status {
+        flex: 1;
+        text-align: left;
+        margin-bottom: 0;
+    }
+
+    .recording-controls {
+        flex-direction: column;
+        margin: 0;
+        gap: 10px;
+    }
+
+    /* TODO: Landscape waveform display */
+    .waveform-container {
+        height: 60px;
+        margin: 10px 0;
+    }
+
+    /* TODO: Side-by-side results layout */
+    .results-container {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+    }
+
+    .score-display {
+        flex-shrink: 0;
+        width: 200px;
+        margin-bottom: 0;
+    }
+
+    .analysis-sections {
+        flex: 1;
+        margin: 0;
+    }
+}
+
+/* TODO 2.2.52: Performance and Loading Optimizations */
+/* --------------------------------------------------- */
+/**
+ * TODO: Implement performance optimizations with:
+ * [ ] CSS animation performance optimization
+ * [ ] GPU acceleration for smooth transitions
+ * [ ] Reduced motion preferences support
+ * [ ] Lazy loading for heavy UI components
+ * [ ] Critical CSS inlining for faster initial load
+ * [ ] Optimized font loading and fallbacks
+ * [ ] Image optimization and responsive loading
+ * [ ] Cache-friendly CSS structure
+ * [ ] Minification and compression optimization
+ * [ ] Progressive enhancement for slower devices
+ */
+
+@media screen and (max-width: 767px) {
+
+    /* TODO: Performance optimizations */
+    * {
+        box-sizing: border-box;
+    }
+
+    /* GPU acceleration for animations */
+    .btn,
+    .record-button,
+    .mobile-nav,
+    .section-content {
+        will-change: transform;
+        backface-visibility: hidden;
+        perspective: 1000px;
+    }
+
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+
+        .record-button.recording {
+            animation: none;
+        }
+
+        .recording-timer.recording {
+            animation: none;
+        }
+    }
+
+    /* TODO: Loading states */
+    .loading {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .loading::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg,
+                transparent,
+                rgba(255, 255, 255, 0.2),
+                transparent);
+        animation: loading-shimmer 1.5s infinite;
+    }
+
+    @keyframes loading-shimmer {
+        0% {
+            left: -100%;
+        }
+
+        100% {
+            left: 100%;
+        }
+    }
+
+    /* TODO: Critical loading optimization */
+    .above-fold {
+        /* Ensure above-fold content loads first */
+        contain: layout style paint;
+    }
+
+    .below-fold {
+        /* Defer below-fold content */
+        contain: layout style paint;
+        content-visibility: auto;
+        contain-intrinsic-size: 0 500px;
+    }
+}
+
+/* TODO: Additional mobile-specific utility classes */
+@media screen and (max-width: 767px) {
+    .mobile-hidden {
+        display: none !important;
+    }
+
+    .mobile-visible {
+        display: block !important;
+    }
+
+    .mobile-flex {
+        display: flex !important;
+    }
+
+    .mobile-center {
+        text-align: center !important;
+    }
+
+    .mobile-full-width {
+        width: 100% !important;
+    }
+
+    .mobile-no-margin {
+        margin: 0 !important;
+    }
+
+    .mobile-small-padding {
+        padding: 10px !important;
+    }
+
+    .mobile-large-padding {
+        padding: 20px !important;
+    }
+}

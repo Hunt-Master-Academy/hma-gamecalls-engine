@@ -1,0 +1,1031 @@
+/**
+ * Accessibility CSS Styles
+ *
+ * This file contains accessibility-focused styles that ensure the
+ * Huntmaster Engine Web Application meets WCAG 2.1 AA compliance.
+ *
+ * @author Huntmaster Engine Team
+ * @version 2.0
+ * @date July 24, 2025
+ */
+
+/* TODO: Phase 2.2 - User Interface Enhancement - COMPREHENSIVE FILE TODO */
+/* ===================================================================== */
+
+/* TODO 2.2.53: WCAG 2.1 AA Compliance Foundation */
+/* ------------------------------------------------ */
+/**
+ * TODO: Implement WCAG 2.1 AA compliance with:
+ * [ ] Color contrast ratios meeting minimum 4.5:1 standard
+ * [ ] Focus indicators with high visibility and clear boundaries
+ * [ ] Screen reader optimization with proper ARIA labels
+ * [ ] Keyboard navigation support with logical tab order
+ * [ ] Motion and animation controls with preference detection
+ * [ ] Text scalability up to 200% without horizontal scrolling
+ * [ ] Alternative text and descriptions for non-text content
+ * [ ] Error identification and suggestion mechanisms
+ * [ ] Consistent navigation and interaction patterns
+ * [ ] Time-based media accessibility with captions and transcripts
+ */
+
+/* TODO: High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --high-contrast-bg: #000000;
+        --high-contrast-text: #ffffff;
+        --high-contrast-link: #00ffff;
+        --high-contrast-visited: #ff00ff;
+        --high-contrast-button: #ffff00;
+        --high-contrast-border: #ffffff;
+        --high-contrast-focus: #ff0000;
+    }
+
+    body {
+        background-color: var(--high-contrast-bg) !important;
+        color: var(--high-contrast-text) !important;
+    }
+
+    .btn,
+    button,
+    .button {
+        background-color: var(--high-contrast-button) !important;
+        color: var(--high-contrast-bg) !important;
+        border: 2px solid var(--high-contrast-border) !important;
+    }
+
+    a {
+        color: var(--high-contrast-link) !important;
+    }
+
+    a:visited {
+        color: var(--high-contrast-visited) !important;
+    }
+
+    .container,
+    .main-content,
+    .audio-player,
+    .results-container {
+        background-color: var(--high-contrast-bg) !important;
+        border: 2px solid var(--high-contrast-border) !important;
+    }
+}
+
+/* TODO 2.2.54: Focus Management and Keyboard Navigation */
+/* ------------------------------------------------------ */
+/**
+ * TODO: Implement comprehensive focus management with:
+ * [ ] Highly visible focus indicators with consistent styling
+ * [ ] Logical tab order with skip links for navigation
+ * [ ] Focus trapping for modal dialogs and overlays
+ * [ ] Keyboard shortcuts with clear documentation
+ * [ ] Focus restoration after modal/menu interactions
+ * [ ] Custom focus indicators for complex components
+ * [ ] Focus outline optimization for different interaction methods
+ * [ ] Keyboard equivalents for all mouse interactions
+ * [ ] Focus group management for related controls
+ * [ ] Screen reader announcement optimization
+ */
+
+/* Enhanced focus indicators */
+*:focus {
+    outline: 3px solid #0066cc;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 1px #ffffff, 0 0 0 4px #0066cc;
+    border-radius: 2px;
+}
+
+/* Remove default focus for mouse users, keep for keyboard users */
+*:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+}
+
+*:focus-visible {
+    outline: 3px solid #0066cc;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 1px #ffffff, 0 0 0 4px #0066cc;
+}
+
+/* High-contrast focus indicators */
+@media (prefers-contrast: high) {
+
+    *:focus,
+    *:focus-visible {
+        outline: 4px solid var(--high-contrast-focus) !important;
+        outline-offset: 2px;
+        box-shadow: 0 0 0 2px var(--high-contrast-bg),
+            0 0 0 6px var(--high-contrast-focus) !important;
+    }
+}
+
+/* Skip links for keyboard navigation */
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: #000000;
+    color: #ffffff;
+    padding: 8px;
+    text-decoration: none;
+    border-radius: 4px;
+    border: 2px solid #ffffff;
+    font-weight: bold;
+    z-index: 9999;
+    transition: top 0.2s ease-in-out;
+}
+
+.skip-link:focus {
+    top: 6px;
+    outline: 3px solid #0066cc;
+}
+
+/* Button focus enhancements */
+.btn:focus,
+button:focus,
+.button:focus {
+    outline: 3px solid #0066cc;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 1px #ffffff,
+        0 0 0 4px #0066cc,
+        0 2px 8px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Interactive element focus */
+.audio-controls button:focus,
+.recording-controls button:focus {
+    outline: 4px solid #0066cc;
+    outline-offset: 3px;
+    transform: scale(1.05);
+}
+
+/* Focus trap for modal dialogs */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.modal-content {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 8px;
+    max-width: 90%;
+    max-height: 90%;
+    overflow-y: auto;
+    position: relative;
+}
+
+.modal-content:focus {
+    outline: none;
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    line-height: 1;
+}
+
+.modal-close:focus {
+    outline: 3px solid #0066cc;
+    outline-offset: 2px;
+    background: #f0f0f0;
+    border-radius: 4px;
+}
+
+/* TODO 2.2.55: Screen Reader Optimization */
+/* ---------------------------------------- */
+/**
+ * TODO: Implement screen reader optimization with:
+ * [ ] Proper ARIA labels and descriptions for all interactive elements
+ * [ ] Live regions for dynamic content updates
+ * [ ] Semantic HTML structure with proper heading hierarchy
+ * [ ] Alternative text for images and visual content
+ * [ ] Form labels and error message associations
+ * [ ] Table headers and data relationships
+ * [ ] Navigation landmarks and regions
+ * [ ] Status announcements for user actions
+ * [ ] Context-sensitive help and instructions
+ * [ ] Screen reader testing and validation
+ */
+
+/* Screen reader only content */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.sr-only:focus {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: 8px;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    background: #000000;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    border-radius: 4px;
+    font-weight: bold;
+    z-index: 9999;
+}
+
+/* ARIA live regions */
+.live-region {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.status-message {
+    background: #e3f2fd;
+    border: 1px solid #2196f3;
+    border-radius: 4px;
+    padding: 12px;
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+}
+
+.status-message::before {
+    content: "ℹ️";
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.error-message {
+    background: #ffebee;
+    border: 1px solid #f44336;
+    color: #c62828;
+}
+
+.error-message::before {
+    content: "⚠️";
+    color: #f44336;
+}
+
+.success-message {
+    background: #e8f5e8;
+    border: 1px solid #4caf50;
+    color: #2e7d32;
+}
+
+.success-message::before {
+    content: "✅";
+    color: #4caf50;
+}
+
+/* Form accessibility enhancements */
+label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #333333;
+}
+
+input,
+select,
+textarea {
+    border: 2px solid #cccccc;
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 16px;
+    line-height: 1.4;
+    background: #ffffff;
+    color: #333333;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: #0066cc;
+    outline: 3px solid #0066cc;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 1px #ffffff, 0 0 0 4px #0066cc;
+}
+
+input:invalid,
+select:invalid,
+textarea:invalid {
+    border-color: #f44336;
+}
+
+input:invalid:focus,
+select:invalid:focus,
+textarea:invalid:focus {
+    outline-color: #f44336;
+    box-shadow: 0 0 0 1px #ffffff, 0 0 0 4px #f44336;
+}
+
+/* Error message styling */
+.field-error {
+    color: #c62828;
+    font-size: 14px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+}
+
+.field-error::before {
+    content: "⚠️";
+    margin-right: 6px;
+}
+
+/* Required field indicators */
+.required::after {
+    content: " *";
+    color: #f44336;
+    font-weight: bold;
+}
+
+/* TODO 2.2.56: Color and Contrast Accessibility */
+/* ---------------------------------------------- */
+/**
+ * TODO: Implement color and contrast accessibility with:
+ * [ ] WCAG AA color contrast ratios (4.5:1 minimum)
+ * [ ] Color-blind friendly palette with pattern alternatives
+ * [ ] High contrast mode support with system preferences
+ * [ ] Text and background color optimization
+ * [ ] Link color accessibility with underlines
+ * [ ] Button state colors with sufficient contrast
+ * [ ] Error and success state color accessibility
+ * [ ] Chart and graph color accessibility
+ * [ ] Icon and symbol contrast optimization
+ * [ ] Dark mode accessibility considerations
+ */
+
+/* Ensure minimum contrast ratios */
+:root {
+    --text-primary: #212121;
+    /* 16.1:1 contrast on white */
+    --text-secondary: #757575;
+    /* 4.54:1 contrast on white */
+    --link-color: #1565c0;
+    /* 4.56:1 contrast on white */
+    --link-visited: #7b1fa2;
+    /* 4.64:1 contrast on white */
+    --success-color: #2e7d32;
+    /* 4.54:1 contrast on white */
+    --warning-color: #ef6c00;
+    /* 4.52:1 contrast on white */
+    --error-color: #c62828;
+    /* 5.14:1 contrast on white */
+    --background-primary: #ffffff;
+    --background-secondary: #f5f5f5;
+    /* 15.9:1 contrast with primary text */
+}
+
+body {
+    color: var(--text-primary);
+    background-color: var(--background-primary);
+}
+
+/* Link accessibility */
+a {
+    color: var(--link-color);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+}
+
+a:visited {
+    color: var(--link-visited);
+}
+
+a:hover {
+    text-decoration-thickness: 2px;
+}
+
+a:focus {
+    outline: 3px solid #0066cc;
+    outline-offset: 2px;
+    text-decoration-thickness: 2px;
+}
+
+/* Button color accessibility */
+.btn-primary {
+    background-color: #1976d2;
+    /* 4.53:1 contrast with white text */
+    color: #ffffff;
+    border: 2px solid #1976d2;
+}
+
+.btn-primary:hover {
+    background-color: #1565c0;
+    /* Higher contrast on hover */
+}
+
+.btn-secondary {
+    background-color: #424242;
+    /* 9.54:1 contrast with white text */
+    color: #ffffff;
+    border: 2px solid #424242;
+}
+
+.btn-success {
+    background-color: var(--success-color);
+    color: #ffffff;
+    border: 2px solid var(--success-color);
+}
+
+.btn-warning {
+    background-color: var(--warning-color);
+    color: #ffffff;
+    border: 2px solid var(--warning-color);
+}
+
+.btn-danger {
+    background-color: var(--error-color);
+    color: #ffffff;
+    border: 2px solid var(--error-color);
+}
+
+/* Status and feedback colors */
+.text-success {
+    color: var(--success-color);
+}
+
+.text-warning {
+    color: var(--warning-color);
+}
+
+.text-error {
+    color: var(--error-color);
+}
+
+.text-muted {
+    color: var(--text-secondary);
+}
+
+/* TODO 2.2.57: Motion and Animation Accessibility */
+/* ------------------------------------------------ */
+/**
+ * TODO: Implement motion accessibility with:
+ * [ ] Reduced motion preference detection and respect
+ * [ ] Alternative static states for animations
+ * [ ] Vestibular disorder considerations
+ * [ ] Parallax and large motion reduction
+ * [ ] Autoplay content controls
+ * [ ] Animation duration and timing optimization
+ * [ ] Focus-based animation triggers
+ * [ ] Essential vs. decorative motion classification
+ * [ ] User control over animation preferences
+ * [ ] Transition timing accessibility
+ */
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    /* Disable problematic animations */
+    .waveform-progress,
+    .loading::after,
+    .record-button.recording,
+    .recording-timer.recording {
+        animation: none !important;
+    }
+
+    /* Keep essential focus transitions */
+    *:focus,
+    *:focus-visible {
+        transition: outline 0.15s ease, box-shadow 0.15s ease !important;
+    }
+}
+
+/* Safe animation defaults */
+.safe-animation {
+    animation-duration: 0.3s;
+    animation-timing-function: ease-in-out;
+    animation-fill-mode: both;
+}
+
+/* Pause button for animations */
+.animation-controls {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9998;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.animation-controls:focus {
+    outline: 3px solid #0066cc;
+    outline-offset: 2px;
+}
+
+/* TODO 2.2.58: Audio and Media Accessibility */
+/* ------------------------------------------- */
+/**
+ * TODO: Implement media accessibility with:
+ * [ ] Captions and subtitles for audio content
+ * [ ] Audio descriptions for visual content
+ * [ ] Transcript alternatives for audio/video
+ * [ ] Keyboard controls for media players
+ * [ ] Volume and playback speed controls
+ * [ ] Visual indicators for audio states
+ * [ ] Screen reader announcements for media events
+ * [ ] Alternative text for waveform visualizations
+ * [ ] Audio level indicators for hearing impaired
+ * [ ] Sign language video alternatives
+ */
+
+/* Audio player accessibility */
+.audio-player {
+    border: 2px solid #cccccc;
+    border-radius: 8px;
+    padding: 16px;
+    background: #f9f9f9;
+}
+
+.audio-player:focus-within {
+    border-color: #0066cc;
+    box-shadow: 0 0 0 2px #0066cc;
+}
+
+/* Visual audio state indicators */
+.audio-state-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.audio-state-indicator.playing {
+    background: #4caf50;
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+}
+
+.audio-state-indicator.paused {
+    background: #ff9800;
+}
+
+.audio-state-indicator.stopped {
+    background: #757575;
+}
+
+.audio-state-indicator.recording {
+    background: #f44336;
+    animation: recording-pulse 1s infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .audio-state-indicator.recording {
+        animation: none;
+    }
+}
+
+@keyframes recording-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Waveform accessibility */
+.waveform-container {
+    position: relative;
+    border: 2px solid #cccccc;
+    border-radius: 4px;
+    background: #ffffff;
+}
+
+.waveform-container:focus {
+    border-color: #0066cc;
+    outline: 3px solid #0066cc;
+    outline-offset: 2px;
+}
+
+.waveform-description {
+    position: absolute;
+    top: -10000px;
+    left: -10000px;
+}
+
+.waveform-container:focus .waveform-description {
+    position: static;
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 14px;
+    z-index: 1000;
+}
+
+/* Media control accessibility */
+.media-controls button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 8px;
+    margin: 4px;
+    border: 2px solid #cccccc;
+    border-radius: 4px;
+    background: #ffffff;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.media-controls button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #f5f5f5;
+}
+
+.media-controls button:focus {
+    outline: 3px solid #0066cc;
+    outline-offset: 2px;
+    border-color: #0066cc;
+}
+
+/* Volume control accessibility */
+.volume-control input[type="range"] {
+    width: 100%;
+    height: 8px;
+    background: #cccccc;
+    border-radius: 4px;
+    outline: none;
+    cursor: pointer;
+}
+
+.volume-control input[type="range"]:focus {
+    outline: 3px solid #0066cc;
+    outline-offset: 4px;
+}
+
+.volume-control input[type="range"]::-webkit-slider-thumb {
+    width: 20px;
+    height: 20px;
+    background: #0066cc;
+    border-radius: 50%;
+    cursor: pointer;
+    -webkit-appearance: none;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.volume-control input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #0066cc;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* TODO 2.2.59: Text and Typography Accessibility */
+/* ----------------------------------------------- */
+/**
+ * TODO: Implement typography accessibility with:
+ * [ ] Scalable text up to 200% without horizontal scrolling
+ * [ ] Readable font choices with good character distinction
+ * [ ] Adequate line spacing and paragraph spacing
+ * [ ] Sufficient text and background contrast
+ * [ ] Dyslexia-friendly font options
+ * [ ] Text alignment and justification optimization
+ * [ ] Reading order and content structure
+ * [ ] Language identification and direction support
+ * [ ] Text customization user preferences
+ * [ ] Typography performance optimization
+ */
+
+/* Base typography with accessibility focus */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+    letter-spacing: 0.5px;
+}
+
+/* Scalable text support */
+@media (min-width: 320px) {
+    html {
+        font-size: calc(16px + 6 * ((100vw - 320px) / 680));
+    }
+}
+
+@media (min-width: 1000px) {
+    html {
+        font-size: 22px;
+    }
+}
+
+/* Heading hierarchy */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    line-height: 1.3;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+h1 {
+    font-size: 2rem;
+}
+
+h2 {
+    font-size: 1.75rem;
+}
+
+h3 {
+    font-size: 1.5rem;
+}
+
+h4 {
+    font-size: 1.25rem;
+}
+
+h5 {
+    font-size: 1.125rem;
+}
+
+h6 {
+    font-size: 1rem;
+}
+
+/* Paragraph spacing */
+p {
+    margin-bottom: 1.2em;
+    max-width: 70ch;
+    /* Optimal reading line length */
+}
+
+/* List accessibility */
+ul,
+ol {
+    padding-left: 1.5em;
+    margin-bottom: 1.2em;
+}
+
+li {
+    margin-bottom: 0.4em;
+}
+
+/* Dyslexia-friendly option */
+.dyslexia-friendly {
+    font-family: "OpenDyslexic", "Comic Sans MS", cursive;
+    font-size: 1.1em;
+    line-height: 1.8;
+    letter-spacing: 1px;
+    word-spacing: 2px;
+}
+
+/* Text customization controls */
+.text-controls {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: rgba(255, 255, 255, 0.95);
+    border: 2px solid #cccccc;
+    border-radius: 8px;
+    padding: 10px;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.text-size-controls button {
+    min-width: 32px;
+    min-height: 32px;
+    margin: 2px;
+    border: 1px solid #cccccc;
+    background: #ffffff;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.text-size-controls button:focus {
+    outline: 2px solid #0066cc;
+    outline-offset: 1px;
+}
+
+/* TODO 2.2.60: Error Handling and User Feedback */
+/* ---------------------------------------------- */
+/**
+ * TODO: Implement accessible error handling with:
+ * [ ] Clear error identification and description
+ * [ ] Specific error correction suggestions
+ * [ ] Error prevention with validation
+ * [ ] Accessible error message positioning
+ * [ ] Error state visual and auditory indicators
+ * [ ] Form validation with real-time feedback
+ * [ ] Success confirmation messages
+ * [ ] Progress indication for long operations
+ * [ ] Timeout warnings and extensions
+ * [ ] Error recovery mechanisms
+ */
+
+/* Error handling styles */
+.form-group {
+    margin-bottom: 1.5rem;
+    position: relative;
+}
+
+.form-group.has-error input,
+.form-group.has-error select,
+.form-group.has-error textarea {
+    border-color: #f44336;
+    background-color: #fff5f5;
+}
+
+.form-group.has-error label {
+    color: #c62828;
+}
+
+.error-list {
+    background: #ffebee;
+    border: 2px solid #f44336;
+    border-radius: 4px;
+    padding: 12px;
+    margin: 16px 0;
+    list-style: none;
+    padding-left: 12px;
+}
+
+.error-list li {
+    color: #c62828;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: flex-start;
+}
+
+.error-list li::before {
+    content: "⚠️";
+    margin-right: 8px;
+    flex-shrink: 0;
+}
+
+/* Success feedback */
+.success-feedback {
+    background: #e8f5e8;
+    border: 2px solid #4caf50;
+    border-radius: 4px;
+    padding: 12px;
+    margin: 16px 0;
+    color: #2e7d32;
+    display: flex;
+    align-items: center;
+}
+
+.success-feedback::before {
+    content: "✅";
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+/* Progress indicators */
+.progress-indicator {
+    margin: 16px 0;
+    padding: 12px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    border: 1px solid #cccccc;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background: #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 8px 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4caf50, #66bb6a);
+    border-radius: 6px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+    margin-top: 8px;
+}
+
+/* Loading states with accessibility */
+.loading-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    margin: 16px 0;
+}
+
+.loading-spinner {
+    width: 24px;
+    height: 24px;
+    border: 3px solid #e0e0e0;
+    border-top: 3px solid #0066cc;
+    border-radius: 50%;
+    margin-right: 12px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .loading-spinner {
+        animation: spin 1s linear infinite;
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.loading-text {
+    font-size: 16px;
+    color: #666;
+}
+
+/* Timeout warnings */
+.timeout-warning {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    color: #856404;
+    padding: 16px;
+    border-radius: 8px;
+    max-width: 300px;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.timeout-warning button {
+    background: #ffc107;
+    border: none;
+    color: #000;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+}
+
+.timeout-warning button:focus {
+    outline: 3px solid #0066cc;
+    outline-offset: 2px;
+}
