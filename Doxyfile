@@ -125,7 +125,12 @@ WARN_LOGFILE           =
 
 INPUT                  = include/huntmaster/core \
                          README.md \
-                         docs/architecture.md
+                         docs/architecture.md \
+                         docs/TESTING.md \
+                         docs/DEBUGGING.md \
+                         docs/DEPLOYMENT.md \
+                         docs/MVP_COMPLETION.md \
+                         docs/FeatureImplementationGuide.md
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.c \
                          *.cc \

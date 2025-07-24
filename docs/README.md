@@ -9,6 +9,10 @@ This directory contains comprehensive documentation for the Huntmaster Audio Eng
 - **[architecture.md](architecture.md)** - Technical architecture overview and system design
 - **[FeatureImplementationGuide.md](FeatureImplementationGuide.md)** - Implementation guide for new features
 
+### Testing & Quality Assurance
+
+- **[TESTING.md](TESTING.md)** - Comprehensive testing guide, TestUtils framework, and validation procedures
+
 ### Development & Debugging
 
 - **[DEBUGGING.md](DEBUGGING.md)** - Comprehensive debugging guide and tools
@@ -20,9 +24,8 @@ This directory contains comprehensive documentation for the Huntmaster Audio Eng
 
 ### Project Management
 
+- **[MVP_COMPLETION.md](MVP_COMPLETION.md)** - MVP completion validation and results
 - **[COMMIT_SUMMARY.md](COMMIT_SUMMARY.md)** - Summary of recent commits and changes
-- **[MVP_Feature_Gap_Analysis.md](MVP_Feature_Gap_Analysis.md)** - MVP feature analysis and gaps
-- **[MVP_VALIDATION_COMPLETE.md](MVP_VALIDATION_COMPLETE.md)** - MVP validation results
 
 ## 🎯 Quick Navigation
 

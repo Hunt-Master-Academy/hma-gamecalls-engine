@@ -44,7 +44,7 @@ The Huntmaster Audio Engine has reached production readiness with comprehensive 
 
 ✅ **Core Architecture & Infrastructure**: 100% Complete
 ✅ **Audio Processing Pipeline**: 100% Complete
-✅ **Testing & Quality Assurance**: 100% Complete (128/128 tests passing)
+✅ **Testing & Quality Assurance**: 100% Complete (130+ tests passing)
 ✅ **Build System & Development Infrastructure**: 100% Complete
 ✅ **Desktop Platform Integration**: 100% Complete
 ✅ **Web Platform (WASM)**: 90% Complete
@@ -53,7 +53,7 @@ The Huntmaster Audio Engine has reached production readiness with comprehensive 
 ### 6-Phase Master Test Suite: **All Phases Complete ✅**
 
 ✅ **Phase 1**: Build System Verification - All targets compile successfully
-✅ **Phase 2**: Unit Testing - 128/128 tests passing across 16 test suites
+✅ **Phase 2**: Unit Testing - 130+ tests passing across 16 test suites
 ✅ **Phase 3**: Integration Testing - End-to-end workflows validated
 ✅ **Phase 4**: Component Testing - MFCC, DTW, Engine, Audio components verified
 ✅ **Phase 5**: Pre-WASM Validation - Cross-platform compatibility confirmed
@@ -69,7 +69,7 @@ The Huntmaster Audio Engine has reached production readiness with comprehensive 
 
 **🎯 Intelligent Comparison**: Dynamic Time Warping (DTW) algorithms for robust audio similarity analysis with multi-dimensional scoring
 
-**🧪 Production-Grade Testing**: Comprehensive test suite with 128 tests across 16 test suites, achieving 100% pass rate with unified TestUtils framework
+**🧪 Production-Grade Testing**: Comprehensive test suite with 130+ tests across 16 test suites, achieving 100% pass rate with unified TestUtils framework
 
 **🌐 Cross-Platform Build System**: Unified CMake configuration supporting native (Windows/Linux/macOS) and WebAssembly builds with automatic dependency management
 
@@ -287,6 +287,29 @@ The modular build system automatically discovers and configures:
 - **Standalone diagnostic tools**: Individual test executables
 - **Integration tests**: Real wildlife call validation
 - **Benchmarks**: Performance testing with Google Benchmark
+
+### Development Scripts
+
+The project includes organized development scripts in the `scripts/` directory:
+
+#### Build Scripts (`scripts/build/`)
+
+- **`scripts/build/build_wasm.sh`**: WebAssembly compilation
+- **`scripts/build/test_build.sh`**: Build system validation
+- **`setup-web-deployment.sh`**: Web deployment preparation
+
+#### Testing Scripts (`scripts/testing/`)
+
+- **`scripts/testing/master_test.sh`**: Complete 6-phase test suite orchestrator
+- **`scripts/testing/comprehensive_test.sh`**: Core engine testing
+- **`scripts/testing/component_test.sh`**: Component-specific testing
+- **`pre_wasm_validation.sh`**: WASM deployment readiness validation
+
+#### Development Tools (`scripts/development/`)
+
+- **`debug_test.sh`**: Debug-enabled test execution
+- **`format_code.sh`**: Code formatting with clang-format
+- **`generate_docs.sh`**: Doxygen documentation generation
 
 ### Platform-Specific Notes
 

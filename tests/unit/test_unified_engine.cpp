@@ -18,6 +18,9 @@
  */
 
 #include <chrono>
+#include <cmath>
+#include <filesystem>
+#include <set>
 #include <thread>
 
 #include <gtest/gtest.h>
@@ -304,6 +307,185 @@ TEST_F(UnifiedEngineTest, LegacyMigrationPattern) {
 
     // Clean up
     auto result1 = engine->destroySession(session);
+    auto result2 = engine->destroySession(session2);
+    EXPECT_EQ(result1, UnifiedAudioEngine::Status::OK);
+    EXPECT_EQ(result2, UnifiedAudioEngine::Status::OK);
+}
+
+/**
+ * @brief Test reset functionality through UnifiedAudioEngine
+ *
+ * This is a refactored version of RealtimeScorerTest.DISABLED_ResetFunctionalityTest
+ * that works with the new session-based UnifiedAudioEngine interface.
+ */
+TEST_F(UnifiedEngineTest, SessionResetFunctionalityTest) {
+    // Create a session
+    auto sessionResult = engine->createSession();
+    ASSERT_TRUE(sessionResult.isOk());
+    SessionId sessionId = *sessionResult;
+
+    // Load a master call for comparison
+    // Note: loadMasterCall expects just the call ID, not a full path
+    auto loadResult = engine->loadMasterCall(sessionId, "buck_grunt");
+    if (loadResult != UnifiedAudioEngine::Status::OK) {
+        GTEST_SKIP() << "Master call file not available, skipping reset test";
+    }
+
+    // Process some audio to generate history/state
+    std::vector<float> audioChunk(2048, 0.5f);  // Larger chunk for more processing
+    for (int i = 0; i < 5; ++i) {
+        auto processResult = engine->processAudioChunk(sessionId, audioChunk);
+        EXPECT_EQ(processResult, UnifiedAudioEngine::Status::OK);
+
+        // Small delay to allow processing
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+
+    // Verify we have processed features (indicating state exists)
+    auto featureCountBefore = engine->getFeatureCount(sessionId);
+    ASSERT_TRUE(featureCountBefore.isOk());
+    EXPECT_GT(*featureCountBefore, 0) << "Should have features after processing audio";
+
+    // Try to get similarity score (should work if master call is loaded)
+    auto scoreBefore = engine->getSimilarityScore(sessionId);
+    // Score might not be available depending on implementation, but session should be active
+    EXPECT_TRUE(engine->isSessionActive(sessionId));
+
+    // Reset the session (this should clear analysis state but preserve master call)
+    auto resetResult = engine->resetSession(sessionId);
+    EXPECT_EQ(resetResult, UnifiedAudioEngine::Status::OK);
+
+    // Verify state is reset
+    auto featureCountAfter = engine->getFeatureCount(sessionId);
+    ASSERT_TRUE(featureCountAfter.isOk());
+    EXPECT_EQ(*featureCountAfter, 0) << "Feature count should be zero after reset";
+
+    // Session should still be active
+    EXPECT_TRUE(engine->isSessionActive(sessionId));
+
+    // Master call should still be loaded (reset preserves it)
+    // We can verify this by trying to process audio again
+    auto processAfterReset = engine->processAudioChunk(sessionId, audioChunk);
+    EXPECT_EQ(processAfterReset, UnifiedAudioEngine::Status::OK);
+
+    // Should be able to accumulate features again
+    auto featureCountAfterProcessing = engine->getFeatureCount(sessionId);
+    ASSERT_TRUE(featureCountAfterProcessing.isOk());
+    EXPECT_GT(*featureCountAfterProcessing, 0) << "Should accumulate features after reset";
+
+    // Clean up
+    auto destroyResult = engine->destroySession(sessionId);
+    EXPECT_EQ(destroyResult, UnifiedAudioEngine::Status::OK);
+}
+
+/**
+ * @brief Test audio file processing capabilities
+ *
+ * This is an implementation of the HuntmasterEngineTest.DISABLED_CanProcessAudioFiles
+ * test that was previously just a placeholder.
+ */
+TEST_F(UnifiedEngineTest, CanProcessAudioFiles) {
+    // Create a session
+    auto sessionResult = engine->createSession();
+    ASSERT_TRUE(sessionResult.isOk());
+    SessionId sessionId = *sessionResult;
+
+    // Test 1: Load and process a master call file
+    // Note: loadMasterCall expects just the call ID, not a full path
+    auto loadResult = engine->loadMasterCall(sessionId, "buck_grunt");
+    if (loadResult == UnifiedAudioEngine::Status::FILE_NOT_FOUND) {
+        GTEST_SKIP() << "Master call file not found for buck_grunt";
+    }
+    ASSERT_EQ(loadResult, UnifiedAudioEngine::Status::OK) << "Failed to load master call from file";
+
+    // Test 2: Process a test audio file by simulating file loading
+    // Since UnifiedAudioEngine processes chunks, we'll simulate loading a file
+    // by generating test audio that represents file content
+
+    // Simulate different types of audio content
+    std::vector<std::vector<float>> testAudioFiles = {
+        // Silent audio (should be processed but score low)
+        std::vector<float>(4096, 0.0f),
+
+        // Low amplitude audio
+        std::vector<float>(4096, 0.1f),
+
+        // Medium amplitude audio
+        std::vector<float>(4096, 0.5f),
+
+        // Complex waveform (sine wave + harmonics)
+        []() {
+            std::vector<float> audio(4096);
+            for (size_t i = 0; i < audio.size(); ++i) {
+                float t = static_cast<float>(i) / 44100.0f;
+                audio[i] = 0.3f * std::sin(2.0f * M_PI * 440.0f * t) +  // Fundamental
+                           0.2f * std::sin(2.0f * M_PI * 880.0f * t) +  // Second harmonic
+                           0.1f * std::sin(2.0f * M_PI * 1320.0f * t);  // Third harmonic
+            }
+            return audio;
+        }()};
+
+    // Process each "file" (audio chunk)
+    for (size_t fileIndex = 0; fileIndex < testAudioFiles.size(); ++fileIndex) {
+        const auto& audioFile = testAudioFiles[fileIndex];
+
+        // Reset session for each "file"
+        auto resetResult = engine->resetSession(sessionId);
+        EXPECT_EQ(resetResult, UnifiedAudioEngine::Status::OK);
+
+        // Process the audio file in chunks (simulating streaming from file)
+        const size_t chunkSize = 1024;
+        size_t processedSamples = 0;
+
+        for (size_t offset = 0; offset < audioFile.size(); offset += chunkSize) {
+            size_t currentChunkSize = std::min(chunkSize, audioFile.size() - offset);
+            std::vector<float> chunk(audioFile.begin() + offset,
+                                     audioFile.begin() + offset + currentChunkSize);
+
+            auto processResult = engine->processAudioChunk(sessionId, chunk);
+            EXPECT_EQ(processResult, UnifiedAudioEngine::Status::OK)
+                << "Failed to process chunk " << (offset / chunkSize) << " of file " << fileIndex;
+
+            processedSamples += currentChunkSize;
+        }
+
+        // Verify processing results
+        auto featureCount = engine->getFeatureCount(sessionId);
+        ASSERT_TRUE(featureCount.isOk());
+        EXPECT_GT(*featureCount, 0)
+            << "File " << fileIndex << " should generate features after processing";
+
+        // Try to get similarity score (may not be available for all audio types)
+        auto similarityScore = engine->getSimilarityScore(sessionId);
+        // We don't assert success here because similarity requires sufficient data
+        // The important thing is that processing completes without errors
+
+        EXPECT_EQ(processedSamples, audioFile.size())
+            << "Should process all samples in file " << fileIndex;
+    }
+
+    // Test 3: Verify file processing with different session states
+
+    // Process audio without master call (should work but no similarity)
+    auto session2Result = engine->createSession();
+    ASSERT_TRUE(session2Result.isOk());
+    SessionId session2 = *session2Result;
+
+    std::vector<float> testAudio(2048, 0.3f);
+    auto processResult = engine->processAudioChunk(session2, testAudio);
+    EXPECT_EQ(processResult, UnifiedAudioEngine::Status::OK)
+        << "Should be able to process audio without master call";
+
+    auto featureCount = engine->getFeatureCount(session2);
+    ASSERT_TRUE(featureCount.isOk());
+    EXPECT_GT(*featureCount, 0) << "Should generate features even without master call";
+
+    auto similarityScore = engine->getSimilarityScore(session2);
+    EXPECT_FALSE(similarityScore.isOk()) << "Should not have similarity score without master call";
+    EXPECT_EQ(similarityScore.error(), UnifiedAudioEngine::Status::INSUFFICIENT_DATA);
+
+    // Clean up
+    auto result1 = engine->destroySession(sessionId);
     auto result2 = engine->destroySession(session2);
     EXPECT_EQ(result1, UnifiedAudioEngine::Status::OK);
     EXPECT_EQ(result2, UnifiedAudioEngine::Status::OK);

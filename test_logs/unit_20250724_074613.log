@@ -1,0 +1,37 @@
+===============================================
+Huntmaster Audio Engine - Comprehensive Test
+===============================================
+
+[0;34m[INFO][0m Starting comprehensive test suite...
+[0;34m[INFO][0m Checking test data availability...
+[0;32m[SUCCESS][0m Test data found: data/master_calls/buck_grunt.wav
+[0;32m[SUCCESS][0m Test data found: data/recordings/user_attempt_buck_grunt.wav
+[0;32m[SUCCESS][0m Test data found: data/recordings/user_attempt_buck_grunt_gap.wav
+[0;32m[SUCCESS][0m Test data found: data/recordings/user_attempt_buck_grunt_lowvolume.wav
+[0;32m[SUCCESS][0m Test data found: data/recordings/user_attempt_buck_grunt_nogap.wav
+[0;34m[INFO][0m Skipping build as requested
+[0;34m[INFO][0m === Running Unit Tests ===
+[0;34m[TEST][0m Running Main unit test suite...
+[0;32m[SUCCESS][0m Main unit test suite passed
+[0;34m[TEST][0m Running UnifiedAudioEngine core functionality...
+[0;32m[SUCCESS][0m UnifiedAudioEngine core functionality passed
+[0;34m[TEST][0m Running MFCC feature extraction consistency...
+[0;32m[SUCCESS][0m MFCC feature extraction consistency passed
+[0;34m[TEST][0m Running DTW algorithm functionality...
+[0;32m[SUCCESS][0m DTW algorithm functionality passed
+[0;34m[TEST][0m Running Direct MFCC computation...
+[0;32m[SUCCESS][0m Direct MFCC computation passed
+[0;34m[TEST][0m Running Input validation and error handling...
+[0;32m[SUCCESS][0m Input validation and error handling passed
+[0;34m[INFO][0m Unit Tests Summary: 6/6 passed
+[0;32m[SUCCESS][0m All unit tests passed!
+[0;34m[INFO][0m Generating test report: test_report_20250724_074652.txt
+[0;32m[SUCCESS][0m Test report saved to: test_report_20250724_074652.txt
+
+===============================================
+[0;32m[SUCCESS][0m 🎉 ALL TESTS PASSED! Engine is ready for WASM deployment.
+Next steps:
+  1. Review the test report for any warnings
+  2. Proceed with WASM compilation
+  3. Test WASM bindings
+===============================================

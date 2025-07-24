@@ -47,7 +47,5 @@ TEST_F(HuntmasterEngineTest, EmptySessionReturnsZeroScore) {
 
 // NOTE: This test remains our target for completing Sprint 2.
 // It will be enabled once file loading and processing is fully implemented.
-TEST_F(HuntmasterEngineTest, DISABLED_CanProcessAudioFiles) {
-    // TODO: Implement file loading and processing to make this test pass.
-    ASSERT_TRUE(true);
-}
+
+// Rest of the tests...
