@@ -78,26 +78,16 @@ struct RealtimeScorerConfig {
  * This structure provides transparency into the scoring algorithm's decision-making.
  */
 struct RealtimeScoringResult {
-    float overall = 0.0f;                             ///< Overall weighted similarity score (0.0-1.0)
-    float mfcc = 0.0f;                                ///< MFCC pattern similarity component (0.0-1.0)
-    float volume = 0.0f;                              ///< Volume level matching component (0.0-1.0)
-    float timing = 0.0f;                              ///< Timing/rhythm accuracy component (0.0-1.0)
-    float pitch = 0.0f;                               ///< Pitch similarity component (0.0-1.0)
-    float confidence = 0.0f;                          ///< Algorithm confidence in result (0.0-1.0)
-    bool isReliable = false;                          ///< Whether score meets confidence threshold
-    bool isMatch = false;                             ///< Whether score indicates a positive match
-    size_t samplesAnalyzed = 0;                       ///< Number of audio samples analyzed
+    float overall = 0.0f;        ///< Overall weighted similarity score (0.0-1.0)
+    float mfcc = 0.0f;           ///< MFCC pattern similarity component (0.0-1.0)
+    float volume = 0.0f;         ///< Volume level matching component (0.0-1.0)
+    float timing = 0.0f;         ///< Timing/rhythm accuracy component (0.0-1.0)
+    float pitch = 0.0f;          ///< Pitch similarity component (0.0-1.0)
+    float confidence = 0.0f;     ///< Algorithm confidence in result (0.0-1.0)
+    bool isReliable = false;     ///< Whether score meets confidence threshold
+    bool isMatch = false;        ///< Whether score indicates a positive match
+    size_t samplesAnalyzed = 0;  ///< Number of audio samples analyzed
     std::chrono::steady_clock::time_point timestamp;  ///< Timestamp when score was computed
-};
-
-// Real-time feedback for user guidance
-struct RealtimeFeedback {
-    RealtimeScoringResult currentScore;   ///< Current similarity score
-    RealtimeScoringResult trendingScore;  ///< Trending average over recent history
-    RealtimeScoringResult peakScore;      ///< Best score achieved so far
-    float progressRatio = 0.0f;           ///< Progress through master call (0.0-1.0)
-    std::string qualityAssessment;        ///< Text description of match quality
-    std::string recommendation;           ///< Suggestion for improvement
 };
 
 /**
@@ -183,14 +173,14 @@ class UnifiedAudioEngine {
      * failure conditions. Use isOk() or boolean conversion to check for success.
      */
     enum class Status {
-        OK = 0,                    ///< Operation completed successfully
-        INVALID_PARAMS = -1,       ///< Invalid parameters provided to method
-        SESSION_NOT_FOUND = -2,    ///< Specified session ID does not exist
-        FILE_NOT_FOUND = -3,       ///< Requested audio file could not be found
-        PROCESSING_ERROR = -4,     ///< Error occurred during audio processing
-        INSUFFICIENT_DATA = -5,    ///< Not enough audio data for analysis
-        OUT_OF_MEMORY = -6,        ///< Memory allocation failed
-        INIT_FAILED = -7           ///< Engine initialization failed
+        OK = 0,                  ///< Operation completed successfully
+        INVALID_PARAMS = -1,     ///< Invalid parameters provided to method
+        SESSION_NOT_FOUND = -2,  ///< Specified session ID does not exist
+        FILE_NOT_FOUND = -3,     ///< Requested audio file could not be found
+        PROCESSING_ERROR = -4,   ///< Error occurred during audio processing
+        INSUFFICIENT_DATA = -5,  ///< Not enough audio data for analysis
+        OUT_OF_MEMORY = -6,      ///< Memory allocation failed
+        INIT_FAILED = -7         ///< Engine initialization failed
     };
 
     /**
@@ -204,8 +194,8 @@ class UnifiedAudioEngine {
      */
     template <typename T>
     struct [[nodiscard]] Result {
-        T value{};                      ///< The result value (valid only if status == OK)
-        Status status = Status::OK;     ///< Status code indicating success or failure type
+        T value{};                   ///< The result value (valid only if status == OK)
+        Status status = Status::OK;  ///< Status code indicating success or failure type
 
         /**
          * @brief Check if the operation was successful

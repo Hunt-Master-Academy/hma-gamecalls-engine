@@ -13,9 +13,11 @@
 
 #include <gtest/gtest.h>
 
+#include "TestUtils.h"
 #include "huntmaster/core/UnifiedAudioEngine.h"
 
 using namespace huntmaster;
+using namespace huntmaster::test;
 
 // Generate a test sine wave
 static std::vector<float> generateSineWave(float frequency, float duration, float sampleRate) {
@@ -30,9 +32,11 @@ static std::vector<float> generateSineWave(float frequency, float duration, floa
     return samples;
 }
 
-class MFCCDirectUnifiedTest : public ::testing::Test {
+class MFCCDirectUnifiedTest : public TestFixtureBase {
   protected:
     void SetUp() override {
+        TestFixtureBase::SetUp();
+
         // Create engine instance using the new UnifiedEngine API
         auto engineResult = UnifiedAudioEngine::create();
         ASSERT_TRUE(engineResult.isOk())
@@ -48,6 +52,7 @@ class MFCCDirectUnifiedTest : public ::testing::Test {
             (void)destroyResult;
         }
         engine.reset();
+        TestFixtureBase::TearDown();
     }
 
     std::unique_ptr<UnifiedAudioEngine> engine;

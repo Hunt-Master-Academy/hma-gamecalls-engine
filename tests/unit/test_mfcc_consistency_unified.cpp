@@ -15,10 +15,12 @@
 
 #include <gtest/gtest.h>
 
+#include "TestUtils.h"
 #include "dr_wav.h"
 #include "huntmaster/core/UnifiedAudioEngine.h"
 
 using namespace huntmaster;
+using namespace huntmaster::test;
 
 // Generate a test sine wave
 static std::vector<float> generateSineWave(float frequency, float duration, float sampleRate) {
@@ -55,17 +57,19 @@ saveTestWav(const std::string& filename, const std::vector<float>& samples, floa
     return framesWritten == samples.size();
 }
 
-class MFCCConsistencyUnifiedTest : public ::testing::Test {
+class MFCCConsistencyUnifiedTest : public TestFixtureBase {
   protected:
     void SetUp() override {
+        TestFixtureBase::SetUp();
+
         // Create engine instance using the new UnifiedEngine API
         auto engineResult = UnifiedAudioEngine::create();
         ASSERT_TRUE(engineResult.isOk())
             << "Failed to create UnifiedAudioEngine: " << static_cast<int>(engineResult.error());
         engine = std::move(*engineResult);
 
-        // Create master_calls directory if it doesn't exist
-        system("mkdir ..\\data\\master_calls 2>nul");
+        // Ensure test data exists
+        ensureTestData();
     }
 
     void TearDown() override {
@@ -76,6 +80,14 @@ class MFCCConsistencyUnifiedTest : public ::testing::Test {
             (void)result;  // Suppress unused variable warning
         }
         engine.reset();
+
+        TestFixtureBase::TearDown();
+    }
+
+    void ensureTestData() {
+        // Ensure buck_grunt test data exists
+        std::vector<std::string> requiredCalls = {"buck_grunt", "test_sine_440", "test_complex"};
+        getResourceManager().ensureTestData(requiredCalls);
     }
 
     std::unique_ptr<UnifiedAudioEngine> engine;
@@ -85,6 +97,9 @@ class MFCCConsistencyUnifiedTest : public ::testing::Test {
 TEST_F(MFCCConsistencyUnifiedTest, ExistingMasterCallTest) {
     std::cout << "Debug: Testing with existing buck_grunt master call" << std::endl;
     std::cout << "---------------------------------------" << std::endl;
+
+    // Skip if test data is missing
+    skipIfDataMissing("buck_grunt", "buck_grunt test data not available");
 
     // Create a session
     auto sessionResult = engine->createSession(44100.0f);
@@ -105,16 +120,17 @@ TEST_F(MFCCConsistencyUnifiedTest, ExistingMasterCallTest) {
     }
     std::cout << "  Successfully loaded buck_grunt master call" << std::endl;
 
-    // Load the actual audio file
+    // Load the actual audio file using robust path resolution
     unsigned int channels, sampleRate;
     drwav_uint64 totalFrames;
+    auto buckGruntPath = TestPaths::getMasterCallFile("buck_grunt", ".wav");
     float* audioData = drwav_open_file_and_read_pcm_frames_f32(
-        "../data/master_calls/buck_grunt.wav", &channels, &sampleRate, &totalFrames, nullptr);
+        buckGruntPath.string().c_str(), &channels, &sampleRate, &totalFrames, nullptr);
 
     if (!audioData) {
         auto destroyResult = engine->destroySession(sessionId);
         (void)destroyResult;
-        GTEST_SKIP() << "buck_grunt.wav file not found";
+        GTEST_SKIP() << "buck_grunt audio file could not be loaded";
         return;
     }
 
@@ -173,9 +189,9 @@ TEST_F(MFCCConsistencyUnifiedTest, SineWaveConsistency) {
     std::cout << "---------------------------------------" << std::endl;
 
     auto sineWave440 = generateSineWave(440.0f, 1.0f, 44100.0f);
-    std::string testFile1 = "../data/master_calls/test_sine_440.wav";
+    auto testFile1 = TestPaths::getMasterCallFile("test_sine_440", ".wav");
 
-    if (!saveTestWav(testFile1, sineWave440, 44100.0f)) {
+    if (!saveTestWav(testFile1.string(), sineWave440, 44100.0f)) {
         FAIL() << "Failed to create test file: " << testFile1;
     }
     std::cout << "Created test file: " << testFile1 << std::endl;
@@ -270,8 +286,8 @@ TEST_F(MFCCConsistencyUnifiedTest, ComplexWaveformConsistency) {
                          0.1f * sin(2.0f * 3.14159f * 880.0f * t);   // 880 Hz
     }
 
-    std::string testFile2 = "../data/master_calls/test_complex.wav";
-    if (!saveTestWav(testFile2, complexWave, 44100.0f)) {
+    auto testFile2 = TestPaths::getMasterCallFile("test_complex", ".wav");
+    if (!saveTestWav(testFile2.string(), complexWave, 44100.0f)) {
         FAIL() << "Failed to create complex test file: " << testFile2;
     }
 
@@ -351,12 +367,9 @@ TEST_F(MFCCConsistencyUnifiedTest, RealAudioFileConsistency) {
             // Load the actual audio file
             unsigned int channels, sampleRate;
             drwav_uint64 totalFrames;
-            float* audioData =
-                drwav_open_file_and_read_pcm_frames_f32("../data/master_calls/buck_grunt.wav",
-                                                        &channels,
-                                                        &sampleRate,
-                                                        &totalFrames,
-                                                        nullptr);
+            auto buckGruntPath = TestPaths::getMasterCallFile("buck_grunt", ".wav");
+            float* audioData = drwav_open_file_and_read_pcm_frames_f32(
+                buckGruntPath.string().c_str(), &channels, &sampleRate, &totalFrames, nullptr);
 
             if (audioData) {
                 // Convert to mono if needed
@@ -450,13 +463,14 @@ TEST_F(MFCCConsistencyUnifiedTest, SelfSimilarityTest) {
     // Load the SAME audio file that we just loaded as master
     unsigned int channels, sampleRate;
     drwav_uint64 totalFrames;
+    auto buckGruntPath = TestPaths::getMasterCallFile("buck_grunt", ".wav");
     float* audioData = drwav_open_file_and_read_pcm_frames_f32(
-        "data/master_calls/buck_grunt.wav", &channels, &sampleRate, &totalFrames, nullptr);
+        buckGruntPath.string().c_str(), &channels, &sampleRate, &totalFrames, nullptr);
 
     if (!audioData) {
         auto destroyResult = engine->destroySession(sessionId);
         (void)destroyResult;
-        GTEST_SKIP() << "buck_grunt.wav file not found";
+        GTEST_SKIP() << "buck_grunt audio file could not be loaded";
         return;
     }
 

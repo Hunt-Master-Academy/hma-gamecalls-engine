@@ -3,13 +3,23 @@
 
 #include <gtest/gtest.h>
 
+#include "TestUtils.h"
 #include "huntmaster/core/VoiceActivityDetector.h"
 
 using namespace huntmaster;
+using namespace huntmaster::test;
 using namespace std::chrono_literals;
 
-class VADThresholdTest : public ::testing::Test {
+class VADThresholdTest : public TestFixtureBase {
   protected:
+    void SetUp() override {
+        TestFixtureBase::SetUp();
+    }
+
+    void TearDown() override {
+        TestFixtureBase::TearDown();
+    }
+
     std::vector<float> generateSignalChunk(size_t samples, float level) {
         return std::vector<float>(samples, level);
     }

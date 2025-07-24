@@ -74,7 +74,9 @@ TEST_F(MFCCDirectTest, SineWaveProcessingTest) {
     EXPECT_GT(featureCount, 0) << "No features were extracted!";
     EXPECT_GT(featureCount, 10) << "Too few features extracted for 2 seconds of audio";
 
-    engine->destroySession(sessionId);
+    auto destroyResult = engine->destroySession(sessionId);
+    EXPECT_TRUE(destroyResult == huntmaster::UnifiedAudioEngine::Status::OK)
+        << "Failed to destroy session";
     std::cout << "Test completed successfully" << std::endl;
 }
 
@@ -103,5 +105,7 @@ TEST_F(MFCCDirectTest, AllAtOnceProcessingTest) {
 
     EXPECT_GT(featureCount, 0) << "No features extracted from all-at-once processing";
 
-    engine->destroySession(sessionId);
+    auto destroyResult = engine->destroySession(sessionId);
+    EXPECT_TRUE(destroyResult == huntmaster::UnifiedAudioEngine::Status::OK)
+        << "Failed to destroy session";
 }

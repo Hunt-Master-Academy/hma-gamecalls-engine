@@ -23,11 +23,16 @@
 #include <gtest/gtest.h>
 #include <huntmaster/core/UnifiedAudioEngine.h>
 
-using namespace huntmaster;
+#include "TestUtils.h"
 
-class UnifiedEngineTest : public ::testing::Test {
+using namespace huntmaster;
+using namespace huntmaster::test;
+
+class UnifiedEngineTest : public TestFixtureBase {
   protected:
     void SetUp() override {
+        TestFixtureBase::SetUp();
+
         // Create engine instance for testing using the static factory method
         auto result = UnifiedAudioEngine::create();
         ASSERT_TRUE(result.isOk())
@@ -38,6 +43,7 @@ class UnifiedEngineTest : public ::testing::Test {
     void TearDown() override {
         // Clean up any sessions that might be hanging around
         engine.reset();
+        TestFixtureBase::TearDown();
     }
 
     std::unique_ptr<UnifiedAudioEngine> engine;
@@ -82,11 +88,11 @@ TEST_F(UnifiedEngineTest, PerSessionMasterCallLoading) {
     SessionId session2 = *session2Result;
 
     // Load different master calls for each session
-    std::string masterCall1 = "data/master_calls/buck_grunt_master.mfc";
-    std::string masterCall2 = "data/master_calls/doe_grunt.mfc";
+    auto masterCall1Path = TestPaths::getMasterCallFile("buck_grunt", ".mfc");
+    auto masterCall2Path = TestPaths::getMasterCallFile("doe_grunt", ".mfc");
 
-    auto load1Result = engine->loadMasterCall(session1, masterCall1);
-    auto load2Result = engine->loadMasterCall(session2, masterCall2);
+    auto load1Result = engine->loadMasterCall(session1, masterCall1Path.string());
+    auto load2Result = engine->loadMasterCall(session2, masterCall2Path.string());
 
     // Note: These might fail if the files don't exist, but the API should work
     // The important thing is that we get consistent Status responses
@@ -274,7 +280,8 @@ TEST_F(UnifiedEngineTest, LegacyMigrationPattern) {
     SessionId session = *sessionResult;
 
     // Load master call for this specific session
-    auto loadResult = engine->loadMasterCall(session, "data/master_calls/buck_grunt_master.mfc");
+    auto masterCallPath = TestPaths::getMasterCallFile("buck_grunt", ".mfc");
+    auto loadResult = engine->loadMasterCall(session, masterCallPath.string());
     // Note: File might not exist in test environment
     EXPECT_TRUE(loadResult == UnifiedAudioEngine::Status::OK
                 || loadResult == UnifiedAudioEngine::Status::FILE_NOT_FOUND);

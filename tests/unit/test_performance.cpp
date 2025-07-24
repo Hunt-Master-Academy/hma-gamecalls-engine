@@ -79,7 +79,11 @@ int main() {
         SessionId sessionId = *sessionResult;
 
         // Load a dummy master call (use the test file we created)
-        engine->loadMasterCall(sessionId, "test_sine_440");
+        auto loadResult = engine->loadMasterCall(sessionId, "test_sine_440");
+        if (loadResult != huntmaster::UnifiedAudioEngine::Status::OK) {
+            std::cerr << "Failed to load master call!" << std::endl;
+            continue;
+        }
 
         // Start timing
         auto startTime = std::chrono::high_resolution_clock::now();
@@ -91,7 +95,11 @@ int main() {
             size_t toProcess = std::min(static_cast<size_t>(chunkSize), remaining);
 
             std::span<const float> audioSpan(testAudio.data() + i, toProcess);
-            engine->processAudioChunk(sessionId, audioSpan);
+            auto processResult = engine->processAudioChunk(sessionId, audioSpan);
+            if (processResult != huntmaster::UnifiedAudioEngine::Status::OK) {
+                std::cerr << "Failed to process audio chunk!" << std::endl;
+                break;
+            }
             chunksProcessed++;
         }
 
@@ -195,8 +203,13 @@ int main() {
         for (int i = 0; i < 100; ++i) {
             auto start = std::chrono::high_resolution_clock::now();
             std::span<const float> chunkSpan(testChunk.data(), size);
-            engine->processAudioChunk(sessionId, chunkSpan);
+            auto processResult = engine->processAudioChunk(sessionId, chunkSpan);
             auto end = std::chrono::high_resolution_clock::now();
+
+            if (processResult != huntmaster::UnifiedAudioEngine::Status::OK) {
+                std::cerr << "Failed to process audio chunk in latency test!" << std::endl;
+                break;
+            }
 
             auto latency = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
             latencies.push_back(latency.count() / 1000.0);  // Convert to ms

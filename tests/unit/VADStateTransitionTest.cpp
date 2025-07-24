@@ -3,14 +3,24 @@
 
 #include <gtest/gtest.h>
 
+#include "TestUtils.h"
 #include "huntmaster/core/VoiceActivityDetector.h"
 
 using namespace huntmaster;
+using namespace huntmaster::test;
 using namespace std::chrono_literals;
 
 // Test fixture for VAD tests
-class VADStateTransitionTest : public ::testing::Test {
+class VADStateTransitionTest : public TestFixtureBase {
   protected:
+    void SetUp() override {
+        TestFixtureBase::SetUp();
+    }
+
+    void TearDown() override {
+        TestFixtureBase::TearDown();
+    }
+
     // Generates a silent audio chunk
     std::vector<float> generateSilentChunk(size_t samples) {
         return std::vector<float>(samples, 0.0f);

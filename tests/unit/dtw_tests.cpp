@@ -5,12 +5,14 @@
 
 #include <gtest/gtest.h>
 
+#include "TestUtils.h"
 #include "dr_wav.h"  // For loading WAV files
 #include "huntmaster/core/UnifiedAudioEngine.h"
 
 using namespace huntmaster;
+using namespace huntmaster::test;
 
-class CoreValidationTest : public ::testing::Test {
+class CoreValidationTest : public TestFixtureBase {
   protected:
     std::unique_ptr<UnifiedAudioEngine> engine;
 
@@ -45,57 +47,65 @@ class CoreValidationTest : public ::testing::Test {
     }
 
     void SetUp() override {
-        auto engineResult = UnifiedAudioEngine::create();
-        ASSERT_TRUE(engineResult.isOk()) << "Failed to create UnifiedAudioEngine";
-        engine = std::move(engineResult.value);
+        TestFixtureBase::SetUp();
+
+        auto result = UnifiedAudioEngine::create();
+        ASSERT_TRUE(result.isOk()) << "Failed to create UnifiedAudioEngine";
+        engine = std::move(result.value);
     }
 
     void TearDown() override {
-        // UnifiedAudioEngine manages its own cleanup
+        // Clean up all active sessions
+        auto sessions = engine->getActiveSessions();
+        for (auto sessionId : sessions) {
+            auto result = engine->destroySession(sessionId);
+            (void)result;  // Suppress unused variable warning
+        }
         engine.reset();
+
+        TestFixtureBase::TearDown();
     }
 };
 
 TEST_F(CoreValidationTest, DTWSelfSimilarity) {
     const std::string masterCallId = "buck_grunt";
-    const std::string audioFilePath = "../data/master_calls/" + masterCallId + ".wav";
+
+    // Skip if test data is missing (will auto-generate if needed)
+    skipIfDataMissing(masterCallId, "DTW self-similarity test requires buck_grunt test data");
+
+    // Get the audio file path using TestUtils
+    auto audioFilePath = TestPaths::getMasterCallFile(masterCallId, ".wav");
 
     // Load the same file as the "user attempt"
     unsigned int channels, sampleRate;
-    std::vector<float> audioData = load_audio_file(audioFilePath, channels, sampleRate);
+    std::vector<float> audioData = load_audio_file(audioFilePath.string(), channels, sampleRate);
     if (audioData.empty()) {
         GTEST_SKIP() << "Failed to load audio file for DTW self-similarity test: " << audioFilePath;
         return;
     }
 
-    // Start a real-time session
-    auto sessionResult = engine->startRealtimeSession(static_cast<float>(sampleRate));
-    ASSERT_TRUE(sessionResult.isOk())
-        << "Failed to start real-time session for DTW self-similarity test.";
+    // Create session using the new unified API
+    auto sessionResult = engine->createSession(static_cast<float>(sampleRate));
+    ASSERT_TRUE(sessionResult.isOk()) << "Failed to create session for DTW self-similarity test.";
 
     uint32_t sessionId = sessionResult.value;
 
     // Load master call using the session
     auto loadResult = engine->loadMasterCall(sessionId, masterCallId);
     if (loadResult != UnifiedAudioEngine::Status::OK) {
-        auto endResult = engine->endRealtimeSession(sessionId);
-        (void)endResult;  // Suppress unused variable warning
+        auto destroyResult = engine->destroySession(sessionId);
+        (void)destroyResult;  // Suppress unused variable warning
         GTEST_SKIP() << "Could not load master call file: " << masterCallId;
         return;
     }
 
-    // Process in chunks (simulating real-time)
-    const int chunkSize = 1024;
-    for (size_t i = 0; i < audioData.size(); i += chunkSize) {
-        size_t remainingSamples = audioData.size() - i;
-        size_t samplesToProcess = (remainingSamples < chunkSize) ? remainingSamples : chunkSize;
-        auto status = engine->processAudioChunk(
-            sessionId, std::span<const float>(audioData.data() + i, samplesToProcess));
-        EXPECT_EQ(status, UnifiedAudioEngine::Status::OK);
-    }
+    // Process the audio data
+    auto processResult = engine->processAudioChunk(sessionId, std::span<const float>(audioData));
+    EXPECT_EQ(processResult, UnifiedAudioEngine::Status::OK);
 
+    // Get similarity score
     auto scoreResult = engine->getSimilarityScore(sessionId);
-    [[maybe_unused]] auto endResult = engine->endRealtimeSession(sessionId);
+    [[maybe_unused]] auto destroyResult = engine->destroySession(sessionId);
 
     if (scoreResult.isOk()) {
         float score = scoreResult.value;

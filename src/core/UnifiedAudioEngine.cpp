@@ -167,7 +167,7 @@ class UnifiedAudioEngine::Impl {
 
         // Voice Activity Detection state
         VADConfig vadConfig;
-        bool vadEnabled = true;
+        bool vadEnabled = false;  // Disable VAD by default for wildlife call analysis
 
         // DTW Configuration state
         float dtwWindowRatio = 0.1f;
@@ -197,7 +197,7 @@ class UnifiedAudioEngine::Impl {
                 static_cast<float>(internalVadConfig.pre_buffer.count()) / 1000.0f;
             vadConfig.post_buffer =
                 static_cast<float>(internalVadConfig.post_buffer.count()) / 1000.0f;
-            vadConfig.enabled = true;
+            vadConfig.enabled = false;  // Disable VAD by default for wildlife call analysis
 
             // Initialize audio components
             audioPlayer = std::make_unique<AudioPlayer>();
@@ -609,22 +609,31 @@ UnifiedAudioEngine::Impl::getSimilarityScore(SessionId sessionId) {
 
     // Use RealtimeScorer if available for more comprehensive scoring
     if (session->realtimeScorer) {
+        // Check if RealtimeScorer has a master call loaded
+        if (!session->realtimeScorer->hasMasterCall()) {
+            return {0.0f, Status::INSUFFICIENT_DATA};
+        }
         auto currentScore = session->realtimeScorer->getCurrentScore();
         return {currentScore.overall, Status::OK};
     }
 
     // Fallback to traditional DTW-based scoring using DTWComparator
     if (session->masterCallFeatures.empty() || session->sessionFeatures.empty()) {
+        std::cerr << "DEBUG: masterCallFeatures.size() = " << session->masterCallFeatures.size()
+                  << ", sessionFeatures.size() = " << session->sessionFeatures.size() << std::endl;
         return {0.0f, Status::INSUFFICIENT_DATA};
     }
 
     if (!session->dtwComparator) {
+        std::cerr << "DEBUG: DTW comparator is null" << std::endl;
         return {0.0f, Status::INIT_FAILED};
     }
 
     const float distance =
         session->dtwComparator->compare(session->masterCallFeatures, session->sessionFeatures);
+    std::cerr << "DEBUG: DTW distance = " << distance << std::endl;
     const float score = 1.0f / (1.0f + distance);
+    std::cerr << "DEBUG: Converted similarity score = " << score << std::endl;
     return {score, Status::OK};
 }
 

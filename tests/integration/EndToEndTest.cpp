@@ -6,15 +6,18 @@
 
 #include <gtest/gtest.h>
 
+#include "TestUtils.h"
 #include "dr_wav.h"
 #include "huntmaster/core/UnifiedAudioEngine.h"
 
 using namespace huntmaster;
+using namespace huntmaster::test;
 using SessionId = uint32_t;
 
-class EndToEndTest : public ::testing::Test {
+class EndToEndTest : public TestFixtureBase {
   protected:
     void SetUp() override {
+        TestFixtureBase::SetUp();
         auto engineResult = UnifiedAudioEngine::create();
         ASSERT_TRUE(engineResult.isOk()) << "Failed to create UnifiedAudioEngine";
         engine_ = std::move(engineResult.value);
@@ -96,17 +99,13 @@ TEST_F(EndToEndTest, EngineInitializesSuccessfully) {
  * Test with real audio file if available
  */
 TEST_F(EndToEndTest, ProcessRealAudioFileIfAvailable) {
-    const std::string testAudioPath = "../data/test_audio/test_sine_440.wav";
+    auto testAudioPath = TestPaths::getTestAudioPath() / "test_sine_440.wav";
 
-    if (!std::filesystem::exists(testAudioPath)) {
-        GTEST_SKIP() << "Test audio file not found at: " << testAudioPath;
-    }
-
-    // Load real audio file
+    skipIfDataMissing(testAudioPath, "Test audio file required");  // Load real audio file
     unsigned int channels, sample_rate;
     drwav_uint64 total_frames;
     float* raw_data = drwav_open_file_and_read_pcm_frames_f32(
-        testAudioPath.c_str(), &channels, &sample_rate, &total_frames, nullptr);
+        testAudioPath.string().c_str(), &channels, &sample_rate, &total_frames, nullptr);
 
     ASSERT_NE(raw_data, nullptr) << "Failed to load audio file: " << testAudioPath;
 

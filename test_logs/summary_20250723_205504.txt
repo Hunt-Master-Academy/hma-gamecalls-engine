@@ -1,0 +1,4 @@
+✅ build: PASSED (16s)
+✅ unit: PASSED (40s)
+✅ integration: PASSED (31s)
+❌ component_engine: FAILED (0s)

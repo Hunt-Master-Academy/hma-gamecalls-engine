@@ -5,14 +5,18 @@
 
 #include <gtest/gtest.h>
 
+#include "TestUtils.h"
 #include "huntmaster/core/DebugLogger.h"
 #include "huntmaster/core/RealtimeScorer.h"
 
-namespace huntmaster {
+using namespace huntmaster;
+using namespace huntmaster::test;
 
-class RealtimeScorerTest : public ::testing::Test {
+class RealtimeScorerTest : public TestFixtureBase {
   protected:
     void SetUp() override {
+        TestFixtureBase::SetUp();
+
         config_.sampleRate = 44100.0f;
         config_.updateRateMs = 100.0f;
         config_.mfccWeight = 0.5f;
@@ -22,20 +26,20 @@ class RealtimeScorerTest : public ::testing::Test {
 
         scorer_ = std::make_unique<RealtimeScorer>(config_);
 
-        // Create test master call feature file
+        // Create test master call feature file using TestUtils
         createTestMasterCall();
     }
 
     void TearDown() override {
         scorer_.reset();
-        // Clean up test files
-        if (std::filesystem::exists(testMasterCallPath_)) {
-            std::filesystem::remove(testMasterCallPath_);
-        }
+        // TestUtils will handle cleanup in base class
+        TestFixtureBase::TearDown();
     }
 
     void createTestMasterCall() {
-        testMasterCallPath_ = "test_master_call.mfc";
+        // Use TestUtils for creating temporary test files
+        auto tempPath = TestPaths::getTempPath();
+        testMasterCallPath_ = (tempPath / "test_master_call.mfc").string();
 
         // Create a simple test feature file
         const uint32_t numFrames = 50;
@@ -486,5 +490,3 @@ TEST_F(RealtimeScorerTest, ErrorHandlingTest) {
 // Test utility functions are not part of the class, so they are not tested here.
 // They would need to be exposed in the header or tested in their own file
 // if they were part of the public API.
-
-}  // namespace huntmaster

@@ -12,14 +12,18 @@
 
 #include <gtest/gtest.h>
 
+#include "TestUtils.h"
 #include "dr_wav.h"
 #include "huntmaster/core/UnifiedAudioEngine.h"
 
 using namespace huntmaster;
+using namespace huntmaster::test;
 
-class DTWUnifiedTest : public ::testing::Test {
+class DTWUnifiedTest : public TestFixtureBase {
   protected:
     void SetUp() override {
+        TestFixtureBase::SetUp();
+
         // Create engine instance using the new UnifiedEngine API
         auto engineResult = UnifiedAudioEngine::create();
         ASSERT_TRUE(engineResult.isOk())
@@ -35,6 +39,7 @@ class DTWUnifiedTest : public ::testing::Test {
             (void)destroyResult;
         }
         engine.reset();
+        TestFixtureBase::TearDown();
     }
 
     // Helper function to load audio file

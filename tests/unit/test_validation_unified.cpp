@@ -13,13 +13,17 @@
 
 #include <gtest/gtest.h>
 
+#include "TestUtils.h"
 #include "huntmaster/core/UnifiedAudioEngine.h"
 
 using namespace huntmaster;
+using namespace huntmaster::test;
 
-class ValidationUnifiedTest : public ::testing::Test {
+class ValidationUnifiedTest : public TestFixtureBase {
   protected:
     void SetUp() override {
+        TestFixtureBase::SetUp();
+
         // Create engine instance using the new UnifiedEngine API
         auto engineResult = UnifiedAudioEngine::create();
         ASSERT_TRUE(engineResult.isOk())
@@ -35,6 +39,7 @@ class ValidationUnifiedTest : public ::testing::Test {
             (void)destroyResult;
         }
         engine.reset();
+        TestFixtureBase::TearDown();
     }
 
     std::unique_ptr<UnifiedAudioEngine> engine;

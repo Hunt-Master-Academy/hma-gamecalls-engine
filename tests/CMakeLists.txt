@@ -12,6 +12,30 @@ message(STATUS "Configuring unit tests and benchmarks...")
 enable_testing()
 
 # ==============================================================================
+# Test Utilities Library
+# ==============================================================================
+
+# Create TestUtils library for shared test infrastructure
+add_library(TestUtils STATIC
+    ${PROJECT_TESTS_DIR}/lib/TestUtils.cpp
+)
+
+target_include_directories(TestUtils PUBLIC
+    ${PROJECT_TESTS_DIR}/lib
+    ${PROJECT_INCLUDE_DIR}
+)
+
+target_link_libraries(TestUtils PUBLIC
+    UnifiedAudioEngine
+    gtest
+)
+
+# Ensure C++20 standard for filesystem support
+target_compile_features(TestUtils PUBLIC cxx_std_20)
+
+message(STATUS "  -- TestUtils library configured for cross-platform test infrastructure.")
+
+# ==============================================================================
 # Main Unit Test Suite (Google Test)
 # ==============================================================================
 
@@ -28,6 +52,7 @@ set(STANDALONE_TESTS
     "${PROJECT_TESTS_DIR}/unit/test_performance.cpp"
     "${PROJECT_TESTS_DIR}/unit/test_recording.cpp"
     "${PROJECT_TESTS_DIR}/unit/test_recorder.cpp"
+    "${PROJECT_TESTS_DIR}/integration/LoadandExtractTest.cpp"
 )
 
 # Filter out standalone tests from Google Test sources
@@ -42,7 +67,7 @@ endforeach()
 # Create main test runner if we have test sources
 if(TEST_SOURCES)
     add_executable(RunEngineTests ${TEST_SOURCES})
-    target_link_libraries(RunEngineTests PRIVATE UnifiedAudioEngine GTest::gtest_main)
+    target_link_libraries(RunEngineTests PRIVATE UnifiedAudioEngine TestUtils GTest::gtest_main)
     set_target_properties(RunEngineTests PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
     )
@@ -58,7 +83,7 @@ endif()
 # Macro to create test executable with proper output directory
 macro(add_test_executable name source)
     add_executable(${name} ${source})
-    target_link_libraries(${name} PRIVATE UnifiedAudioEngine)
+    target_link_libraries(${name} PRIVATE UnifiedAudioEngine TestUtils)
     set_target_properties(${name} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
     )
@@ -88,7 +113,7 @@ message(STATUS "  -- Standalone diagnostic tools configured.")
 # Macro to create specialized test executable with Google Test
 macro(add_gtest_executable name source)
     add_executable(${name} ${source})
-    target_link_libraries(${name} PRIVATE UnifiedAudioEngine gtest gtest_main)
+    target_link_libraries(${name} PRIVATE UnifiedAudioEngine TestUtils gtest gtest_main)
     set_target_properties(${name} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
     )
@@ -120,6 +145,9 @@ add_gtest_executable(EndToEndTest "${PROJECT_TESTS_DIR}/integration/EndToEndTest
 
 # Real wildlife call analysis test
 add_gtest_executable(RealWildlifeCallAnalysisTest "${PROJECT_TESTS_DIR}/integration/RealWildlifeCallAnalysisTest.cpp")
+
+# Load and extract feature test for debugging DTW issues
+add_test_executable(LoadandExtractTest "${PROJECT_TESTS_DIR}/integration/LoadandExtractTest.cpp")
 
 message(STATUS "  -- Integration tests configured for real audio data validation.")
 

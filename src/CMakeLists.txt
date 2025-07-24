@@ -1,7 +1,7 @@
 # ==============================================================================
 # src/CMakeLists.txt - Core Engine Library
 #
-# This file is responsible for defining and building the UnifiedAudioEngine 
+# This file is responsible for defining and building the UnifiedAudioEngine
 # static library and WASM executable. It contains all platform-agnostic
 # engine code shared between native and WASM builds.
 # ==============================================================================
@@ -19,7 +19,7 @@ set(UNIFIED_ENGINE_CORE_SOURCES
     "${PROJECT_SOURCE_DIR}/core/VoiceActivityDetector.cpp"
     "${PROJECT_SOURCE_DIR}/core/MFCCProcessor.cpp"
     "${PROJECT_SOURCE_DIR}/core/DTWComparator.cpp"
-    "${PROJECT_SOURCE_DIR}/core/RealtimeAudioProcessor.cpp"
+    "${PROJECT_SOURCE_DIR}/core/RealTimeAudioProcessor.cpp"
     "${PROJECT_SOURCE_DIR}/core/WaveformGenerator.cpp"
     "${PROJECT_SOURCE_DIR}/core/AudioPlayer.cpp"
     "${PROJECT_SOURCE_DIR}/core/AudioRecorder.cpp"

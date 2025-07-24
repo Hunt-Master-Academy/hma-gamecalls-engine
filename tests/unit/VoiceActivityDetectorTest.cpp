@@ -4,14 +4,18 @@
 
 #include <gtest/gtest.h>
 
+#include "TestUtils.h"
 #include "huntmaster/core/VoiceActivityDetector.h"
 
 using namespace huntmaster;
+using namespace huntmaster::test;
 
 // Use a test fixture for better structure and to avoid code duplication.
-class VoiceActivityDetectorTest : public ::testing::Test {
+class VoiceActivityDetectorTest : public TestFixtureBase {
   protected:
     void SetUp() override {
+        TestFixtureBase::SetUp();
+
         // This configuration is used by default for all tests in this fixture.
         config_.energy_threshold = 0.01f;
         config_.window_duration = std::chrono::milliseconds(20);
@@ -21,6 +25,11 @@ class VoiceActivityDetectorTest : public ::testing::Test {
         config_.min_sound_duration =
             std::chrono::milliseconds(40);  // Requires 2 frames to activate
         vad_ = std::make_unique<VoiceActivityDetector>(config_);
+    }
+
+    void TearDown() override {
+        vad_.reset();
+        TestFixtureBase::TearDown();
     }
 
     std::vector<float> MakeAudio(size_t n, float value) {

@@ -215,9 +215,12 @@ std::string AudioLevelProcessor::exportToJson() const {
 
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(3);
-    oss << "{" << "\"rms\":" << current.rmsDb << "," << "\"peak\":" << current.peakDb << ","
-        << "\"rmsLinear\":" << current.rmsLinear << "," << "\"peakLinear\":" << current.peakLinear
-        << "," << "\"timestamp\":" << millis << "}";
+    oss << "{"
+        << "\"rms\":" << current.rmsDb << ","
+        << "\"peak\":" << current.peakDb << ","
+        << "\"rmsLinear\":" << current.rmsLinear << ","
+        << "\"peakLinear\":" << current.peakLinear << ","
+        << "\"timestamp\":" << millis << "}";
 
     return oss.str();
 }
@@ -237,10 +240,12 @@ std::string AudioLevelProcessor::exportHistoryToJson(size_t maxCount) const {
         const auto epoch = measurement.timestamp.time_since_epoch();
         const auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(epoch).count();
 
-        oss << "{" << "\"rms\":" << measurement.rmsDb << "," << "\"peak\":" << measurement.peakDb
-            << "," << "\"rmsLinear\":" << measurement.rmsLinear << ","
-            << "\"peakLinear\":" << measurement.peakLinear << "," << "\"timestamp\":" << millis
-            << "}";
+        oss << "{"
+            << "\"rms\":" << measurement.rmsDb << ","
+            << "\"peak\":" << measurement.peakDb << ","
+            << "\"rmsLinear\":" << measurement.rmsLinear << ","
+            << "\"peakLinear\":" << measurement.peakLinear << ","
+            << "\"timestamp\":" << millis << "}";
     }
 
     oss << "]";

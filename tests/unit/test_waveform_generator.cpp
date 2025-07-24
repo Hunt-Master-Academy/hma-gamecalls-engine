@@ -6,14 +6,18 @@
 
 #include <gtest/gtest.h>
 
+#include "TestUtils.h"
 #include "huntmaster/core/DebugLogger.h"
 #include "huntmaster/core/WaveformGenerator.h"
 
-namespace huntmaster {
+using namespace huntmaster;
+using namespace huntmaster::test;
 
-class WaveformGeneratorTest : public ::testing::Test {
+class WaveformGeneratorTest : public TestFixtureBase {
   protected:
     void SetUp() override {
+        TestFixtureBase::SetUp();
+
         config_.sampleRate = 44100.0f;
         config_.maxSamples = 4096;
         config_.downsampleRatio = 16;
@@ -25,6 +29,7 @@ class WaveformGeneratorTest : public ::testing::Test {
 
     void TearDown() override {
         generator_.reset();
+        TestFixtureBase::TearDown();
     }
 
     WaveformGenerator::Config config_;
@@ -442,5 +447,3 @@ TEST(WaveformUtilityTest, RmsEnvelopeGenerationTest) {
     }
 }
 */
-
-}  // namespace huntmaster

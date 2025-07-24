@@ -1,0 +1,31 @@
+===============================================
+Huntmaster Audio Engine - Comprehensive Test
+===============================================
+
+[0;34m[INFO][0m Starting comprehensive test suite...
+[0;34m[INFO][0m Checking test data availability...
+[0;32m[SUCCESS][0m Test data found: data/master_calls/buck_grunt.wav
+[0;32m[SUCCESS][0m Test data found: data/recordings/user_attempt_buck_grunt.wav
+[0;32m[SUCCESS][0m Test data found: data/recordings/user_attempt_buck_grunt_gap.wav
+[0;32m[SUCCESS][0m Test data found: data/recordings/user_attempt_buck_grunt_lowvolume.wav
+[0;32m[SUCCESS][0m Test data found: data/recordings/user_attempt_buck_grunt_nogap.wav
+[0;34m[INFO][0m Skipping build as requested
+[0;34m[INFO][0m === Running Integration Tests ===
+[0;34m[TEST][0m Running End-to-end audio processing pipeline...
+[0;32m[SUCCESS][0m End-to-end audio processing pipeline passed
+[0;34m[TEST][0m Running Real wildlife call analysis...
+[0;32m[SUCCESS][0m Real wildlife call analysis passed
+[0;34m[TEST][0m Running Feature extraction debugging...
+[0;32m[SUCCESS][0m Feature extraction debugging passed
+[0;34m[INFO][0m Integration Tests Summary: 3/3 passed
+[0;32m[SUCCESS][0m All integration tests passed!
+[0;34m[INFO][0m Generating test report: test_report_20250723_232422.txt
+[0;32m[SUCCESS][0m Test report saved to: test_report_20250723_232422.txt
+
+===============================================
+[0;32m[SUCCESS][0m 🎉 ALL TESTS PASSED! Engine is ready for WASM deployment.
+Next steps:
+  1. Review the test report for any warnings
+  2. Proceed with WASM compilation
+  3. Test WASM bindings
+===============================================

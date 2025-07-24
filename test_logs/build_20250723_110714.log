@@ -1,0 +1,37 @@
+===============================================
+Huntmaster Audio Engine - Comprehensive Test
+===============================================
+
+[0;34m[INFO][0m Starting comprehensive test suite...
+[0;34m[INFO][0m Checking test data availability...
+[0;32m[SUCCESS][0m Test data found: data/master_calls/buck_grunt.wav
+[1;33m[WARNING][0m Test data missing: data/test_audio/sample_call.wav (some tests may fail)
+[0;34m[INFO][0m Building Huntmaster Audio Engine...
+[0;34m[INFO][0m Configuring with CMake...
+[0;32m[SUCCESS][0m CMake configuration
+[0;34m[INFO][0m Building project with 16 parallel jobs...
+[0;31m[ERROR][0m Project build failed
+[0;32m[SUCCESS][0m Build completed successfully
+[0;34m[INFO][0m === Running Unit Tests ===
+[0;31m[ERROR][0m Test executable not found: build/bin/RunEngineTests
+[0;34m[TEST][0m Running UnifiedAudioEngine core functionality...
+[0;32m[SUCCESS][0m UnifiedAudioEngine core functionality passed
+[0;34m[TEST][0m Running MFCC feature extraction consistency...
+[0;32m[SUCCESS][0m MFCC feature extraction consistency passed
+[0;34m[TEST][0m Running DTW algorithm functionality...
+[0;32m[SUCCESS][0m DTW algorithm functionality passed
+[0;34m[TEST][0m Running Direct MFCC computation...
+[0;32m[SUCCESS][0m Direct MFCC computation passed
+[0;34m[TEST][0m Running Input validation and error handling...
+[0;32m[SUCCESS][0m Input validation and error handling passed
+[0;34m[INFO][0m Unit Tests Summary: 5/6 passed
+[0;31m[ERROR][0m Some unit tests failed
+[0;34m[INFO][0m Generating test report: test_report_20250723_110732.txt
+[0;32m[SUCCESS][0m Test report saved to: test_report_20250723_110732.txt
+
+===============================================
+[0;31m[ERROR][0m ❌ SOME TESTS FAILED! Please review and fix issues before WASM deployment.
+Debugging steps:
+  1. Run with --verbose flag for detailed output
+  2. Run specific test suites with --test-only=<suite>
+  3. Check the test report for specific failure details

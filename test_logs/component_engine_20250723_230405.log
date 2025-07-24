@@ -1,0 +1,114 @@
+╔══════════════════════════════════════════════════════════════════════════════════════════════════╗
+║                        Huntmaster Audio Engine - Component Testing                              ║
+╚══════════════════════════════════════════════════════════════════════════════════════════════════╝
+
+[0;34m[INFO][0m Component: engine
+[0;34m[INFO][0m Verbose: true
+[0;34m[INFO][0m Stress Test: false
+[0;34m[INFO][0m Memory Check: false
+
+[0;34m[INFO][0m Testing UnifiedAudioEngine Core...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0;36m[TEST][0m Basic engine instantiation and session management
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Running main() from /mnt/e/develop/Huntmaster/huntmaster-engine/build/_deps/googletest-src/googletest/src/gtest_main.cc
+[==========] Running 7 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 7 tests from UnifiedEngineTest
+[ RUN      ] UnifiedEngineTest.SessionCreationAndDestruction
+[TestPaths] Initialized:
+  Project root: "/mnt/e/develop/Huntmaster/huntmaster-engine"
+  Data root: "/mnt/e/develop/Huntmaster/huntmaster-engine/data"
+  Temp root: "/tmp/huntmaster_test_1753326356872"
+[       OK ] UnifiedEngineTest.SessionCreationAndDestruction (27 ms)
+[ RUN      ] UnifiedEngineTest.PerSessionMasterCallLoading
+[       OK ] UnifiedEngineTest.PerSessionMasterCallLoading (3 ms)
+[ RUN      ] UnifiedEngineTest.ConcurrentSessionOperations
+[       OK ] UnifiedEngineTest.ConcurrentSessionOperations (6 ms)
+[ RUN      ] UnifiedEngineTest.SessionIsolation
+[       OK ] UnifiedEngineTest.SessionIsolation (0 ms)
+[ RUN      ] UnifiedEngineTest.InvalidSessionHandling
+[       OK ] UnifiedEngineTest.InvalidSessionHandling (0 ms)
+[ RUN      ] UnifiedEngineTest.ResultPatternConsistency
+[       OK ] UnifiedEngineTest.ResultPatternConsistency (1 ms)
+[ RUN      ] UnifiedEngineTest.LegacyMigrationPattern
+[       OK ] UnifiedEngineTest.LegacyMigrationPattern (4 ms)
+[----------] 7 tests from UnifiedEngineTest (44 ms total)
+
+[----------] Global test environment tear-down
+[==========] 7 tests from 1 test suite ran. (44 ms total)
+[  PASSED  ] 7 tests.
+[0;32m[✓][0m Engine Creation completed successfully (.117628982s)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0;36m[TEST][0m Engine processing with master call audio data
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[TestPaths] Initialized:
+  Project root: "/mnt/e/develop/Huntmaster/huntmaster-engine"
+  Data root: "/mnt/e/develop/Huntmaster/huntmaster-engine/data"
+  Temp root: "/tmp/huntmaster_test_1753326356962"
+=== DTW Debug Test ===
+Validating inputs...
+✅ Audio file found: data/master_calls/buck_grunt.wav
+✅ Master call ID: buck_grunt
+✅ Session created with ID: 1
+Loading master call 'buck_grunt': SUCCESS
+Loading audio file: data/master_calls/buck_grunt.wav
+Audio info: 7488 samples, 22050Hz, 1 channels, 0.340s
+⚠️  WARNING: Audio sample rate (22050Hz) doesn't match session (44100Hz)
+This may cause feature extraction issues.
+
+Testing chunk processing with 1024 samples:
+  Processed 8 chunks, 7488 samples total
+  Features extracted: 35
+  Similarity score: 0.751321
+
+Testing chunk processing with 512 samples:
+  Processed 15 chunks, 7488 samples total
+  Features extracted: 42
+  Similarity score: 0.752571
+
+Testing chunk processing with entire file:
+  Processed 1 chunks, 7488 samples total
+  Features extracted: 28
+  Similarity score: 0.750227
+
+Processing for main session...
+Current master call: buck_grunt
+Processing audio chunk (7488 samples): SUCCESS
+Session feature count: 28
+Similarity score: 0.750227
+
+=== ANALYSIS ===
+File: data/master_calls/buck_grunt.wav
+Expected features: 42
+Actual features: 28
+Difference: -14
+
+=== ADDITIONAL DIAGNOSTICS ===
+Detailed scoring available:
+  MFCC score: 1.000000
+  Volume score: 0.501132
+  Timing score: 0.500000
+  Confidence: 0.000000
+  Samples analyzed: 7488
+  Is reliable: No
+  Is match: Yes
+Session duration: 0.115000 seconds
+[0;32m[✓][0m Engine Audio Processing (Master) completed successfully (.169201352s)
+[0;34m[INFO][0m Testing engine with different user recording conditions...
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[0;36m[TEST][0m Standard user attempt vs master call comparison
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[TestPaths] Initialized:
+  Project root: "/mnt/e/develop/Huntmaster/huntmaster-engine"
+  Data root: "/mnt/e/develop/Huntmaster/huntmaster-engine/data"
+  Temp root: "/tmp/huntmaster_test_1753326357136"
+=== DTW Debug Test ===
+Validating inputs...
+✅ Audio file found: data/recordings/user_attempt_buck_grunt.wav
+✅ Master call ID: user_baseline
+✅ Session created with ID: 1
+Loading master call 'user_baseline': FAILED (Status: -3)

@@ -1,0 +1,36 @@
+===============================================
+Huntmaster Audio Engine - Comprehensive Test
+===============================================
+
+[0;34m[INFO][0m Starting comprehensive test suite...
+[0;34m[INFO][0m Checking test data availability...
+[0;32m[SUCCESS][0m Test data found: data/master_calls/buck_grunt.wav
+[0;32m[SUCCESS][0m Test data found: data/recordings/user_attempt_buck_grunt.wav
+[0;32m[SUCCESS][0m Test data found: data/recordings/user_attempt_buck_grunt_gap.wav
+[0;32m[SUCCESS][0m Test data found: data/recordings/user_attempt_buck_grunt_lowvolume.wav
+[0;32m[SUCCESS][0m Test data found: data/recordings/user_attempt_buck_grunt_nogap.wav
+[0;34m[INFO][0m Skipping build as requested
+[0;34m[INFO][0m === Running Unit Tests ===
+[0;34m[TEST][0m Running Main unit test suite...
+[0;31m[ERROR][0m Main unit test suite failed (exit code: 1)
+[0;34m[TEST][0m Running UnifiedAudioEngine core functionality...
+[0;32m[SUCCESS][0m UnifiedAudioEngine core functionality passed
+[0;34m[TEST][0m Running MFCC feature extraction consistency...
+[0;32m[SUCCESS][0m MFCC feature extraction consistency passed
+[0;34m[TEST][0m Running DTW algorithm functionality...
+[0;32m[SUCCESS][0m DTW algorithm functionality passed
+[0;34m[TEST][0m Running Direct MFCC computation...
+[0;32m[SUCCESS][0m Direct MFCC computation passed
+[0;34m[TEST][0m Running Input validation and error handling...
+[0;32m[SUCCESS][0m Input validation and error handling passed
+[0;34m[INFO][0m Unit Tests Summary: 5/6 passed
+[0;31m[ERROR][0m Some unit tests failed
+[0;34m[INFO][0m Generating test report: test_report_20250723_123004.txt
+[0;32m[SUCCESS][0m Test report saved to: test_report_20250723_123004.txt
+
+===============================================
+[0;31m[ERROR][0m ❌ SOME TESTS FAILED! Please review and fix issues before WASM deployment.
+Debugging steps:
+  1. Run with --verbose flag for detailed output
+  2. Run specific test suites with --test-only=<suite>
+  3. Check the test report for specific failure details
