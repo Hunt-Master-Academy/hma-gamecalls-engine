@@ -1,0 +1,902 @@
+/**
+ * Print Styles
+ *
+ * Optimized styling for print media and PDF generation.
+ * Provides clean, readable print layouts for documentation and reports.
+ *
+ * @module responsive/print
+ * @version 1.0.0
+ * @author Huntmaster Engine Team
+ */
+
+/* ===================================================================== */
+/* Print Reset and Base Styles */
+/* ===================================================================== */
+
+@media print {
+
+    /* Reset margins and padding */
+    * {
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    *,
+    *::before,
+    *::after {
+        background: transparent !important;
+        color: #000000 !important;
+    }
+
+    /* Page setup */
+    @page {
+        margin: 0.75in;
+        size: letter;
+
+        /* Page headers and footers */
+        @top-left {
+            content: "Huntmaster Engine Documentation";
+            font-size: 10pt;
+            font-weight: normal;
+        }
+
+        @top-right {
+            content: counter(page);
+            font-size: 10pt;
+            font-weight: normal;
+        }
+
+        @bottom-center {
+            content: "Generated on " date();
+            font-size: 8pt;
+            color: #666666;
+        }
+    }
+
+    /* First page specific settings */
+    @page :first {
+        @top-left {
+            content: none;
+        }
+
+        @top-right {
+            content: none;
+        }
+
+        @bottom-center {
+            content: none;
+        }
+
+        margin-top: 2in;
+    }
+
+    /* Left and right pages for duplex printing */
+    @page :left {
+        margin-left: 1in;
+        margin-right: 0.75in;
+    }
+
+    @page :right {
+        margin-left: 0.75in;
+        margin-right: 1in;
+    }
+
+    /* Chapter/section pages */
+    @page chapter {
+        @top-left {
+            content: attr(data-chapter);
+        }
+
+        margin-top: 1.5in;
+    }
+}
+
+/* ===================================================================== */
+/* Typography for Print */
+/* ===================================================================== */
+
+@media print {
+    body {
+        font-family: "Times New Roman", Times, serif !important;
+        font-size: 12pt !important;
+        line-height: 1.4 !important;
+        color: #000000 !important;
+        background: #ffffff !important;
+    }
+
+    h1,
+    .heading-1 {
+        font-size: 24pt !important;
+        font-weight: bold !important;
+        line-height: 1.2 !important;
+        margin-top: 0 !important;
+        margin-bottom: 18pt !important;
+        page-break-after: avoid;
+        break-after: avoid;
+    }
+
+    h2,
+    .heading-2 {
+        font-size: 20pt !important;
+        font-weight: bold !important;
+        line-height: 1.2 !important;
+        margin-top: 24pt !important;
+        margin-bottom: 12pt !important;
+        page-break-after: avoid;
+        break-after: avoid;
+    }
+
+    h3,
+    .heading-3 {
+        font-size: 16pt !important;
+        font-weight: bold !important;
+        line-height: 1.3 !important;
+        margin-top: 18pt !important;
+        margin-bottom: 9pt !important;
+        page-break-after: avoid;
+        break-after: avoid;
+    }
+
+    h4,
+    .heading-4 {
+        font-size: 14pt !important;
+        font-weight: bold !important;
+        line-height: 1.3 !important;
+        margin-top: 12pt !important;
+        margin-bottom: 6pt !important;
+        page-break-after: avoid;
+        break-after: avoid;
+    }
+
+    h5,
+    .heading-5 {
+        font-size: 12pt !important;
+        font-weight: bold !important;
+        line-height: 1.3 !important;
+        margin-top: 12pt !important;
+        margin-bottom: 6pt !important;
+        page-break-after: avoid;
+        break-after: avoid;
+    }
+
+    h6,
+    .heading-6 {
+        font-size: 12pt !important;
+        font-weight: normal !important;
+        font-style: italic !important;
+        line-height: 1.3 !important;
+        margin-top: 12pt !important;
+        margin-bottom: 6pt !important;
+        page-break-after: avoid;
+        break-after: avoid;
+    }
+
+    p {
+        font-size: 12pt !important;
+        line-height: 1.4 !important;
+        margin-top: 0 !important;
+        margin-bottom: 12pt !important;
+        text-align: justify;
+        orphans: 3;
+        widows: 3;
+    }
+
+    /* Lead paragraphs */
+    .lead {
+        font-size: 14pt !important;
+        line-height: 1.4 !important;
+        margin-bottom: 18pt !important;
+    }
+
+    /* Code and monospace */
+    code,
+    pre,
+    .code {
+        font-family: "Courier New", Courier, monospace !important;
+        font-size: 10pt !important;
+        line-height: 1.2 !important;
+    }
+
+    pre {
+        margin: 12pt 0 !important;
+        padding: 6pt !important;
+        border: 1px solid #cccccc !important;
+        background: #f8f8f8 !important;
+        white-space: pre-wrap !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    /* Emphasis */
+    strong,
+    b {
+        font-weight: bold !important;
+    }
+
+    em,
+    i {
+        font-style: italic !important;
+    }
+
+    /* Lists */
+    ul,
+    ol {
+        margin: 12pt 0 !important;
+        padding-left: 24pt !important;
+    }
+
+    li {
+        margin-bottom: 6pt !important;
+        line-height: 1.4 !important;
+    }
+
+    /* Definition lists */
+    dl {
+        margin: 12pt 0 !important;
+    }
+
+    dt {
+        font-weight: bold !important;
+        margin-top: 12pt !important;
+    }
+
+    dd {
+        margin-left: 24pt !important;
+        margin-bottom: 6pt !important;
+    }
+}
+
+/* ===================================================================== */
+/* Layout and Structure */
+/* ===================================================================== */
+
+@media print {
+
+    /* Hide non-essential elements */
+    nav,
+    .nav,
+    .navigation,
+    .sidebar,
+    .footer,
+    .header-actions,
+    .btn,
+    .button,
+    .control,
+    .interactive,
+    .modal,
+    .overlay,
+    .tooltip,
+    .dropdown,
+    .menu,
+    .search,
+    .advertisement,
+    .ads,
+    .social-media,
+    .social-links,
+    .video-player,
+    .audio-player,
+    .waveform-controls,
+    .transport-controls {
+        display: none !important;
+    }
+
+    /* Show print-specific elements */
+    .print-only {
+        display: block !important;
+    }
+
+    .print-hidden {
+        display: none !important;
+    }
+
+    /* Container adjustments */
+    .container,
+    .wrapper,
+    .content {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        float: none !important;
+    }
+
+    /* Single column layout */
+    .grid,
+    .flex,
+    .columns {
+        display: block !important;
+        width: 100% !important;
+    }
+
+    /* Remove floats and positioning */
+    * {
+        float: none !important;
+        position: static !important;
+    }
+
+    /* Article and content areas */
+    article,
+    .article,
+    .content-main,
+    .post,
+    .page-content {
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+}
+
+/* ===================================================================== */
+/* Tables for Print */
+/* ===================================================================== */
+
+@media print {
+    table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+        margin: 12pt 0 !important;
+        page-break-inside: auto;
+        break-inside: auto;
+    }
+
+    caption {
+        font-size: 12pt !important;
+        font-weight: bold !important;
+        text-align: left !important;
+        margin-bottom: 6pt !important;
+    }
+
+    thead {
+        display: table-header-group !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    tbody {
+        display: table-row-group !important;
+    }
+
+    tfoot {
+        display: table-footer-group !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    tr {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        page-break-after: auto;
+        break-after: auto;
+    }
+
+    th,
+    td {
+        border: 1px solid #000000 !important;
+        padding: 4pt 8pt !important;
+        text-align: left !important;
+        vertical-align: top !important;
+        font-size: 11pt !important;
+        line-height: 1.3 !important;
+    }
+
+    th {
+        background: #f0f0f0 !important;
+        font-weight: bold !important;
+        color: #000000 !important;
+    }
+
+    /* Alternate row coloring */
+    tbody tr:nth-child(even) td {
+        background: #f8f8f8 !important;
+    }
+
+    /* Large tables */
+    .table-responsive {
+        overflow: visible !important;
+    }
+
+    /* Table captions and notes */
+    .table-caption {
+        caption-side: top;
+        font-size: 10pt !important;
+        font-style: italic !important;
+        margin-bottom: 6pt !important;
+    }
+
+    .table-note {
+        font-size: 9pt !important;
+        margin-top: 6pt !important;
+        font-style: italic !important;
+    }
+}
+
+/* ===================================================================== */
+/* Audio-Specific Print Styles */
+/* ===================================================================== */
+
+@media print {
+
+    /* Waveform representation */
+    .waveform,
+    .waveform-display {
+        width: 100% !important;
+        height: 60pt !important;
+        border: 2px solid #000000 !important;
+        background: #ffffff !important;
+        display: block !important;
+        margin: 12pt 0 !important;
+    }
+
+    .waveform::after {
+        content: "Audio Waveform - Duration: " attr(data-duration) " - Sample Rate: " attr(data-sample-rate);
+        display: block;
+        font-size: 9pt !important;
+        font-style: italic !important;
+        margin-top: 6pt !important;
+        text-align: center;
+    }
+
+    /* Audio metadata */
+    .audio-info,
+    .audio-metadata {
+        display: block !important;
+        background: #f8f8f8 !important;
+        border: 1px solid #cccccc !important;
+        padding: 6pt !important;
+        margin: 12pt 0 !important;
+        font-size: 10pt !important;
+    }
+
+    .audio-info h3,
+    .audio-metadata h3 {
+        margin-top: 0 !important;
+        margin-bottom: 6pt !important;
+        font-size: 12pt !important;
+    }
+
+    /* Audio analysis results */
+    .analysis-results {
+        display: block !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    .analysis-chart {
+        width: 100% !important;
+        height: auto !important;
+        border: 1px solid #000000 !important;
+        margin: 6pt 0 !important;
+    }
+
+    /* Recording session information */
+    .session-info {
+        display: block !important;
+        border: 2px solid #000000 !important;
+        padding: 12pt !important;
+        margin: 18pt 0 !important;
+        background: #f0f0f0 !important;
+    }
+
+    .session-info h2 {
+        margin-top: 0 !important;
+        border-bottom: 1px solid #000000 !important;
+        padding-bottom: 6pt !important;
+    }
+
+    /* Track listings */
+    .track-list {
+        display: block !important;
+        margin: 12pt 0 !important;
+    }
+
+    .track-item {
+        display: block !important;
+        padding: 6pt 0 !important;
+        border-bottom: 1px solid #cccccc !important;
+    }
+
+    .track-item:last-child {
+        border-bottom: none !important;
+    }
+
+    /* Effects and processing info */
+    .effects-list,
+    .processing-chain {
+        display: block !important;
+        margin: 12pt 0 !important;
+        padding: 6pt !important;
+        border: 1px solid #cccccc !important;
+        background: #fafafa !important;
+    }
+}
+
+/* ===================================================================== */
+/* Images and Media */
+/* ===================================================================== */
+
+@media print {
+    img {
+        max-width: 100% !important;
+        height: auto !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        border: none !important;
+    }
+
+    /* Image captions */
+    .image-caption,
+    figcaption {
+        font-size: 10pt !important;
+        font-style: italic !important;
+        text-align: center !important;
+        margin-top: 6pt !important;
+        margin-bottom: 12pt !important;
+    }
+
+    /* Figure container */
+    figure {
+        margin: 12pt 0 !important;
+        text-align: center !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    /* Charts and graphs */
+    .chart,
+    .graph,
+    .spectrum-display {
+        width: 100% !important;
+        height: auto !important;
+        border: 1px solid #000000 !important;
+        background: #ffffff !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    /* Screenshots */
+    .screenshot {
+        border: 2px solid #000000 !important;
+        margin: 12pt 0 !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    /* QR codes and barcodes */
+    .qr-code,
+    .barcode {
+        display: block !important;
+        margin: 12pt auto !important;
+        text-align: center !important;
+    }
+}
+
+/* ===================================================================== */
+/* Links and URLs */
+/* ===================================================================== */
+
+@media print {
+    a {
+        color: #000000 !important;
+        text-decoration: underline !important;
+    }
+
+    /* Show URLs after links */
+    a[href]:after {
+        content: " (" attr(href) ")";
+        font-size: 9pt !important;
+        font-style: italic !important;
+        color: #666666 !important;
+    }
+
+    /* Don't show URLs for internal links */
+    a[href^="#"]:after,
+    a[href^="javascript:"]:after,
+    a[href^="mailto:"]:after {
+        content: "";
+    }
+
+    /* Email links */
+    a[href^="mailto:"]:before {
+        content: "📧 ";
+    }
+
+    /* External link indicator */
+    a[href^="http"]:before {
+        content: "🔗 ";
+    }
+}
+
+/* ===================================================================== */
+/* Page Breaks and Orphans/Widows */
+/* ===================================================================== */
+
+@media print {
+
+    /* Force page breaks */
+    .page-break-before {
+        page-break-before: always !important;
+        break-before: page !important;
+    }
+
+    .page-break-after {
+        page-break-after: always !important;
+        break-after: page !important;
+    }
+
+    .page-break-inside-avoid {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    /* Chapter breaks */
+    .chapter,
+    .section {
+        page-break-before: always !important;
+        break-before: page !important;
+    }
+
+    /* Avoid breaks */
+    .avoid-break,
+    .keep-together {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    /* Orphans and widows */
+    p {
+        orphans: 3 !important;
+        widows: 3 !important;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        orphans: 4 !important;
+        widows: 4 !important;
+    }
+}
+
+/* ===================================================================== */
+/* Special Print Elements */
+/* ===================================================================== */
+
+@media print {
+
+    /* Table of contents */
+    .toc {
+        display: block !important;
+        page-break-after: always !important;
+        break-after: page !important;
+    }
+
+    .toc-item {
+        display: block !important;
+        margin-bottom: 3pt !important;
+        line-height: 1.2 !important;
+    }
+
+    .toc-item a {
+        text-decoration: none !important;
+    }
+
+    .toc-page-number {
+        float: right !important;
+        font-weight: normal !important;
+    }
+
+    /* Footnotes */
+    .footnote {
+        font-size: 9pt !important;
+        line-height: 1.2 !important;
+        margin-top: 6pt !important;
+        padding-top: 3pt !important;
+        border-top: 1px solid #cccccc !important;
+    }
+
+    /* Glossary */
+    .glossary-term {
+        font-weight: bold !important;
+        margin-top: 6pt !important;
+    }
+
+    .glossary-definition {
+        margin-left: 12pt !important;
+        margin-bottom: 6pt !important;
+    }
+
+    /* Index */
+    .index-letter {
+        font-size: 16pt !important;
+        font-weight: bold !important;
+        margin-top: 18pt !important;
+        margin-bottom: 6pt !important;
+        border-bottom: 1px solid #000000 !important;
+    }
+
+    .index-entry {
+        margin-left: 12pt !important;
+        text-indent: -12pt !important;
+        margin-bottom: 3pt !important;
+    }
+
+    /* Watermarks */
+    .watermark {
+        position: fixed !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) rotate(-45deg) !important;
+        font-size: 72pt !important;
+        color: rgba(0, 0, 0, 0.1) !important;
+        z-index: -1 !important;
+        pointer-events: none !important;
+    }
+}
+
+/* ===================================================================== */
+/* Color and Monochrome Print */
+/* ===================================================================== */
+
+/* Color printing */
+@media print and (color) {
+    .color-print {
+        color: inherit !important;
+    }
+
+    .waveform-color {
+        border-color: #2563eb !important;
+    }
+
+    .chart-color .positive {
+        color: #16a34a !important;
+    }
+
+    .chart-color .negative {
+        color: #dc2626 !important;
+    }
+}
+
+/* Monochrome printing */
+@media print and (monochrome) {
+    .monochrome-print {
+        filter: grayscale(1) !important;
+    }
+
+    .chart-monochrome .positive {
+        font-weight: bold !important;
+    }
+
+    .chart-monochrome .negative {
+        text-decoration: underline !important;
+    }
+}
+
+/* ===================================================================== */
+/* Print Utilities */
+/* ===================================================================== */
+
+@media print {
+
+    /* Text alignment */
+    .print-text-left {
+        text-align: left !important;
+    }
+
+    .print-text-center {
+        text-align: center !important;
+    }
+
+    .print-text-right {
+        text-align: right !important;
+    }
+
+    .print-text-justify {
+        text-align: justify !important;
+    }
+
+    /* Font sizes */
+    .print-text-xs {
+        font-size: 8pt !important;
+    }
+
+    .print-text-sm {
+        font-size: 10pt !important;
+    }
+
+    .print-text-base {
+        font-size: 12pt !important;
+    }
+
+    .print-text-lg {
+        font-size: 14pt !important;
+    }
+
+    .print-text-xl {
+        font-size: 16pt !important;
+    }
+
+    /* Margins */
+    .print-m-0 {
+        margin: 0 !important;
+    }
+
+    .print-m-1 {
+        margin: 6pt !important;
+    }
+
+    .print-m-2 {
+        margin: 12pt !important;
+    }
+
+    .print-m-3 {
+        margin: 18pt !important;
+    }
+
+    .print-mt-0 {
+        margin-top: 0 !important;
+    }
+
+    .print-mt-1 {
+        margin-top: 6pt !important;
+    }
+
+    .print-mt-2 {
+        margin-top: 12pt !important;
+    }
+
+    .print-mt-3 {
+        margin-top: 18pt !important;
+    }
+
+    .print-mb-0 {
+        margin-bottom: 0 !important;
+    }
+
+    .print-mb-1 {
+        margin-bottom: 6pt !important;
+    }
+
+    .print-mb-2 {
+        margin-bottom: 12pt !important;
+    }
+
+    .print-mb-3 {
+        margin-bottom: 18pt !important;
+    }
+
+    /* Borders */
+    .print-border {
+        border: 1px solid #000000 !important;
+    }
+
+    .print-border-t {
+        border-top: 1px solid #000000 !important;
+    }
+
+    .print-border-r {
+        border-right: 1px solid #000000 !important;
+    }
+
+    .print-border-b {
+        border-bottom: 1px solid #000000 !important;
+    }
+
+    .print-border-l {
+        border-left: 1px solid #000000 !important;
+    }
+
+    /* Backgrounds */
+    .print-bg-gray-100 {
+        background: #f3f4f6 !important;
+    }
+
+    .print-bg-gray-200 {
+        background: #e5e7eb !important;
+    }
+
+    .print-bg-white {
+        background: #ffffff !important;
+    }
+}

@@ -188,11 +188,6 @@ struct PerformanceMetrics {
           frameRate(0.0) {}
 };
 
-// TODO: Phase 1.2 - WASM Interface Improvements - COMPREHENSIVE FILE TODO
-// =======================================================================
-
-// TODO 1.2.1: Advanced Result Types and Error Handling
-// -----------------------------------------------------
 /**
  * @brief Comprehensive result structure for real-time scoring operations
  *
@@ -361,8 +356,6 @@ struct RealtimeFeedback {
           analysisWindowSize(0.0f), sampleRate(44100), channels(1) {}
 };
 
-// TODO 1.2.2: Enhanced Session Management
-// ---------------------------------------
 // Forward declarations for advanced session management
 class AudioSession;
 struct SessionConfiguration;
@@ -633,8 +626,6 @@ class EnhancedSessionManager {
     void cleanupThreadFunction();
 };
 
-// TODO 1.2.3: Advanced WASM Interface Class
-// -----------------------------------------
 /**
  * @brief Enhanced WASM interface with advanced features
  *

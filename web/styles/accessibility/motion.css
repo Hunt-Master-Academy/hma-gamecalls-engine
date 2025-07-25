@@ -1,0 +1,491 @@
+/**
+ * Motion Preferences and Animation Control
+ *
+ * Respects user preferences for reduced motion and provides
+ * alternative animations for accessibility needs.
+ *
+ * @module accessibility/motion
+ * @version 1.0.0
+ * @author Huntmaster Engine Team
+ */
+
+/* ===================================================================== */
+/* Reduced Motion Preferences */
+/* ===================================================================== */
+
+/* Disable animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+
+    /* Remove all transitions and animations */
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        transition-delay: 0s !important;
+        scroll-behavior: auto !important;
+    }
+
+    /* ================================================================= */
+    /* Essential Motion Only */
+    /* ================================================================= */
+
+    /* Keep essential motion for functionality */
+    .essential-motion {
+        animation-duration: 0.2s !important;
+        transition-duration: 0.2s !important;
+    }
+
+    /* Loading spinners - reduce but don't eliminate */
+    .loading-spinner,
+    .waveform-loading-spinner {
+        animation-duration: 2s !important;
+        animation-timing-function: linear !important;
+    }
+
+    /* Focus indicators - keep minimal motion for accessibility */
+    :focus-visible {
+        transition-duration: 0.1s !important;
+    }
+
+    /* ================================================================= */
+    /* Alternative Feedback Methods */
+    /* ================================================================= */
+
+    /* Replace hover animations with static states */
+    .btn:hover {
+        transform: none !important;
+        box-shadow: var(--shadow-md) !important;
+    }
+
+    .transport-button:hover {
+        transform: none !important;
+        border-width: 3px !important;
+    }
+
+    .nav-link:hover {
+        font-weight: var(--font-weight-semibold) !important;
+    }
+
+    /* Replace scale animations with border changes */
+    .volume-slider-handle:hover,
+    .gain-slider-handle:hover {
+        transform: translateY(-50%) !important;
+        border-width: 4px !important;
+    }
+
+    .waveform-marker:hover::before {
+        transform: translateX(-50%) !important;
+        border-width: 4px !important;
+    }
+
+    /* ================================================================= */
+    /* Modal and Overlay Adjustments */
+    /* ================================================================= */
+
+    /* Remove modal entrance animations */
+    .modal {
+        transition: opacity 0.1s, visibility 0.1s !important;
+    }
+
+    .modal-container {
+        transform: none !important;
+        transition: none !important;
+    }
+
+    .modal.show .modal-container {
+        transform: none !important;
+    }
+
+    /* Remove dropdown animations */
+    .dropdown-menu {
+        transform: none !important;
+        transition: opacity 0.1s, visibility 0.1s !important;
+    }
+
+    .dropdown.show .dropdown-menu {
+        transform: none !important;
+    }
+
+    /* ================================================================= */
+    /* Waveform Motion Adjustments */
+    /* ================================================================= */
+
+    /* Reduce waveform playhead animation */
+    .waveform-playhead {
+        transition: left 0.05s ease !important;
+    }
+
+    /* Remove pulse animations */
+    .recording-indicator,
+    .btn--record[data-state="recording"] {
+        animation: none !important;
+        border: 3px solid var(--color-error-500) !important;
+    }
+
+    /* Remove level meter animations */
+    .level-fill {
+        transition: width 0.05s ease-out !important;
+    }
+
+    .level-meter--vertical .level-fill {
+        transition: height 0.05s ease-out !important;
+    }
+
+    /* ================================================================= */
+    /* Navigation Motion Adjustments */
+    /* ================================================================= */
+
+    /* Remove sidebar slide animations */
+    .sidebar {
+        transform: translateX(0) !important;
+        transition: none !important;
+    }
+
+    .sidebar--collapsed {
+        width: 64px !important;
+        transition: none !important;
+    }
+
+    /* Remove navbar toggle animations */
+    .navbar-toggle-line {
+        transition: none !important;
+    }
+
+    .navbar-toggle.active .navbar-toggle-line:nth-child(1) {
+        transform: rotate(45deg) !important;
+    }
+
+    .navbar-toggle.active .navbar-toggle-line:nth-child(3) {
+        transform: rotate(-45deg) !important;
+    }
+
+    /* ================================================================= */
+    /* Button and Form Motion Adjustments */
+    /* ================================================================= */
+
+    /* Remove button press animations */
+    .btn:active {
+        transform: none !important;
+    }
+
+    /* Remove form focus animations */
+    .form-input:focus,
+    .form-select:focus,
+    .form-textarea:focus {
+        transition: border-color 0.1s, box-shadow 0.1s !important;
+    }
+
+    /* ================================================================= */
+    /* Alternative Visual Feedback */
+    /* ================================================================= */
+
+    /* Use color changes instead of motion */
+    .btn:hover {
+        background-color: var(--color-interactive-primary-hover) !important;
+    }
+
+    .btn--primary:hover {
+        background-color: var(--color-interactive-primary-hover) !important;
+    }
+
+    .btn--secondary:hover {
+        background-color: var(--color-interactive-secondary-hover) !important;
+    }
+
+    /* Use opacity changes for state feedback */
+    .btn:active {
+        opacity: 0.8 !important;
+    }
+
+    .nav-link:active {
+        opacity: 0.7 !important;
+    }
+
+}
+
+/* ===================================================================== */
+/* High Motion Preferences */
+/* ===================================================================== */
+
+/* Enhanced animations for users who prefer more motion */
+@media (prefers-reduced-motion: no-preference) {
+
+    /* Enhanced button interactions */
+    .btn {
+        transition: var(--transition-all) !important;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: var(--shadow-lg) !important;
+    }
+
+    .btn:active {
+        transform: translateY(0) !important;
+    }
+
+    /* Enhanced waveform animations */
+    .waveform-playhead {
+        transition: left 0.15s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    /* Enhanced modal animations */
+    .modal {
+        transition: opacity 0.3s ease, visibility 0.3s ease !important;
+    }
+
+    .modal-container {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    /* Enhanced dropdown animations */
+    .dropdown-menu {
+        transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease !important;
+    }
+
+    /* Enhanced loading animations */
+    .loading-spinner,
+    .waveform-loading-spinner {
+        animation: spin 1s linear infinite !important;
+    }
+
+    /* Enhanced focus animations */
+    :focus-visible {
+        transition: outline-color 0.2s ease, box-shadow 0.2s ease !important;
+    }
+
+    /* Enhanced pulse animations */
+    .recording-indicator {
+        animation: pulse-recording 2s ease-in-out infinite !important;
+    }
+
+    .btn--record[data-state="recording"] {
+        animation: pulse-record 2s ease-in-out infinite !important;
+    }
+
+}
+
+/* ===================================================================== */
+/* Safe Animation Patterns */
+/* ===================================================================== */
+
+/* Animations that are generally safe for all users */
+.safe-animation {
+    /* Opacity changes are generally well-tolerated */
+    transition: opacity var(--transition-duration) ease;
+}
+
+.safe-fade-in {
+    opacity: 0;
+    animation: safe-fade-in 0.3s ease forwards;
+}
+
+@keyframes safe-fade-in {
+    to {
+        opacity: 1;
+    }
+}
+
+.safe-fade-out {
+    opacity: 1;
+    animation: safe-fade-out 0.3s ease forwards;
+}
+
+@keyframes safe-fade-out {
+    to {
+        opacity: 0;
+    }
+}
+
+/* Color transitions are safe */
+.safe-color-transition {
+    transition: color var(--transition-duration) ease,
+        background-color var(--transition-duration) ease,
+        border-color var(--transition-duration) ease;
+}
+
+/* ===================================================================== */
+/* Accessibility-First Motion */
+/* ===================================================================== */
+
+/* Motion that enhances accessibility */
+.focus-motion {
+    transition: outline-color 0.2s ease,
+        outline-width 0.2s ease,
+        outline-offset 0.2s ease;
+}
+
+/* Gentle motion for status changes */
+.status-motion {
+    transition: color 0.3s ease,
+        background-color 0.3s ease;
+}
+
+/* Smooth scrolling with reduced motion respect */
+.smooth-scroll {
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .smooth-scroll {
+        scroll-behavior: auto;
+    }
+}
+
+/* ===================================================================== */
+/* Motion Control Classes */
+/* ===================================================================== */
+
+/* Utility classes for motion control */
+.no-motion {
+    animation: none !important;
+    transition: none !important;
+}
+
+.reduce-motion {
+    animation-duration: 0.1s !important;
+    transition-duration: 0.1s !important;
+}
+
+.essential-motion-only {
+    animation-duration: 0.2s !important;
+    transition-duration: 0.2s !important;
+}
+
+/* Force motion (use sparingly and only when necessary) */
+.force-motion {
+    animation-duration: inherit !important;
+    transition-duration: inherit !important;
+}
+
+/* ===================================================================== */
+/* Audio-Specific Motion Preferences */
+/* ===================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    /* Audio visualization adjustments */
+    .waveform-canvas {
+        /* Disable smooth canvas animations */
+    }
+
+    /* Level meter adjustments */
+    .level-fill {
+        transition: width 0.05s linear !important;
+    }
+
+    .level-meter--vertical .level-fill {
+        transition: height 0.05s linear !important;
+    }
+
+    /* Timeline scrubbing adjustments */
+    .timeline-nav-progress-handle {
+        transition: none !important;
+    }
+
+    /* Audio transport button feedback */
+    .transport-button:active {
+        background-color: var(--color-interactive-primary-active) !important;
+        transform: none !important;
+    }
+
+    /* Recording status indicators */
+    .recording-status {
+        animation: none !important;
+    }
+
+    .recording-indicator::before {
+        content: "REC" !important;
+        font-size: 0.8em !important;
+        font-weight: var(--font-weight-bold) !important;
+    }
+
+}
+
+/* ===================================================================== */
+/* Vestibular Disorder Considerations */
+/* ===================================================================== */
+
+/* Additional motion reduction for vestibular sensitivities */
+@media (prefers-reduced-motion: reduce) {
+
+    /* Remove all parallax effects */
+    .parallax {
+        transform: none !important;
+    }
+
+    /* Remove all rotation animations */
+    .rotate,
+    .spin {
+        animation: none !important;
+        transform: none !important;
+    }
+
+    /* Remove oscillating movements */
+    .bounce,
+    .shake,
+    .wobble {
+        animation: none !important;
+    }
+
+    /* Remove zoom effects */
+    .zoom-in,
+    .zoom-out {
+        transform: none !important;
+    }
+
+    /* Keep elements stable */
+    .stable {
+        position: static !important;
+        transform: none !important;
+    }
+
+}
+
+/* ===================================================================== */
+/* Motion Testing and Debug */
+/* ===================================================================== */
+
+/* Debug class to identify elements with motion */
+.motion-debug * {
+    outline: 1px dashed orange !important;
+}
+
+.motion-debug [style*="animation"],
+.motion-debug [style*="transition"],
+.motion-debug [class*="animate"] {
+    outline: 2px solid red !important;
+}
+
+/* Motion accessibility indicator */
+.motion-indicator {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: var(--color-info-500);
+    color: var(--color-text-on-primary);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-xs);
+    z-index: var(--z-index-modal);
+    opacity: 0;
+    pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .motion-indicator {
+        opacity: 1;
+    }
+
+    .motion-indicator::after {
+        content: "Reduced Motion Active";
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .motion-indicator::after {
+        content: "Full Motion Active";
+    }
+}

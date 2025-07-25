@@ -1,0 +1,702 @@
+/**
+ * Shadows
+ *
+ * Comprehensive shadow system with elevation levels,
+ * colored shadows, and audio-specific shadow effects.
+ *
+ * @module themes/shadows
+ * @version 1.0.0
+ * @author Huntmaster Engine Team
+ */
+
+/* ===================================================================== */
+/* Shadow Custom Properties */
+/* ===================================================================== */
+
+:root {
+    /* Base shadow colors (RGB values only for rgba() function) */
+    --shadow-color-base: 0, 0, 0;
+    --shadow-color-primary: var(--color-primary-500);
+    --shadow-color-secondary: var(--color-secondary-500);
+    --shadow-color-success: var(--color-success-500);
+    --shadow-color-warning: var(--color-warning-500);
+    --shadow-color-error: var(--color-error-500);
+    --shadow-color-info: var(--color-info-500);
+
+    /* Shadow opacity levels */
+    --shadow-opacity-subtle: 0.05;
+    --shadow-opacity-light: 0.1;
+    --shadow-opacity-medium: 0.15;
+    --shadow-opacity-strong: 0.2;
+    --shadow-opacity-intense: 0.25;
+
+    /* Elevation shadows (Material Design inspired) */
+    --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1),
+        0 1px 2px -1px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+        0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+        0 4px 6px -4px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.15),
+        0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+
+    /* Inner shadows */
+    --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+    --shadow-inner-sm: inset 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-inner-md: inset 0 4px 8px 0 rgba(0, 0, 0, 0.1);
+    --shadow-inner-lg: inset 0 8px 16px 0 rgba(0, 0, 0, 0.15);
+
+    /* Colored shadows - using fixed rgba values */
+    --shadow-primary: 0 4px 14px 0 rgba(99, 102, 241, 0.2);
+    --shadow-secondary: 0 4px 14px 0 rgba(168, 85, 247, 0.2);
+    --shadow-success: 0 4px 14px 0 rgba(34, 197, 94, 0.2);
+    --shadow-warning: 0 4px 14px 0 rgba(251, 191, 36, 0.2);
+    --shadow-error: 0 4px 14px 0 rgba(239, 68, 68, 0.2);
+    --shadow-info: 0 4px 14px 0 rgba(59, 130, 246, 0.2);
+
+    /* Glow effects */
+    --shadow-glow-sm: 0 0 10px rgba(99, 102, 241, 0.3);
+    --shadow-glow-md: 0 0 20px rgba(99, 102, 241, 0.4);
+    --shadow-glow-lg: 0 0 30px rgba(99, 102, 241, 0.5);
+
+    /* Audio-specific shadows */
+    --shadow-audio-waveform: 0 2px 8px rgba(34, 197, 94, 0.3);
+    --shadow-audio-spectrum: 0 4px 12px rgba(59, 130, 246, 0.4);
+    --shadow-audio-rms: 0 3px 10px rgba(251, 191, 36, 0.35);
+    --shadow-audio-peak: 0 5px 15px rgba(239, 68, 68, 0.5);
+
+    /* Recording shadows */
+    --shadow-recording-idle: 0 2px 6px rgba(0, 0, 0, 0.1);
+    --shadow-recording-active: 0 0 20px rgba(239, 68, 68, 0.6),
+        0 4px 12px rgba(239, 68, 68, 0.4);
+
+    /* Interactive shadows */
+    --shadow-button-rest: var(--shadow-sm);
+    --shadow-button-hover: var(--shadow-md);
+    --shadow-button-active: var(--shadow-xs);
+    --shadow-button-focus: 0 0 0 3px rgba(99, 102, 241, 0.1);
+
+    --shadow-card-rest: var(--shadow-sm);
+    --shadow-card-hover: var(--shadow-lg);
+
+    --shadow-modal: var(--shadow-2xl);
+    --shadow-dropdown: var(--shadow-lg);
+    --shadow-tooltip: var(--shadow-md);
+}
+
+/* ===================================================================== */
+/* Elevation Shadow Classes */
+/* ===================================================================== */
+
+.shadow-none {
+    box-shadow: none !important;
+}
+
+.shadow-xs {
+    box-shadow: var(--shadow-xs) !important;
+}
+
+.shadow-sm {
+    box-shadow: var(--shadow-sm) !important;
+}
+
+.shadow-md {
+    box-shadow: var(--shadow-md) !important;
+}
+
+.shadow-lg {
+    box-shadow: var(--shadow-lg) !important;
+}
+
+.shadow-xl {
+    box-shadow: var(--shadow-xl) !important;
+}
+
+.shadow-2xl {
+    box-shadow: var(--shadow-2xl) !important;
+}
+
+/* Inner shadow classes */
+.shadow-inner {
+    box-shadow: var(--shadow-inner) !important;
+}
+
+.shadow-inner-sm {
+    box-shadow: var(--shadow-inner-sm) !important;
+}
+
+.shadow-inner-md {
+    box-shadow: var(--shadow-inner-md) !important;
+}
+
+.shadow-inner-lg {
+    box-shadow: var(--shadow-inner-lg) !important;
+}
+
+/* ===================================================================== */
+/* Colored Shadow Classes */
+/* ===================================================================== */
+
+.shadow-primary {
+    box-shadow: var(--shadow-primary) !important;
+}
+
+.shadow-secondary {
+    box-shadow: var(--shadow-secondary) !important;
+}
+
+.shadow-success {
+    box-shadow: var(--shadow-success) !important;
+}
+
+.shadow-warning {
+    box-shadow: var(--shadow-warning) !important;
+}
+
+.shadow-error {
+    box-shadow: var(--shadow-error) !important;
+}
+
+.shadow-info {
+    box-shadow: var(--shadow-info) !important;
+}
+
+/* Combined elevation + color shadows */
+.shadow-primary-sm {
+    box-shadow: var(--shadow-sm), var(--shadow-primary) !important;
+}
+
+.shadow-primary-md {
+    box-shadow: var(--shadow-md), var(--shadow-primary) !important;
+}
+
+.shadow-primary-lg {
+    box-shadow: var(--shadow-lg), var(--shadow-primary) !important;
+}
+
+.shadow-success-sm {
+    box-shadow: var(--shadow-sm), var(--shadow-success) !important;
+}
+
+.shadow-success-md {
+    box-shadow: var(--shadow-md), var(--shadow-success) !important;
+}
+
+.shadow-success-lg {
+    box-shadow: var(--shadow-lg), var(--shadow-success) !important;
+}
+
+.shadow-error-sm {
+    box-shadow: var(--shadow-sm), var(--shadow-error) !important;
+}
+
+.shadow-error-md {
+    box-shadow: var(--shadow-md), var(--shadow-error) !important;
+}
+
+.shadow-error-lg {
+    box-shadow: var(--shadow-lg), var(--shadow-error) !important;
+}
+
+.shadow-warning-sm {
+    box-shadow: var(--shadow-sm), var(--shadow-warning) !important;
+}
+
+.shadow-warning-md {
+    box-shadow: var(--shadow-md), var(--shadow-warning) !important;
+}
+
+.shadow-warning-lg {
+    box-shadow: var(--shadow-lg), var(--shadow-warning) !important;
+}
+
+/* ===================================================================== */
+/* Glow Effect Classes */
+/* ===================================================================== */
+
+.shadow-glow-sm {
+    box-shadow: var(--shadow-glow-sm) !important;
+}
+
+.shadow-glow-md {
+    box-shadow: var(--shadow-glow-md) !important;
+}
+
+.shadow-glow-lg {
+    box-shadow: var(--shadow-glow-lg) !important;
+}
+
+/* Colored glow effects */
+.shadow-glow-primary-sm {
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.3) !important;
+}
+
+.shadow-glow-primary-md {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4) !important;
+}
+
+.shadow-glow-primary-lg {
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.5) !important;
+}
+
+.shadow-glow-success-sm {
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3) !important;
+}
+
+.shadow-glow-success-md {
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.4) !important;
+}
+
+.shadow-glow-success-lg {
+    box-shadow: 0 0 30px rgba(34, 197, 94, 0.5) !important;
+}
+
+.shadow-glow-error-sm {
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.3) !important;
+}
+
+.shadow-glow-error-md {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.4) !important;
+}
+
+.shadow-glow-error-lg {
+    box-shadow: 0 0 30px rgba(239, 68, 68, 0.5) !important;
+}
+
+.shadow-glow-warning-sm {
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.3) !important;
+}
+
+.shadow-glow-warning-md {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.4) !important;
+}
+
+.shadow-glow-warning-lg {
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.5) !important;
+}
+
+/* ===================================================================== */
+/* Audio-Specific Shadow Classes */
+/* ===================================================================== */
+
+.shadow-audio-waveform {
+    box-shadow: var(--shadow-audio-waveform) !important;
+}
+
+.shadow-audio-spectrum {
+    box-shadow: var(--shadow-audio-spectrum) !important;
+}
+
+.shadow-audio-rms {
+    box-shadow: var(--shadow-audio-rms) !important;
+}
+
+.shadow-audio-peak {
+    box-shadow: var(--shadow-audio-peak) !important;
+}
+
+/* Combined audio shadows */
+.shadow-audio-waveform-elevated {
+    box-shadow: var(--shadow-sm), var(--shadow-audio-waveform) !important;
+}
+
+.shadow-audio-spectrum-elevated {
+    box-shadow: var(--shadow-md), var(--shadow-audio-spectrum) !important;
+}
+
+.shadow-audio-rms-elevated {
+    box-shadow: var(--shadow-sm), var(--shadow-audio-rms) !important;
+}
+
+.shadow-audio-peak-elevated {
+    box-shadow: var(--shadow-lg), var(--shadow-audio-peak) !important;
+}
+
+/* Recording shadow states */
+.shadow-recording-idle {
+    box-shadow: var(--shadow-recording-idle) !important;
+}
+
+.shadow-recording-active {
+    box-shadow: var(--shadow-recording-active) !important;
+}
+
+/* ===================================================================== */
+/* Interactive Shadow Classes */
+/* ===================================================================== */
+
+/* Button shadows */
+.shadow-button {
+    box-shadow: var(--shadow-button-rest);
+    transition: box-shadow var(--transition-duration-150) var(--transition-ease-out);
+}
+
+.shadow-button:hover {
+    box-shadow: var(--shadow-button-hover);
+}
+
+.shadow-button:active {
+    box-shadow: var(--shadow-button-active);
+}
+
+.shadow-button:focus {
+    box-shadow: var(--shadow-button-rest), var(--shadow-button-focus);
+}
+
+/* Card shadows */
+.shadow-card {
+    box-shadow: var(--shadow-card-rest);
+    transition: box-shadow var(--transition-duration-200) var(--transition-ease-out);
+}
+
+.shadow-card:hover {
+    box-shadow: var(--shadow-card-hover);
+}
+
+/* Input shadows */
+.shadow-input {
+    box-shadow: var(--shadow-xs);
+    transition: box-shadow var(--transition-duration-150) var(--transition-ease-out);
+}
+
+.shadow-input:focus {
+    box-shadow: var(--shadow-xs), 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.shadow-input.error {
+    box-shadow: var(--shadow-xs), 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.shadow-input.success {
+    box-shadow: var(--shadow-xs), 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+/* ===================================================================== */
+/* Component-Specific Shadow Classes */
+/* ===================================================================== */
+
+/* Modal shadows */
+.shadow-modal {
+    box-shadow: var(--shadow-modal);
+}
+
+/* Dropdown shadows */
+.shadow-dropdown {
+    box-shadow: var(--shadow-dropdown);
+}
+
+/* Tooltip shadows */
+.shadow-tooltip {
+    box-shadow: var(--shadow-tooltip);
+}
+
+/* Popover shadows */
+.shadow-popover {
+    box-shadow: var(--shadow-lg);
+}
+
+/* Navigation shadows */
+.shadow-nav {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.shadow-nav-sticky {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);
+}
+
+/* Sidebar shadows */
+.shadow-sidebar {
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.shadow-sidebar-right {
+    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ===================================================================== */
+/* Directional Shadow Classes */
+/* ===================================================================== */
+
+/* Top shadows */
+.shadow-top-sm {
+    box-shadow: 0 -1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+.shadow-top-md {
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+.shadow-top-lg {
+    box-shadow: 0 -10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Bottom shadows */
+.shadow-bottom-sm {
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+.shadow-bottom-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+.shadow-bottom-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Left shadows */
+.shadow-left-sm {
+    box-shadow: -1px 0 3px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+.shadow-left-md {
+    box-shadow: -4px 0 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+.shadow-left-lg {
+    box-shadow: -10px 0 15px -3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Right shadows */
+.shadow-right-sm {
+    box-shadow: 1px 0 3px 0 rgba(0, 0, 0, 0.1) !important;
+}
+
+.shadow-right-md {
+    box-shadow: 4px 0 6px -1px rgba(0, 0, 0, 0.1) !important;
+}
+
+.shadow-right-lg {
+    box-shadow: 10px 0 15px -3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ===================================================================== */
+/* Text Shadow Classes */
+/* ===================================================================== */
+
+.text-shadow-none {
+    text-shadow: none !important;
+}
+
+.text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+.text-shadow-md {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+.text-shadow-lg {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Colored text shadows */
+.text-shadow-primary {
+    text-shadow: 0 2px 4px rgba(99, 102, 241, 0.3) !important;
+}
+
+.text-shadow-success {
+    text-shadow: 0 2px 4px rgba(34, 197, 94, 0.3) !important;
+}
+
+.text-shadow-error {
+    text-shadow: 0 2px 4px rgba(239, 68, 68, 0.3) !important;
+}
+
+.text-shadow-warning {
+    text-shadow: 0 2px 4px rgba(251, 191, 36, 0.3) !important;
+}
+
+/* Outline text shadows for contrast */
+.text-shadow-outline-sm {
+    text-shadow:
+        -1px -1px 0 var(--color-bg-canvas),
+        1px -1px 0 var(--color-bg-canvas),
+        -1px 1px 0 var(--color-bg-canvas),
+        1px 1px 0 var(--color-bg-canvas) !important;
+}
+
+.text-shadow-outline-md {
+    text-shadow:
+        -2px -2px 0 var(--color-bg-canvas),
+        2px -2px 0 var(--color-bg-canvas),
+        -2px 2px 0 var(--color-bg-canvas),
+        2px 2px 0 var(--color-bg-canvas) !important;
+}
+
+/* ===================================================================== */
+/* Drop Shadow Filter Classes */
+/* ===================================================================== */
+
+.drop-shadow-none {
+    filter: drop-shadow(none) !important;
+}
+
+.drop-shadow-sm {
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1)) !important;
+}
+
+.drop-shadow-md {
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1)) !important;
+}
+
+.drop-shadow-lg {
+    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1)) !important;
+}
+
+.drop-shadow-xl {
+    filter: drop-shadow(0 20px 25px rgba(0, 0, 0, 0.15)) !important;
+}
+
+/* Colored drop shadows */
+.drop-shadow-primary {
+    filter: drop-shadow(0 4px 6px rgba(99, 102, 241, 0.2)) !important;
+}
+
+.drop-shadow-success {
+    filter: drop-shadow(0 4px 6px rgba(34, 197, 94, 0.2)) !important;
+}
+
+.drop-shadow-error {
+    filter: drop-shadow(0 4px 6px rgba(239, 68, 68, 0.2)) !important;
+}
+
+.drop-shadow-warning {
+    filter: drop-shadow(0 4px 6px rgba(251, 191, 36, 0.2)) !important;
+}
+
+/* ===================================================================== */
+/* Shadow Animation Classes */
+/* ===================================================================== */
+
+.shadow-pulse {
+    animation: shadowPulse 2s ease-in-out infinite;
+}
+
+@keyframes shadowPulse {
+
+    0%,
+    100% {
+        box-shadow: var(--shadow-sm);
+    }
+
+    50% {
+        box-shadow: var(--shadow-lg);
+    }
+}
+
+.shadow-glow-pulse {
+    animation: shadowGlowPulse 2s ease-in-out infinite;
+}
+
+@keyframes shadowGlowPulse {
+
+    0%,
+    100% {
+        box-shadow: var(--shadow-glow-sm);
+    }
+
+    50% {
+        box-shadow: var(--shadow-glow-lg);
+    }
+}
+
+/* ===================================================================== */
+/* Dark Mode Shadow Adjustments */
+/* ===================================================================== */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --shadow-color-base: 0, 0, 0;
+        --shadow-opacity-subtle: 0.1;
+        --shadow-opacity-light: 0.2;
+        --shadow-opacity-medium: 0.3;
+        --shadow-opacity-strong: 0.4;
+        --shadow-opacity-intense: 0.5;
+    }
+
+    .shadow-card:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .shadow-modal {
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    }
+
+    .shadow-dropdown {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+    }
+}
+
+/* ===================================================================== */
+/* High Contrast Mode Adjustments */
+/* ===================================================================== */
+
+@media (prefers-contrast: high) {
+    :root {
+        --shadow-opacity-subtle: 0.2;
+        --shadow-opacity-light: 0.3;
+        --shadow-opacity-medium: 0.4;
+        --shadow-opacity-strong: 0.5;
+        --shadow-opacity-intense: 0.6;
+    }
+
+    /* Increase shadow visibility */
+    .shadow-sm {
+        box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .shadow-md {
+        box-shadow: 0 6px 10px -2px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .shadow-lg {
+        box-shadow: 0 12px 20px -4px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* Disable subtle effects */
+    .shadow-glow-sm,
+    .shadow-glow-md,
+    .shadow-glow-lg {
+        box-shadow: none !important;
+    }
+
+    /* Strengthen focus indicators */
+    .shadow-input:focus {
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3) !important;
+    }
+}
+
+/* ===================================================================== */
+/* Reduced Motion Shadow Adjustments */
+/* ===================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .shadow-pulse,
+    .shadow-glow-pulse {
+        animation: none !important;
+    }
+
+    .shadow-button,
+    .shadow-card,
+    .shadow-input {
+        transition: none !important;
+    }
+}
+
+/* ===================================================================== */
+/* Print Shadow Override */
+/* ===================================================================== */
+
+@media print {
+
+    *,
+    *::before,
+    *::after {
+        box-shadow: none !important;
+        text-shadow: none !important;
+        filter: none !important;
+    }
+}

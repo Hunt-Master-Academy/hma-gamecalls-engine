@@ -1,0 +1,632 @@
+/**
+ * Responsive Layout Patterns
+ *
+ * Common responsive layout patterns and components.
+ * Provides reusable layout solutions for various content types.
+ *
+ * @module responsive/layout-responsive
+ * @version 1.0.0
+ * @author Huntmaster Engine Team
+ */
+
+/* ===================================================================== */
+/* Container System */
+/* ===================================================================== */
+
+.container {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--spacing-4);
+    padding-right: var(--spacing-4);
+}
+
+.container-sm {
+    max-width: 640px;
+}
+
+.container-md {
+    max-width: 768px;
+}
+
+.container-lg {
+    max-width: 1024px;
+}
+
+.container-xl {
+    max-width: 1280px;
+}
+
+.container-2xl {
+    max-width: 1536px;
+}
+
+.container-full {
+    max-width: none;
+}
+
+/* Fluid container */
+.container-fluid {
+    width: 100%;
+    padding-left: clamp(1rem, 4vw, 2rem);
+    padding-right: clamp(1rem, 4vw, 2rem);
+}
+
+/* ===================================================================== */
+/* Layout Wrapper Patterns */
+/* ===================================================================== */
+
+/* Full viewport layout */
+.layout-viewport {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Sidebar layout */
+.layout-sidebar {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    min-height: 100vh;
+    gap: 0;
+}
+
+.layout-sidebar-right {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    min-height: 100vh;
+    gap: 0;
+}
+
+/* Header-main-footer layout */
+.layout-standard {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    min-height: 100vh;
+    gap: 0;
+}
+
+/* Holy grail layout */
+.layout-holy-grail {
+    display: grid;
+    grid-template-areas:
+        "header header header"
+        "nav main aside"
+        "footer footer footer";
+    grid-template-columns: minmax(150px, 200px) 1fr minmax(150px, 200px);
+    grid-template-rows: auto 1fr auto;
+    min-height: 100vh;
+    gap: 0;
+}
+
+.layout-holy-grail>.header {
+    grid-area: header;
+}
+
+.layout-holy-grail>.nav {
+    grid-area: nav;
+}
+
+.layout-holy-grail>.main {
+    grid-area: main;
+}
+
+.layout-holy-grail>.aside {
+    grid-area: aside;
+}
+
+.layout-holy-grail>.footer {
+    grid-area: footer;
+}
+
+/* ===================================================================== */
+/* Card Layouts */
+/* ===================================================================== */
+
+/* Basic card grid */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: clamp(1rem, 3vw, 2rem);
+    padding: clamp(1rem, 3vw, 2rem);
+}
+
+/* Responsive card sizes */
+.card-grid-sm {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.card-grid-lg {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+}
+
+/* Masonry-style card layout */
+.card-masonry {
+    column-count: auto;
+    column-width: 300px;
+    column-gap: clamp(1rem, 3vw, 2rem);
+    padding: clamp(1rem, 3vw, 2rem);
+}
+
+.card-masonry>* {
+    break-inside: avoid;
+    margin-bottom: clamp(1rem, 3vw, 2rem);
+}
+
+/* ===================================================================== */
+/* Audio-Specific Layouts */
+/* ===================================================================== */
+
+/* Audio player layout */
+.audio-player-layout {
+    display: grid;
+    grid-template-areas:
+        "info info"
+        "waveform controls"
+        "timeline timeline";
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto 1fr auto;
+    gap: var(--spacing-3);
+    background: var(--color-surface-subtle);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-4);
+    min-height: 200px;
+}
+
+.audio-info {
+    grid-area: info;
+}
+
+.audio-waveform {
+    grid-area: waveform;
+}
+
+.audio-controls {
+    grid-area: controls;
+}
+
+.audio-timeline {
+    grid-area: timeline;
+}
+
+/* Recording studio layout */
+.studio-layout {
+    display: grid;
+    grid-template-areas:
+        "header header header header"
+        "tracks tracks mixer effects"
+        "transport transport transport transport";
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: var(--spacing-2);
+    min-height: 100vh;
+    background: var(--color-surface-default);
+}
+
+.studio-header {
+    grid-area: header;
+}
+
+.studio-tracks {
+    grid-area: tracks;
+}
+
+.studio-mixer {
+    grid-area: mixer;
+}
+
+.studio-effects {
+    grid-area: effects;
+}
+
+.studio-transport {
+    grid-area: transport;
+}
+
+/* Audio analyzer layout */
+.analyzer-layout {
+    display: grid;
+    grid-template-areas:
+        "spectrum frequency"
+        "waveform waveform"
+        "controls controls";
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr auto;
+    gap: var(--spacing-3);
+    height: 600px;
+}
+
+.analyzer-spectrum {
+    grid-area: spectrum;
+}
+
+.analyzer-frequency {
+    grid-area: frequency;
+}
+
+.analyzer-waveform {
+    grid-area: waveform;
+}
+
+.analyzer-controls {
+    grid-area: controls;
+}
+
+/* ===================================================================== */
+/* Content Layout Patterns */
+/* ===================================================================== */
+
+/* Hero section */
+.hero-layout {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: clamp(400px, 60vh, 800px);
+    padding: clamp(2rem, 8vw, 4rem);
+    background: linear-gradient(135deg, var(--color-surface-subtle) 0%, var(--color-surface-default) 100%);
+}
+
+/* Feature section */
+.feature-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: clamp(2rem, 5vw, 4rem);
+    padding: clamp(2rem, 8vw, 4rem);
+    align-items: start;
+}
+
+/* Split content */
+.split-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    align-items: center;
+    padding: clamp(2rem, 8vw, 4rem);
+}
+
+/* Article layout */
+.article-layout {
+    display: grid;
+    grid-template-columns: [full-start] 1fr [content-start] min(65ch, 100% - 2rem) [content-end] 1fr [full-end];
+    gap: clamp(1rem, 3vw, 2rem);
+}
+
+.article-layout>* {
+    grid-column: content;
+}
+
+.article-layout>.full-width {
+    grid-column: full;
+}
+
+/* ===================================================================== */
+/* Navigation Layouts */
+/* ===================================================================== */
+
+/* Horizontal navigation */
+.nav-horizontal {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-3) clamp(1rem, 4vw, 2rem);
+    background: var(--color-surface-default);
+    border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.nav-horizontal .nav-brand {
+    flex-shrink: 0;
+}
+
+.nav-horizontal .nav-menu {
+    display: flex;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    gap: var(--spacing-4);
+}
+
+.nav-horizontal .nav-actions {
+    flex-shrink: 0;
+    display: flex;
+    gap: var(--spacing-2);
+}
+
+/* Vertical sidebar navigation */
+.nav-sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 250px;
+    min-height: 100vh;
+    background: var(--color-surface-subtle);
+    border-right: 1px solid var(--color-border-subtle);
+    padding: var(--spacing-4);
+}
+
+.nav-sidebar .nav-brand {
+    margin-bottom: var(--spacing-6);
+    padding-bottom: var(--spacing-4);
+    border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.nav-sidebar .nav-menu {
+    flex: 1;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-sidebar .nav-menu li {
+    margin-bottom: var(--spacing-1);
+}
+
+/* Tab navigation */
+.nav-tabs {
+    display: flex;
+    border-bottom: 2px solid var(--color-border-default);
+    background: var(--color-surface-subtle);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.nav-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.nav-tabs .nav-item {
+    flex-shrink: 0;
+    padding: var(--spacing-3) var(--spacing-4);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.nav-tabs .nav-item:hover,
+.nav-tabs .nav-item.active {
+    background: var(--color-surface-default);
+    border-bottom-color: var(--color-interactive-primary);
+}
+
+/* ===================================================================== */
+/* Responsive Layout Modifications */
+/* ===================================================================== */
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+    .container {
+        padding-left: var(--spacing-3);
+        padding-right: var(--spacing-3);
+    }
+
+    /* Stack layouts vertically on mobile */
+    .layout-sidebar,
+    .layout-sidebar-right {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr;
+    }
+
+    .layout-holy-grail {
+        grid-template-areas:
+            "header"
+            "nav"
+            "main"
+            "aside"
+            "footer";
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(5, auto);
+    }
+
+    /* Audio layouts mobile */
+    .audio-player-layout {
+        grid-template-areas:
+            "info"
+            "waveform"
+            "controls"
+            "timeline";
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto auto;
+    }
+
+    .studio-layout {
+        grid-template-areas:
+            "header"
+            "tracks"
+            "mixer"
+            "effects"
+            "transport";
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(5, auto);
+        min-height: auto;
+    }
+
+    .analyzer-layout {
+        grid-template-areas:
+            "spectrum"
+            "frequency"
+            "waveform"
+            "controls";
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(4, auto);
+        height: auto;
+    }
+
+    /* Navigation mobile */
+    .nav-horizontal {
+        flex-wrap: wrap;
+        padding: var(--spacing-2);
+    }
+
+    .nav-horizontal .nav-menu {
+        flex-direction: column;
+        width: 100%;
+        gap: var(--spacing-2);
+        margin-top: var(--spacing-3);
+    }
+
+    .nav-sidebar {
+        width: 100%;
+        min-height: auto;
+    }
+
+    /* Content layouts mobile */
+    .split-layout {
+        grid-template-columns: 1fr;
+        gap: clamp(1rem, 3vw, 2rem);
+    }
+
+    .feature-layout {
+        grid-template-columns: 1fr;
+        gap: clamp(1rem, 3vw, 2rem);
+    }
+
+    .card-grid,
+    .card-grid-sm,
+    .card-grid-lg {
+        grid-template-columns: 1fr;
+        padding: var(--spacing-3);
+    }
+
+    .card-masonry {
+        column-count: 1;
+        padding: var(--spacing-3);
+    }
+}
+
+/* Tablet adjustments */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .layout-holy-grail {
+        grid-template-areas:
+            "header header"
+            "nav main"
+            "aside aside"
+            "footer footer";
+        grid-template-columns: 200px 1fr;
+        grid-template-rows: auto 1fr auto auto;
+    }
+
+    /* Audio layouts tablet */
+    .studio-layout {
+        grid-template-areas:
+            "header header header"
+            "tracks tracks mixer"
+            "tracks tracks effects"
+            "transport transport transport";
+        grid-template-columns: 2fr 1fr 1fr;
+        grid-template-rows: auto 1fr 1fr auto;
+    }
+
+    .analyzer-layout {
+        grid-template-areas:
+            "spectrum frequency"
+            "waveform waveform"
+            "controls controls";
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr auto;
+        height: 500px;
+    }
+
+    /* Navigation tablet */
+    .nav-sidebar {
+        width: 200px;
+    }
+
+    /* Content layouts tablet */
+    .card-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    .card-masonry {
+        column-width: 250px;
+    }
+}
+
+/* Desktop adjustments */
+@media (min-width: 1025px) {
+    .container {
+        padding-left: var(--spacing-6);
+        padding-right: var(--spacing-6);
+    }
+
+    /* Enhanced layouts for desktop */
+    .layout-holy-grail {
+        grid-template-columns: minmax(200px, 250px) 1fr minmax(200px, 250px);
+    }
+
+    .studio-layout {
+        grid-template-columns: 3fr 1fr 1fr 1fr;
+    }
+
+    .analyzer-layout {
+        height: 700px;
+    }
+
+    /* Navigation desktop */
+    .nav-sidebar {
+        width: 280px;
+    }
+
+    /* Content layouts desktop */
+    .card-masonry {
+        column-width: 350px;
+    }
+}
+
+/* ===================================================================== */
+/* Print Layout Optimizations */
+/* ===================================================================== */
+
+@media print {
+
+    .layout-viewport,
+    .layout-sidebar,
+    .layout-sidebar-right,
+    .layout-standard,
+    .layout-holy-grail {
+        display: block;
+        min-height: auto;
+    }
+
+    .nav-horizontal,
+    .nav-sidebar,
+    .nav-tabs {
+        display: none;
+    }
+
+    .container {
+        max-width: none;
+        padding: 0;
+    }
+
+    .card-grid,
+    .feature-layout {
+        display: block;
+    }
+
+    .card-grid>*,
+    .feature-layout>* {
+        margin-bottom: 2rem;
+        break-inside: avoid;
+    }
+}
+
+/* ===================================================================== */
+/* Layout Debug Utilities */
+/* ===================================================================== */
+
+.layout-debug {
+    outline: 2px solid rgba(255, 0, 0, 0.5);
+}
+
+.layout-debug>* {
+    outline: 1px solid rgba(0, 255, 0, 0.5);
+    background-color: rgba(0, 255, 0, 0.05);
+}
+
+.layout-debug .container {
+    outline: 2px solid rgba(0, 0, 255, 0.5);
+    background-color: rgba(0, 0, 255, 0.05);
+}

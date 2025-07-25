@@ -1,0 +1,767 @@
+/**
+ * Responsive Typography
+ *
+ * Responsive typography system with fluid scaling and breakpoint-specific adjustments.
+ * Provides optimal reading experience across all device sizes.
+ *
+ * @module responsive/typography-responsive
+ * @version 1.0.0
+ * @author Huntmaster Engine Team
+ */
+
+/* ===================================================================== */
+/* Fluid Typography Variables */
+/* ===================================================================== */
+
+:root {
+    /* Fluid font sizes using clamp() */
+    --font-size-fluid-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+    --font-size-fluid-sm: clamp(0.875rem, 0.825rem + 0.25vw, 1rem);
+    --font-size-fluid-base: clamp(1rem, 0.925rem + 0.375vw, 1.125rem);
+    --font-size-fluid-lg: clamp(1.125rem, 1.025rem + 0.5vw, 1.375rem);
+    --font-size-fluid-xl: clamp(1.25rem, 1.1rem + 0.75vw, 1.625rem);
+    --font-size-fluid-2xl: clamp(1.5rem, 1.25rem + 1.25vw, 2.25rem);
+    --font-size-fluid-3xl: clamp(1.875rem, 1.5rem + 1.875vw, 3rem);
+    --font-size-fluid-4xl: clamp(2.25rem, 1.75rem + 2.5vw, 3.75rem);
+    --font-size-fluid-5xl: clamp(3rem, 2rem + 5vw, 6rem);
+
+    /* Fluid line heights */
+    --line-height-fluid-tight: clamp(1.1, 1.05 + 0.25vw, 1.2);
+    --line-height-fluid-snug: clamp(1.2, 1.15 + 0.25vw, 1.3);
+    --line-height-fluid-normal: clamp(1.4, 1.35 + 0.25vw, 1.5);
+    --line-height-fluid-relaxed: clamp(1.5, 1.45 + 0.25vw, 1.6);
+    --line-height-fluid-loose: clamp(1.75, 1.7 + 0.25vw, 1.875);
+
+    /* Responsive modular scale */
+    --scale-ratio-mobile: 1.2;
+    --scale-ratio-tablet: 1.25;
+    --scale-ratio-desktop: 1.333;
+    --scale-ratio-large: 1.414;
+}
+
+/* ===================================================================== */
+/* Responsive Font Size Classes */
+/* ===================================================================== */
+
+.text-xs {
+    font-size: var(--font-size-fluid-xs);
+}
+
+.text-sm {
+    font-size: var(--font-size-fluid-sm);
+}
+
+.text-base {
+    font-size: var(--font-size-fluid-base);
+}
+
+.text-lg {
+    font-size: var(--font-size-fluid-lg);
+}
+
+.text-xl {
+    font-size: var(--font-size-fluid-xl);
+}
+
+.text-2xl {
+    font-size: var(--font-size-fluid-2xl);
+}
+
+.text-3xl {
+    font-size: var(--font-size-fluid-3xl);
+}
+
+.text-4xl {
+    font-size: var(--font-size-fluid-4xl);
+}
+
+.text-5xl {
+    font-size: var(--font-size-fluid-5xl);
+}
+
+/* ===================================================================== */
+/* Responsive Line Height Classes */
+/* ===================================================================== */
+
+.leading-tight {
+    line-height: var(--line-height-fluid-tight);
+}
+
+.leading-snug {
+    line-height: var(--line-height-fluid-snug);
+}
+
+.leading-normal {
+    line-height: var(--line-height-fluid-normal);
+}
+
+.leading-relaxed {
+    line-height: var(--line-height-fluid-relaxed);
+}
+
+.leading-loose {
+    line-height: var(--line-height-fluid-loose);
+}
+
+/* ===================================================================== */
+/* Responsive Heading System */
+/* ===================================================================== */
+
+.heading-1,
+h1 {
+    font-size: var(--font-size-fluid-4xl);
+    line-height: var(--line-height-fluid-tight);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.025em;
+    margin-bottom: clamp(1rem, 2vw, 2rem);
+}
+
+.heading-2,
+h2 {
+    font-size: var(--font-size-fluid-3xl);
+    line-height: var(--line-height-fluid-tight);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.025em;
+    margin-bottom: clamp(0.75rem, 1.5vw, 1.5rem);
+}
+
+.heading-3,
+h3 {
+    font-size: var(--font-size-fluid-2xl);
+    line-height: var(--line-height-fluid-snug);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.0125em;
+    margin-bottom: clamp(0.5rem, 1vw, 1rem);
+}
+
+.heading-4,
+h4 {
+    font-size: var(--font-size-fluid-xl);
+    line-height: var(--line-height-fluid-snug);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: clamp(0.375rem, 0.75vw, 0.75rem);
+}
+
+.heading-5,
+h5 {
+    font-size: var(--font-size-fluid-lg);
+    line-height: var(--line-height-fluid-normal);
+    font-weight: var(--font-weight-medium);
+    margin-bottom: clamp(0.25rem, 0.5vw, 0.5rem);
+}
+
+.heading-6,
+h6 {
+    font-size: var(--font-size-fluid-base);
+    line-height: var(--line-height-fluid-normal);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: clamp(0.25rem, 0.5vw, 0.5rem);
+}
+
+/* ===================================================================== */
+/* Responsive Body Text */
+/* ===================================================================== */
+
+.body-large {
+    font-size: var(--font-size-fluid-lg);
+    line-height: var(--line-height-fluid-relaxed);
+    font-weight: var(--font-weight-normal);
+}
+
+.body-base,
+body {
+    font-size: var(--font-size-fluid-base);
+    line-height: var(--line-height-fluid-normal);
+    font-weight: var(--font-weight-normal);
+}
+
+.body-small {
+    font-size: var(--font-size-fluid-sm);
+    line-height: var(--line-height-fluid-normal);
+    font-weight: var(--font-weight-normal);
+}
+
+.body-xs {
+    font-size: var(--font-size-fluid-xs);
+    line-height: var(--line-height-fluid-snug);
+    font-weight: var(--font-weight-normal);
+}
+
+/* ===================================================================== */
+/* Responsive Paragraph Styles */
+/* ===================================================================== */
+
+.paragraph {
+    font-size: var(--font-size-fluid-base);
+    line-height: var(--line-height-fluid-relaxed);
+    margin-bottom: clamp(1rem, 2vw, 1.5rem);
+    max-width: 75ch;
+}
+
+.paragraph-large {
+    font-size: var(--font-size-fluid-lg);
+    line-height: var(--line-height-fluid-relaxed);
+    margin-bottom: clamp(1.25rem, 2.5vw, 2rem);
+    max-width: 70ch;
+}
+
+.paragraph-small {
+    font-size: var(--font-size-fluid-sm);
+    line-height: var(--line-height-fluid-normal);
+    margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
+    max-width: 80ch;
+}
+
+/* Lead paragraph */
+.lead {
+    font-size: var(--font-size-fluid-xl);
+    line-height: var(--line-height-fluid-relaxed);
+    font-weight: var(--font-weight-light);
+    margin-bottom: clamp(1.5rem, 3vw, 2.5rem);
+    max-width: 65ch;
+}
+
+/* ===================================================================== */
+/* Audio-Specific Typography */
+/* ===================================================================== */
+
+/* Audio control labels */
+.audio-label {
+    font-size: clamp(0.75rem, 1.5vw, 0.875rem);
+    line-height: var(--line-height-fluid-snug);
+    font-weight: var(--font-weight-medium);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Audio status text */
+.audio-status {
+    font-size: clamp(0.875rem, 2vw, 1rem);
+    line-height: var(--line-height-fluid-normal);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-mono);
+}
+
+/* Audio metrics */
+.audio-metric {
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+    line-height: var(--line-height-fluid-tight);
+    font-weight: var(--font-weight-semibold);
+    font-family: var(--font-family-mono);
+    letter-spacing: -0.025em;
+}
+
+/* Waveform time labels */
+.waveform-time {
+    font-size: clamp(0.75rem, 1.25vw, 0.825rem);
+    line-height: var(--line-height-fluid-tight);
+    font-weight: var(--font-weight-normal);
+    font-family: var(--font-family-mono);
+    letter-spacing: 0.025em;
+}
+
+/* ===================================================================== */
+/* Responsive Display Typography */
+/* ===================================================================== */
+
+.display-1 {
+    font-size: clamp(3rem, 8vw, 8rem);
+    line-height: var(--line-height-fluid-tight);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.05em;
+}
+
+.display-2 {
+    font-size: clamp(2.5rem, 6vw, 6rem);
+    line-height: var(--line-height-fluid-tight);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: -0.0375em;
+}
+
+.display-3 {
+    font-size: clamp(2rem, 5vw, 4.5rem);
+    line-height: var(--line-height-fluid-tight);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.025em;
+}
+
+.display-4 {
+    font-size: clamp(1.75rem, 4vw, 3.5rem);
+    line-height: var(--line-height-fluid-snug);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: -0.0125em;
+}
+
+/* ===================================================================== */
+/* Mobile-First Responsive Breakpoints */
+/* ===================================================================== */
+
+/* Extra small screens (portrait phones) */
+@media (max-width: 480px) {
+    :root {
+        --text-scale-ratio: var(--scale-ratio-mobile);
+    }
+
+    .xs\:text-xs {
+        font-size: 0.75rem;
+    }
+
+    .xs\:text-sm {
+        font-size: 0.875rem;
+    }
+
+    .xs\:text-base {
+        font-size: 1rem;
+    }
+
+    .xs\:text-lg {
+        font-size: 1.125rem;
+    }
+
+    .xs\:text-xl {
+        font-size: 1.25rem;
+    }
+
+    .xs\:text-2xl {
+        font-size: 1.5rem;
+    }
+
+    .xs\:leading-tight {
+        line-height: 1.1;
+    }
+
+    .xs\:leading-normal {
+        line-height: 1.4;
+    }
+
+    .xs\:leading-relaxed {
+        line-height: 1.5;
+    }
+
+    /* Tighter spacing on small screens */
+    .heading-1,
+    h1 {
+        margin-bottom: 1rem;
+    }
+
+    .heading-2,
+    h2 {
+        margin-bottom: 0.75rem;
+    }
+
+    .heading-3,
+    h3 {
+        margin-bottom: 0.5rem;
+    }
+
+    .paragraph {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Small screens (landscape phones) */
+@media (min-width: 481px) and (max-width: 640px) {
+    :root {
+        --text-scale-ratio: var(--scale-ratio-mobile);
+    }
+
+    .sm\:text-xs {
+        font-size: 0.75rem;
+    }
+
+    .sm\:text-sm {
+        font-size: 0.875rem;
+    }
+
+    .sm\:text-base {
+        font-size: 1rem;
+    }
+
+    .sm\:text-lg {
+        font-size: 1.125rem;
+    }
+
+    .sm\:text-xl {
+        font-size: 1.25rem;
+    }
+
+    .sm\:text-2xl {
+        font-size: 1.5rem;
+    }
+
+    .sm\:text-3xl {
+        font-size: 1.875rem;
+    }
+
+    .sm\:leading-tight {
+        line-height: 1.15;
+    }
+
+    .sm\:leading-normal {
+        line-height: 1.4;
+    }
+
+    .sm\:leading-relaxed {
+        line-height: 1.5;
+    }
+}
+
+/* Medium screens (tablets) */
+@media (min-width: 641px) and (max-width: 1024px) {
+    :root {
+        --text-scale-ratio: var(--scale-ratio-tablet);
+    }
+
+    .md\:text-xs {
+        font-size: 0.75rem;
+    }
+
+    .md\:text-sm {
+        font-size: 0.875rem;
+    }
+
+    .md\:text-base {
+        font-size: 1rem;
+    }
+
+    .md\:text-lg {
+        font-size: 1.125rem;
+    }
+
+    .md\:text-xl {
+        font-size: 1.25rem;
+    }
+
+    .md\:text-2xl {
+        font-size: 1.5rem;
+    }
+
+    .md\:text-3xl {
+        font-size: 1.875rem;
+    }
+
+    .md\:text-4xl {
+        font-size: 2.25rem;
+    }
+
+    .md\:leading-tight {
+        line-height: 1.15;
+    }
+
+    .md\:leading-snug {
+        line-height: 1.25;
+    }
+
+    .md\:leading-normal {
+        line-height: 1.45;
+    }
+
+    .md\:leading-relaxed {
+        line-height: 1.55;
+    }
+
+    /* Better spacing on medium screens */
+    .heading-1,
+    h1 {
+        margin-bottom: 1.5rem;
+    }
+
+    .heading-2,
+    h2 {
+        margin-bottom: 1.25rem;
+    }
+
+    .heading-3,
+    h3 {
+        margin-bottom: 1rem;
+    }
+
+    .paragraph {
+        margin-bottom: 1.25rem;
+    }
+}
+
+/* Large screens (desktops) */
+@media (min-width: 1025px) {
+    :root {
+        --text-scale-ratio: var(--scale-ratio-desktop);
+    }
+
+    .lg\:text-xs {
+        font-size: 0.75rem;
+    }
+
+    .lg\:text-sm {
+        font-size: 0.875rem;
+    }
+
+    .lg\:text-base {
+        font-size: 1rem;
+    }
+
+    .lg\:text-lg {
+        font-size: 1.125rem;
+    }
+
+    .lg\:text-xl {
+        font-size: 1.25rem;
+    }
+
+    .lg\:text-2xl {
+        font-size: 1.5rem;
+    }
+
+    .lg\:text-3xl {
+        font-size: 1.875rem;
+    }
+
+    .lg\:text-4xl {
+        font-size: 2.25rem;
+    }
+
+    .lg\:text-5xl {
+        font-size: 3rem;
+    }
+
+    .lg\:leading-tight {
+        line-height: 1.2;
+    }
+
+    .lg\:leading-snug {
+        line-height: 1.3;
+    }
+
+    .lg\:leading-normal {
+        line-height: 1.5;
+    }
+
+    .lg\:leading-relaxed {
+        line-height: 1.6;
+    }
+
+    .lg\:leading-loose {
+        line-height: 1.875;
+    }
+
+    /* Generous spacing on large screens */
+    .heading-1,
+    h1 {
+        margin-bottom: 2rem;
+    }
+
+    .heading-2,
+    h2 {
+        margin-bottom: 1.5rem;
+    }
+
+    .heading-3,
+    h3 {
+        margin-bottom: 1rem;
+    }
+
+    .paragraph {
+        margin-bottom: 1.5rem;
+    }
+}
+
+/* Extra large screens */
+@media (min-width: 1536px) {
+    :root {
+        --text-scale-ratio: var(--scale-ratio-large);
+    }
+
+    .xl\:text-xs {
+        font-size: 0.875rem;
+    }
+
+    .xl\:text-sm {
+        font-size: 1rem;
+    }
+
+    .xl\:text-base {
+        font-size: 1.125rem;
+    }
+
+    .xl\:text-lg {
+        font-size: 1.375rem;
+    }
+
+    .xl\:text-xl {
+        font-size: 1.625rem;
+    }
+
+    .xl\:text-2xl {
+        font-size: 2.25rem;
+    }
+
+    .xl\:text-3xl {
+        font-size: 3rem;
+    }
+
+    .xl\:text-4xl {
+        font-size: 3.75rem;
+    }
+
+    .xl\:text-5xl {
+        font-size: 6rem;
+    }
+}
+
+/* ===================================================================== */
+/* Density-Based Typography */
+/* ===================================================================== */
+
+/* High density displays */
+@media (-webkit-min-device-pixel-ratio: 2),
+(min-resolution: 192dpi) {
+    .retina-text {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Slightly bolder font weights for retina */
+    .heading-1,
+    h1,
+    .heading-2,
+    h2,
+    .heading-3,
+    h3 {
+        font-weight: calc(var(--font-weight-bold) + 100);
+    }
+}
+
+/* ===================================================================== */
+/* Reading Experience Optimizations */
+/* ===================================================================== */
+
+/* Optimal reading widths */
+.reading-width {
+    max-width: clamp(45ch, 75ch, 90ch);
+}
+
+.reading-width-narrow {
+    max-width: clamp(35ch, 55ch, 65ch);
+}
+
+.reading-width-wide {
+    max-width: clamp(60ch, 90ch, 120ch);
+}
+
+/* Reading comfort adjustments */
+@media (prefers-reduced-motion: no-preference) {
+    .reading-smooth {
+        transition: font-size var(--transition-base),
+            line-height var(--transition-base);
+    }
+}
+
+/* Print typography optimizations */
+@media print {
+
+    .heading-1,
+    h1 {
+        font-size: 2rem;
+    }
+
+    .heading-2,
+    h2 {
+        font-size: 1.75rem;
+    }
+
+    .heading-3,
+    h3 {
+        font-size: 1.5rem;
+    }
+
+    .heading-4,
+    h4 {
+        font-size: 1.25rem;
+    }
+
+    .heading-5,
+    h5 {
+        font-size: 1.125rem;
+    }
+
+    .heading-6,
+    h6 {
+        font-size: 1rem;
+    }
+
+    .body-base,
+    body {
+        font-size: 12pt;
+    }
+
+    .paragraph {
+        margin-bottom: 1rem;
+    }
+
+    /* Print-friendly line heights */
+    * {
+        line-height: 1.4 !important;
+    }
+}
+
+/* ===================================================================== */
+/* Typography Accessibility */
+/* ===================================================================== */
+
+/* Dyslexia-friendly typography */
+.dyslexia-friendly {
+    font-family: 'OpenDyslexic', 'Comic Sans MS', sans-serif;
+    letter-spacing: 0.12em;
+    word-spacing: 0.16em;
+    line-height: 1.5;
+}
+
+/* High contrast mode adjustments */
+@media (prefers-contrast: high) {
+
+    .heading-1,
+    .heading-2,
+    .heading-3,
+    .heading-4,
+    .heading-5,
+    .heading-6,
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        font-weight: var(--font-weight-bold);
+        text-shadow: none;
+    }
+
+    .body-base,
+    body {
+        font-weight: var(--font-weight-medium);
+    }
+}
+
+/* ===================================================================== */
+/* Typography Debug Mode */
+/* ===================================================================== */
+
+.typography-debug * {
+    outline: 1px solid rgba(255, 0, 0, 0.3);
+    background-color: rgba(255, 0, 0, 0.05);
+}
+
+.typography-debug h1,
+.typography-debug h2,
+.typography-debug h3,
+.typography-debug h4,
+.typography-debug h5,
+.typography-debug h6 {
+    outline-color: rgba(0, 0, 255, 0.5);
+    background-color: rgba(0, 0, 255, 0.05);
+}
+
+.typography-debug p {
+    outline-color: rgba(0, 255, 0, 0.5);
+    background-color: rgba(0, 255, 0, 0.05);
+}

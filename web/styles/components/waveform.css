@@ -1,0 +1,614 @@
+/**
+ * Waveform Component Styling
+ *
+ * Specialized styling for waveform visualization components,
+ * including canvas containers, controls, and interactive elements.
+ *
+ * @module components/waveform
+ * @version 1.0.0
+ * @author Huntmaster Engine Team
+ */
+
+/* ===================================================================== */
+/* Waveform Container */
+/* ===================================================================== */
+
+.waveform {
+    position: relative;
+    background-color: var(--color-background-primary);
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--border-radius-md);
+    overflow: hidden;
+    user-select: none;
+}
+
+.waveform--loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.waveform--error {
+    border-color: var(--color-error-500);
+    background-color: rgba(var(--color-error-500-rgb), 0.05);
+}
+
+.waveform-canvas-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    cursor: crosshair;
+    overflow: hidden;
+}
+
+.waveform-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+}
+
+/* ===================================================================== */
+/* Waveform Overlays */
+/* ===================================================================== */
+
+.waveform-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: var(--z-index-docked);
+}
+
+.waveform-selection {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background-color: rgba(var(--color-interactive-primary-rgb), 0.2);
+    border-left: 2px solid var(--color-interactive-primary);
+    border-right: 2px solid var(--color-interactive-primary);
+    pointer-events: none;
+}
+
+.waveform-playhead {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--color-error-500);
+    box-shadow: 0 0 4px rgba(var(--color-error-500-rgb), 0.5);
+    pointer-events: none;
+    z-index: var(--z-index-fixed);
+    transition: left 0.1s ease;
+}
+
+.waveform-playhead::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid var(--color-error-500);
+}
+
+.waveform-playhead::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 8px solid var(--color-error-500);
+}
+
+/* ===================================================================== */
+/* Waveform Markers */
+/* ===================================================================== */
+
+.waveform-marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: var(--color-warning-500);
+    cursor: pointer;
+    z-index: var(--z-index-dropdown);
+}
+
+.waveform-marker::before {
+    content: "";
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 8px;
+    height: 8px;
+    background-color: var(--color-warning-500);
+    border-radius: var(--border-radius-full);
+    border: 2px solid var(--color-background-primary);
+}
+
+.waveform-marker:hover::before {
+    transform: translateX(-50%) scale(1.2);
+    box-shadow: 0 0 4px rgba(var(--color-warning-500-rgb), 0.5);
+}
+
+.waveform-marker--cue {
+    background-color: var(--color-info-500);
+}
+
+.waveform-marker--cue::before {
+    background-color: var(--color-info-500);
+}
+
+.waveform-marker--loop {
+    background-color: var(--color-success-500);
+}
+
+.waveform-marker--loop::before {
+    background-color: var(--color-success-500);
+}
+
+/* ===================================================================== */
+/* Waveform Controls */
+/* ===================================================================== */
+
+.waveform-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--spacing-3) var(--spacing-4);
+    background-color: var(--color-background-secondary);
+    border-top: 1px solid var(--color-border-primary);
+    gap: var(--spacing-3);
+    flex-wrap: wrap;
+}
+
+.waveform-controls-left {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    flex: 1;
+    min-width: 0;
+}
+
+.waveform-controls-center {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    flex-shrink: 0;
+}
+
+.waveform-controls-right {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+    flex-shrink: 0;
+}
+
+.waveform-time-display {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+    min-width: 80px;
+    text-align: center;
+    padding: var(--spacing-1) var(--spacing-2);
+    background-color: var(--color-background-tertiary);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--color-border-primary);
+}
+
+.waveform-zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-1);
+}
+
+.waveform-zoom-button {
+    background: none;
+    border: 1px solid var(--color-border-primary);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-sm);
+    min-width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-colors);
+}
+
+.waveform-zoom-button:hover {
+    background-color: var(--color-interactive-secondary);
+    color: var(--color-text-primary);
+}
+
+.waveform-zoom-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.waveform-zoom-level {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    min-width: 40px;
+    text-align: center;
+}
+
+/* ===================================================================== */
+/* Waveform Timeline */
+/* ===================================================================== */
+
+.waveform-timeline {
+    position: relative;
+    height: 32px;
+    background-color: var(--color-background-tertiary);
+    border-bottom: 1px solid var(--color-border-primary);
+    overflow: hidden;
+}
+
+.waveform-timeline-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.waveform-timeline-marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background-color: var(--color-border-secondary);
+    pointer-events: none;
+}
+
+.waveform-timeline-marker--major {
+    background-color: var(--color-text-tertiary);
+}
+
+.waveform-timeline-label {
+    position: absolute;
+    top: 4px;
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+    transform: translateX(-50%);
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ===================================================================== */
+/* Waveform Loading States */
+/* ===================================================================== */
+
+.waveform-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    background-color: var(--color-background-secondary);
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--border-radius-md);
+    flex-direction: column;
+    gap: var(--spacing-3);
+}
+
+.waveform-loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid var(--color-border-secondary);
+    border-top: 3px solid var(--color-interactive-primary);
+    border-radius: var(--border-radius-full);
+    animation: spin 1s linear infinite;
+}
+
+.waveform-loading-text {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    text-align: center;
+}
+
+.waveform-progress {
+    width: 100%;
+    max-width: 200px;
+    height: 4px;
+    background-color: var(--color-border-secondary);
+    border-radius: var(--border-radius-full);
+    overflow: hidden;
+}
+
+.waveform-progress-bar {
+    height: 100%;
+    background-color: var(--color-interactive-primary);
+    border-radius: var(--border-radius-full);
+    transition: width 0.3s ease;
+}
+
+/* ===================================================================== */
+/* Waveform Error States */
+/* ===================================================================== */
+
+.waveform-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    background-color: rgba(var(--color-error-500-rgb), 0.05);
+    border: 1px solid var(--color-error-500);
+    border-radius: var(--border-radius-md);
+    flex-direction: column;
+    gap: var(--spacing-3);
+    padding: var(--spacing-4);
+    text-align: center;
+}
+
+.waveform-error-icon {
+    width: 48px;
+    height: 48px;
+    color: var(--color-error-500);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-2xl);
+}
+
+.waveform-error-icon::before {
+    content: "⚠";
+}
+
+.waveform-error-title {
+    color: var(--color-error-500);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    margin: 0;
+}
+
+.waveform-error-message {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    margin: 0;
+    line-height: var(--line-height-relaxed);
+}
+
+.waveform-error-actions {
+    display: flex;
+    gap: var(--spacing-2);
+    margin-top: var(--spacing-2);
+}
+
+/* ===================================================================== */
+/* Waveform Context Menu */
+/* ===================================================================== */
+
+.waveform-context-menu {
+    position: absolute;
+    background-color: var(--color-background-primary);
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-lg);
+    z-index: var(--z-index-modal);
+    min-width: 160px;
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.95);
+    transition: var(--transition-all);
+}
+
+.waveform-context-menu.show {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+.waveform-context-item {
+    display: block;
+    width: 100%;
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    transition: var(--transition-colors);
+}
+
+.waveform-context-item:hover {
+    background-color: var(--color-interactive-secondary);
+}
+
+.waveform-context-item:disabled {
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+}
+
+.waveform-context-divider {
+    height: 1px;
+    background-color: var(--color-border-primary);
+    margin: var(--spacing-1) 0;
+}
+
+/* ===================================================================== */
+/* Waveform Info Panel */
+/* ===================================================================== */
+
+.waveform-info {
+    padding: var(--spacing-3) var(--spacing-4);
+    background-color: var(--color-background-tertiary);
+    border-top: 1px solid var(--color-border-primary);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-4);
+}
+
+.waveform-info-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+.waveform-info-label {
+    font-weight: var(--font-weight-medium);
+}
+
+.waveform-info-value {
+    font-family: var(--font-family-mono);
+}
+
+/* ===================================================================== */
+/* Spectrogram Specific Styles */
+/* ===================================================================== */
+
+.waveform--spectrogram .waveform-canvas-container {
+    height: 300px;
+}
+
+.spectrogram-colorbar {
+    position: absolute;
+    right: var(--spacing-3);
+    top: var(--spacing-3);
+    width: 20px;
+    height: calc(100% - var(--spacing-6));
+    background: linear-gradient(to top,
+            #000000 0%,
+            #440154 10%,
+            #482878 20%,
+            #3e4989 30%,
+            #31688e 40%,
+            #26828e 50%,
+            #1f9e89 60%,
+            #35b779 70%,
+            #6ece58 80%,
+            #b5de2b 90%,
+            #fde725 100%);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--color-border-primary);
+}
+
+.spectrogram-frequency-labels {
+    position: absolute;
+    right: calc(20px + var(--spacing-6));
+    top: var(--spacing-3);
+    height: calc(100% - var(--spacing-6));
+    width: 40px;
+    pointer-events: none;
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-2xs);
+    color: var(--color-text-tertiary);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: var(--spacing-1) 0;
+}
+
+/* ===================================================================== */
+/* Responsive Design */
+/* ===================================================================== */
+
+@media (max-width: 768px) {
+    .waveform-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-2);
+    }
+
+    .waveform-controls-left,
+    .waveform-controls-center,
+    .waveform-controls-right {
+        justify-content: center;
+    }
+
+    .waveform-timeline-label {
+        font-size: 10px;
+    }
+
+    .waveform-info {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--spacing-2);
+    }
+
+    .spectrogram-frequency-labels {
+        display: none;
+    }
+
+    .spectrogram-colorbar {
+        right: var(--spacing-2);
+        top: var(--spacing-2);
+        width: 16px;
+        height: 60px;
+        position: absolute;
+    }
+}
+
+@media (max-width: 480px) {
+    .waveform-canvas-container {
+        height: 150px;
+    }
+
+    .waveform--spectrogram .waveform-canvas-container {
+        height: 200px;
+    }
+
+    .waveform-zoom-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+/* ===================================================================== */
+/* High Contrast Mode */
+/* ===================================================================== */
+
+@media (prefers-contrast: high) {
+    .waveform {
+        border-width: 2px;
+    }
+
+    .waveform-playhead {
+        width: 3px;
+        box-shadow: 0 0 0 1px var(--color-background-primary);
+    }
+
+    .waveform-selection {
+        border-width: 3px;
+        background-color: rgba(var(--color-interactive-primary-rgb), 0.3);
+    }
+
+    .waveform-marker {
+        width: 2px;
+    }
+
+    .waveform-marker::before {
+        width: 10px;
+        height: 10px;
+        border-width: 3px;
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}

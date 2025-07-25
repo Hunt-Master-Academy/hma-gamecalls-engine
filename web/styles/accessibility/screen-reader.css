@@ -1,0 +1,598 @@
+/**
+ * Screen Reader Optimization
+ *
+ * Enhanced styling and utilities for screen reader accessibility.
+ * Provides better content structure and navigation for assistive technologies.
+ *
+ * @module accessibility/screen-reader
+ * @version 1.0.0
+ * @author Huntmaster Engine Team
+ */
+
+/* ===================================================================== */
+/* Screen Reader Only Content */
+/* ===================================================================== */
+
+/* Hide content visually but keep it available to screen readers */
+.sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    clip-path: inset(50%) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+/* Show sr-only content when focused (for skip links) */
+.sr-only:focus {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    padding: var(--spacing-2) var(--spacing-4) !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    clip: auto !important;
+    clip-path: none !important;
+    white-space: normal !important;
+    border: 2px solid var(--color-interactive-primary) !important;
+    background-color: var(--color-interactive-primary) !important;
+    color: var(--color-text-on-primary) !important;
+    z-index: var(--z-index-modal) !important;
+    border-radius: var(--border-radius-md) !important;
+    font-weight: var(--font-weight-semibold) !important;
+}
+
+/* ===================================================================== */
+/* Live Region Announcements */
+/* ===================================================================== */
+
+/* Live region for dynamic content announcements */
+.sr-live {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.sr-live-polite {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+.sr-live-assertive {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Status announcement styles */
+.sr-status {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* ===================================================================== */
+/* Audio Content Descriptions */
+/* ===================================================================== */
+
+/* Audio playback status for screen readers */
+.audio-status-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Waveform descriptions */
+.waveform-description {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Audio level descriptions */
+.audio-level-description {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Recording status descriptions */
+.recording-status-description {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* ===================================================================== */
+/* Enhanced Form Labels */
+/* ===================================================================== */
+
+/* Required field indicators for screen readers */
+.form-group[data-required="true"] .form-label::after {
+    content: " (required)";
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+/* Form validation announcements */
+.form-validation-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Field instructions for screen readers */
+.field-instructions-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+}
+
+/* ===================================================================== */
+/* Navigation Enhancements */
+/* ===================================================================== */
+
+/* Breadcrumb navigation for screen readers */
+.breadcrumb-sr-nav {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Current page indicator */
+.current-page-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Navigation landmark descriptions */
+.nav-description-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Page section descriptions */
+.section-description-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* ===================================================================== */
+/* Modal and Dialog Enhancements */
+/* ===================================================================== */
+
+/* Modal purpose description */
+.modal-description-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Dialog instructions */
+.dialog-instructions-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Modal state announcements */
+.modal-state-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* ===================================================================== */
+/* Button and Control Descriptions */
+/* ===================================================================== */
+
+/* Button purpose descriptions */
+.btn-description-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Transport control descriptions */
+.transport-description-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Volume control descriptions */
+.volume-description-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Audio device descriptions */
+.device-description-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* ===================================================================== */
+/* Data and Progress Descriptions */
+/* ===================================================================== */
+
+/* Progress indicators for screen readers */
+.progress-description-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Data table descriptions */
+.table-description-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Chart and graph descriptions */
+.chart-description-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Loading state descriptions */
+.loading-description-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* ===================================================================== */
+/* Error and Status Messages */
+/* ===================================================================== */
+
+/* Error message styling for screen readers */
+.error-message-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    color: var(--color-error-500);
+    font-weight: var(--font-weight-semibold);
+}
+
+/* Success message styling */
+.success-message-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    color: var(--color-success-500);
+    font-weight: var(--font-weight-semibold);
+}
+
+/* Warning message styling */
+.warning-message-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    color: var(--color-warning-500);
+    font-weight: var(--font-weight-semibold);
+}
+
+/* Info message styling */
+.info-message-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    color: var(--color-info-500);
+    font-weight: var(--font-weight-medium);
+}
+
+/* ===================================================================== */
+/* Keyboard Shortcut Descriptions */
+/* ===================================================================== */
+
+/* Keyboard shortcut help for screen readers */
+.keyboard-help-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Shortcut key descriptions */
+.shortcut-description-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Available actions descriptions */
+.actions-description-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* ===================================================================== */
+/* Audio-Specific Screen Reader Content */
+/* ===================================================================== */
+
+/* Audio file information */
+.audio-info-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Frequency information */
+.frequency-info-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Audio quality descriptions */
+.quality-description-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Signal level descriptions */
+.signal-level-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Audio device status */
+.device-status-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* ===================================================================== */
+/* Context and Help Information */
+/* ===================================================================== */
+
+/* Context-sensitive help */
+.context-help-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    font-style: italic;
+    font-size: var(--font-size-sm);
+}
+
+/* Usage instructions */
+.usage-instructions-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    line-height: var(--line-height-relaxed);
+}
+
+/* Feature descriptions */
+.feature-description-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Application state descriptions */
+.app-state-sr {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* ===================================================================== */
+/* Screen Reader Utilities */
+/* ===================================================================== */
+
+/* Force screen reader announcement */
+.sr-announce {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Delayed announcement */
+.sr-announce-delayed {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    animation: sr-announce-delay 0.1s ease forwards;
+}
+
+@keyframes sr-announce-delay {
+    from {
+        clip: rect(0, 0, 0, 0);
+    }
+
+    to {
+        clip: auto;
+    }
+}
+
+/* Screen reader pause */
+.sr-pause::after {
+    content: ". ";
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    width: 1px;
+}
+
+/* Screen reader emphasis */
+.sr-emphasis {
+    font-weight: var(--font-weight-bold);
+    font-style: italic;
+}
+
+/* ===================================================================== */
+/* High Contrast Mode Adjustments */
+/* ===================================================================== */
+
+@media (prefers-contrast: high) {
+    .sr-only:focus {
+        background-color: #0000ff !important;
+        color: #ffffff !important;
+        border-color: #ffffff !important;
+        outline: 3px solid #ffffff !important;
+        outline-offset: 2px !important;
+    }
+
+    .error-message-sr {
+        color: #ff0000 !important;
+    }
+
+    .success-message-sr {
+        color: #008800 !important;
+    }
+
+    .warning-message-sr {
+        color: #ff8800 !important;
+    }
+
+    .info-message-sr {
+        color: #0088ff !important;
+    }
+}
+
+/* ===================================================================== */
+/* Screen Reader Debug Mode */
+/* ===================================================================== */
+
+/* Debug mode to make screen reader content visible */
+.sr-debug .sr-only,
+.sr-debug .sr-live,
+.sr-debug .sr-live-polite,
+.sr-debug .sr-live-assertive,
+.sr-debug .sr-status,
+.sr-debug [class*="-sr"] {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    padding: var(--spacing-1) var(--spacing-2) !important;
+    margin: var(--spacing-1) 0 !important;
+    overflow: visible !important;
+    clip: auto !important;
+    clip-path: none !important;
+    white-space: normal !important;
+    border: 1px dashed #ff0000 !important;
+    background-color: #ffffcc !important;
+    color: #000000 !important;
+    font-size: var(--font-size-xs) !important;
+    left: auto !important;
+}
+
+.sr-debug .sr-only::before,
+.sr-debug [class*="-sr"]::before {
+    content: "[SR] ";
+    font-weight: var(--font-weight-bold);
+    color: #ff0000;
+}

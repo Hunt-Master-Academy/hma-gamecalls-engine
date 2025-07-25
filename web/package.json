@@ -1,0 +1,13 @@
+{
+  "type": "module",
+  "name": "huntmaster-audio-processor",
+  "version": "3.0.0",
+  "description": "Modular Audio Processing System for Huntmaster Engine",
+  "main": "src/audio-processor-integrated.js",
+  "scripts": {
+    "test": "node src/integration-test.js",
+    "dev": "python3 ../serve_dev.py"
+  },
+  "author": "Huntmaster Engine Team",
+  "license": "MIT"
+}

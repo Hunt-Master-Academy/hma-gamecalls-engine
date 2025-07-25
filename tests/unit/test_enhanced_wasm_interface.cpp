@@ -11,7 +11,6 @@
  * @date July 24, 2025
  */
 
-#include <gmock/gmock.h>
 #include <gtest/gtest.h>
 
 #include "huntmaster/platform/wasm/EnhancedWASMInterface.h"

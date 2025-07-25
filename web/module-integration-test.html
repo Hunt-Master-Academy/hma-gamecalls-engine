@@ -1,0 +1,722 @@
+/** * @file module-integration-test.html * @brief Integration test and
+demonstration of new modular architecture * * This test file demonstrates the
+usage of all newly implemented modules: * - Session storage and state management
+* - UI components and layout system * - Waveform rendering and visualization * -
+Audio context management */
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Huntmaster Module Integration Test</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #f5f5f5;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .section {
+        padding: 20px;
+        border-bottom: 1px solid #eee;
+      }
+
+      .section:last-child {
+        border-bottom: none;
+      }
+
+      .section h2 {
+        margin: 0 0 15px 0;
+        color: #333;
+        border-left: 4px solid #667eea;
+        padding-left: 10px;
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+        margin: 10px 0;
+        flex-wrap: wrap;
+      }
+
+      .status {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0;
+        font-family: monospace;
+        font-size: 12px;
+      }
+
+      .canvas-container {
+        background: #f8f9fa;
+        border: 2px solid #dee2e6;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0;
+        text-align: center;
+      }
+
+      canvas {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: white;
+        max-width: 100%;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin: 20px 0;
+      }
+
+      .card {
+        background: #f8f9fa;
+        border-radius: 6px;
+        padding: 15px;
+        border: 1px solid #dee2e6;
+      }
+
+      .card h3 {
+        margin: 0 0 10px 0;
+        color: #495057;
+      }
+
+      .metrics {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 10px;
+      }
+
+      .metric {
+        background: white;
+        padding: 10px;
+        border-radius: 4px;
+        border: 1px solid #e9ecef;
+        text-align: center;
+      }
+
+      .metric-value {
+        font-size: 18px;
+        font-weight: bold;
+        color: #667eea;
+      }
+
+      .metric-label {
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+      }
+
+      .log {
+        background: #1e1e1e;
+        color: #f8f8f2;
+        font-family: "Courier New", monospace;
+        font-size: 12px;
+        padding: 15px;
+        border-radius: 4px;
+        max-height: 200px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+      }
+
+      button {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background: #5a67d8;
+      }
+
+      button:disabled {
+        background: #cbd5e0;
+        cursor: not-allowed;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        margin: 5px 0;
+      }
+
+      .error {
+        color: #e53e3e;
+        background: #fed7d7;
+        border: 1px solid #feb2b2;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+      }
+
+      .success {
+        color: #38a169;
+        background: #c6f6d5;
+        border: 1px solid #9ae6b4;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+      }
+
+      @media (max-width: 768px) {
+        .controls {
+          flex-direction: column;
+        }
+
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🎵 Huntmaster Module Integration Test</h1>
+        <p>
+          Testing the new modular architecture with session management, UI
+          components, visualization, and audio processing
+        </p>
+      </div>
+
+      <!-- Module Loading Status -->
+      <div class="section">
+        <h2>Module Loading Status</h2>
+        <div id="moduleStatus" class="status">Loading modules...</div>
+        <div class="controls">
+          <button onclick="loadAllModules()">Load All Modules</button>
+          <button onclick="getModuleInfo()">Get Module Info</button>
+          <button onclick="clearLog()">Clear Log</button>
+        </div>
+      </div>
+
+      <!-- Session Management -->
+      <div class="section">
+        <h2>Session Management</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Session Storage</h3>
+            <div class="controls">
+              <button onclick="testSessionStorage()">Test Storage</button>
+              <button onclick="clearSessionStorage()">Clear Storage</button>
+              <button onclick="getStorageStats()">Get Stats</button>
+            </div>
+            <div id="storageStatus" class="status">Storage ready</div>
+          </div>
+
+          <div class="card">
+            <h3>Session State</h3>
+            <div class="controls">
+              <button onclick="testStateTransitions()">Test Transitions</button>
+              <button onclick="testStateHistory()">Test History</button>
+              <button onclick="getStateInfo()">Get State Info</button>
+            </div>
+            <div id="stateStatus" class="status">State manager ready</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- UI Components -->
+      <div class="section">
+        <h2>UI Components & Layout</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Dynamic Components</h3>
+            <div id="componentContainer" class="controls">
+              <!-- Components will be added here dynamically -->
+            </div>
+            <div class="controls">
+              <button onclick="createButton()">Add Button</button>
+              <button onclick="createSlider()">Add Slider</button>
+              <button onclick="createToggle()">Add Toggle</button>
+              <button onclick="createProgressBar()">Add Progress Bar</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Layout Management</h3>
+            <div class="controls">
+              <button onclick="testResponsiveLayout()">Test Responsive</button>
+              <button onclick="testBreakpoints()">Test Breakpoints</button>
+              <button onclick="getLayoutInfo()">Get Layout Info</button>
+            </div>
+            <div id="layoutStatus" class="status">Layout manager ready</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Audio Context Management -->
+      <div class="section">
+        <h2>Audio Context Management</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Context Control</h3>
+            <div class="controls">
+              <button onclick="initAudioContext()">Initialize Context</button>
+              <button onclick="resumeAudioContext()">Resume</button>
+              <button onclick="suspendAudioContext()">Suspend</button>
+              <button onclick="closeAudioContext()">Close</button>
+            </div>
+            <div id="audioContextStatus" class="status">
+              Audio context not initialized
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Performance Metrics</h3>
+            <div id="audioMetrics" class="metrics">
+              <div class="metric">
+                <div class="metric-value" id="sampleRate">—</div>
+                <div class="metric-label">Sample Rate</div>
+              </div>
+              <div class="metric">
+                <div class="metric-value" id="baseLatency">—</div>
+                <div class="metric-label">Base Latency</div>
+              </div>
+              <div class="metric">
+                <div class="metric-value" id="nodeCount">—</div>
+                <div class="metric-label">Nodes</div>
+              </div>
+              <div class="metric">
+                <div class="metric-value" id="contextState">—</div>
+                <div class="metric-label">State</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Waveform Visualization -->
+      <div class="section">
+        <h2>Waveform Visualization</h2>
+        <div class="canvas-container">
+          <canvas id="waveformCanvas" width="800" height="300"></canvas>
+        </div>
+        <div class="controls">
+          <button onclick="generateTestWaveform()">
+            Generate Test Waveform
+          </button>
+          <button onclick="changeRenderStyle()">Change Style</button>
+          <button onclick="testZoomPan()">Test Zoom/Pan</button>
+          <button onclick="testSelection()">Test Selection</button>
+          <button onclick="getWaveformMetrics()">Get Metrics</button>
+        </div>
+        <div class="controls">
+          <label
+            >Zoom:
+            <input
+              type="range"
+              id="zoomSlider"
+              min="0.1"
+              max="10"
+              step="0.1"
+              value="1"
+              onchange="setZoom(this.value)"
+          /></label>
+        </div>
+        <div id="waveformStatus" class="status">Waveform renderer ready</div>
+      </div>
+
+      <!-- Integration Test Results -->
+      <div class="section">
+        <h2>Integration Test Results</h2>
+        <div class="controls">
+          <button onclick="runFullIntegrationTest()">
+            Run Full Integration Test
+          </button>
+          <button onclick="runPerformanceTest()">Run Performance Test</button>
+          <button onclick="runCompatibilityTest()">
+            Run Compatibility Test
+          </button>
+        </div>
+        <div id="testResults" class="log">Ready to run tests...</div>
+      </div>
+    </div>
+
+    <script type="module">
+      // Import all the modules we want to test
+      import {
+        loadModules,
+        loadModuleCategory,
+        getModuleInfo as getInfo,
+      } from "./modules/index.js";
+
+      // Global variables for testing
+      let modules = {};
+      let sessionStorage = null;
+      let sessionState = null;
+      let uiLayout = null;
+      let audioContextManager = null;
+      let waveformRenderer = null;
+      let componentInstances = [];
+
+      // Utility function to log messages
+      function log(message, type = "info") {
+        const timestamp = new Date().toLocaleTimeString();
+        const logElement = document.getElementById("testResults");
+        const prefix =
+          type === "error" ? "❌" : type === "success" ? "✅" : "ℹ️";
+        logElement.textContent += `[${timestamp}] ${prefix} ${message}\n`;
+        logElement.scrollTop = logElement.scrollHeight;
+        console.log(`[${type.toUpperCase()}] ${message}`);
+      }
+
+      // Load all modules
+      window.loadAllModules = async function () {
+        try {
+          log("Loading all modules...");
+          document.getElementById("moduleStatus").textContent =
+            "Loading modules...";
+
+          modules = await loadModules([
+            "SessionStorage",
+            "SessionState",
+            "UIComponents",
+            "UILayout",
+            "AudioContextManager",
+            "WaveformRenderer",
+          ]);
+
+          log("All modules loaded successfully", "success");
+          document.getElementById("moduleStatus").textContent =
+            "All modules loaded successfully";
+
+          // Initialize modules
+          await initializeModules();
+        } catch (error) {
+          log(`Failed to load modules: ${error.message}`, "error");
+          document.getElementById(
+            "moduleStatus"
+          ).textContent = `Error: ${error.message}`;
+        }
+      };
+
+      // Initialize modules
+      async function initializeModules() {
+        try {
+          // Initialize session storage
+          if (modules.SessionStorage) {
+            sessionStorage = new modules.SessionStorage.SessionStorage({
+              debugMode: true,
+            });
+            await sessionStorage.initialize();
+            log("Session storage initialized", "success");
+          }
+
+          // Initialize session state
+          if (modules.SessionState) {
+            sessionState = new modules.SessionState.SessionState({
+              debugMode: true,
+            });
+            await sessionState.initialize();
+            log("Session state initialized", "success");
+          }
+
+          // Initialize UI layout
+          if (modules.UILayout) {
+            uiLayout = new modules.UILayout.UILayout({
+              debugMode: true,
+              showBreakpointIndicator: true,
+            });
+            await uiLayout.initialize();
+            log("UI layout initialized", "success");
+          }
+
+          // Initialize audio context manager
+          if (modules.AudioContextManager) {
+            audioContextManager =
+              new modules.AudioContextManager.AudioContextManager({
+                debugMode: true,
+                enablePerformanceMonitoring: true,
+              });
+            log("Audio context manager initialized", "success");
+          }
+
+          // Initialize waveform renderer
+          if (modules.WaveformRenderer) {
+            const canvas = document.getElementById("waveformCanvas");
+            waveformRenderer = new modules.WaveformRenderer.WaveformRenderer(
+              canvas,
+              {
+                debugMode: true,
+                showPerformanceStats: true,
+              }
+            );
+            log("Waveform renderer initialized", "success");
+          }
+        } catch (error) {
+          log(`Module initialization failed: ${error.message}`, "error");
+        }
+      }
+
+      // Get module information
+      window.getModuleInfo = function () {
+        const info = getInfo();
+        log(`Module info: ${JSON.stringify(info, null, 2)}`);
+      };
+
+      // Clear log
+      window.clearLog = function () {
+        document.getElementById("testResults").textContent = "Log cleared...\n";
+      };
+
+      // Session Storage Tests
+      window.testSessionStorage = async function () {
+        if (!sessionStorage) {
+          log("Session storage not initialized", "error");
+          return;
+        }
+
+        try {
+          const testData = {
+            id: "test-session",
+            timestamp: Date.now(),
+            data: { audio: "test-data", settings: { volume: 0.8 } },
+          };
+
+          await sessionStorage.saveSession(testData);
+          log("Session saved successfully", "success");
+
+          const loaded = await sessionStorage.loadSession("test-session");
+          log(`Session loaded: ${JSON.stringify(loaded)}`, "success");
+
+          document.getElementById("storageStatus").textContent =
+            "Storage test completed";
+        } catch (error) {
+          log(`Session storage test failed: ${error.message}`, "error");
+        }
+      };
+
+      // Session State Tests
+      window.testStateTransitions = async function () {
+        if (!sessionState) {
+          log("Session state not initialized", "error");
+          return;
+        }
+
+        try {
+          await sessionState.setState("recording", { startTime: Date.now() });
+          log("State transition to recording", "success");
+
+          await sessionState.setState("analyzing", { progress: 0 });
+          log("State transition to analyzing", "success");
+
+          await sessionState.setState("complete", { result: "success" });
+          log("State transition to complete", "success");
+
+          const currentState = sessionState.getCurrentState();
+          document.getElementById(
+            "stateStatus"
+          ).textContent = `Current state: ${currentState.name}`;
+        } catch (error) {
+          log(`State transition test failed: ${error.message}`, "error");
+        }
+      };
+
+      // UI Component Tests
+      window.createButton = function () {
+        if (!modules.UIComponents) {
+          log("UI Components not loaded", "error");
+          return;
+        }
+
+        const container = document.getElementById("componentContainer");
+        const buttonElement = document.createElement("button");
+        buttonElement.textContent = `Button ${componentInstances.length + 1}`;
+        container.appendChild(buttonElement);
+
+        const button = new modules.UIComponents.Button(buttonElement, {
+          onClick: () => log("Button clicked!", "success"),
+        });
+
+        componentInstances.push(button);
+        log("Button component created", "success");
+      };
+
+      window.createSlider = function () {
+        if (!modules.UIComponents) {
+          log("UI Components not loaded", "error");
+          return;
+        }
+
+        const container = document.getElementById("componentContainer");
+        const sliderElement = document.createElement("input");
+        sliderElement.type = "range";
+        sliderElement.min = "0";
+        sliderElement.max = "100";
+        sliderElement.value = "50";
+        container.appendChild(sliderElement);
+
+        const slider = new modules.UIComponents.Slider(sliderElement, {
+          onChange: (value) => log(`Slider value: ${value}`),
+        });
+
+        componentInstances.push(slider);
+        log("Slider component created", "success");
+      };
+
+      // Audio Context Tests
+      window.initAudioContext = async function () {
+        if (!audioContextManager) {
+          log("Audio context manager not initialized", "error");
+          return;
+        }
+
+        try {
+          await audioContextManager.initialize();
+          log("Audio context initialized", "success");
+          updateAudioMetrics();
+        } catch (error) {
+          log(`Audio context initialization failed: ${error.message}`, "error");
+        }
+      };
+
+      window.resumeAudioContext = async function () {
+        if (!audioContextManager) return;
+
+        try {
+          await audioContextManager.resume();
+          log("Audio context resumed", "success");
+          updateAudioMetrics();
+        } catch (error) {
+          log(`Audio context resume failed: ${error.message}`, "error");
+        }
+      };
+
+      // Waveform Tests
+      window.generateTestWaveform = function () {
+        if (!waveformRenderer) {
+          log("Waveform renderer not initialized", "error");
+          return;
+        }
+
+        // Generate test sine wave data
+        const sampleRate = 44100;
+        const duration = 5; // 5 seconds
+        const frequency = 440; // A4 note
+        const samples = sampleRate * duration;
+        const audioData = new Float32Array(samples);
+
+        for (let i = 0; i < samples; i++) {
+          const t = i / sampleRate;
+          audioData[i] = Math.sin(2 * Math.PI * frequency * t) * 0.5;
+        }
+
+        waveformRenderer.loadWaveformData(audioData, sampleRate);
+        log("Test waveform generated and loaded", "success");
+      };
+
+      window.setZoom = function (zoom) {
+        if (waveformRenderer) {
+          waveformRenderer.setZoom(parseFloat(zoom));
+          log(`Zoom set to ${zoom}x`);
+        }
+      };
+
+      // Update audio metrics display
+      function updateAudioMetrics() {
+        if (!audioContextManager) return;
+
+        const info = audioContextManager.getContextInfo();
+        if (info) {
+          document.getElementById(
+            "sampleRate"
+          ).textContent = `${info.sampleRate} Hz`;
+          document.getElementById("baseLatency").textContent = `${(
+            info.baseLatency * 1000
+          ).toFixed(1)} ms`;
+          document.getElementById("nodeCount").textContent = info.nodeCount;
+          document.getElementById("contextState").textContent = info.state;
+          document.getElementById(
+            "audioContextStatus"
+          ).textContent = `Context: ${info.state}`;
+        }
+      }
+
+      // Integration test
+      window.runFullIntegrationTest = async function () {
+        log("Starting full integration test...", "success");
+
+        try {
+          // Test module loading
+          if (Object.keys(modules).length === 0) {
+            await loadAllModules();
+          }
+
+          // Test session storage
+          if (sessionStorage) {
+            await testSessionStorage();
+          }
+
+          // Test session state
+          if (sessionState) {
+            await testStateTransitions();
+          }
+
+          // Test audio context
+          if (audioContextManager) {
+            await initAudioContext();
+          }
+
+          // Test waveform rendering
+          if (waveformRenderer) {
+            generateTestWaveform();
+          }
+
+          log("Full integration test completed successfully!", "success");
+        } catch (error) {
+          log(`Integration test failed: ${error.message}`, "error");
+        }
+      };
+
+      // Auto-load modules on page load
+      window.addEventListener("load", () => {
+        setTimeout(loadAllModules, 1000);
+      });
+
+      // Add stub functions for other buttons
+      window.clearSessionStorage = () => log("Clear session storage - TODO");
+      window.getStorageStats = () => log("Get storage stats - TODO");
+      window.testStateHistory = () => log("Test state history - TODO");
+      window.getStateInfo = () => log("Get state info - TODO");
+      window.createToggle = () => log("Create toggle - TODO");
+      window.createProgressBar = () => log("Create progress bar - TODO");
+      window.testResponsiveLayout = () => log("Test responsive layout - TODO");
+      window.testBreakpoints = () => log("Test breakpoints - TODO");
+      window.getLayoutInfo = () => log("Get layout info - TODO");
+      window.suspendAudioContext = () => log("Suspend audio context - TODO");
+      window.closeAudioContext = () => log("Close audio context - TODO");
+      window.changeRenderStyle = () => log("Change render style - TODO");
+      window.testZoomPan = () => log("Test zoom/pan - TODO");
+      window.testSelection = () => log("Test selection - TODO");
+      window.getWaveformMetrics = () => log("Get waveform metrics - TODO");
+      window.runPerformanceTest = () => log("Run performance test - TODO");
+      window.runCompatibilityTest = () => log("Run compatibility test - TODO");
+    </script>
+  </body>
+</html>

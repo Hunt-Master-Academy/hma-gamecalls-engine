@@ -1,0 +1,503 @@
+/**
+ * Focus Management System
+ *
+ * Advanced focus management for keyboard navigation and accessibility.
+ * Includes focus trapping, restoration, and visual focus indicators.
+ *
+ * @module accessibility/focus
+ * @version 1.0.0
+ * @author Huntmaster Engine Team
+ */
+
+/* ===================================================================== */
+/* Global Focus Styles */
+/* ===================================================================== */
+
+/* Remove default browser focus outline */
+* {
+    outline: none;
+}
+
+/* Custom focus ring for all interactive elements */
+:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+    position: relative;
+    z-index: var(--z-index-focus);
+}
+
+/* Enhanced focus ring for critical elements */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+    outline: 3px solid var(--focus-ring-color);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 1px var(--color-background-primary);
+}
+
+/* ===================================================================== */
+/* Focus Trap Container */
+/* ===================================================================== */
+
+.focus-trap {
+    position: relative;
+}
+
+.focus-trap::before,
+.focus-trap::after {
+    content: "";
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+
+.focus-trap::before {
+    top: 0;
+    left: 0;
+}
+
+.focus-trap::after {
+    bottom: 0;
+    right: 0;
+}
+
+/* Focus trap sentinels for screen readers */
+.focus-trap-sentinel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    top: 0;
+    left: 0;
+}
+
+.focus-trap-sentinel:focus {
+    outline: none;
+}
+
+/* ===================================================================== */
+/* Skip Links */
+/* ===================================================================== */
+
+.skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background-color: var(--color-interactive-primary);
+    color: var(--color-text-on-primary);
+    padding: var(--spacing-2) var(--spacing-4);
+    border-radius: var(--border-radius-md);
+    text-decoration: none;
+    font-weight: var(--font-weight-semibold);
+    z-index: var(--z-index-modal);
+    transition: var(--transition-transform);
+    border: 2px solid var(--color-interactive-primary);
+}
+
+.skip-link:focus {
+    top: 6px;
+    outline: 3px solid var(--color-background-primary);
+    outline-offset: 2px;
+}
+
+.skip-link:hover {
+    background-color: var(--color-interactive-primary-hover);
+    border-color: var(--color-interactive-primary-hover);
+}
+
+/* Multiple skip links container */
+.skip-links {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: var(--z-index-modal);
+    display: flex;
+    gap: var(--spacing-2);
+    padding: var(--spacing-2);
+}
+
+/* ===================================================================== */
+/* Focus Indicators for Components */
+/* ===================================================================== */
+
+/* Enhanced button focus */
+.btn:focus-visible {
+    outline: 3px solid var(--focus-ring-color);
+    outline-offset: 3px;
+    box-shadow:
+        0 0 0 1px var(--color-background-primary),
+        0 0 0 5px rgba(var(--color-interactive-primary-rgb), 0.2);
+}
+
+/* Form element focus enhancement */
+.form-input:focus,
+.form-select:focus,
+.form-textarea:focus {
+    outline: 3px solid var(--focus-ring-color);
+    outline-offset: 1px;
+    border-color: var(--color-interactive-primary);
+    box-shadow:
+        0 0 0 1px var(--color-interactive-primary),
+        0 0 0 4px rgba(var(--color-interactive-primary-rgb), 0.15);
+}
+
+/* Checkbox and radio focus */
+.form-checkbox:focus,
+.form-radio:focus {
+    outline: 3px solid var(--focus-ring-color);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 6px rgba(var(--color-interactive-primary-rgb), 0.15);
+}
+
+/* Navigation focus */
+.nav-link:focus-visible {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: -2px;
+    background-color: var(--color-interactive-primary-surface);
+    border-radius: var(--border-radius-sm);
+}
+
+/* Modal focus management */
+.modal:focus-within {
+    outline: none;
+}
+
+.modal-container:focus-within {
+    box-shadow:
+        var(--shadow-xl),
+        0 0 0 3px var(--focus-ring-color);
+}
+
+/* ===================================================================== */
+/* Focus Visible Polyfill Support */
+/* ===================================================================== */
+
+/* Support for browsers without :focus-visible */
+.js-focus-visible .focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
+.js-focus-visible button.focus-visible,
+.js-focus-visible input.focus-visible,
+.js-focus-visible select.focus-visible,
+.js-focus-visible textarea.focus-visible,
+.js-focus-visible a.focus-visible {
+    outline: 3px solid var(--focus-ring-color);
+    outline-offset: 2px;
+}
+
+/* ===================================================================== */
+/* Audio-Specific Focus Indicators */
+/* ===================================================================== */
+
+/* Transport control focus */
+.transport-button:focus-visible {
+    outline: 3px solid var(--focus-ring-color);
+    outline-offset: 3px;
+    transform: translateY(-2px);
+    box-shadow:
+        var(--shadow-lg),
+        0 0 0 6px rgba(var(--color-interactive-primary-rgb), 0.2);
+}
+
+/* Volume control focus */
+.volume-slider:focus-within {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 2px;
+    border-radius: var(--border-radius-sm);
+}
+
+.volume-slider-handle:focus {
+    outline: 3px solid var(--focus-ring-color);
+    outline-offset: 2px;
+    transform: translateY(-50%) scale(1.2);
+    box-shadow:
+        var(--shadow-md),
+        0 0 0 6px rgba(var(--color-interactive-primary-rgb), 0.2);
+}
+
+/* Waveform focus */
+.waveform-canvas:focus {
+    outline: 3px solid var(--focus-ring-color);
+    outline-offset: -3px;
+}
+
+.waveform-marker:focus {
+    outline: 3px solid var(--focus-ring-color);
+    outline-offset: 2px;
+    z-index: var(--z-index-modal);
+}
+
+/* Level meter focus (for keyboard interaction) */
+.level-meter-container:focus-within {
+    outline: 2px solid var(--focus-ring-color);
+    outline-offset: 2px;
+    border-radius: var(--border-radius-md);
+}
+
+/* ===================================================================== */
+/* Focus Management Utilities */
+/* ===================================================================== */
+
+/* Hide element from keyboard navigation */
+.no-focus {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    pointer-events: none;
+}
+
+/* Force focusable for JavaScript-controlled elements */
+.focusable {
+    -webkit-user-select: auto;
+    -moz-user-select: auto;
+    -ms-user-select: auto;
+    user-select: auto;
+    pointer-events: auto;
+}
+
+.focusable[tabindex="-1"]:focus {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
+/* Focus restoration marker */
+.focus-restore-target {
+    position: relative;
+}
+
+.focus-restore-target::after {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border: 2px dashed var(--color-interactive-primary);
+    border-radius: var(--border-radius-md);
+    opacity: 0;
+    pointer-events: none;
+    transition: var(--transition-opacity);
+}
+
+.focus-restore-target.focus-restored::after {
+    opacity: 1;
+    animation: focus-restored 2s ease-out forwards;
+}
+
+@keyframes focus-restored {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: scale(1.02);
+    }
+
+    100% {
+        opacity: 0;
+        transform: scale(1);
+    }
+}
+
+/* ===================================================================== */
+/* Focus Ring Customization */
+/* ===================================================================== */
+
+/* High contrast focus ring */
+@media (prefers-contrast: high) {
+    :focus-visible {
+        outline: 4px solid var(--color-error-500);
+        outline-offset: 2px;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    a:focus-visible {
+        outline: 4px solid var(--color-error-500);
+        outline-offset: 3px;
+        box-shadow:
+            0 0 0 2px var(--color-background-primary),
+            0 0 0 8px rgba(239, 68, 68, 0.3);
+    }
+
+    .skip-link:focus {
+        outline: 4px solid var(--color-background-primary);
+        outline-offset: 3px;
+        box-shadow: 0 0 0 8px var(--color-error-500);
+    }
+}
+
+/* Focus ring for reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    :focus-visible {
+        transition: none;
+    }
+
+    .focus-restore-target::after {
+        transition: none;
+        animation: none;
+    }
+
+    .focus-restore-target.focus-restored::after {
+        opacity: 1;
+        animation: none;
+    }
+}
+
+/* ===================================================================== */
+/* Roving Tabindex Support */
+/* ===================================================================== */
+
+/* Container for roving tabindex pattern */
+.roving-tabindex {
+    position: relative;
+}
+
+/* Items in roving tabindex should not be focusable by default */
+.roving-tabindex [role="option"],
+.roving-tabindex [role="tab"],
+.roving-tabindex [role="menuitem"] {
+    tabindex: -1;
+}
+
+/* Active item in roving tabindex */
+.roving-tabindex [aria-selected="true"],
+.roving-tabindex [tabindex="0"] {
+    tabindex: 0;
+}
+
+.roving-tabindex [aria-selected="true"]:focus,
+.roving-tabindex [tabindex="0"]:focus {
+    outline: 3px solid var(--focus-ring-color);
+    outline-offset: 2px;
+    background-color: var(--color-interactive-primary-surface);
+    color: var(--color-interactive-primary);
+}
+
+/* ===================================================================== */
+/* Focus Debug Mode */
+/* ===================================================================== */
+
+/* Debug mode to visualize all focusable elements */
+.focus-debug * {
+    outline: 1px dashed rgba(255, 0, 0, 0.3) !important;
+    outline-offset: 1px !important;
+}
+
+.focus-debug *:focus {
+    outline: 3px solid red !important;
+    outline-offset: 2px !important;
+}
+
+.focus-debug [tabindex="-1"] {
+    outline-color: rgba(255, 165, 0, 0.5) !important;
+}
+
+.focus-debug [tabindex="0"],
+.focus-debug button,
+.focus-debug input,
+.focus-debug select,
+.focus-debug textarea,
+.focus-debug a[href] {
+    outline-color: rgba(0, 255, 0, 0.5) !important;
+}
+
+/* ===================================================================== */
+/* Focus Announcements */
+/* ===================================================================== */
+
+/* Screen reader announcements for focus changes */
+.focus-announcement {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.focus-announcement.active {
+    position: static;
+    width: auto;
+    height: auto;
+    padding: var(--spacing-2) var(--spacing-3);
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+    border: 1px solid var(--color-info-500);
+    background-color: var(--color-info-100);
+    color: var(--color-info-700);
+    border-radius: var(--border-radius-md);
+    font-size: var(--font-size-sm);
+    z-index: var(--z-index-modal);
+}
+
+/* ===================================================================== */
+/* Responsive Focus Management */
+/* ===================================================================== */
+
+@media (max-width: 768px) {
+
+    /* Larger focus targets on mobile */
+    :focus-visible {
+        outline-width: 4px;
+        outline-offset: 3px;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    a:focus-visible {
+        outline-width: 4px;
+        outline-offset: 4px;
+    }
+
+    /* Adjust skip links for mobile */
+    .skip-link {
+        left: var(--spacing-2);
+        top: -48px;
+        padding: var(--spacing-3) var(--spacing-6);
+        font-size: var(--font-size-base);
+    }
+
+    .skip-link:focus {
+        top: var(--spacing-2);
+    }
+}
+
+@media (max-width: 480px) {
+
+    /* Even larger focus indicators on small screens */
+    .transport-button:focus-visible {
+        outline-width: 4px;
+        outline-offset: 4px;
+    }
+
+    .waveform-canvas:focus {
+        outline-width: 4px;
+        outline-offset: -4px;
+    }
+}

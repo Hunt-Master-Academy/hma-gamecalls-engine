@@ -1,0 +1,778 @@
+/**
+ * Advanced Media Queries
+ *
+ * Collection of advanced media query utilities and patterns.
+ * Provides granular control over responsive behavior.
+ *
+ * @module responsive/media-queries
+ * @version 1.0.0
+ * @author Huntmaster Engine Team
+ */
+
+/* ===================================================================== */
+/* Screen Size Media Queries */
+/* ===================================================================== */
+
+/* Extra small devices (portrait phones, less than 576px) */
+@media (max-width: 575.98px) {
+    .xs-only {
+        display: block;
+    }
+
+    .hidden-xs {
+        display: none !important;
+    }
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    .sm-only {
+        display: block;
+    }
+
+    .hidden-sm {
+        display: none !important;
+    }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .md-only {
+        display: block;
+    }
+
+    .hidden-md {
+        display: none !important;
+    }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .lg-only {
+        display: block;
+    }
+
+    .hidden-lg {
+        display: none !important;
+    }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+    .xl-only {
+        display: block;
+    }
+
+    .hidden-xl {
+        display: none !important;
+    }
+}
+
+/* ===================================================================== */
+/* Orientation-Based Queries */
+/* ===================================================================== */
+
+/* Portrait orientation */
+@media (orientation: portrait) {
+    .portrait-only {
+        display: block;
+    }
+
+    .hidden-portrait {
+        display: none !important;
+    }
+
+    /* Portrait-specific audio optimizations */
+    .audio-portrait-stack {
+        flex-direction: column;
+    }
+
+    .waveform-portrait {
+        height: clamp(80px, 20vh, 120px);
+    }
+
+    .controls-portrait {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
+/* Landscape orientation */
+@media (orientation: landscape) {
+    .landscape-only {
+        display: block;
+    }
+
+    .hidden-landscape {
+        display: none !important;
+    }
+
+    /* Landscape-specific audio optimizations */
+    .audio-landscape-row {
+        flex-direction: row;
+    }
+
+    .waveform-landscape {
+        height: clamp(100px, 25vh, 200px);
+    }
+
+    .controls-landscape {
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+}
+
+/* ===================================================================== */
+/* Aspect Ratio Queries */
+/* ===================================================================== */
+
+/* Ultra-wide screens (21:9 and wider) */
+@media (min-aspect-ratio: 21/9) {
+    .ultrawide-layout {
+        grid-template-columns: 1fr 2fr 1fr;
+    }
+
+    .ultrawide-only {
+        display: block;
+    }
+}
+
+/* Wide screens (16:9 to 21:9) */
+@media (min-aspect-ratio: 16/9) and (max-aspect-ratio: 21/9) {
+    .wide-layout {
+        grid-template-columns: 1fr 3fr 1fr;
+    }
+
+    .wide-only {
+        display: block;
+    }
+}
+
+/* Standard screens (4:3 to 16:9) */
+@media (min-aspect-ratio: 4/3) and (max-aspect-ratio: 16/9) {
+    .standard-layout {
+        grid-template-columns: 1fr 2fr;
+    }
+
+    .standard-only {
+        display: block;
+    }
+}
+
+/* Tall screens (narrower than 4:3) */
+@media (max-aspect-ratio: 4/3) {
+    .tall-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .tall-only {
+        display: block;
+    }
+}
+
+/* ===================================================================== */
+/* Pointer and Input Queries */
+/* ===================================================================== */
+
+/* Coarse pointer (touch) */
+@media (pointer: coarse) {
+    .touch-only {
+        display: block;
+    }
+
+    .hidden-touch {
+        display: none !important;
+    }
+
+    /* Touch-optimized audio controls */
+    .btn,
+    .control,
+    .slider-thumb {
+        min-width: 44px;
+        min-height: 44px;
+        padding: var(--spacing-3);
+    }
+
+    .transport-controls .btn {
+        min-width: 56px;
+        min-height: 56px;
+    }
+
+    /* Larger tap targets for audio controls */
+    .audio-control-touch {
+        padding: var(--spacing-4);
+        margin: var(--spacing-2);
+    }
+}
+
+/* Fine pointer (mouse) */
+@media (pointer: fine) {
+    .mouse-only {
+        display: block;
+    }
+
+    .hidden-mouse {
+        display: none !important;
+    }
+
+    /* Precise mouse controls */
+    .btn,
+    .control {
+        min-width: 32px;
+        min-height: 32px;
+        padding: var(--spacing-2);
+    }
+
+    /* Hover effects for fine pointers */
+    .btn:hover,
+    .control:hover {
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-md);
+    }
+}
+
+/* Any hover capability */
+@media (hover: hover) {
+    .hover-enabled {
+        display: block;
+    }
+
+    .hover-disabled {
+        display: none !important;
+    }
+
+    /* Enhanced hover states */
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .waveform-segment:hover {
+        opacity: 0.8;
+        cursor: pointer;
+    }
+}
+
+/* No hover capability */
+@media (hover: none) {
+    .hover-disabled {
+        display: block;
+    }
+
+    .hover-enabled {
+        display: none !important;
+    }
+
+    /* Remove hover-dependent interactions */
+    .card,
+    .waveform-segment {
+        transform: none !important;
+    }
+}
+
+/* ===================================================================== */
+/* Display Density Queries */
+/* ===================================================================== */
+
+/* Standard resolution */
+@media (max-resolution: 1.5dppx) {
+    .standard-dpi {
+        display: block;
+    }
+
+    .hidden-standard-dpi {
+        display: none !important;
+    }
+}
+
+/* High resolution (Retina) */
+@media (min-resolution: 1.5dppx) {
+    .retina-only {
+        display: block;
+    }
+
+    .hidden-retina {
+        display: none !important;
+    }
+
+    /* Retina-optimized graphics */
+    .waveform-canvas {
+        image-rendering: -webkit-optimize-contrast;
+        image-rendering: crisp-edges;
+    }
+
+    /* Sharper text rendering */
+    .heading,
+    .body-text {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* Ultra-high resolution */
+@media (min-resolution: 3dppx) {
+    .ultra-retina-only {
+        display: block;
+    }
+
+    /* Ultra-sharp rendering */
+    .precision-graphics {
+        image-rendering: pixelated;
+    }
+}
+
+/* ===================================================================== */
+/* Color Scheme Queries */
+/* ===================================================================== */
+
+/* Light color scheme preference */
+@media (prefers-color-scheme: light) {
+    .light-mode-only {
+        display: block;
+    }
+
+    .hidden-light-mode {
+        display: none !important;
+    }
+
+    /* Light mode audio theme */
+    .waveform-light {
+        background: #ffffff;
+        color: #000000;
+    }
+}
+
+/* Dark color scheme preference */
+@media (prefers-color-scheme: dark) {
+    .dark-mode-only {
+        display: block;
+    }
+
+    .hidden-dark-mode {
+        display: none !important;
+    }
+
+    /* Dark mode audio theme */
+    .waveform-dark {
+        background: #1a1a1a;
+        color: #ffffff;
+    }
+}
+
+/* ===================================================================== */
+/* Motion and Animation Queries */
+/* ===================================================================== */
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .motion-safe {
+        display: none !important;
+    }
+
+    .motion-reduce-only {
+        display: block;
+    }
+
+    /* Disable animations */
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    /* Static waveform visualization */
+    .waveform-animation {
+        animation: none !important;
+    }
+
+    .level-meter-animation {
+        transition: none !important;
+    }
+}
+
+/* No motion preference (default) */
+@media (prefers-reduced-motion: no-preference) {
+    .motion-safe {
+        display: block;
+    }
+
+    .motion-reduce-only {
+        display: none !important;
+    }
+
+    /* Enhanced animations */
+    .waveform-smooth {
+        transition: all var(--transition-smooth);
+    }
+
+    .level-meter-bounce {
+        animation: bounce 0.3s ease-out;
+    }
+}
+
+/* ===================================================================== */
+/* Contrast Queries */
+/* ===================================================================== */
+
+/* High contrast preference */
+@media (prefers-contrast: high) {
+    .high-contrast-only {
+        display: block;
+    }
+
+    .hidden-high-contrast {
+        display: none !important;
+    }
+
+    /* High contrast audio interface */
+    .btn,
+    .control {
+        border-width: 2px;
+        border-style: solid;
+    }
+
+    .waveform-high-contrast {
+        filter: contrast(2) brightness(1.2);
+    }
+
+    /* Enhanced borders */
+    .card,
+    .panel {
+        border-width: 3px;
+        border-style: solid;
+    }
+}
+
+/* Low contrast preference */
+@media (prefers-contrast: low) {
+    .low-contrast-only {
+        display: block;
+    }
+
+    .hidden-low-contrast {
+        display: none !important;
+    }
+
+    /* Subtle contrast adjustments */
+    .subtle-borders {
+        border-color: rgba(0, 0, 0, 0.1);
+    }
+
+    .waveform-low-contrast {
+        opacity: 0.8;
+    }
+}
+
+/* ===================================================================== */
+/* Transparency Queries */
+/* ===================================================================== */
+
+/* Reduced transparency preference */
+@media (prefers-reduced-transparency: reduce) {
+    .transparency-safe {
+        display: none !important;
+    }
+
+    .transparency-reduce-only {
+        display: block;
+    }
+
+    /* Remove transparency effects */
+    .modal-backdrop,
+    .overlay {
+        background: var(--color-surface-default) !important;
+        opacity: 1 !important;
+    }
+
+    .glass-effect {
+        backdrop-filter: none !important;
+        background: var(--color-surface-default) !important;
+    }
+}
+
+/* No transparency preference (default) */
+@media (prefers-reduced-transparency: no-preference) {
+    .transparency-safe {
+        display: block;
+    }
+
+    .transparency-reduce-only {
+        display: none !important;
+    }
+}
+
+/* ===================================================================== */
+/* Data Usage Queries */
+/* ===================================================================== */
+
+/* Reduced data preference */
+@media (prefers-reduced-data: reduce) {
+    .data-heavy {
+        display: none !important;
+    }
+
+    .data-light-only {
+        display: block;
+    }
+
+    /* Optimize for low data usage */
+    .high-res-waveform {
+        display: none !important;
+    }
+
+    .low-res-waveform {
+        display: block;
+    }
+
+    /* Reduce image quality */
+    img {
+        filter: blur(0.5px) contrast(0.8);
+    }
+}
+
+/* No data preference (default) */
+@media (prefers-reduced-data: no-preference) {
+    .data-heavy {
+        display: block;
+    }
+
+    .data-light-only {
+        display: none !important;
+    }
+}
+
+/* ===================================================================== */
+/* Audio-Specific Media Queries */
+/* ===================================================================== */
+
+/* Audio interface breakpoints */
+@media (max-width: 600px) {
+    .audio-compact-mode {
+        --waveform-height: 60px;
+        --control-size: 32px;
+        --transport-gap: var(--spacing-1);
+    }
+}
+
+@media (min-width: 601px) and (max-width: 900px) {
+    .audio-standard-mode {
+        --waveform-height: 100px;
+        --control-size: 40px;
+        --transport-gap: var(--spacing-2);
+    }
+}
+
+@media (min-width: 901px) and (max-width: 1200px) {
+    .audio-expanded-mode {
+        --waveform-height: 150px;
+        --control-size: 48px;
+        --transport-gap: var(--spacing-3);
+    }
+}
+
+@media (min-width: 1201px) {
+    .audio-professional-mode {
+        --waveform-height: 200px;
+        --control-size: 56px;
+        --transport-gap: var(--spacing-4);
+    }
+}
+
+/* Combined audio queries */
+@media (max-width: 640px) and (orientation: portrait) {
+    .audio-mobile-portrait {
+        flex-direction: column;
+        gap: var(--spacing-2);
+    }
+
+    .waveform-mobile-portrait {
+        height: 80px;
+        order: 1;
+    }
+
+    .controls-mobile-portrait {
+        order: 2;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .timeline-mobile-portrait {
+        order: 3;
+        width: 100%;
+    }
+}
+
+@media (max-width: 640px) and (orientation: landscape) {
+    .audio-mobile-landscape {
+        flex-direction: row;
+        gap: var(--spacing-3);
+    }
+
+    .waveform-mobile-landscape {
+        height: 60px;
+        flex: 1;
+    }
+
+    .controls-mobile-landscape {
+        flex-shrink: 0;
+        flex-direction: column;
+        width: 200px;
+    }
+}
+
+/* ===================================================================== */
+/* Print Media Queries */
+/* ===================================================================== */
+
+@media print {
+    .print-hidden {
+        display: none !important;
+    }
+
+    .print-only {
+        display: block !important;
+    }
+
+    /* Audio interface for print */
+    .audio-print {
+        background: white !important;
+        color: black !important;
+        box-shadow: none !important;
+    }
+
+    .waveform-print {
+        border: 2px solid black;
+        background: white;
+        filter: grayscale(1) contrast(2);
+    }
+
+    /* Remove interactive elements */
+    .btn,
+    .control,
+    .slider {
+        display: none !important;
+    }
+
+    /* Show static information */
+    .audio-info-print {
+        display: block !important;
+        font-size: 12pt;
+        line-height: 1.4;
+    }
+}
+
+/* Color print */
+@media print and (color) {
+    .color-print-only {
+        display: block;
+    }
+
+    .waveform-print {
+        filter: contrast(1.5);
+    }
+}
+
+/* Monochrome print */
+@media print and (monochrome) {
+    .monochrome-print-only {
+        display: block;
+    }
+
+    .waveform-print {
+        filter: grayscale(1) contrast(2);
+    }
+}
+
+/* ===================================================================== */
+/* Combined Complex Queries */
+/* ===================================================================== */
+
+/* Small touch devices in portrait */
+@media (max-width: 640px) and (orientation: portrait) and (pointer: coarse) {
+    .mobile-touch-portrait {
+        display: block;
+    }
+
+    /* Optimized for mobile touch */
+    .touch-audio-controls {
+        min-height: 56px;
+        font-size: 1.1rem;
+        gap: var(--spacing-3);
+    }
+}
+
+/* Large screens with fine pointer and hover */
+@media (min-width: 1200px) and (pointer: fine) and (hover: hover) {
+    .desktop-enhanced {
+        display: block;
+    }
+
+    /* Enhanced desktop interactions */
+    .waveform-desktop-hover:hover {
+        cursor: crosshair;
+    }
+
+    .precision-controls {
+        min-width: 24px;
+        min-height: 24px;
+    }
+}
+
+/* High contrast, reduced motion */
+@media (prefers-contrast: high) and (prefers-reduced-motion: reduce) {
+    .accessible-static {
+        display: block;
+    }
+
+    /* Accessible static interface */
+    .static-waveform {
+        border: 3px solid;
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* Dark mode with high resolution */
+@media (prefers-color-scheme: dark) and (min-resolution: 2dppx) {
+    .dark-retina {
+        display: block;
+    }
+
+    /* Sharp dark mode graphics */
+    .waveform-dark-retina {
+        filter: brightness(1.1) contrast(1.2);
+        image-rendering: -webkit-optimize-contrast;
+    }
+}
+
+/* ===================================================================== */
+/* Future-Proofing Queries */
+/* ===================================================================== */
+
+/* Folding screens */
+@media (min-width: 600px) and (max-width: 900px) and (orientation: landscape) {
+    .foldable-landscape {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-4);
+    }
+}
+
+/* Environment queries (when supported) */
+@supports (environment-blending: additive) {
+    .ar-ready {
+        background: transparent;
+        backdrop-filter: blur(10px);
+    }
+}
+
+/* Container queries fallback */
+@supports not (container-type: inline-size) {
+    .container-query-fallback {
+        display: block;
+    }
+}

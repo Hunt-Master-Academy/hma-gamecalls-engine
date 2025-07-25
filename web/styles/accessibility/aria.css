@@ -1,0 +1,629 @@
+/**
+ * ARIA Component Styles
+ *
+ * Styling for ARIA states, properties, and interactive patterns.
+ * Provides visual feedback for ARIA attributes and accessibility states.
+ *
+ * @module accessibility/aria
+ * @version 1.0.0
+ * @author Huntmaster Engine Team
+ */
+
+/* ===================================================================== */
+/* ARIA State Indicators */
+/* ===================================================================== */
+
+/* Expanded/Collapsed States */
+[aria-expanded="true"] {
+    --expansion-indicator: "▼";
+}
+
+[aria-expanded="false"] {
+    --expansion-indicator: "▶";
+}
+
+[aria-expanded="true"] .expansion-indicator::before,
+[aria-expanded="false"] .expansion-indicator::before {
+    content: var(--expansion-indicator);
+    display: inline-block;
+    margin-right: var(--spacing-2);
+    transition: transform var(--transition-base);
+    color: var(--color-text-secondary);
+    font-size: 0.8em;
+    width: 1em;
+    text-align: center;
+}
+
+/* Selected States */
+[aria-selected="true"] {
+    background-color: var(--color-interactive-primary-subtle);
+    border-color: var(--color-interactive-primary);
+    color: var(--color-interactive-primary);
+    position: relative;
+}
+
+[aria-selected="true"]::before {
+    content: "✓";
+    position: absolute;
+    right: var(--spacing-2);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-interactive-primary);
+    font-weight: var(--font-weight-bold);
+}
+
+[aria-selected="false"] {
+    background-color: transparent;
+    border-color: var(--color-border-default);
+}
+
+/* Checked States */
+[aria-checked="true"] {
+    background-color: var(--color-interactive-primary);
+    border-color: var(--color-interactive-primary);
+    color: var(--color-text-on-primary);
+}
+
+[aria-checked="false"] {
+    background-color: var(--color-surface-default);
+    border-color: var(--color-border-default);
+    color: var(--color-text-default);
+}
+
+[aria-checked="mixed"] {
+    background-color: var(--color-interactive-primary-subtle);
+    border-color: var(--color-interactive-primary);
+    color: var(--color-interactive-primary);
+    position: relative;
+}
+
+[aria-checked="mixed"]::before {
+    content: "−";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: var(--font-weight-bold);
+}
+
+/* Pressed States */
+[aria-pressed="true"] {
+    background-color: var(--color-interactive-primary);
+    border-color: var(--color-interactive-primary);
+    color: var(--color-text-on-primary);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+[aria-pressed="false"] {
+    background-color: var(--color-surface-default);
+    border-color: var(--color-border-default);
+    color: var(--color-text-default);
+}
+
+[aria-pressed="mixed"] {
+    background-color: var(--color-interactive-primary-subtle);
+    border-color: var(--color-interactive-primary);
+    color: var(--color-interactive-primary);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* ===================================================================== */
+/* ARIA Disabled States */
+/* ===================================================================== */
+
+[aria-disabled="true"] {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+    color: var(--color-text-disabled);
+    background-color: var(--color-surface-disabled);
+    border-color: var(--color-border-disabled);
+}
+
+[aria-disabled="true"] * {
+    pointer-events: none;
+}
+
+/* Maintain contrast for disabled elements */
+@media (prefers-contrast: high) {
+    [aria-disabled="true"] {
+        opacity: 0.8;
+        color: var(--color-text-secondary);
+        background-color: var(--color-surface-subtle);
+        border: 2px solid var(--color-border-default);
+    }
+}
+
+/* ===================================================================== */
+/* ARIA Invalid States */
+/* ===================================================================== */
+
+[aria-invalid="true"] {
+    border-color: var(--color-error-500);
+    background-color: var(--color-error-50);
+    color: var(--color-error-700);
+    box-shadow: 0 0 0 2px var(--color-error-200);
+}
+
+[aria-invalid="true"]:focus {
+    border-color: var(--color-error-500);
+    box-shadow: 0 0 0 3px var(--color-error-200);
+    outline: 2px solid var(--color-error-500);
+    outline-offset: 1px;
+}
+
+[aria-invalid="grammar"] {
+    border-color: var(--color-warning-500);
+    background-color: var(--color-warning-50);
+    color: var(--color-warning-700);
+    box-shadow: 0 0 0 2px var(--color-warning-200);
+}
+
+[aria-invalid="spelling"] {
+    border-color: var(--color-info-500);
+    background-color: var(--color-info-50);
+    color: var(--color-info-700);
+    box-shadow: 0 0 0 2px var(--color-info-200);
+}
+
+/* ===================================================================== */
+/* ARIA Required States */
+/* ===================================================================== */
+
+[aria-required="true"] {
+    position: relative;
+}
+
+[aria-required="true"]::after {
+    content: "*";
+    color: var(--color-error-500);
+    font-weight: var(--font-weight-bold);
+    margin-left: var(--spacing-1);
+    font-size: 1.2em;
+    line-height: 1;
+}
+
+/* For labels with required inputs */
+[aria-required="true"]+label::after,
+label[for] [aria-required="true"]~ ::after {
+    content: " (required)";
+    color: var(--color-error-500);
+    font-weight: var(--font-weight-medium);
+    font-size: 0.9em;
+}
+
+/* ===================================================================== */
+/* ARIA Hidden Elements */
+/* ===================================================================== */
+
+[aria-hidden="true"] {
+    display: none !important;
+}
+
+/* Ensure decorative elements don't interfere */
+[aria-hidden="true"][role="presentation"],
+[aria-hidden="true"][role="none"] {
+    display: block !important;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* ===================================================================== */
+/* ARIA Live Regions */
+/* ===================================================================== */
+
+[aria-live="polite"] {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+[aria-live="assertive"] {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+[aria-live="off"] {
+    display: none;
+}
+
+/* Status role styling */
+[role="status"] {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    padding: var(--spacing-2);
+    background-color: var(--color-surface-subtle);
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--color-border-default);
+}
+
+[role="alert"] {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    padding: var(--spacing-2);
+    background-color: var(--color-error-50);
+    border: 2px solid var(--color-error-500);
+    border-radius: var(--border-radius-md);
+    color: var(--color-error-700);
+    font-weight: var(--font-weight-semibold);
+}
+
+/* ===================================================================== */
+/* ARIA Orientation */
+/* ===================================================================== */
+
+[aria-orientation="horizontal"] {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+[aria-orientation="vertical"] {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+/* ===================================================================== */
+/* ARIA Controls and Owns */
+/* ===================================================================== */
+
+[aria-controls] {
+    position: relative;
+    cursor: pointer;
+}
+
+[aria-controls]:hover::after {
+    content: "Controls: " attr(aria-controls);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--color-surface-overlay);
+    color: var(--color-text-on-overlay);
+    padding: var(--spacing-1) var(--spacing-2);
+    border-radius: var(--border-radius-sm);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    z-index: var(--z-index-tooltip);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-base);
+}
+
+[aria-controls]:hover::after {
+    opacity: 1;
+}
+
+/* ===================================================================== */
+/* ARIA Describedby and Labelledby */
+/* ===================================================================== */
+
+[aria-describedby] {
+    position: relative;
+}
+
+[aria-labelledby] {
+    position: relative;
+}
+
+/* Visual connection indicators */
+[aria-describedby]:focus+[id],
+[aria-labelledby]:focus+[id] {
+    outline: 2px dashed var(--color-interactive-primary);
+    outline-offset: 2px;
+    background-color: var(--color-interactive-primary-subtle);
+}
+
+/* ===================================================================== */
+/* ARIA Modal and Dialog */
+/* ===================================================================== */
+
+[aria-modal="true"] {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: var(--z-index-modal);
+    background-color: var(--color-surface-default);
+    border: 2px solid var(--color-border-strong);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-xl);
+    padding: var(--spacing-6);
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+}
+
+[role="dialog"] {
+    border: 2px solid var(--color-border-strong);
+    background-color: var(--color-surface-default);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-4);
+}
+
+[role="alertdialog"] {
+    border: 3px solid var(--color-error-500);
+    background-color: var(--color-error-50);
+    color: var(--color-error-700);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-4);
+}
+
+/* ===================================================================== */
+/* ARIA Menu and Navigation */
+/* ===================================================================== */
+
+[role="menu"] {
+    background-color: var(--color-surface-default);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: var(--spacing-2) 0;
+    min-width: 200px;
+}
+
+[role="menuitem"] {
+    padding: var(--spacing-2) var(--spacing-4);
+    cursor: pointer;
+    transition: background-color var(--transition-base);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-2);
+}
+
+[role="menuitem"]:hover,
+[role="menuitem"]:focus {
+    background-color: var(--color-interactive-primary-subtle);
+    color: var(--color-interactive-primary);
+    outline: none;
+}
+
+[role="menuitem"][aria-disabled="true"] {
+    color: var(--color-text-disabled);
+    background-color: transparent;
+    cursor: not-allowed;
+}
+
+[role="menuitemcheckbox"],
+[role="menuitemradio"] {
+    padding-left: var(--spacing-8);
+    position: relative;
+}
+
+[role="menuitemcheckbox"][aria-checked="true"]::before,
+[role="menuitemradio"][aria-checked="true"]::before {
+    content: "✓";
+    position: absolute;
+    left: var(--spacing-4);
+    color: var(--color-interactive-primary);
+    font-weight: var(--font-weight-bold);
+}
+
+/* ===================================================================== */
+/* ARIA Tabs */
+/* ===================================================================== */
+
+[role="tablist"] {
+    display: flex;
+    border-bottom: 2px solid var(--color-border-default);
+    background-color: var(--color-surface-subtle);
+}
+
+[role="tab"] {
+    padding: var(--spacing-3) var(--spacing-4);
+    cursor: pointer;
+    border: none;
+    background-color: transparent;
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-medium);
+    transition: all var(--transition-base);
+    position: relative;
+    border-bottom: 2px solid transparent;
+}
+
+[role="tab"]:hover {
+    background-color: var(--color-surface-hover);
+    color: var(--color-text-default);
+}
+
+[role="tab"][aria-selected="true"] {
+    color: var(--color-interactive-primary);
+    background-color: var(--color-surface-default);
+    border-bottom-color: var(--color-interactive-primary);
+    font-weight: var(--font-weight-semibold);
+}
+
+[role="tabpanel"] {
+    padding: var(--spacing-4);
+    background-color: var(--color-surface-default);
+    border: 1px solid var(--color-border-default);
+    border-top: none;
+    border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+}
+
+[role="tabpanel"][aria-hidden="true"] {
+    display: none;
+}
+
+/* ===================================================================== */
+/* ARIA Progress and Meter */
+/* ===================================================================== */
+
+[role="progressbar"] {
+    background-color: var(--color-surface-subtle);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--border-radius-full);
+    height: 8px;
+    overflow: hidden;
+    position: relative;
+}
+
+[role="progressbar"]::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background-color: var(--color-interactive-primary);
+    border-radius: inherit;
+    transition: width var(--transition-base);
+    width: calc(var(--value, 0) * 1%);
+}
+
+[role="progressbar"][aria-valuenow]::before {
+    width: calc(var(--aria-valuenow, 0) / var(--aria-valuemax, 100) * 100%);
+}
+
+/* Indeterminate progress */
+[role="progressbar"]:not([aria-valuenow])::before {
+    width: 30%;
+    animation: progress-slide 2s infinite ease-in-out;
+}
+
+@keyframes progress-slide {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    50% {
+        transform: translateX(250%);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+/* ===================================================================== */
+/* ARIA Sliders */
+/* ===================================================================== */
+
+[role="slider"] {
+    position: relative;
+    background-color: var(--color-surface-subtle);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--border-radius-full);
+    height: 6px;
+    cursor: pointer;
+}
+
+[role="slider"]::before {
+    content: "";
+    position: absolute;
+    top: -6px;
+    left: calc(var(--value, 0) * 1% - 6px);
+    width: 18px;
+    height: 18px;
+    background-color: var(--color-interactive-primary);
+    border: 2px solid var(--color-surface-default);
+    border-radius: 50%;
+    box-shadow: var(--shadow-sm);
+    transition: all var(--transition-base);
+}
+
+[role="slider"]:focus::before {
+    box-shadow: 0 0 0 3px var(--color-interactive-primary-subtle);
+    transform: scale(1.1);
+}
+
+[role="slider"]:hover::before {
+    transform: scale(1.05);
+    box-shadow: var(--shadow-md);
+}
+
+/* ===================================================================== */
+/* High Contrast Mode Adjustments */
+/* ===================================================================== */
+
+@media (prefers-contrast: high) {
+
+    [aria-selected="true"],
+    [aria-checked="true"],
+    [aria-pressed="true"] {
+        border-width: 3px;
+        border-style: solid;
+    }
+
+    [aria-invalid="true"] {
+        border-width: 3px;
+        border-style: solid;
+        box-shadow: none;
+    }
+
+    [role="tab"][aria-selected="true"] {
+        border-bottom-width: 4px;
+    }
+
+    [role="progressbar"]::before,
+    [role="slider"]::before {
+        border-width: 2px;
+        border-style: solid;
+        border-color: var(--color-surface-default);
+    }
+}
+
+/* ===================================================================== */
+/* ARIA Debug Mode */
+/* ===================================================================== */
+
+/* Debug mode to visualize ARIA attributes */
+.aria-debug [aria-expanded]::after {
+    content: " [expanded: " attr(aria-expanded) "]";
+    color: #0066cc;
+    font-size: 0.75em;
+    font-weight: normal;
+}
+
+.aria-debug [aria-selected]::after {
+    content: " [selected: " attr(aria-selected) "]";
+    color: #0066cc;
+    font-size: 0.75em;
+    font-weight: normal;
+}
+
+.aria-debug [aria-checked]::after {
+    content: " [checked: " attr(aria-checked) "]";
+    color: #0066cc;
+    font-size: 0.75em;
+    font-weight: normal;
+}
+
+.aria-debug [aria-pressed]::after {
+    content: " [pressed: " attr(aria-pressed) "]";
+    color: #0066cc;
+    font-size: 0.75em;
+    font-weight: normal;
+}
+
+.aria-debug [aria-disabled]::after {
+    content: " [disabled: " attr(aria-disabled) "]";
+    color: #cc6600;
+    font-size: 0.75em;
+    font-weight: normal;
+}
+
+.aria-debug [aria-invalid]::after {
+    content: " [invalid: " attr(aria-invalid) "]";
+    color: #cc0000;
+    font-size: 0.75em;
+    font-weight: normal;
+}
+
+.aria-debug [aria-required]::after {
+    content: " [required: " attr(aria-required) "]";
+    color: #cc0000;
+    font-size: 0.75em;
+    font-weight: normal;
+}

@@ -1,0 +1,912 @@
+/**
+ * Transitions
+ *
+ * Comprehensive transition utilities and easing functions
+ * for smooth interactions and state changes.
+ *
+ * @module themes/transitions
+ * @version 1.0.0
+ * @author Huntmaster Engine Team
+ */
+
+/* ===================================================================== */
+/* Transition Custom Properties */
+/* ===================================================================== */
+
+:root {
+    /* Transition durations */
+    --transition-duration-75: 75ms;
+    --transition-duration-100: 100ms;
+    --transition-duration-150: 150ms;
+    --transition-duration-200: 200ms;
+    --transition-duration-300: 300ms;
+    --transition-duration-500: 500ms;
+    --transition-duration-700: 700ms;
+    --transition-duration-1000: 1000ms;
+
+    /* Easing functions */
+    --transition-ease-linear: linear;
+    --transition-ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --transition-ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --transition-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Custom easing curves */
+    --transition-ease-back-in: cubic-bezier(0.6, -0.28, 0.735, 0.045);
+    --transition-ease-back-out: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --transition-ease-back-in-out: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    --transition-ease-circ-in: cubic-bezier(0.6, 0.04, 0.98, 0.335);
+    --transition-ease-circ-out: cubic-bezier(0.075, 0.82, 0.165, 1);
+    --transition-ease-circ-in-out: cubic-bezier(0.785, 0.135, 0.15, 0.86);
+
+    --transition-ease-expo-in: cubic-bezier(0.95, 0.05, 0.795, 0.035);
+    --transition-ease-expo-out: cubic-bezier(0.19, 1, 0.22, 1);
+    --transition-ease-expo-in-out: cubic-bezier(1, 0, 0, 1);
+
+    --transition-ease-sine-in: cubic-bezier(0.47, 0, 0.745, 0.715);
+    --transition-ease-sine-out: cubic-bezier(0.39, 0.575, 0.565, 1);
+    --transition-ease-sine-in-out: cubic-bezier(0.445, 0.05, 0.55, 0.95);
+
+    --transition-ease-quad-in: cubic-bezier(0.55, 0.085, 0.68, 0.53);
+    --transition-ease-quad-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-ease-quad-in-out: cubic-bezier(0.455, 0.03, 0.515, 0.955);
+
+    --transition-ease-cubic-in: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+    --transition-ease-cubic-out: cubic-bezier(0.215, 0.61, 0.355, 1);
+    --transition-ease-cubic-in-out: cubic-bezier(0.645, 0.045, 0.355, 1);
+
+    --transition-ease-quart-in: cubic-bezier(0.895, 0.03, 0.685, 0.22);
+    --transition-ease-quart-out: cubic-bezier(0.165, 0.84, 0.44, 1);
+    --transition-ease-quart-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+    --transition-ease-quint-in: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+    --transition-ease-quint-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --transition-ease-quint-in-out: cubic-bezier(0.86, 0, 0.07, 1);
+
+    /* Bounce easing */
+    --transition-ease-bounce-in: cubic-bezier(0.8, 0, 1, 1);
+    --transition-ease-bounce-out: cubic-bezier(0, 0, 0.2, 1);
+    --transition-ease-bounce-in-out: cubic-bezier(0.8, 0, 0.2, 1);
+
+    /* Elastic easing */
+    --transition-ease-elastic-in: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    --transition-ease-elastic-out: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    --transition-ease-elastic-in-out: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* Common transition combinations */
+    --transition-all: all var(--transition-duration-150) var(--transition-ease-in-out);
+    --transition-all-fast: all var(--transition-duration-100) var(--transition-ease-out);
+    --transition-all-slow: all var(--transition-duration-300) var(--transition-ease-in-out);
+
+    --transition-colors: color var(--transition-duration-150) var(--transition-ease-in-out),
+        background-color var(--transition-duration-150) var(--transition-ease-in-out),
+        border-color var(--transition-duration-150) var(--transition-ease-in-out);
+
+    --transition-opacity: opacity var(--transition-duration-150) var(--transition-ease-in-out);
+    --transition-shadow: box-shadow var(--transition-duration-150) var(--transition-ease-in-out);
+    --transition-transform: transform var(--transition-duration-150) var(--transition-ease-in-out);
+}
+
+/* ===================================================================== */
+/* Duration Utility Classes */
+/* ===================================================================== */
+
+.transition-none {
+    transition: none !important;
+}
+
+.transition-all {
+    transition: var(--transition-all) !important;
+}
+
+.transition-all-fast {
+    transition: var(--transition-all-fast) !important;
+}
+
+.transition-all-slow {
+    transition: var(--transition-all-slow) !important;
+}
+
+.transition-colors {
+    transition: var(--transition-colors) !important;
+}
+
+.transition-opacity {
+    transition: var(--transition-opacity) !important;
+}
+
+.transition-shadow {
+    transition: var(--transition-shadow) !important;
+}
+
+.transition-transform {
+    transition: var(--transition-transform) !important;
+}
+
+/* Duration utilities */
+.duration-75 {
+    transition-duration: var(--transition-duration-75) !important;
+}
+
+.duration-100 {
+    transition-duration: var(--transition-duration-100) !important;
+}
+
+.duration-150 {
+    transition-duration: var(--transition-duration-150) !important;
+}
+
+.duration-200 {
+    transition-duration: var(--transition-duration-200) !important;
+}
+
+.duration-300 {
+    transition-duration: var(--transition-duration-300) !important;
+}
+
+.duration-500 {
+    transition-duration: var(--transition-duration-500) !important;
+}
+
+.duration-700 {
+    transition-duration: var(--transition-duration-700) !important;
+}
+
+.duration-1000 {
+    transition-duration: var(--transition-duration-1000) !important;
+}
+
+/* ===================================================================== */
+/* Easing Utility Classes */
+/* ===================================================================== */
+
+/* Basic easing */
+.ease-linear {
+    transition-timing-function: var(--transition-ease-linear) !important;
+}
+
+.ease-in {
+    transition-timing-function: var(--transition-ease-in) !important;
+}
+
+.ease-out {
+    transition-timing-function: var(--transition-ease-out) !important;
+}
+
+.ease-in-out {
+    transition-timing-function: var(--transition-ease-in-out) !important;
+}
+
+/* Back easing */
+.ease-back-in {
+    transition-timing-function: var(--transition-ease-back-in) !important;
+}
+
+.ease-back-out {
+    transition-timing-function: var(--transition-ease-back-out) !important;
+}
+
+.ease-back-in-out {
+    transition-timing-function: var(--transition-ease-back-in-out) !important;
+}
+
+/* Circular easing */
+.ease-circ-in {
+    transition-timing-function: var(--transition-ease-circ-in) !important;
+}
+
+.ease-circ-out {
+    transition-timing-function: var(--transition-ease-circ-out) !important;
+}
+
+.ease-circ-in-out {
+    transition-timing-function: var(--transition-ease-circ-in-out) !important;
+}
+
+/* Exponential easing */
+.ease-expo-in {
+    transition-timing-function: var(--transition-ease-expo-in) !important;
+}
+
+.ease-expo-out {
+    transition-timing-function: var(--transition-ease-expo-out) !important;
+}
+
+.ease-expo-in-out {
+    transition-timing-function: var(--transition-ease-expo-in-out) !important;
+}
+
+/* Sine easing */
+.ease-sine-in {
+    transition-timing-function: var(--transition-ease-sine-in) !important;
+}
+
+.ease-sine-out {
+    transition-timing-function: var(--transition-ease-sine-out) !important;
+}
+
+.ease-sine-in-out {
+    transition-timing-function: var(--transition-ease-sine-in-out) !important;
+}
+
+/* Quadratic easing */
+.ease-quad-in {
+    transition-timing-function: var(--transition-ease-quad-in) !important;
+}
+
+.ease-quad-out {
+    transition-timing-function: var(--transition-ease-quad-out) !important;
+}
+
+.ease-quad-in-out {
+    transition-timing-function: var(--transition-ease-quad-in-out) !important;
+}
+
+/* Cubic easing */
+.ease-cubic-in {
+    transition-timing-function: var(--transition-ease-cubic-in) !important;
+}
+
+.ease-cubic-out {
+    transition-timing-function: var(--transition-ease-cubic-out) !important;
+}
+
+.ease-cubic-in-out {
+    transition-timing-function: var(--transition-ease-cubic-in-out) !important;
+}
+
+/* Quartic easing */
+.ease-quart-in {
+    transition-timing-function: var(--transition-ease-quart-in) !important;
+}
+
+.ease-quart-out {
+    transition-timing-function: var(--transition-ease-quart-out) !important;
+}
+
+.ease-quart-in-out {
+    transition-timing-function: var(--transition-ease-quart-in-out) !important;
+}
+
+/* Quintic easing */
+.ease-quint-in {
+    transition-timing-function: var(--transition-ease-quint-in) !important;
+}
+
+.ease-quint-out {
+    transition-timing-function: var(--transition-ease-quint-out) !important;
+}
+
+.ease-quint-in-out {
+    transition-timing-function: var(--transition-ease-quint-in-out) !important;
+}
+
+/* Bounce easing */
+.ease-bounce-in {
+    transition-timing-function: var(--transition-ease-bounce-in) !important;
+}
+
+.ease-bounce-out {
+    transition-timing-function: var(--transition-ease-bounce-out) !important;
+}
+
+.ease-bounce-in-out {
+    transition-timing-function: var(--transition-ease-bounce-in-out) !important;
+}
+
+/* Elastic easing */
+.ease-elastic-in {
+    transition-timing-function: var(--transition-ease-elastic-in) !important;
+}
+
+.ease-elastic-out {
+    transition-timing-function: var(--transition-ease-elastic-out) !important;
+}
+
+.ease-elastic-in-out {
+    transition-timing-function: var(--transition-ease-elastic-in-out) !important;
+}
+
+/* ===================================================================== */
+/* Delay Utility Classes */
+/* ===================================================================== */
+
+.delay-0 {
+    transition-delay: 0ms !important;
+}
+
+.delay-75 {
+    transition-delay: 75ms !important;
+}
+
+.delay-100 {
+    transition-delay: 100ms !important;
+}
+
+.delay-150 {
+    transition-delay: 150ms !important;
+}
+
+.delay-200 {
+    transition-delay: 200ms !important;
+}
+
+.delay-300 {
+    transition-delay: 300ms !important;
+}
+
+.delay-500 {
+    transition-delay: 500ms !important;
+}
+
+.delay-700 {
+    transition-delay: 700ms !important;
+}
+
+.delay-1000 {
+    transition-delay: 1000ms !important;
+}
+
+/* ===================================================================== */
+/* Property-Specific Transition Classes */
+/* ===================================================================== */
+
+/* Transform transitions */
+.transition-transform {
+    transition-property: transform;
+    transition-timing-function: var(--transition-ease-in-out);
+    transition-duration: var(--transition-duration-150);
+}
+
+.transition-transform-gpu {
+    transition-property: transform;
+    transition-timing-function: var(--transition-ease-in-out);
+    transition-duration: var(--transition-duration-150);
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* Opacity transitions */
+.transition-opacity {
+    transition-property: opacity;
+    transition-timing-function: var(--transition-ease-in-out);
+    transition-duration: var(--transition-duration-150);
+}
+
+/* Color transitions */
+.transition-colors {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: var(--transition-ease-in-out);
+    transition-duration: var(--transition-duration-150);
+}
+
+/* Shadow transitions */
+.transition-shadow {
+    transition-property: box-shadow;
+    transition-timing-function: var(--transition-ease-in-out);
+    transition-duration: var(--transition-duration-150);
+}
+
+/* Size transitions */
+.transition-size {
+    transition-property: width, height;
+    transition-timing-function: var(--transition-ease-in-out);
+    transition-duration: var(--transition-duration-150);
+}
+
+/* Spacing transitions */
+.transition-spacing {
+    transition-property: margin, padding;
+    transition-timing-function: var(--transition-ease-in-out);
+    transition-duration: var(--transition-duration-150);
+}
+
+/* ===================================================================== */
+/* Audio-Specific Transitions */
+/* ===================================================================== */
+
+/* Volume transitions */
+.transition-volume {
+    transition: opacity var(--transition-duration-200) var(--transition-ease-out),
+        transform var(--transition-duration-200) var(--transition-ease-out);
+}
+
+.volume-fade-in {
+    opacity: 0;
+    transform: scaleY(0);
+    transition: opacity var(--transition-duration-300) var(--transition-ease-out),
+        transform var(--transition-duration-300) var(--transition-ease-back-out);
+}
+
+.volume-fade-in.active {
+    opacity: 1;
+    transform: scaleY(1);
+}
+
+/* Waveform transitions */
+.transition-waveform {
+    transition: height var(--transition-duration-100) var(--transition-ease-out),
+        background-color var(--transition-duration-150) var(--transition-ease-in-out);
+}
+
+/* Progress transitions */
+.transition-progress {
+    transition: width var(--transition-duration-200) var(--transition-ease-out);
+}
+
+.transition-progress-smooth {
+    transition: width var(--transition-duration-100) linear;
+}
+
+/* Audio control transitions */
+.transition-audio-control {
+    transition: all var(--transition-duration-150) var(--transition-ease-out);
+}
+
+.transition-audio-control:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.transition-audio-control:active {
+    transform: scale(0.95);
+    transition-duration: var(--transition-duration-75);
+}
+
+/* Recording indicator transitions */
+.transition-recording {
+    transition: all var(--transition-duration-200) var(--transition-ease-in-out);
+}
+
+.recording-idle {
+    opacity: 0.5;
+    transform: scale(1);
+    background-color: var(--color-text-muted);
+}
+
+.recording-active {
+    opacity: 1;
+    transform: scale(1.1);
+    background-color: var(--color-error-500);
+    box-shadow: 0 0 20px rgba(var(--color-error-500), 0.4);
+}
+
+/* ===================================================================== */
+/* Interactive Transition Classes */
+/* ===================================================================== */
+
+/* Button transitions */
+.btn-transition {
+    transition: all var(--transition-duration-150) var(--transition-ease-out);
+}
+
+.btn-transition:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-transition:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition-duration: var(--transition-duration-75);
+}
+
+/* Card transitions */
+.card-transition {
+    transition: all var(--transition-duration-200) var(--transition-ease-out);
+}
+
+.card-transition:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Link transitions */
+.link-transition {
+    transition: color var(--transition-duration-150) var(--transition-ease-out);
+}
+
+.link-transition:hover {
+    color: var(--color-primary-600);
+}
+
+/* Input transitions */
+.input-transition {
+    transition: all var(--transition-duration-150) var(--transition-ease-out);
+}
+
+.input-transition:focus {
+    border-color: var(--color-primary-500);
+    box-shadow: 0 0 0 3px rgba(var(--color-primary-500), 0.1);
+}
+
+/* Tab transitions */
+.tab-transition {
+    transition: all var(--transition-duration-200) var(--transition-ease-out);
+}
+
+.tab-transition.active {
+    color: var(--color-primary-600);
+    border-bottom-color: var(--color-primary-500);
+}
+
+/* Modal transitions */
+.modal-backdrop-transition {
+    transition: opacity var(--transition-duration-200) var(--transition-ease-out);
+}
+
+.modal-content-transition {
+    transition: all var(--transition-duration-200) var(--transition-ease-back-out);
+}
+
+.modal-enter {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+}
+
+.modal-enter-active {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+.modal-exit {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+.modal-exit-active {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+}
+
+/* ===================================================================== */
+/* Loading State Transitions */
+/* ===================================================================== */
+
+.loading-transition {
+    transition: opacity var(--transition-duration-200) var(--transition-ease-in-out);
+}
+
+.loading-enter {
+    opacity: 0;
+}
+
+.loading-enter-active {
+    opacity: 1;
+}
+
+.loading-exit {
+    opacity: 1;
+}
+
+.loading-exit-active {
+    opacity: 0;
+}
+
+/* Skeleton loading transitions */
+.skeleton-transition {
+    transition: opacity var(--transition-duration-300) var(--transition-ease-out);
+}
+
+.skeleton-transition.loaded {
+    opacity: 0;
+}
+
+/* ===================================================================== */
+/* Page Transition Classes */
+/* ===================================================================== */
+
+.page-transition {
+    transition: all var(--transition-duration-300) var(--transition-ease-in-out);
+}
+
+.page-enter {
+    opacity: 0;
+    transform: translateX(20px);
+}
+
+.page-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.page-exit {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.page-exit-active {
+    opacity: 0;
+    transform: translateX(-20px);
+}
+
+/* Fade page transitions */
+.page-fade-transition {
+    transition: opacity var(--transition-duration-300) var(--transition-ease-in-out);
+}
+
+.page-fade-enter {
+    opacity: 0;
+}
+
+.page-fade-enter-active {
+    opacity: 1;
+}
+
+.page-fade-exit {
+    opacity: 1;
+}
+
+.page-fade-exit-active {
+    opacity: 0;
+}
+
+/* Slide page transitions */
+.page-slide-transition {
+    transition: transform var(--transition-duration-300) var(--transition-ease-in-out);
+}
+
+.page-slide-enter {
+    transform: translateX(100%);
+}
+
+.page-slide-enter-active {
+    transform: translateX(0);
+}
+
+.page-slide-exit {
+    transform: translateX(0);
+}
+
+.page-slide-exit-active {
+    transform: translateX(-100%);
+}
+
+/* ===================================================================== */
+/* Dropdown and Menu Transitions */
+/* ===================================================================== */
+
+.dropdown-transition {
+    transition: all var(--transition-duration-200) var(--transition-ease-out);
+    transform-origin: top;
+}
+
+.dropdown-enter {
+    opacity: 0;
+    transform: scaleY(0.95) translateY(-5px);
+}
+
+.dropdown-enter-active {
+    opacity: 1;
+    transform: scaleY(1) translateY(0);
+}
+
+.dropdown-exit {
+    opacity: 1;
+    transform: scaleY(1) translateY(0);
+}
+
+.dropdown-exit-active {
+    opacity: 0;
+    transform: scaleY(0.95) translateY(-5px);
+}
+
+/* Menu item transitions */
+.menu-item-transition {
+    transition: all var(--transition-duration-150) var(--transition-ease-out);
+}
+
+.menu-item-transition:hover {
+    background-color: var(--color-bg-hover);
+    padding-left: 1.5rem;
+}
+
+/* ===================================================================== */
+/* Tooltip Transitions */
+/* ===================================================================== */
+
+.tooltip-transition {
+    transition: all var(--transition-duration-150) var(--transition-ease-out);
+}
+
+.tooltip-enter {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.tooltip-enter-active {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.tooltip-exit {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.tooltip-exit-active {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+/* ===================================================================== */
+/* Accordion Transitions */
+/* ===================================================================== */
+
+.accordion-transition {
+    transition: max-height var(--transition-duration-300) var(--transition-ease-in-out),
+        opacity var(--transition-duration-200) var(--transition-ease-out);
+    overflow: hidden;
+}
+
+.accordion-collapsed {
+    max-height: 0;
+    opacity: 0;
+}
+
+.accordion-expanded {
+    max-height: 1000px;
+    /* Adjust based on content */
+    opacity: 1;
+}
+
+/* ===================================================================== */
+/* Staggered Transitions */
+/* ===================================================================== */
+
+.stagger-transition>* {
+    transition: all var(--transition-duration-200) var(--transition-ease-out);
+}
+
+.stagger-transition>*:nth-child(1) {
+    transition-delay: 0ms;
+}
+
+.stagger-transition>*:nth-child(2) {
+    transition-delay: 50ms;
+}
+
+.stagger-transition>*:nth-child(3) {
+    transition-delay: 100ms;
+}
+
+.stagger-transition>*:nth-child(4) {
+    transition-delay: 150ms;
+}
+
+.stagger-transition>*:nth-child(5) {
+    transition-delay: 200ms;
+}
+
+.stagger-transition>*:nth-child(6) {
+    transition-delay: 250ms;
+}
+
+.stagger-transition>*:nth-child(7) {
+    transition-delay: 300ms;
+}
+
+.stagger-transition>*:nth-child(8) {
+    transition-delay: 350ms;
+}
+
+/* ===================================================================== */
+/* Performance Optimizations */
+/* ===================================================================== */
+
+/* GPU acceleration for common transitions */
+.transition-gpu {
+    will-change: transform, opacity;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* Contain layout for better performance */
+.transition-contain {
+    contain: layout style paint;
+}
+
+/* ===================================================================== */
+/* Reduced Motion Support */
+/* ===================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        transition-duration: 0.01ms !important;
+        transition-delay: 0ms !important;
+        animation-duration: 0.01ms !important;
+        animation-delay: 0ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+    }
+
+    /* Keep essential transitions but make them very fast */
+    .transition-opacity,
+    .transition-colors {
+        transition-duration: 0.01ms !important;
+    }
+
+    /* Disable transform transitions entirely */
+    .transition-transform,
+    .transition-transform-gpu,
+    .btn-transition,
+    .card-transition {
+        transition: none !important;
+        transform: none !important;
+    }
+
+    /* Disable page transitions */
+    .page-transition,
+    .page-fade-transition,
+    .page-slide-transition {
+        transition: none !important;
+        transform: none !important;
+        opacity: 1 !important;
+    }
+
+    /* Disable modal transitions */
+    .modal-backdrop-transition,
+    .modal-content-transition {
+        transition: none !important;
+        transform: none !important;
+        opacity: 1 !important;
+    }
+}
+
+/* ===================================================================== */
+/* Print Transitions Override */
+/* ===================================================================== */
+
+@media print {
+
+    *,
+    *::before,
+    *::after {
+        transition: none !important;
+        animation: none !important;
+        transform: none !important;
+    }
+}
+
+/* ===================================================================== */
+/* Dark Mode Transitions */
+/* ===================================================================== */
+
+@media (prefers-color-scheme: dark) {
+    .transition-colors {
+        transition-duration: var(--transition-duration-200);
+    }
+
+    .card-transition:hover {
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-transition:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+}
+
+/* ===================================================================== */
+/* High Contrast Mode Adjustments */
+/* ===================================================================== */
+
+@media (prefers-contrast: high) {
+    .transition-colors {
+        transition-duration: var(--transition-duration-100);
+    }
+
+    .card-transition,
+    .btn-transition {
+        transition: border-color var(--transition-duration-100) var(--transition-ease-out);
+    }
+
+    .card-transition:hover,
+    .btn-transition:hover {
+        border-color: var(--color-primary-500);
+        box-shadow: none;
+        transform: none;
+    }
+}

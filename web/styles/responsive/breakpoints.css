@@ -1,0 +1,642 @@
+/**
+ * Responsive Breakpoints
+ *
+ * Centralized breakpoint system for consistent responsive design.
+ * Provides flexible breakpoint utilities and container queries.
+ *
+ * @module responsive/breakpoints
+ * @version 1.0.0
+ * @author Huntmaster Engine Team
+ */
+
+/* ===================================================================== */
+/* Breakpoint Variables */
+/* ===================================================================== */
+
+:root {
+    /* Primary Breakpoints */
+    --breakpoint-xs: 480px;
+    --breakpoint-sm: 640px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 1024px;
+    --breakpoint-xl: 1280px;
+    --breakpoint-2xl: 1536px;
+    --breakpoint-3xl: 1920px;
+
+    /* Audio-Specific Breakpoints */
+    --breakpoint-audio-compact: 600px;
+    /* Compact audio controls */
+    --breakpoint-audio-standard: 900px;
+    /* Standard audio interface */
+    --breakpoint-audio-expanded: 1200px;
+    /* Expanded audio workspace */
+    --breakpoint-audio-professional: 1600px;
+    /* Professional studio layout */
+
+    /* Container Breakpoints */
+    --container-xs: 100%;
+    --container-sm: 640px;
+    --container-md: 768px;
+    --container-lg: 1024px;
+    --container-xl: 1280px;
+    --container-2xl: 1536px;
+
+    /* Viewport Units */
+    --vw-unit: 1vw;
+    --vh-unit: 1vh;
+    --vmin-unit: 1vmin;
+    --vmax-unit: 1vmax;
+
+    /* Dynamic Spacing Based on Viewport */
+    --spacing-responsive-xs: clamp(0.25rem, 1vw, 0.5rem);
+    --spacing-responsive-sm: clamp(0.5rem, 2vw, 1rem);
+    --spacing-responsive-md: clamp(1rem, 3vw, 2rem);
+    --spacing-responsive-lg: clamp(1.5rem, 4vw, 3rem);
+    --spacing-responsive-xl: clamp(2rem, 5vw, 4rem);
+}
+
+/* ===================================================================== */
+/* Breakpoint Mixins via CSS Custom Properties */
+/* ===================================================================== */
+
+/* Mobile First Approach */
+.responsive-xs {
+    --current-breakpoint: "xs";
+}
+
+@media (min-width: 480px) {
+    .responsive-sm {
+        --current-breakpoint: "sm";
+    }
+}
+
+@media (min-width: 640px) {
+    .responsive-md-start {
+        --current-breakpoint: "md-start";
+    }
+}
+
+@media (min-width: 768px) {
+    .responsive-md {
+        --current-breakpoint: "md";
+    }
+}
+
+@media (min-width: 1024px) {
+    .responsive-lg {
+        --current-breakpoint: "lg";
+    }
+}
+
+@media (min-width: 1280px) {
+    .responsive-xl {
+        --current-breakpoint: "xl";
+    }
+}
+
+@media (min-width: 1536px) {
+    .responsive-2xl {
+        --current-breakpoint: "2xl";
+    }
+}
+
+@media (min-width: 1920px) {
+    .responsive-3xl {
+        --current-breakpoint: "3xl";
+    }
+}
+
+/* ===================================================================== */
+/* Container Queries Support */
+/* ===================================================================== */
+
+/* Container Query Root */
+.container-query {
+    container-type: inline-size;
+    container-name: responsive-container;
+}
+
+/* Container-based breakpoints */
+@container responsive-container (min-width: 320px) {
+    .cq-xs {
+        --container-size: "xs";
+    }
+}
+
+@container responsive-container (min-width: 480px) {
+    .cq-sm {
+        --container-size: "sm";
+    }
+}
+
+@container responsive-container (min-width: 640px) {
+    .cq-md {
+        --container-size: "md";
+    }
+}
+
+@container responsive-container (min-width: 768px) {
+    .cq-lg {
+        --container-size: "lg";
+    }
+}
+
+@container responsive-container (min-width: 1024px) {
+    .cq-xl {
+        --container-size: "xl";
+    }
+}
+
+/* ===================================================================== */
+/* Responsive Utilities */
+/* ===================================================================== */
+
+/* Hide/Show at specific breakpoints */
+.hide-xs {
+    display: none;
+}
+
+.hide-sm {
+    display: none;
+}
+
+.hide-md {
+    display: none;
+}
+
+.hide-lg {
+    display: none;
+}
+
+.hide-xl {
+    display: none;
+}
+
+@media (min-width: 480px) {
+    .hide-xs {
+        display: initial;
+    }
+
+    .show-xs {
+        display: none;
+    }
+}
+
+@media (min-width: 640px) {
+    .hide-sm {
+        display: initial;
+    }
+
+    .show-sm {
+        display: none;
+    }
+}
+
+@media (min-width: 768px) {
+    .hide-md {
+        display: initial;
+    }
+
+    .show-md {
+        display: none;
+    }
+}
+
+@media (min-width: 1024px) {
+    .hide-lg {
+        display: initial;
+    }
+
+    .show-lg {
+        display: none;
+    }
+}
+
+@media (min-width: 1280px) {
+    .hide-xl {
+        display: initial;
+    }
+
+    .show-xl {
+        display: none;
+    }
+}
+
+/* Show only at specific breakpoints */
+.show-xs-only {
+    display: initial;
+}
+
+.show-sm-only {
+    display: none;
+}
+
+.show-md-only {
+    display: none;
+}
+
+.show-lg-only {
+    display: none;
+}
+
+.show-xl-only {
+    display: none;
+}
+
+@media (min-width: 480px) {
+    .show-xs-only {
+        display: none;
+    }
+
+    .show-sm-only {
+        display: initial;
+    }
+}
+
+@media (min-width: 640px) {
+    .show-sm-only {
+        display: none;
+    }
+
+    .show-md-only {
+        display: initial;
+    }
+}
+
+@media (min-width: 768px) {
+    .show-md-only {
+        display: none;
+    }
+
+    .show-lg-only {
+        display: initial;
+    }
+}
+
+@media (min-width: 1024px) {
+    .show-lg-only {
+        display: none;
+    }
+
+    .show-xl-only {
+        display: initial;
+    }
+}
+
+@media (min-width: 1280px) {
+    .show-xl-only {
+        display: none;
+    }
+}
+
+/* ===================================================================== */
+/* Responsive Grid System */
+/* ===================================================================== */
+
+.responsive-grid {
+    display: grid;
+    gap: var(--spacing-responsive-md);
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+/* Responsive grid columns */
+.grid-cols-1 {
+    grid-template-columns: repeat(1, 1fr);
+}
+
+.grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-cols-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+@media (min-width: 640px) {
+    .sm\:grid-cols-1 {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .sm\:grid-cols-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .sm\:grid-cols-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .sm\:grid-cols-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .md\:grid-cols-1 {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .md\:grid-cols-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .md\:grid-cols-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .md\:grid-cols-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .md\:grid-cols-5 {
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    .md\:grid-cols-6 {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .lg\:grid-cols-1 {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .lg\:grid-cols-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .lg\:grid-cols-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .lg\:grid-cols-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .lg\:grid-cols-5 {
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    .lg\:grid-cols-6 {
+        grid-template-columns: repeat(6, 1fr);
+    }
+
+    .lg\:grid-cols-8 {
+        grid-template-columns: repeat(8, 1fr);
+    }
+}
+
+/* ===================================================================== */
+/* Audio-Specific Responsive Breakpoints */
+/* ===================================================================== */
+
+/* Compact Audio Layout */
+@media (max-width: 599px) {
+    .audio-compact {
+        --audio-layout: "compact";
+        --waveform-height: 60px;
+        --controls-size: 32px;
+        --transport-spacing: var(--spacing-2);
+    }
+}
+
+/* Standard Audio Layout */
+@media (min-width: 600px) and (max-width: 899px) {
+    .audio-standard {
+        --audio-layout: "standard";
+        --waveform-height: 80px;
+        --controls-size: 40px;
+        --transport-spacing: var(--spacing-3);
+    }
+}
+
+/* Expanded Audio Layout */
+@media (min-width: 900px) and (max-width: 1199px) {
+    .audio-expanded {
+        --audio-layout: "expanded";
+        --waveform-height: 120px;
+        --controls-size: 48px;
+        --transport-spacing: var(--spacing-4);
+    }
+}
+
+/* Professional Audio Layout */
+@media (min-width: 1200px) {
+    .audio-professional {
+        --audio-layout: "professional";
+        --waveform-height: 160px;
+        --controls-size: 56px;
+        --transport-spacing: var(--spacing-6);
+    }
+}
+
+/* ===================================================================== */
+/* Orientation-Based Responsive Design */
+/* ===================================================================== */
+
+@media (orientation: portrait) {
+    .portrait-stack {
+        flex-direction: column;
+    }
+
+    .portrait-hide {
+        display: none;
+    }
+
+    .portrait-show {
+        display: initial;
+    }
+}
+
+@media (orientation: landscape) {
+    .landscape-row {
+        flex-direction: row;
+    }
+
+    .landscape-hide {
+        display: none;
+    }
+
+    .landscape-show {
+        display: initial;
+    }
+}
+
+/* ===================================================================== */
+/* Aspect Ratio Responsive Design */
+/* ===================================================================== */
+
+/* Wide aspect ratios (typical desktop) */
+@media (min-aspect-ratio: 16/9) {
+    .wide-layout {
+        --layout-mode: "wide";
+        grid-template-columns: 1fr 2fr 1fr;
+    }
+}
+
+/* Square or tall aspect ratios (mobile/tablet) */
+@media (max-aspect-ratio: 4/3) {
+    .tall-layout {
+        --layout-mode: "tall";
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+    }
+}
+
+/* ===================================================================== */
+/* Touch vs Non-Touch Responsive */
+/* ===================================================================== */
+
+/* Touch devices - larger tap targets */
+@media (pointer: coarse) {
+    .touch-optimized {
+        --touch-target-size: 44px;
+        --touch-spacing: var(--spacing-4);
+    }
+
+    .btn,
+    .control,
+    .interactive {
+        min-height: var(--touch-target-size);
+        min-width: var(--touch-target-size);
+        padding: var(--touch-spacing);
+    }
+}
+
+/* Non-touch devices - smaller precise targets */
+@media (pointer: fine) {
+    .precision-optimized {
+        --precision-target-size: 32px;
+        --precision-spacing: var(--spacing-2);
+    }
+
+    .btn,
+    .control,
+    .interactive {
+        min-height: var(--precision-target-size);
+        min-width: var(--precision-target-size);
+        padding: var(--precision-spacing);
+    }
+}
+
+/* ===================================================================== */
+/* Reduced Data Mode */
+/* ===================================================================== */
+
+@media (prefers-reduced-data: reduce) {
+    .data-heavy {
+        display: none;
+    }
+
+    .data-light {
+        display: initial;
+    }
+
+    /* Reduce image quality */
+    img {
+        filter: contrast(0.8) brightness(0.9);
+    }
+
+    /* Minimize animations */
+    * {
+        animation-duration: 0.1s !important;
+        transition-duration: 0.1s !important;
+    }
+}
+
+/* ===================================================================== */
+/* Print-Specific Responsive Design */
+/* ===================================================================== */
+
+@media print {
+    .print-hidden {
+        display: none !important;
+    }
+
+    .print-visible {
+        display: block !important;
+    }
+
+    .responsive-grid {
+        grid-template-columns: 1fr !important;
+        gap: var(--spacing-2) !important;
+    }
+}
+
+/* ===================================================================== */
+/* Responsive Typography Scaling */
+/* ===================================================================== */
+
+.responsive-text {
+    font-size: clamp(0.875rem, 2.5vw, 1.125rem);
+    line-height: clamp(1.4, 1.5, 1.6);
+}
+
+.responsive-heading {
+    font-size: clamp(1.5rem, 5vw, 3rem);
+    line-height: clamp(1.2, 1.3, 1.4);
+}
+
+/* ===================================================================== */
+/* Debug Utilities */
+/* ===================================================================== */
+
+/* Debug current breakpoint */
+.breakpoint-debug::before {
+    position: fixed;
+    top: 0;
+    right: 0;
+    background: var(--color-error-500);
+    color: var(--color-text-on-error);
+    padding: var(--spacing-1) var(--spacing-2);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    z-index: var(--z-index-modal);
+    content: "XS";
+}
+
+@media (min-width: 480px) {
+    .breakpoint-debug::before {
+        content: "SM";
+    }
+}
+
+@media (min-width: 640px) {
+    .breakpoint-debug::before {
+        content: "MD-Start";
+    }
+}
+
+@media (min-width: 768px) {
+    .breakpoint-debug::before {
+        content: "MD";
+    }
+}
+
+@media (min-width: 1024px) {
+    .breakpoint-debug::before {
+        content: "LG";
+    }
+}
+
+@media (min-width: 1280px) {
+    .breakpoint-debug::before {
+        content: "XL";
+    }
+}
+
+@media (min-width: 1536px) {
+    .breakpoint-debug::before {
+        content: "2XL";
+    }
+}
+
+@media (min-width: 1920px) {
+    .breakpoint-debug::before {
+        content: "3XL";
+    }
+}

@@ -1,0 +1,1106 @@
+/**
+ * CSS Grid System
+ *
+ * Comprehensive CSS Grid layout system with responsive capabilities.
+ * Provides flexible grid utilities for complex layouts.
+ *
+ * @module responsive/grid
+ * @version 1.0.0
+ * @author Huntmaster Engine Team
+ */
+
+/* ===================================================================== */
+/* Grid Container Base */
+/* ===================================================================== */
+
+.grid {
+    display: grid;
+    gap: var(--spacing-4);
+}
+
+.grid-dense {
+    display: grid;
+    grid-auto-flow: dense;
+    gap: var(--spacing-4);
+}
+
+.grid-inline {
+    display: inline-grid;
+    gap: var(--spacing-4);
+}
+
+/* ===================================================================== */
+/* Grid Template Columns */
+/* ===================================================================== */
+
+/* Fixed column counts */
+.grid-cols-1 {
+    grid-template-columns: repeat(1, 1fr);
+}
+
+.grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.grid-cols-4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+.grid-cols-5 {
+    grid-template-columns: repeat(5, 1fr);
+}
+
+.grid-cols-6 {
+    grid-template-columns: repeat(6, 1fr);
+}
+
+.grid-cols-7 {
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.grid-cols-8 {
+    grid-template-columns: repeat(8, 1fr);
+}
+
+.grid-cols-9 {
+    grid-template-columns: repeat(9, 1fr);
+}
+
+.grid-cols-10 {
+    grid-template-columns: repeat(10, 1fr);
+}
+
+.grid-cols-11 {
+    grid-template-columns: repeat(11, 1fr);
+}
+
+.grid-cols-12 {
+    grid-template-columns: repeat(12, 1fr);
+}
+
+/* Auto-fit and auto-fill */
+.grid-cols-auto-fit {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.grid-cols-auto-fill {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+/* Responsive auto-fit with different minimum sizes */
+.grid-cols-auto-fit-xs {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.grid-cols-auto-fit-sm {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.grid-cols-auto-fit-md {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+.grid-cols-auto-fit-lg {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.grid-cols-auto-fit-xl {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+}
+
+/* Fractional columns */
+.grid-cols-fr-1-2 {
+    grid-template-columns: 1fr 2fr;
+}
+
+.grid-cols-fr-2-1 {
+    grid-template-columns: 2fr 1fr;
+}
+
+.grid-cols-fr-1-1-2 {
+    grid-template-columns: 1fr 1fr 2fr;
+}
+
+.grid-cols-fr-2-1-1 {
+    grid-template-columns: 2fr 1fr 1fr;
+}
+
+.grid-cols-fr-1-2-1 {
+    grid-template-columns: 1fr 2fr 1fr;
+}
+
+/* Mixed unit columns */
+.grid-cols-sidebar {
+    grid-template-columns: 250px 1fr;
+}
+
+.grid-cols-sidebar-right {
+    grid-template-columns: 1fr 250px;
+}
+
+.grid-cols-dual-sidebar {
+    grid-template-columns: 200px 1fr 200px;
+}
+
+.grid-cols-header-content {
+    grid-template-columns: auto 1fr auto;
+}
+
+/* ===================================================================== */
+/* Grid Template Rows */
+/* ===================================================================== */
+
+/* Fixed row counts */
+.grid-rows-1 {
+    grid-template-rows: repeat(1, 1fr);
+}
+
+.grid-rows-2 {
+    grid-template-rows: repeat(2, 1fr);
+}
+
+.grid-rows-3 {
+    grid-template-rows: repeat(3, 1fr);
+}
+
+.grid-rows-4 {
+    grid-template-rows: repeat(4, 1fr);
+}
+
+.grid-rows-5 {
+    grid-template-rows: repeat(5, 1fr);
+}
+
+.grid-rows-6 {
+    grid-template-rows: repeat(6, 1fr);
+}
+
+/* Auto rows */
+.grid-rows-auto {
+    grid-template-rows: repeat(auto-fit, minmax(100px, auto));
+}
+
+/* Mixed unit rows */
+.grid-rows-header {
+    grid-template-rows: auto 1fr;
+}
+
+.grid-rows-footer {
+    grid-template-rows: 1fr auto;
+}
+
+.grid-rows-header-footer {
+    grid-template-rows: auto 1fr auto;
+}
+
+.grid-rows-min-content {
+    grid-template-rows: min-content 1fr;
+}
+
+.grid-rows-max-content {
+    grid-template-rows: max-content 1fr;
+}
+
+/* ===================================================================== */
+/* Grid Item Positioning */
+/* ===================================================================== */
+
+/* Column span */
+.col-span-1 {
+    grid-column: span 1 / span 1;
+}
+
+.col-span-2 {
+    grid-column: span 2 / span 2;
+}
+
+.col-span-3 {
+    grid-column: span 3 / span 3;
+}
+
+.col-span-4 {
+    grid-column: span 4 / span 4;
+}
+
+.col-span-5 {
+    grid-column: span 5 / span 5;
+}
+
+.col-span-6 {
+    grid-column: span 6 / span 6;
+}
+
+.col-span-7 {
+    grid-column: span 7 / span 7;
+}
+
+.col-span-8 {
+    grid-column: span 8 / span 8;
+}
+
+.col-span-9 {
+    grid-column: span 9 / span 9;
+}
+
+.col-span-10 {
+    grid-column: span 10 / span 10;
+}
+
+.col-span-11 {
+    grid-column: span 11 / span 11;
+}
+
+.col-span-12 {
+    grid-column: span 12 / span 12;
+}
+
+.col-span-full {
+    grid-column: 1 / -1;
+}
+
+/* Row span */
+.row-span-1 {
+    grid-row: span 1 / span 1;
+}
+
+.row-span-2 {
+    grid-row: span 2 / span 2;
+}
+
+.row-span-3 {
+    grid-row: span 3 / span 3;
+}
+
+.row-span-4 {
+    grid-row: span 4 / span 4;
+}
+
+.row-span-5 {
+    grid-row: span 5 / span 5;
+}
+
+.row-span-6 {
+    grid-row: span 6 / span 6;
+}
+
+.row-span-full {
+    grid-row: 1 / -1;
+}
+
+/* Column start/end */
+.col-start-1 {
+    grid-column-start: 1;
+}
+
+.col-start-2 {
+    grid-column-start: 2;
+}
+
+.col-start-3 {
+    grid-column-start: 3;
+}
+
+.col-start-4 {
+    grid-column-start: 4;
+}
+
+.col-start-5 {
+    grid-column-start: 5;
+}
+
+.col-start-6 {
+    grid-column-start: 6;
+}
+
+.col-start-7 {
+    grid-column-start: 7;
+}
+
+.col-start-8 {
+    grid-column-start: 8;
+}
+
+.col-start-9 {
+    grid-column-start: 9;
+}
+
+.col-start-10 {
+    grid-column-start: 10;
+}
+
+.col-start-11 {
+    grid-column-start: 11;
+}
+
+.col-start-12 {
+    grid-column-start: 12;
+}
+
+.col-start-13 {
+    grid-column-start: 13;
+}
+
+.col-start-auto {
+    grid-column-start: auto;
+}
+
+.col-end-1 {
+    grid-column-end: 1;
+}
+
+.col-end-2 {
+    grid-column-end: 2;
+}
+
+.col-end-3 {
+    grid-column-end: 3;
+}
+
+.col-end-4 {
+    grid-column-end: 4;
+}
+
+.col-end-5 {
+    grid-column-end: 5;
+}
+
+.col-end-6 {
+    grid-column-end: 6;
+}
+
+.col-end-7 {
+    grid-column-end: 7;
+}
+
+.col-end-8 {
+    grid-column-end: 8;
+}
+
+.col-end-9 {
+    grid-column-end: 9;
+}
+
+.col-end-10 {
+    grid-column-end: 10;
+}
+
+.col-end-11 {
+    grid-column-end: 11;
+}
+
+.col-end-12 {
+    grid-column-end: 12;
+}
+
+.col-end-13 {
+    grid-column-end: 13;
+}
+
+.col-end-auto {
+    grid-column-end: auto;
+}
+
+/* Row start/end */
+.row-start-1 {
+    grid-row-start: 1;
+}
+
+.row-start-2 {
+    grid-row-start: 2;
+}
+
+.row-start-3 {
+    grid-row-start: 3;
+}
+
+.row-start-4 {
+    grid-row-start: 4;
+}
+
+.row-start-5 {
+    grid-row-start: 5;
+}
+
+.row-start-6 {
+    grid-row-start: 6;
+}
+
+.row-start-7 {
+    grid-row-start: 7;
+}
+
+.row-start-auto {
+    grid-row-start: auto;
+}
+
+.row-end-1 {
+    grid-row-end: 1;
+}
+
+.row-end-2 {
+    grid-row-end: 2;
+}
+
+.row-end-3 {
+    grid-row-end: 3;
+}
+
+.row-end-4 {
+    grid-row-end: 4;
+}
+
+.row-end-5 {
+    grid-row-end: 5;
+}
+
+.row-end-6 {
+    grid-row-end: 6;
+}
+
+.row-end-7 {
+    grid-row-end: 7;
+}
+
+.row-end-auto {
+    grid-row-end: auto;
+}
+
+/* ===================================================================== */
+/* Grid Gaps */
+/* ===================================================================== */
+
+.gap-0 {
+    gap: 0;
+}
+
+.gap-1 {
+    gap: var(--spacing-1);
+}
+
+.gap-2 {
+    gap: var(--spacing-2);
+}
+
+.gap-3 {
+    gap: var(--spacing-3);
+}
+
+.gap-4 {
+    gap: var(--spacing-4);
+}
+
+.gap-5 {
+    gap: var(--spacing-5);
+}
+
+.gap-6 {
+    gap: var(--spacing-6);
+}
+
+.gap-8 {
+    gap: var(--spacing-8);
+}
+
+.gap-10 {
+    gap: var(--spacing-10);
+}
+
+.gap-12 {
+    gap: var(--spacing-12);
+}
+
+.gap-16 {
+    gap: var(--spacing-16);
+}
+
+.gap-20 {
+    gap: var(--spacing-20);
+}
+
+/* Column gaps */
+.gap-x-0 {
+    column-gap: 0;
+}
+
+.gap-x-1 {
+    column-gap: var(--spacing-1);
+}
+
+.gap-x-2 {
+    column-gap: var(--spacing-2);
+}
+
+.gap-x-3 {
+    column-gap: var(--spacing-3);
+}
+
+.gap-x-4 {
+    column-gap: var(--spacing-4);
+}
+
+.gap-x-5 {
+    column-gap: var(--spacing-5);
+}
+
+.gap-x-6 {
+    column-gap: var(--spacing-6);
+}
+
+.gap-x-8 {
+    column-gap: var(--spacing-8);
+}
+
+.gap-x-10 {
+    column-gap: var(--spacing-10);
+}
+
+.gap-x-12 {
+    column-gap: var(--spacing-12);
+}
+
+/* Row gaps */
+.gap-y-0 {
+    row-gap: 0;
+}
+
+.gap-y-1 {
+    row-gap: var(--spacing-1);
+}
+
+.gap-y-2 {
+    row-gap: var(--spacing-2);
+}
+
+.gap-y-3 {
+    row-gap: var(--spacing-3);
+}
+
+.gap-y-4 {
+    row-gap: var(--spacing-4);
+}
+
+.gap-y-5 {
+    row-gap: var(--spacing-5);
+}
+
+.gap-y-6 {
+    row-gap: var(--spacing-6);
+}
+
+.gap-y-8 {
+    row-gap: var(--spacing-8);
+}
+
+.gap-y-10 {
+    row-gap: var(--spacing-10);
+}
+
+.gap-y-12 {
+    row-gap: var(--spacing-12);
+}
+
+/* ===================================================================== */
+/* Grid Auto Flow */
+/* ===================================================================== */
+
+.grid-flow-row {
+    grid-auto-flow: row;
+}
+
+.grid-flow-col {
+    grid-auto-flow: column;
+}
+
+.grid-flow-dense {
+    grid-auto-flow: dense;
+}
+
+.grid-flow-row-dense {
+    grid-auto-flow: row dense;
+}
+
+.grid-flow-col-dense {
+    grid-auto-flow: column dense;
+}
+
+/* ===================================================================== */
+/* Grid Auto Columns/Rows */
+/* ===================================================================== */
+
+.auto-cols-auto {
+    grid-auto-columns: auto;
+}
+
+.auto-cols-min {
+    grid-auto-columns: min-content;
+}
+
+.auto-cols-max {
+    grid-auto-columns: max-content;
+}
+
+.auto-cols-fr {
+    grid-auto-columns: 1fr;
+}
+
+.auto-rows-auto {
+    grid-auto-rows: auto;
+}
+
+.auto-rows-min {
+    grid-auto-rows: min-content;
+}
+
+.auto-rows-max {
+    grid-auto-rows: max-content;
+}
+
+.auto-rows-fr {
+    grid-auto-rows: 1fr;
+}
+
+/* ===================================================================== */
+/* Audio-Specific Grid Layouts */
+/* ===================================================================== */
+
+/* Waveform grid layout */
+.waveform-grid {
+    display: grid;
+    grid-template-areas:
+        "controls waveform timeline"
+        "levels waveform info";
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: auto 1fr;
+    gap: var(--spacing-2);
+    min-height: 200px;
+}
+
+.waveform-controls {
+    grid-area: controls;
+}
+
+.waveform-display {
+    grid-area: waveform;
+}
+
+.waveform-timeline {
+    grid-area: timeline;
+}
+
+.waveform-levels {
+    grid-area: levels;
+}
+
+.waveform-info {
+    grid-area: info;
+}
+
+/* Transport controls grid */
+.transport-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+    gap: var(--spacing-2);
+    justify-items: center;
+    align-items: center;
+}
+
+/* Audio analyzer grid */
+.analyzer-grid {
+    display: grid;
+    grid-template-areas:
+        "spectrum waveform"
+        "controls controls";
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr auto;
+    gap: var(--spacing-4);
+    height: 400px;
+}
+
+.analyzer-spectrum {
+    grid-area: spectrum;
+}
+
+.analyzer-waveform {
+    grid-area: waveform;
+}
+
+.analyzer-controls {
+    grid-area: controls;
+}
+
+/* Recording session grid */
+.recording-grid {
+    display: grid;
+    grid-template-areas:
+        "header header header"
+        "tracks mixer effects"
+        "transport transport transport";
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: auto 1fr auto;
+    gap: var(--spacing-4);
+    min-height: 600px;
+}
+
+.recording-header {
+    grid-area: header;
+}
+
+.recording-tracks {
+    grid-area: tracks;
+}
+
+.recording-mixer {
+    grid-area: mixer;
+}
+
+.recording-effects {
+    grid-area: effects;
+}
+
+.recording-transport {
+    grid-area: transport;
+}
+
+/* ===================================================================== */
+/* Responsive Grid Modifiers */
+/* ===================================================================== */
+
+/* Small screens */
+@media (max-width: 640px) {
+    .sm\:grid-cols-1 {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .sm\:grid-cols-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .sm\:grid-cols-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .sm\:col-span-1 {
+        grid-column: span 1 / span 1;
+    }
+
+    .sm\:col-span-2 {
+        grid-column: span 2 / span 2;
+    }
+
+    .sm\:col-span-full {
+        grid-column: 1 / -1;
+    }
+
+    /* Responsive audio layouts */
+    .waveform-grid {
+        grid-template-areas:
+            "controls"
+            "waveform"
+            "timeline"
+            "levels"
+            "info";
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(5, auto);
+    }
+
+    .analyzer-grid {
+        grid-template-areas:
+            "spectrum"
+            "waveform"
+            "controls";
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(3, auto);
+        height: auto;
+    }
+
+    .recording-grid {
+        grid-template-areas:
+            "header"
+            "tracks"
+            "mixer"
+            "effects"
+            "transport";
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(5, auto);
+        min-height: auto;
+    }
+}
+
+/* Medium screens */
+@media (min-width: 641px) and (max-width: 1024px) {
+    .md\:grid-cols-1 {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .md\:grid-cols-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .md\:grid-cols-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .md\:grid-cols-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .md\:col-span-1 {
+        grid-column: span 1 / span 1;
+    }
+
+    .md\:col-span-2 {
+        grid-column: span 2 / span 2;
+    }
+
+    .md\:col-span-3 {
+        grid-column: span 3 / span 3;
+    }
+
+    .md\:col-span-full {
+        grid-column: 1 / -1;
+    }
+
+    /* Medium screen audio layouts */
+    .analyzer-grid {
+        grid-template-areas:
+            "spectrum waveform"
+            "controls controls";
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr auto;
+    }
+
+    .recording-grid {
+        grid-template-areas:
+            "header header"
+            "tracks mixer"
+            "effects effects"
+            "transport transport";
+        grid-template-columns: 2fr 1fr;
+        grid-template-rows: auto 1fr auto auto;
+    }
+}
+
+/* Large screens */
+@media (min-width: 1025px) {
+    .lg\:grid-cols-1 {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .lg\:grid-cols-2 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .lg\:grid-cols-3 {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .lg\:grid-cols-4 {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .lg\:grid-cols-5 {
+        grid-template-columns: repeat(5, 1fr);
+    }
+
+    .lg\:grid-cols-6 {
+        grid-template-columns: repeat(6, 1fr);
+    }
+
+    .lg\:grid-cols-8 {
+        grid-template-columns: repeat(8, 1fr);
+    }
+
+    .lg\:grid-cols-12 {
+        grid-template-columns: repeat(12, 1fr);
+    }
+
+    .lg\:col-span-1 {
+        grid-column: span 1 / span 1;
+    }
+
+    .lg\:col-span-2 {
+        grid-column: span 2 / span 2;
+    }
+
+    .lg\:col-span-3 {
+        grid-column: span 3 / span 3;
+    }
+
+    .lg\:col-span-4 {
+        grid-column: span 4 / span 4;
+    }
+
+    .lg\:col-span-6 {
+        grid-column: span 6 / span 6;
+    }
+
+    .lg\:col-span-8 {
+        grid-column: span 8 / span 8;
+    }
+
+    .lg\:col-span-full {
+        grid-column: 1 / -1;
+    }
+}
+
+/* ===================================================================== */
+/* Grid Alignment */
+/* ===================================================================== */
+
+/* Justify Items */
+.justify-items-start {
+    justify-items: start;
+}
+
+.justify-items-end {
+    justify-items: end;
+}
+
+.justify-items-center {
+    justify-items: center;
+}
+
+.justify-items-stretch {
+    justify-items: stretch;
+}
+
+/* Align Items */
+.align-items-start {
+    align-items: start;
+}
+
+.align-items-end {
+    align-items: end;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+.align-items-stretch {
+    align-items: stretch;
+}
+
+/* Justify Content */
+.justify-content-start {
+    justify-content: start;
+}
+
+.justify-content-end {
+    justify-content: end;
+}
+
+.justify-content-center {
+    justify-content: center;
+}
+
+.justify-content-between {
+    justify-content: space-between;
+}
+
+.justify-content-around {
+    justify-content: space-around;
+}
+
+.justify-content-evenly {
+    justify-content: space-evenly;
+}
+
+/* Align Content */
+.align-content-start {
+    align-content: start;
+}
+
+.align-content-end {
+    align-content: end;
+}
+
+.align-content-center {
+    align-content: center;
+}
+
+.align-content-between {
+    align-content: space-between;
+}
+
+.align-content-around {
+    align-content: space-around;
+}
+
+.align-content-evenly {
+    align-content: space-evenly;
+}
+
+/* Individual item alignment (justify-self and align-self) */
+.justify-self-start {
+    justify-self: start;
+}
+
+.justify-self-end {
+    justify-self: end;
+}
+
+.justify-self-center {
+    justify-self: center;
+}
+
+.justify-self-stretch {
+    justify-self: stretch;
+}
+
+.align-self-start {
+    align-self: start;
+}
+
+.align-self-end {
+    align-self: end;
+}
+
+.align-self-center {
+    align-self: center;
+}
+
+.align-self-stretch {
+    align-self: stretch;
+}
+
+/* ===================================================================== */
+/* Subgrid Support */
+/* ===================================================================== */
+
+.subgrid-cols {
+    display: subgrid;
+    grid-template-columns: subgrid;
+}
+
+.subgrid-rows {
+    display: subgrid;
+    grid-template-rows: subgrid;
+}
+
+.subgrid-all {
+    display: subgrid;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+}
+
+/* ===================================================================== */
+/* Grid Debug Utilities */
+/* ===================================================================== */
+
+.grid-debug {
+    background-image:
+        linear-gradient(rgba(255, 0, 0, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 0, 0, 0.1) 1px, transparent 1px);
+    background-position: 0 0, 0 0;
+    background-size: 20px 20px;
+}
+
+.grid-debug>* {
+    background-color: rgba(0, 255, 0, 0.1);
+    border: 1px solid rgba(0, 255, 0, 0.3);
+}

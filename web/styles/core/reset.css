@@ -1,0 +1,300 @@
+/**
+ * CSS Reset and Normalization
+ *
+ * Provides consistent cross-browser styling foundation
+ * Based on modern CSS reset principles with accessibility enhancements
+ *
+ * @module core/reset
+ * @version 1.0.0
+ * @author Huntmaster Engine Team
+ */
+
+/* ===================================================================== */
+/* Box Model Reset */
+/* ===================================================================== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ===================================================================== */
+/* Document Root */
+/* ===================================================================== */
+
+html {
+    /* Improve text rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+
+    /* Prevent font size inflation on mobile */
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+
+    /* Enable smooth scrolling */
+    scroll-behavior: smooth;
+
+    /* Set base font size for rem calculations */
+    font-size: 16px;
+
+    /* Improve focus visibility */
+    scroll-padding-top: 2rem;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ===================================================================== */
+/* Body Defaults */
+/* ===================================================================== */
+
+body {
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-base);
+    color: var(--color-text-primary);
+    background-color: var(--color-background-primary);
+
+    /* Improve text selection */
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+
+    /* Prevent horizontal overflow */
+    overflow-x: hidden;
+
+    /* Enable better font rendering */
+    font-feature-settings: "kern" 1, "liga" 1;
+    font-kerning: normal;
+}
+
+/* ===================================================================== */
+/* Typography Reset */
+/* ===================================================================== */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+    color: var(--color-text-primary);
+    margin-bottom: var(--spacing-xs);
+}
+
+p {
+    margin-bottom: var(--spacing-sm);
+    line-height: var(--line-height-relaxed);
+}
+
+/* ===================================================================== */
+/* List Reset */
+/* ===================================================================== */
+
+ul,
+ol {
+    list-style: none;
+}
+
+/* Restore list styling when role="list" is present */
+ul[role="list"],
+ol[role="list"] {
+    list-style: revert;
+    padding-left: var(--spacing-md);
+}
+
+/* ===================================================================== */
+/* Form Element Reset */
+/* ===================================================================== */
+
+input,
+button,
+textarea,
+select {
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
+    background: transparent;
+    border: none;
+    outline: none;
+}
+
+button {
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+/* Remove default button styling but maintain accessibility */
+button:not([class]) {
+    background: var(--color-interactive-primary);
+    color: var(--color-text-on-primary);
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid transparent;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="url"],
+input[type="tel"],
+input[type="number"],
+textarea {
+    background: var(--color-background-secondary);
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-xs);
+}
+
+/* ===================================================================== */
+/* Media Reset */
+/* ===================================================================== */
+
+img,
+picture,
+video,
+canvas,
+svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+img {
+    /* Improve image rendering quality */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+/* ===================================================================== */
+/* Interactive Element Reset */
+/* ===================================================================== */
+
+a {
+    color: var(--color-link-primary);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+a:hover {
+    color: var(--color-link-hover);
+    text-decoration: underline;
+}
+
+a:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+    border-radius: var(--border-radius-xs);
+}
+
+/* ===================================================================== */
+/* Table Reset */
+/* ===================================================================== */
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    width: 100%;
+}
+
+th,
+td {
+    padding: var(--spacing-xs);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border-primary);
+}
+
+th {
+    font-weight: var(--font-weight-semibold);
+    background-color: var(--color-background-secondary);
+}
+
+/* ===================================================================== */
+/* Accessibility Enhancements */
+/* ===================================================================== */
+
+/* Improve focus visibility for keyboard navigation */
+:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-ring-color);
+    outline-offset: var(--focus-ring-offset);
+}
+
+/* Hide decorative elements from screen readers */
+[aria-hidden="true"] {
+    display: none !important;
+}
+
+/* Ensure screen reader only content is properly hidden */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ===================================================================== */
+/* Print Styles */
+/* ===================================================================== */
+
+@media print {
+
+    *,
+    *::before,
+    *::after {
+        background: transparent !important;
+        color: black !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    a,
+    a:visited {
+        text-decoration: underline;
+    }
+
+    img {
+        page-break-inside: avoid;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        page-break-after: avoid;
+    }
+
+    p {
+        orphans: 3;
+        widows: 3;
+    }
+}

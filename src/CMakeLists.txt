@@ -63,9 +63,9 @@ if(EMSCRIPTEN)
     message(STATUS "Configuring for WebAssembly (Emscripten) build.")
 
     # Define the sources needed specifically for the WASM module
-    # This primarily includes the Embind interface file
+    # This includes the Enhanced WASM Interface with comprehensive functionality
     set(WASM_INTERFACE_SOURCES
-        "${PROJECT_SOURCE_DIR}/platform/wasm/WASMInterface.cpp"
+        "${PROJECT_SOURCE_DIR}/platform/wasm/EnhancedWASMInterface.cpp"
     )
 
     # Create the final WASM executable (which produces .js and .wasm files)

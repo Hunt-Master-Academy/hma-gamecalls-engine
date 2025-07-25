@@ -1,0 +1,150 @@
+/**
+ * Huntmaster Engine - Main CSS Entry Point
+ *
+ * Modular CSS architecture with accessibility-first design principles.
+ * This file orchestrates all CSS modules in the correct loading order.
+ *
+ * @version 2.0.0
+ * @author Huntmaster Engine Team
+ * @date July 24, 2025
+ */
+
+/* ===================================================================== */
+/* Core Foundation Modules */
+/* ===================================================================== */
+
+/* CSS Variables must be loaded first */
+@import './core/variables.css';
+
+/* Reset and normalization */
+@import './core/reset.css';
+
+/* Typography system */
+@import './core/typography.css';
+
+/* Layout system */
+@import './core/layout.css';
+
+/* ===================================================================== */
+/* Utility Modules */
+/* ===================================================================== */
+
+@import './utilities/spacing.css';
+@import './utilities/colors.css';
+@import './utilities/text.css';
+@import './utilities/animations.css';
+
+/* ===================================================================== */
+/* Component Modules */
+/* ===================================================================== */
+
+@import './components/buttons.css';
+@import './components/forms.css';
+@import './components/navigation.css';
+@import './components/modals.css';
+@import './components/waveform.css';
+@import './components/controls.css';
+
+/* ===================================================================== */
+/* Accessibility Modules */
+/* ===================================================================== */
+
+@import './accessibility/focus.css';
+@import './accessibility/contrast.css';
+@import './accessibility/motion.css';
+@import './accessibility/screen-reader.css';
+@import './accessibility/aria.css';
+
+/* ===================================================================== */
+/* Responsive Design Modules */
+/* ===================================================================== */
+
+@import './responsive/breakpoints.css';
+@import './responsive/mobile.css';
+@import './responsive/tablet.css';
+@import './responsive/desktop.css';
+
+/* ===================================================================== */
+/* Theme Modules */
+/* ===================================================================== */
+
+@import './themes/light.css';
+@import './themes/dark.css';
+@import './themes/auto.css';
+
+/* ===================================================================== */
+/* Critical CSS Inlining */
+/* ===================================================================== */
+
+/* Above-the-fold critical styles for improved loading performance */
+.critical-loading {
+    /* Basic loading state styles that should be inlined */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: var(--color-background-primary);
+    color: var(--color-text-primary);
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+}
+
+.critical-loading::after {
+    content: "Loading Huntmaster Engine...";
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* ===================================================================== */
+/* Performance Optimizations */
+/* ===================================================================== */
+
+/* Preload critical fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Optimize rendering for smooth animations */
+* {
+    will-change: auto;
+}
+
+.animate-element {
+    will-change: transform, opacity;
+}
+
+.animate-element:not(.animating) {
+    will-change: auto;
+}
+
+/* ===================================================================== */
+/* Print Styles */
+/* ===================================================================== */
+
+@media print {
+
+    /* Hide non-essential elements for printing */
+    .no-print,
+    .waveform-controls,
+    .audio-transport,
+    .navigation,
+    button:not(.print-friendly) {
+        display: none !important;
+    }
+
+    /* Optimize typography for print */
+    body {
+        font-size: 12pt;
+        line-height: 1.4;
+        color: #000;
+        background: #fff;
+    }
+
+    /* Ensure proper page breaks */
+    .waveform-display {
+        page-break-inside: avoid;
+    }
+
+    h1,
+    h2,
+    h3 {
+        page-break-after: avoid;
+    }
+}
