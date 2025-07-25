@@ -24,6 +24,7 @@
 // Platform-specific includes
 #ifdef _WIN32
 #include <immintrin.h>
+#include <malloc.h>  // For _aligned_malloc and _aligned_free
 #include <windows.h>
 #elif defined(__linux__) || defined(__APPLE__)
 #include <sys/mman.h>
@@ -39,40 +40,17 @@
 namespace huntmaster {
 namespace core {
 
-// TODO: Phase 2.4 - Advanced Audio Engine Implementation - COMPREHENSIVE FILE TODO
-// =================================================================================
-
-// TODO 2.4.96: CircularAudioBuffer Implementation
-// -----------------------------------------------
-/**
- * TODO: Implement complete CircularAudioBuffer with:
- * [ ] High-performance lock-free operations with memory ordering
- * [ ] Real-time audio processing with guaranteed latency bounds
- * [ ] Thread-safe multi-reader/single-writer architecture
- * [ ] Optimized memory management with aligned allocation
- * [ ] Comprehensive error handling with recovery mechanisms
- * [ ] Performance monitoring with detailed statistics
- * [ ] Cross-platform compatibility with SIMD optimizations
- * [ ] Dynamic buffer management with automatic resizing
- * [ ] Integration with audio processing pipelines
- * [ ] Advanced diagnostics with health monitoring
- */
-
 CircularAudioBuffer::CircularAudioBuffer()
     : initialized_(false), lastStatsUpdate_(std::chrono::steady_clock::now()),
       lastOperationTime_(std::chrono::high_resolution_clock::now()),
       lastHealthCheck_(std::chrono::steady_clock::now()) {
-    // TODO: Initialize with default configuration
     config_ = createDefaultConfig();
 
-    // TODO: Initialize statistics
     statistics_.startTime = std::chrono::steady_clock::now();
     statistics_.lastUpdate = statistics_.startTime;
 
-    // TODO: Initialize error tracking
     lastError_ = {};
 
-    // TODO: Reserve space for history tracking
     latencyHistory_.reserve(1000);
     throughputHistory_.reserve(1000);
     errorHistory_.reserve(100);
@@ -82,19 +60,16 @@ CircularAudioBuffer::CircularAudioBuffer()
 
 CircularAudioBuffer::CircularAudioBuffer(const CircularBufferConfig& config)
     : CircularAudioBuffer() {
-    // TODO: Initialize with provided configuration
     initialize(config);
 }
 
 CircularAudioBuffer::~CircularAudioBuffer() {
-    // TODO: Ensure proper cleanup
     clearCallbacks();
     cleanupBuffer();
 
     std::cout << "CircularAudioBuffer destructed" << std::endl;
 }
 
-// TODO: Move constructor and assignment
 CircularAudioBuffer::CircularAudioBuffer(CircularAudioBuffer&& other) noexcept
     : config_(std::move(other.config_)), initialized_(other.initialized_.load()),
       buffer_(std::move(other.buffer_)), bufferSize_(other.bufferSize_.load()),
@@ -107,7 +82,6 @@ CircularAudioBuffer::CircularAudioBuffer(CircularAudioBuffer&& other) noexcept
       throughputHistory_(std::move(other.throughputHistory_)),
       currentThroughput_(other.currentThroughput_.load()), healthScore_(other.healthScore_.load()),
       isHealthy_(other.isHealthy_.load()) {
-    // TODO: Mark other as moved-from
     other.initialized_ = false;
     other.buffer_.reset();
     other.bufferSize_ = 0;
@@ -115,10 +89,8 @@ CircularAudioBuffer::CircularAudioBuffer(CircularAudioBuffer&& other) noexcept
 
 CircularAudioBuffer& CircularAudioBuffer::operator=(CircularAudioBuffer&& other) noexcept {
     if (this != &other) {
-        // TODO: Clean up current resources
         cleanupBuffer();
 
-        // TODO: Move data from other
         config_ = std::move(other.config_);
         initialized_ = other.initialized_.load();
         buffer_ = std::move(other.buffer_);
@@ -139,7 +111,6 @@ CircularAudioBuffer& CircularAudioBuffer::operator=(CircularAudioBuffer&& other)
         healthScore_ = other.healthScore_.load();
         isHealthy_ = other.isHealthy_.load();
 
-        // TODO: Mark other as moved-from
         other.initialized_ = false;
         other.buffer_.reset();
         other.bufferSize_ = 0;
@@ -147,84 +118,58 @@ CircularAudioBuffer& CircularAudioBuffer::operator=(CircularAudioBuffer&& other)
     return *this;
 }
 
-// TODO 2.4.97: Initialization and Configuration
-// ---------------------------------------------
-/**
- * TODO: Implement initialization and configuration with:
- * [ ] Configuration validation with comprehensive parameter checking
- * [ ] Memory allocation with proper alignment for SIMD operations
- * [ ] Thread setup with priority and affinity configuration
- * [ ] Performance baseline establishment with calibration
- * [ ] Error handling setup with recovery mechanisms
- * [ ] Statistics initialization with baseline metrics
- * [ ] Platform-specific optimizations with feature detection
- * [ ] Integration setup with external audio systems
- * [ ] Health monitoring initialization with diagnostic setup
- * [ ] Callback system initialization with proper synchronization
- */
 bool CircularAudioBuffer::initialize(const CircularBufferConfig& config) {
     std::lock_guard<std::mutex> lock(configMutex_);
 
     try {
-        // TODO: Validate configuration
         std::string validationError;
         if (!validateConfiguration(config, validationError)) {
             handleError(-1, "Invalid buffer configuration: " + validationError);
             return false;
         }
 
-        // TODO: Clean up existing buffer if needed
         if (initialized_) {
             cleanupBuffer();
         }
 
-        // TODO: Store configuration
         config_ = config;
         bufferSize_ = config.bufferSize;
         numChannels_ = config.numChannels;
         sampleRate_ = config.sampleRate;
 
-        // TODO: Initialize buffer storage
         if (!initializeBuffer()) {
             handleError(-2, "Failed to initialize buffer storage");
             return false;
         }
 
-        // TODO: Reset pointers and counters
         writePointer_ = 0;
         readPointer_ = 0;
         availableData_ = 0;
         sequenceNumber_ = 0;
         timestamp_ = 0;
 
-        // TODO: Reset threading state
         writeInProgress_ = false;
         readInProgress_ = false;
 
-        // TODO: Initialize statistics
         statistics_ = {};
         statistics_.startTime = std::chrono::steady_clock::now();
         statistics_.lastUpdate = statistics_.startTime;
         statistics_.isHealthy = true;
         statistics_.healthScore = 1.0f;
 
-        // TODO: Reset error tracking
         lastError_ = {};
         errorHistory_.clear();
 
-        // TODO: Initialize performance tracking
         latencyHistory_.clear();
         throughputHistory_.clear();
         currentThroughput_ = 0.0f;
         healthScore_ = 1.0f;
         isHealthy_ = true;
 
-        // TODO: Update timestamps
         lastStatsUpdate_ = std::chrono::steady_clock::now();
         lastOperationTime_ = std::chrono::high_resolution_clock::now();
         lastHealthCheck_ = std::chrono::steady_clock::now();
 
-        // TODO: Mark as initialized
         initialized_ = true;
 
         std::cout << "CircularAudioBuffer initialized: " << bufferSize_ << " samples, "
@@ -256,14 +201,13 @@ bool CircularAudioBuffer::updateConfiguration(const CircularBufferConfig& config
 
     std::lock_guard<std::mutex> lock(configMutex_);
 
-    // TODO: Validate new configuration
+    // Validate new configuration
     std::string validationError;
     if (!validateConfiguration(config, validationError)) {
         handleError(-11, "Invalid configuration update: " + validationError);
         return false;
     }
 
-    // TODO: Check if reinitialization is needed
     bool needsReinitialization = false;
 
     if (config.bufferSize != config_.bufferSize || config.numChannels != config_.numChannels
@@ -275,7 +219,6 @@ bool CircularAudioBuffer::updateConfiguration(const CircularBufferConfig& config
         initialized_ = false;
         return initialize(config);
     } else {
-        // TODO: Apply changes that can be done dynamically
         config_ = config;
         return true;
     }
@@ -290,21 +233,6 @@ CircularBufferConfig CircularAudioBuffer::getConfiguration() const {
     return config_;
 }
 
-// TODO 2.4.98: Core Buffer Operations - Write Operations
-// ------------------------------------------------------
-/**
- * TODO: Implement high-performance write operations with:
- * [ ] Lock-free algorithms with memory ordering guarantees
- * [ ] Zero-copy operations where possible for maximum efficiency
- * [ ] SIMD optimizations for bulk data movement
- * [ ] Overflow handling with configurable policies
- * [ ] Performance monitoring with minimal overhead
- * [ ] Thread safety with atomic operations and memory barriers
- * [ ] Error recovery with automatic retry mechanisms
- * [ ] Memory alignment considerations for optimal performance
- * [ ] Integration with real-time audio processing pipelines
- * [ ] Latency measurement with high-precision timing
- */
 size_t CircularAudioBuffer::write(const float* data, size_t sampleCount) {
     return writeInternal(data, sampleCount, true);
 }
@@ -318,7 +246,6 @@ bool CircularAudioBuffer::tryWrite(const float* data, size_t sampleCount) {
         return false;
     }
 
-    // TODO: Check if we have enough space without blocking
     size_t available = getAvailableForWrite();
     if (available < sampleCount) {
         return false;
@@ -334,7 +261,6 @@ size_t CircularAudioBuffer::writePartial(const float* data, size_t sampleCount, 
         return 0;
     }
 
-    // TODO: Write as much as possible without blocking
     size_t available = getAvailableForWrite();
     size_t toWrite = std::min(sampleCount, available);
 
@@ -345,21 +271,6 @@ size_t CircularAudioBuffer::writePartial(const float* data, size_t sampleCount, 
     return written;
 }
 
-// TODO 2.4.99: Core Buffer Operations - Read Operations
-// -----------------------------------------------------
-/**
- * TODO: Implement high-performance read operations with:
- * [ ] Lock-free algorithms with proper memory synchronization
- * [ ] Minimal latency with optimized data access patterns
- * [ ] SIMD optimizations for efficient data copying
- * [ ] Underflow handling with graceful degradation
- * [ ] Performance monitoring with real-time metrics
- * [ ] Thread safety with atomic operations
- * [ ] Error detection and recovery mechanisms
- * [ ] Memory prefetching for improved cache performance
- * [ ] Integration with audio processing chains
- * [ ] Latency tracking with statistical analysis
- */
 size_t CircularAudioBuffer::read(float* data, size_t sampleCount) {
     return readInternal(data, sampleCount, true);
 }
@@ -373,7 +284,6 @@ bool CircularAudioBuffer::tryRead(float* data, size_t sampleCount) {
         return false;
     }
 
-    // TODO: Check if we have enough data without blocking
     size_t available = getAvailableForRead();
     if (available < sampleCount) {
         return false;
@@ -389,7 +299,6 @@ size_t CircularAudioBuffer::readPartial(float* data, size_t sampleCount, size_t&
         return 0;
     }
 
-    // TODO: Read as much as available without blocking
     size_t available = getAvailableForRead();
     size_t toRead = std::min(sampleCount, available);
 
@@ -400,15 +309,12 @@ size_t CircularAudioBuffer::readPartial(float* data, size_t sampleCount, size_t&
     return read;
 }
 
-// TODO 2.4.100: Peek and Skip Operations
-// --------------------------------------
 size_t CircularAudioBuffer::peek(float* data, size_t sampleCount, size_t offset) const {
     if (!initialized_ || !data || sampleCount == 0) {
         return 0;
     }
 
     try {
-        // TODO: Calculate available data considering offset
         size_t available = getAvailableForRead();
         if (offset >= available) {
             return 0;  // Offset beyond available data
@@ -419,16 +325,12 @@ size_t CircularAudioBuffer::peek(float* data, size_t sampleCount, size_t offset)
             return 0;
         }
 
-        // TODO: Calculate read position with offset
         size_t readPos =
             (readPointer_.load(std::memory_order_acquire) + offset) % bufferSize_.load();
 
-        // TODO: Handle circular buffer wrap-around
         if (readPos + actualCount <= bufferSize_) {
-            // TODO: Single contiguous copy
             std::memcpy(data, buffer_.get() + readPos, actualCount * sizeof(float));
         } else {
-            // TODO: Two-part copy due to wrap-around
             size_t firstPart = bufferSize_ - readPos;
             size_t secondPart = actualCount - firstPart;
 
@@ -450,15 +352,12 @@ size_t CircularAudioBuffer::skip(size_t sampleCount) {
     }
 
     try {
-        // TODO: Calculate how much we can actually skip
         size_t available = getAvailableForRead();
         size_t toSkip = std::min(sampleCount, available);
 
         if (toSkip > 0) {
-            // TODO: Advance read pointer
             advanceReadPointer(toSkip);
 
-            // TODO: Update statistics
             statistics_.totalReads.fetch_add(1, std::memory_order_relaxed);
         }
 
@@ -478,7 +377,6 @@ bool CircularAudioBuffer::skipToLatest(size_t& skipped) {
     }
 
     try {
-        // TODO: Skip all available data except the most recent samples
         size_t available = getAvailableForRead();
 
         if (available > config_.readBlockSize) {
@@ -495,21 +393,6 @@ bool CircularAudioBuffer::skipToLatest(size_t& skipped) {
     }
 }
 
-// TODO 2.4.101: Buffer State Management
-// -------------------------------------
-/**
- * TODO: Implement buffer state management with:
- * [ ] Atomic operations for thread-safe state queries
- * [ ] Efficient space calculation with minimal overhead
- * [ ] Real-time monitoring with statistical analysis
- * [ ] State transitions with proper synchronization
- * [ ] Memory optimization with cache-friendly operations
- * [ ] Error detection with comprehensive validation
- * [ ] Performance monitoring with trend analysis
- * [ ] Integration with callback systems
- * [ ] Health monitoring with predictive analysis
- * [ ] Dynamic adjustment with adaptive algorithms
- */
 size_t CircularAudioBuffer::getAvailableForWrite() const {
     if (!initialized_) {
         return 0;
@@ -563,21 +446,17 @@ void CircularAudioBuffer::clear() {
     }
 
     try {
-        // TODO: Thread-safe buffer clearing
         std::lock_guard<std::mutex> writeLock(writeMutex_);
         std::lock_guard<std::mutex> readLock(readMutex_);
 
-        // TODO: Reset pointers and counters
         writePointer_ = 0;
         readPointer_ = 0;
         availableData_ = 0;
 
-        // TODO: Clear buffer contents
         if (buffer_) {
             std::memset(buffer_.get(), 0, bufferSize_ * sizeof(float));
         }
 
-        // TODO: Reset sequence number but keep timestamp
         sequenceNumber_ = 0;
 
         std::cout << "CircularAudioBuffer cleared" << std::endl;
@@ -590,7 +469,6 @@ void CircularAudioBuffer::clear() {
 void CircularAudioBuffer::reset() {
     clear();
 
-    // TODO: Also reset statistics and error history
     resetStatistics();
     clearErrors();
 }
@@ -601,13 +479,11 @@ bool CircularAudioBuffer::flush() {
     }
 
     try {
-        // TODO: Wait for all pending operations to complete
         while (writeInProgress_.load(std::memory_order_acquire)
                || readInProgress_.load(std::memory_order_acquire)) {
             std::this_thread::yield();
         }
 
-        // TODO: Force any cached data to be written
         std::atomic_thread_fence(std::memory_order_seq_cst);
 
         return true;
@@ -630,23 +506,26 @@ bool CircularAudioBuffer::resize(size_t newSize) {
 
         size_t oldSize = bufferSize_.load();
 
-        // TODO: Validate new size
         if (newSize < config_.minBufferSize || newSize > config_.maxBufferSize) {
             handleError(-32, "Invalid buffer size for resize: " + std::to_string(newSize));
             return false;
         }
 
-        // TODO: Allocate new buffer
-        auto newBuffer = std::make_unique<float[]>(newSize);
+#ifdef _WIN32
+        std::unique_ptr<float, AlignedDeleter> newBuffer(
+            static_cast<float*>(_aligned_malloc(newSize * sizeof(float), 32)));
+#else
+        float* alignedPtr = nullptr;
+        posix_memalign(reinterpret_cast<void**>(&alignedPtr), 32, newSize * sizeof(float));
+        std::unique_ptr<float, AlignedDeleter> newBuffer(alignedPtr);
+#endif
         if (!newBuffer) {
             handleError(-33, "Failed to allocate new buffer for resize");
             return false;
         }
 
-        // TODO: Copy existing data if any
         size_t dataToCopy = std::min(getAvailableForRead(), newSize - 1);
         if (dataToCopy > 0) {
-            // TODO: Copy data from old buffer to new buffer
             size_t readPos = readPointer_.load();
 
             if (readPos + dataToCopy <= oldSize) {
@@ -662,17 +541,14 @@ bool CircularAudioBuffer::resize(size_t newSize) {
             }
         }
 
-        // TODO: Update buffer and pointers
-        buffer_ = std::move(newBuffer);
+        buffer_.reset(newBuffer.release());
         bufferSize_ = newSize;
         config_.bufferSize = newSize;
 
-        // TODO: Update pointers
         readPointer_ = 0;
         writePointer_ = dataToCopy;
         availableData_ = dataToCopy;
 
-        // TODO: Trigger resize callback
         if (resizeCallback_) {
             resizeCallback_(oldSize, newSize);
         }
@@ -706,45 +582,27 @@ bool CircularAudioBuffer::isNearUnderflow() const {
     return fillRatio < config_.underflowThreshold;
 }
 
-// TODO 2.4.102: Internal Implementation - Core Helpers
-// ----------------------------------------------------
-/**
- * TODO: Implement internal helper methods with:
- * [ ] Lock-free buffer initialization with proper alignment
- * [ ] Memory management with leak detection and optimization
- * [ ] Thread-safe pointer manipulation with atomic operations
- * [ ] Performance optimization with SIMD and cache considerations
- * [ ] Error handling with context preservation and recovery
- * [ ] Statistics collection with minimal performance impact
- * [ ] Platform-specific optimizations with feature detection
- * [ ] Integration with external systems and callbacks
- * [ ] Health monitoring with predictive analysis
- * [ ] Resource cleanup with proper ordering and verification
- */
 bool CircularAudioBuffer::initializeBuffer() {
     try {
-        // TODO: Calculate total buffer size including all channels
         size_t totalSize = bufferSize_ * numChannels_;
 
-        // TODO: Allocate aligned memory for SIMD operations
 #ifdef _WIN32
-        buffer_ = std::unique_ptr<float[]>(
-            static_cast<float*>(_aligned_malloc(totalSize * sizeof(float), 32)));
+        buffer_.reset(static_cast<float*>(_aligned_malloc(totalSize * sizeof(float), 32)));
 #elif defined(__linux__) || defined(__APPLE__)
         float* alignedPtr = nullptr;
         if (posix_memalign(reinterpret_cast<void**>(&alignedPtr), 32, totalSize * sizeof(float))
             == 0) {
-            buffer_ = std::unique_ptr<float[]>(alignedPtr);
+            buffer_.reset(alignedPtr);
         }
 #else
-        buffer_ = std::make_unique<float[]>(totalSize);
+        // Fallback for other platforms
+        buffer_.reset(static_cast<float*>(malloc(totalSize * sizeof(float))));
 #endif
 
         if (!buffer_) {
             return false;
         }
 
-        // TODO: Initialize buffer with zeros
         std::memset(buffer_.get(), 0, totalSize * sizeof(float));
 
         return true;
@@ -756,22 +614,10 @@ bool CircularAudioBuffer::initializeBuffer() {
 }
 
 void CircularAudioBuffer::cleanupBuffer() {
-    // TODO: Clean up buffer memory
     if (buffer_) {
-#ifdef _WIN32
-        // For aligned malloc, we need to check if it was allocated with _aligned_malloc
-        // This is a simplification - in real code, we'd track the allocation method
-        try {
-            buffer_.reset();
-        } catch (...) {
-            // Handle any cleanup errors
-        }
-#else
         buffer_.reset();
-#endif
     }
 
-    // TODO: Reset all atomic variables
     bufferSize_ = 0;
     writePointer_ = 0;
     readPointer_ = 0;
@@ -782,7 +628,6 @@ void CircularAudioBuffer::cleanupBuffer() {
 
 bool CircularAudioBuffer::validateConfiguration(const CircularBufferConfig& config,
                                                 std::string& error) const {
-    // TODO: Validate buffer size
     if (config.bufferSize == 0) {
         error = "Buffer size cannot be zero";
         return false;
@@ -798,19 +643,16 @@ bool CircularAudioBuffer::validateConfiguration(const CircularBufferConfig& conf
         return false;
     }
 
-    // TODO: Validate number of channels
     if (config.numChannels == 0 || config.numChannels > 32) {
         error = "Invalid number of channels: " + std::to_string(config.numChannels);
         return false;
     }
 
-    // TODO: Validate sample rate
     if (config.sampleRate < 8000 || config.sampleRate > 192000) {
         error = "Invalid sample rate: " + std::to_string(config.sampleRate);
         return false;
     }
 
-    // TODO: Validate thresholds
     if (config.overflowThreshold <= 0.0f || config.overflowThreshold > 1.0f) {
         error = "Invalid overflow threshold: " + std::to_string(config.overflowThreshold);
         return false;
@@ -821,7 +663,6 @@ bool CircularAudioBuffer::validateConfiguration(const CircularBufferConfig& conf
         return false;
     }
 
-    // TODO: Validate block sizes
     if (config.writeBlockSize == 0 || config.writeBlockSize > config.bufferSize) {
         error = "Invalid write block size: " + std::to_string(config.writeBlockSize);
         return false;
@@ -843,21 +684,18 @@ size_t CircularAudioBuffer::writeInternal(const float* data, size_t sampleCount,
     auto startTime = std::chrono::high_resolution_clock::now();
 
     try {
-        // TODO: Set write in progress flag
         writeInProgress_ = true;
 
         size_t totalWritten = 0;
         size_t remaining = sampleCount;
 
         while (remaining > 0 && (blocking || getAvailableForWrite() > 0)) {
-            // TODO: Calculate available space
             size_t available = getAvailableForWrite();
             if (available == 0) {
                 if (!blocking) {
                     break;
                 }
 
-                // TODO: Handle overflow if blocking
                 if (config_.enableOverflowProtection) {
                     if (overflowCallback_) {
                         overflowCallback_(remaining, available);
@@ -865,21 +703,16 @@ size_t CircularAudioBuffer::writeInternal(const float* data, size_t sampleCount,
                     statistics_.overflowCount.fetch_add(1, std::memory_order_relaxed);
                 }
 
-                // TODO: Wait a bit and retry
                 std::this_thread::yield();
                 continue;
             }
 
-            // TODO: Calculate how much to write in this iteration
             size_t toWrite = std::min(remaining, available);
             size_t writePos = writePointer_.load(std::memory_order_acquire);
             size_t bufferSize = bufferSize_.load(std::memory_order_acquire);
 
-            // TODO: Handle circular buffer wrap-around
             if (writePos + toWrite <= bufferSize) {
-                // TODO: Single contiguous write
 #ifdef __SSE2__
-                // TODO: Use SIMD for bulk copy if data is aligned
                 if (reinterpret_cast<uintptr_t>(data + totalWritten) % 16 == 0
                     && reinterpret_cast<uintptr_t>(buffer_.get() + writePos) % 16 == 0
                     && toWrite >= 4) {
@@ -891,7 +724,7 @@ size_t CircularAudioBuffer::writeInternal(const float* data, size_t sampleCount,
 
                     // Handle remaining samples
                     for (size_t i = simdCount; i < toWrite; ++i) {
-                        buffer_[writePos + i] = data[totalWritten + i];
+                        buffer_.get()[writePos + i] = data[totalWritten + i];
                     }
                 } else
 #endif
@@ -900,7 +733,6 @@ size_t CircularAudioBuffer::writeInternal(const float* data, size_t sampleCount,
                         buffer_.get() + writePos, data + totalWritten, toWrite * sizeof(float));
                 }
             } else {
-                // TODO: Two-part write due to wrap-around
                 size_t firstPart = bufferSize - writePos;
                 size_t secondPart = toWrite - firstPart;
 
@@ -910,31 +742,25 @@ size_t CircularAudioBuffer::writeInternal(const float* data, size_t sampleCount,
                     buffer_.get(), data + totalWritten + firstPart, secondPart * sizeof(float));
             }
 
-            // TODO: Update pointers and counters atomically
             advanceWritePointer(toWrite);
 
             totalWritten += toWrite;
             remaining -= toWrite;
 
-            // TODO: Update statistics
             statistics_.totalWrites.fetch_add(1, std::memory_order_relaxed);
             statistics_.totalSamples.fetch_add(toWrite, std::memory_order_relaxed);
         }
 
-        // TODO: Clear write in progress flag
         writeInProgress_ = false;
 
-        // TODO: Record latency
         auto endTime = std::chrono::high_resolution_clock::now();
         float latency =
             std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count()
             / 1000.0f;
         recordWriteLatency(latency);
 
-        // TODO: Update sequence number
         sequenceNumber_.fetch_add(1, std::memory_order_relaxed);
 
-        // TODO: Trigger buffer state callback
         if (bufferStateCallback_) {
             bufferStateCallback_(getCurrentLevel(), getFillRatio());
         }
@@ -956,21 +782,18 @@ size_t CircularAudioBuffer::readInternal(float* data, size_t sampleCount, bool b
     auto startTime = std::chrono::high_resolution_clock::now();
 
     try {
-        // TODO: Set read in progress flag
         readInProgress_ = true;
 
         size_t totalRead = 0;
         size_t remaining = sampleCount;
 
         while (remaining > 0 && (blocking || getAvailableForRead() > 0)) {
-            // TODO: Calculate available data
             size_t available = getAvailableForRead();
             if (available == 0) {
                 if (!blocking) {
                     break;
                 }
 
-                // TODO: Handle underflow if blocking
                 if (config_.enableUnderflowProtection) {
                     if (underflowCallback_) {
                         underflowCallback_(remaining, available);
@@ -978,21 +801,16 @@ size_t CircularAudioBuffer::readInternal(float* data, size_t sampleCount, bool b
                     statistics_.underflowCount.fetch_add(1, std::memory_order_relaxed);
                 }
 
-                // TODO: Wait a bit and retry
                 std::this_thread::yield();
                 continue;
             }
 
-            // TODO: Calculate how much to read in this iteration
             size_t toRead = std::min(remaining, available);
             size_t readPos = readPointer_.load(std::memory_order_acquire);
             size_t bufferSize = bufferSize_.load(std::memory_order_acquire);
 
-            // TODO: Handle circular buffer wrap-around
             if (readPos + toRead <= bufferSize) {
-                // TODO: Single contiguous read
 #ifdef __SSE2__
-                // TODO: Use SIMD for bulk copy if data is aligned
                 if (reinterpret_cast<uintptr_t>(data + totalRead) % 16 == 0
                     && reinterpret_cast<uintptr_t>(buffer_.get() + readPos) % 16 == 0
                     && toRead >= 4) {
@@ -1004,7 +822,7 @@ size_t CircularAudioBuffer::readInternal(float* data, size_t sampleCount, bool b
 
                     // Handle remaining samples
                     for (size_t i = simdCount; i < toRead; ++i) {
-                        data[totalRead + i] = buffer_[readPos + i];
+                        data[totalRead + i] = buffer_.get()[readPos + i];
                     }
                 } else
 #endif
@@ -1012,7 +830,6 @@ size_t CircularAudioBuffer::readInternal(float* data, size_t sampleCount, bool b
                     std::memcpy(data + totalRead, buffer_.get() + readPos, toRead * sizeof(float));
                 }
             } else {
-                // TODO: Two-part read due to wrap-around
                 size_t firstPart = bufferSize - readPos;
                 size_t secondPart = toRead - firstPart;
 
@@ -1021,27 +838,22 @@ size_t CircularAudioBuffer::readInternal(float* data, size_t sampleCount, bool b
                     data + totalRead + firstPart, buffer_.get(), secondPart * sizeof(float));
             }
 
-            // TODO: Update pointers and counters atomically
             advanceReadPointer(toRead);
 
             totalRead += toRead;
             remaining -= toRead;
 
-            // TODO: Update statistics
             statistics_.totalReads.fetch_add(1, std::memory_order_relaxed);
         }
 
-        // TODO: Clear read in progress flag
         readInProgress_ = false;
 
-        // TODO: Record latency
         auto endTime = std::chrono::high_resolution_clock::now();
         float latency =
             std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime).count()
             / 1000.0f;
         recordReadLatency(latency);
 
-        // TODO: Trigger buffer state callback
         if (bufferStateCallback_) {
             bufferStateCallback_(getCurrentLevel(), getFillRatio());
         }
@@ -1073,12 +885,9 @@ void CircularAudioBuffer::advanceReadPointer(size_t samples) {
     availableData_.fetch_sub(samples, std::memory_order_acq_rel);
 }
 
-// TODO 2.4.103: Performance Monitoring Implementation
-// ---------------------------------------------------
 void CircularAudioBuffer::recordWriteLatency(float latency) {
     std::lock_guard<std::mutex> lock(statisticsMutex_);
 
-    // TODO: Update write latency statistics
     float oldAvg = statistics_.averageWriteLatency.load();
     size_t totalWrites = statistics_.totalWrites.load();
 
@@ -1105,7 +914,6 @@ void CircularAudioBuffer::recordWriteLatency(float latency) {
 void CircularAudioBuffer::recordReadLatency(float latency) {
     std::lock_guard<std::mutex> lock(statisticsMutex_);
 
-    // TODO: Update read latency statistics
     float oldAvg = statistics_.averageReadLatency.load();
     size_t totalReads = statistics_.totalReads.load();
 
@@ -1126,12 +934,28 @@ void CircularAudioBuffer::recordReadLatency(float latency) {
 CircularBufferStatistics CircularAudioBuffer::getStatistics() const {
     std::lock_guard<std::mutex> lock(statisticsMutex_);
 
-    // TODO: Update dynamic statistics
+    CircularBufferStatistics stats;
+    stats.totalWrites = statistics_.totalWrites.load();
+    stats.totalReads = statistics_.totalReads.load();
+    stats.totalSamples = statistics_.totalSamples.load();
+    stats.overflowCount = statistics_.overflowCount.load();
+    stats.underflowCount = statistics_.underflowCount.load();
+    stats.retryCount = statistics_.retryCount.load();
+    stats.errorCount = statistics_.errorCount.load();
+    stats.consecutiveErrors = statistics_.consecutiveErrors.load();
+    stats.averageWriteLatency = statistics_.averageWriteLatency.load();
+    stats.averageReadLatency = statistics_.averageReadLatency.load();
+    stats.maxWriteLatency = statistics_.maxWriteLatency.load();
+    stats.maxReadLatency = statistics_.maxReadLatency.load();
+    stats.throughput = statistics_.throughput.load();
+    stats.healthScore = statistics_.healthScore.load();
+    stats.isHealthy = statistics_.isHealthy.load();
+    stats.startTime = statistics_.startTime;
+    stats.lastUpdate = statistics_.lastUpdate;
+
     auto currentTime = std::chrono::steady_clock::now();
     auto timeDiff =
-        std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - statistics_.startTime);
-
-    CircularBufferStatistics stats = statistics_;
+        std::chrono::duration_cast<std::chrono::milliseconds>(currentTime - stats.startTime);
 
     // Calculate current buffer state
     stats.currentLevel = getCurrentLevel();
@@ -1140,13 +964,13 @@ CircularBufferStatistics CircularAudioBuffer::getStatistics() const {
     // Calculate throughput
     if (timeDiff.count() > 0) {
         float seconds = timeDiff.count() / 1000.0f;
-        stats.throughput = statistics_.totalSamples.load() / seconds;
+        stats.throughput = stats.totalSamples.load() / seconds;
     }
 
     // Calculate error rate
-    size_t totalOps = statistics_.totalWrites.load() + statistics_.totalReads.load();
+    size_t totalOps = stats.totalWrites.load() + stats.totalReads.load();
     if (totalOps > 0) {
-        stats.errorRate = static_cast<float>(statistics_.errorCount.load()) / totalOps;
+        stats.errorRate = static_cast<float>(stats.errorCount.load()) / totalOps;
     }
 
     return stats;
@@ -1155,7 +979,7 @@ CircularBufferStatistics CircularAudioBuffer::getStatistics() const {
 void CircularAudioBuffer::resetStatistics() {
     std::lock_guard<std::mutex> lock(statisticsMutex_);
 
-    statistics_ = {};
+    statistics_ = CircularBufferStatistics();
     statistics_.startTime = std::chrono::steady_clock::now();
     statistics_.lastUpdate = statistics_.startTime;
     statistics_.isHealthy = true;
@@ -1229,11 +1053,9 @@ std::string CircularAudioBuffer::getDiagnosticInfo() const {
     return oss.str();
 }
 
-// TODO 2.4.104: Error Handling Implementation
-// ------------------------------------------
 void CircularAudioBuffer::handleError(int code,
                                       const std::string& message,
-                                      const std::string& details) {
+                                      const std::string& details) const {
     CircularBufferError error = {.code = code,
                                  .message = message,
                                  .details = details,
@@ -1272,8 +1094,7 @@ void CircularAudioBuffer::handleError(int code,
     }
 }
 
-void CircularAudioBuffer::updateHealthScore() {
-    // TODO: Calculate health score based on various metrics
+void CircularAudioBuffer::updateHealthScore() const {
     float score = 1.0f;
 
     // Factor in error rate
@@ -1310,8 +1131,6 @@ void CircularAudioBuffer::updateHealthScore() {
     }
 }
 
-// TODO 2.4.105: Callback Management
-// ---------------------------------
 void CircularAudioBuffer::setBufferStateCallback(BufferStateCallback callback) {
     std::lock_guard<std::mutex> lock(callbackMutex_);
     bufferStateCallback_ = callback;
@@ -1342,8 +1161,6 @@ void CircularAudioBuffer::clearErrors() {
     updateHealthScore();
 }
 
-// TODO 2.4.106: Utility Function Implementations
-// ----------------------------------------------
 CircularBufferConfig createDefaultConfig() {
     CircularBufferConfig config = {};
 
@@ -1420,6 +1237,17 @@ bool validateBufferConfiguration(const CircularBufferConfig& config, std::string
     CircularAudioBuffer tempBuffer;
     return tempBuffer.validateConfiguration(config, error);
 }
+
+// Custom deleter for aligned memory
+struct AlignedDeleter {
+    void operator()(float* ptr) const {
+#ifdef _WIN32
+        _aligned_free(ptr);
+#else
+        free(ptr);
+#endif
+    }
+};
 
 }  // namespace core
 }  // namespace huntmaster

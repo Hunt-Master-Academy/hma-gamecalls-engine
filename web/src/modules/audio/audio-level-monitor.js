@@ -453,17 +453,32 @@ export class AudioLevelMonitor {
     if (!this.spectrumData) return;
 
     try {
-      // Simple spectrum analysis - copy to spectrum buffer
-      const copyLength = Math.min(
-        inputBuffer.length,
-        this.buffers.spectrumBuffer.length
-      );
-      for (let i = 0; i < copyLength; i++) {
-        this.buffers.spectrumBuffer[i] = inputBuffer[i];
+      // Apply a window function (e.g., Hanning) to the input buffer
+      const windowedBuffer = new Float32Array(inputBuffer.length);
+      for (let i = 0; i < inputBuffer.length; i++) {
+        windowedBuffer[i] =
+          inputBuffer[i] *
+          0.5 *
+          (1 - Math.cos((2 * Math.PI * i) / (inputBuffer.length - 1)));
       }
 
-      // TODO: Implement proper FFT analysis here
-      // For now, just store the time-domain data
+      // --- Proper FFT Implementation ---
+      const fft = new Fft(this.config.fftSize);
+      const spectrum = fft.createComplexArray();
+      fft.realTransform(spectrum, windowedBuffer);
+
+      // Convert spectrum to magnitude in dB
+      for (let i = 0; i < this.buffers.spectrumBuffer.length; i++) {
+        const real = spectrum[i * 2];
+        const imag = spectrum[i * 2 + 1];
+        const magnitude = Math.sqrt(real * real + imag * imag);
+
+        // Convert to dB, with a floor of -100 dB
+        this.buffers.spectrumBuffer[i] = Math.max(
+          -100,
+          20 * Math.log10(magnitude)
+        );
+      }
     } catch (error) {
       console.warn("Spectrum analysis error:", error);
     }

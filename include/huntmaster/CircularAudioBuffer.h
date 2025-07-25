@@ -20,12 +20,28 @@
 #include <string>
 #include <vector>
 
+#include <stdlib.h>  // For free
+#ifdef _WIN32
+#include <malloc.h>  // For _aligned_free
+#endif
+
 namespace huntmaster {
 namespace core {
 
 // Forward declarations
 class AudioBuffer;
 struct AudioConfig;
+
+// Custom deleter for aligned memory
+struct AlignedDeleter {
+    void operator()(float* ptr) const {
+#ifdef _WIN32
+        _aligned_free(ptr);
+#else
+        free(ptr);
+#endif
+    }
+};
 
 // TODO: Phase 2.4 - Advanced Audio Engine Header - COMPREHENSIVE FILE TODO
 // ========================================================================
@@ -123,6 +139,60 @@ struct CircularBufferStatistics {
     std::atomic<bool> isHealthy{true};         ///< Overall health status
     std::atomic<float> healthScore{1.0f};      ///< Health score (0-1)
     std::atomic<size_t> consecutiveErrors{0};  ///< Consecutive error count
+
+    CircularBufferStatistics() = default;
+
+    CircularBufferStatistics(const CircularBufferStatistics& other) {
+        totalWrites = other.totalWrites.load();
+        totalReads = other.totalReads.load();
+        totalSamples = other.totalSamples.load();
+        currentLevel = other.currentLevel.load();
+        fillRatio = other.fillRatio.load();
+        averageWriteLatency = other.averageWriteLatency.load();
+        averageReadLatency = other.averageReadLatency.load();
+        maxWriteLatency = other.maxWriteLatency.load();
+        maxReadLatency = other.maxReadLatency.load();
+        throughput = other.throughput.load();
+        overflowCount = other.overflowCount.load();
+        underflowCount = other.underflowCount.load();
+        retryCount = other.retryCount.load();
+        errorCount = other.errorCount.load();
+        errorRate = other.errorRate.load();
+        totalOperationTime = other.totalOperationTime.load();
+        isHealthy = other.isHealthy.load();
+        healthScore = other.healthScore.load();
+        consecutiveErrors = other.consecutiveErrors.load();
+        startTime = other.startTime;
+        lastUpdate = other.lastUpdate;
+    }
+
+    CircularBufferStatistics& operator=(const CircularBufferStatistics& other) {
+        if (this == &other) {
+            return *this;
+        }
+        totalWrites = other.totalWrites.load();
+        totalReads = other.totalReads.load();
+        totalSamples = other.totalSamples.load();
+        currentLevel = other.currentLevel.load();
+        fillRatio = other.fillRatio.load();
+        averageWriteLatency = other.averageWriteLatency.load();
+        averageReadLatency = other.averageReadLatency.load();
+        maxWriteLatency = other.maxWriteLatency.load();
+        maxReadLatency = other.maxReadLatency.load();
+        throughput = other.throughput.load();
+        overflowCount = other.overflowCount.load();
+        underflowCount = other.underflowCount.load();
+        retryCount = other.retryCount.load();
+        errorCount = other.errorCount.load();
+        errorRate = other.errorRate.load();
+        totalOperationTime = other.totalOperationTime.load();
+        isHealthy = other.isHealthy.load();
+        healthScore = other.healthScore.load();
+        consecutiveErrors = other.consecutiveErrors.load();
+        startTime = other.startTime;
+        lastUpdate = other.lastUpdate;
+        return *this;
+    }
 };
 
 /**
@@ -385,6 +455,9 @@ class CircularAudioBuffer {
     float getErrorRate() const;
     std::vector<CircularBufferError> getErrorHistory() const;
 
+    // Public validation utility
+    bool validateConfiguration(const CircularBufferConfig& config, std::string& error) const;
+
   private:
     // TODO 2.4.93: Internal Implementation
     // -----------------------------------
@@ -407,7 +480,7 @@ class CircularAudioBuffer {
     void cleanupBuffer();
     bool validateConfiguration(const CircularBufferConfig& config, std::string& error) const;
     void updateStatistics();
-    void handleError(int code, const std::string& message, const std::string& details = "");
+    void handleError(int code, const std::string& message, const std::string& details = "") const;
 
     // Buffer operations helpers
     size_t writeInternal(const float* data, size_t sampleCount, bool blocking);
@@ -418,7 +491,7 @@ class CircularAudioBuffer {
     // Performance monitoring helpers
     void recordWriteLatency(float latency);
     void recordReadLatency(float latency);
-    void updateHealthScore();
+    void updateHealthScore() const;
     void checkBufferHealth();
 
     // Threading helpers
@@ -451,7 +524,7 @@ class CircularAudioBuffer {
     mutable std::mutex configMutex_;
 
     // Buffer storage
-    std::unique_ptr<float[]> buffer_;
+    std::unique_ptr<float, AlignedDeleter> buffer_;
     std::atomic<size_t> bufferSize_{0};
     std::atomic<size_t> numChannels_{1};
     std::atomic<uint32_t> sampleRate_{44100};
@@ -476,8 +549,8 @@ class CircularAudioBuffer {
     std::vector<float> latencyHistory_;
 
     // Error handling
-    CircularBufferError lastError_;
-    std::vector<CircularBufferError> errorHistory_;
+    mutable CircularBufferError lastError_;
+    mutable std::vector<CircularBufferError> errorHistory_;
     mutable std::mutex errorMutex_;
 
     // Callbacks
@@ -497,8 +570,8 @@ class CircularAudioBuffer {
     std::atomic<float> currentThroughput_{0.0f};
 
     // Health monitoring
-    std::atomic<float> healthScore_{1.0f};
-    std::atomic<bool> isHealthy_{true};
+    mutable std::atomic<float> healthScore_{1.0f};
+    mutable std::atomic<bool> isHealthy_{true};
     std::chrono::steady_clock::time_point lastHealthCheck_;
 };
 

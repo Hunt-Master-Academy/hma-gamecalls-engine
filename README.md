@@ -28,7 +28,9 @@ cmake --build build
 - ✅ **Zero setup friction** - dependencies downloaded automatically
 - ✅ **No submodule management** - CMake handles everything
 - ✅ **Consistent versions** - locked dependency versions across builds
-- ✅ **CI/CD friendly** - reliable automated buildsnquiries, please contact time@3dtechsolutions.us.
+- ✅ **CI/CD friendly** - reliable automated builds
+
+For inquiries, please contact info@huntmasteracademy.com.
 
 ---
 
