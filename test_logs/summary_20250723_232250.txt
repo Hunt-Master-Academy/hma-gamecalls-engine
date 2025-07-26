@@ -1,7 +1,0 @@
-✅ build: PASSED (17s)
-✅ unit: PASSED (42s)
-✅ integration: PASSED (33s)
-✅ component_engine: PASSED (55s)
-✅ component_mfcc: PASSED (61s)
-✅ component_dtw: PASSED (56s)
-❌ component_audio: FAILED (14s)

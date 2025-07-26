@@ -1,4 +1,0 @@
-✅ component_engine: PASSED (57s)
-❌ component_mfcc: FAILED (7s)
-❌ component_dtw: FAILED (4s)
-❌ component_audio: FAILED (13s)
