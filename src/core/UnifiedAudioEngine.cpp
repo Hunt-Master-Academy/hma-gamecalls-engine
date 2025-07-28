@@ -266,6 +266,8 @@ class UnifiedAudioEngine::Impl {
 
 // === Implementation ===
 
+// === Implementation ===
+
 UnifiedAudioEngine::Result<std::unique_ptr<UnifiedAudioEngine>> UnifiedAudioEngine::create() {
     LOG_INFO(Component::UNIFIED_ENGINE, "Creating UnifiedAudioEngine instance");
 
@@ -1692,86 +1694,6 @@ UnifiedAudioEngine::Impl::getDTWWindowRatio(SessionId sessionId) const {
         return {0.0f, Status::INIT_FAILED};
 
     return {session->dtwWindowRatio, Status::OK};
-}
-}
-;  // class UnifiedAudioEngine::Impl
-
-// Main UnifiedAudioEngine class implementation
-UnifiedAudioEngine::UnifiedAudioEngine() : pImpl(std::make_unique<Impl>()) {}
-
-UnifiedAudioEngine::~UnifiedAudioEngine() = default;
-
-UnifiedAudioEngine::Result<SessionId> UnifiedAudioEngine::createSession(float sampleRate) {
-    return pImpl->createSession(sampleRate);
-}
-
-UnifiedAudioEngine::Status UnifiedAudioEngine::destroySession(SessionId sessionId) {
-    return pImpl->destroySession(sessionId);
-}
-
-std::vector<SessionId> UnifiedAudioEngine::getActiveSessions() const {
-    return pImpl->getActiveSessions();
-}
-
-UnifiedAudioEngine::Status UnifiedAudioEngine::loadMasterCall(SessionId sessionId,
-                                                              std::string_view masterCallId) {
-    return pImpl->loadMasterCall(sessionId, masterCallId);
-}
-
-UnifiedAudioEngine::Status UnifiedAudioEngine::unloadMasterCall(SessionId sessionId) {
-    return pImpl->unloadMasterCall(sessionId);
-}
-
-UnifiedAudioEngine::Result<std::string>
-UnifiedAudioEngine::getCurrentMasterCall(SessionId sessionId) const {
-    return pImpl->getCurrentMasterCall(sessionId);
-}
-
-UnifiedAudioEngine::Status
-UnifiedAudioEngine::processAudioChunk(SessionId sessionId, std::span<const float> audioBuffer) {
-    return pImpl->processAudioChunk(sessionId, audioBuffer);
-}
-
-UnifiedAudioEngine::Result<float> UnifiedAudioEngine::getSimilarityScore(SessionId sessionId) {
-    return pImpl->getSimilarityScore(sessionId);
-}
-
-UnifiedAudioEngine::Result<int> UnifiedAudioEngine::getFeatureCount(SessionId sessionId) const {
-    return pImpl->getFeatureCount(sessionId);
-}
-
-UnifiedAudioEngine::Status
-UnifiedAudioEngine::setRealtimeScorerConfig(SessionId sessionId,
-                                            const RealtimeScorerConfig& config) {
-    return pImpl->setRealtimeScorerConfig(sessionId, config);
-}
-
-UnifiedAudioEngine::Result<RealtimeScoringResult>
-UnifiedAudioEngine::getRealtimeScoringResult(SessionId sessionId) {
-    return pImpl->getRealtimeScoringResult(sessionId);
-}
-
-UnifiedAudioEngine::Result<std::string> UnifiedAudioEngine::exportScoreToJson(SessionId sessionId) {
-    return pImpl->exportScoreToJson(sessionId);
-}
-
-UnifiedAudioEngine::Result<std::string>
-UnifiedAudioEngine::exportFeedbackToJson(SessionId sessionId) {
-    return pImpl->exportFeedbackToJson(sessionId);
-}
-
-UnifiedAudioEngine::Result<std::string>
-UnifiedAudioEngine::exportScoringHistoryToJson(SessionId sessionId, size_t maxCount) {
-    return pImpl->exportScoringHistoryToJson(sessionId, maxCount);
-}
-
-UnifiedAudioEngine::Status
-UnifiedAudioEngine::configureDTW(SessionId sessionId, float windowRatio, bool enableSIMD) {
-    return pImpl->configureDTW(sessionId, windowRatio, enableSIMD);
-}
-
-UnifiedAudioEngine::Result<float> UnifiedAudioEngine::getDTWWindowRatio(SessionId sessionId) const {
-    return pImpl->getDTWWindowRatio(sessionId);
 }
 
 }  // namespace huntmaster
