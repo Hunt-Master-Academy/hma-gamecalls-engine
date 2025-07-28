@@ -95,8 +95,8 @@
   "clang-format.fallbackStyle": "Google",
 
   "files.associations": {
-    "MLTable": "yaml",
     "*.yml": "yaml",
+    "MLTable": "yaml",
     "*.h": "cpp",
     "*.hpp": "cpp",
     "*.cpp": "cpp",
@@ -176,7 +176,15 @@
     "codecvt": "cpp",
     "xlocale": "cpp",
     "future": "cpp",
-    "xutility": "cpp"
+    "xutility": "cpp",
+    "bitset": "cpp",
+    "queue": "cpp",
+    "random": "cpp",
+    "regex": "cpp",
+    "stack": "cpp",
+    "valarray": "cpp",
+    "xhash": "cpp",
+    "xtree": "cpp"
   },
 
   // Exclude Patterns

@@ -6,7 +6,7 @@ name: Huntmaster Engine CI
 
 # DISABLED: Automatic triggers suspended - only manual execution allowed
 on:
-  workflow_dispatch:  # Manual trigger only
+  workflow_dispatch: # Manual trigger only
 
 # DISABLED TRIGGERS:
 # on:

@@ -2,7 +2,7 @@ name: Generate API Documentation
 
 # DISABLED: Automatic triggers suspended until deployment readiness
 on:
-  workflow_dispatch:  # Manual trigger only
+  workflow_dispatch: # Manual trigger only
 
 # DISABLED TRIGGERS:
 # on:
