@@ -27,6 +27,18 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# --- Security Compilation Flags ---
+# Add security enhancements for production builds
+if(NOT EMSCRIPTEN)
+    # Stack protection and format string security
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fstack-protector-all -D_FORTIFY_SOURCE=2 -Wformat -Wformat-security")
+
+    # Linker security flags for RELRO (Read-Only Relocations) and PIE (Position Independent Executable)
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,relro,-z,now -pie")
+
+    message(STATUS "Security compilation flags enabled")
+endif()
+
 # --- Project Structure Variables ---
 # Define paths to key directories to keep the script clean and maintainable.
 set(PROJECT_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
@@ -56,6 +68,13 @@ foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${CMAKE_BINARY_DIR}/lib)
 endforeach()
 
+# --- Advanced I/O Optimizer Configuration ---
+# Include advanced I/O optimization features
+if(NOT EMSCRIPTEN)
+    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/AdvancedIOOptimizer.cmake")
+    message(STATUS "Advanced I/O Optimizer features enabled")
+endif()
+
 # --- Platform Detection and Configuration ---
 # Set preprocessor definitions based on the target platform.
 if(EMSCRIPTEN)
@@ -83,6 +102,24 @@ FetchContent_Declare(
     GIT_TAG        "v131"  # Use stable release tag
 )
 FetchContent_MakeAvailable(kissfft)
+
+# FFTW3 - Optional dependency for advanced waveform analysis
+find_package(PkgConfig QUIET)
+if(PKG_CONFIG_FOUND)
+    pkg_check_modules(FFTW3 fftw3)
+endif()
+
+if(NOT FFTW3_FOUND)
+    find_path(FFTW3_INCLUDE_DIR fftw3.h)
+    find_library(FFTW3_LIBRARY fftw3)
+    if(FFTW3_INCLUDE_DIR AND FFTW3_LIBRARY)
+        set(FFTW3_FOUND TRUE)
+        message(STATUS "Found FFTW3: ${FFTW3_LIBRARY}")
+    else()
+        message(STATUS "FFTW3 not found - WaveformAnalyzer will use stub implementation")
+        add_compile_definitions(FFTW_DISABLE)
+    endif()
+endif()
 
 # Configure KissFFT library
 if(EMSCRIPTEN)

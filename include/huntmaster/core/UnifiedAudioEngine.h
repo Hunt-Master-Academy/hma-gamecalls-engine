@@ -180,7 +180,8 @@ class UnifiedAudioEngine {
         PROCESSING_ERROR = -4,   ///< Error occurred during audio processing
         INSUFFICIENT_DATA = -5,  ///< Not enough audio data for analysis
         OUT_OF_MEMORY = -6,      ///< Memory allocation failed
-        INIT_FAILED = -7         ///< Engine initialization failed
+        INIT_FAILED = -7,        ///< Engine initialization failed
+        INTERNAL_ERROR = -8      ///< Internal engine error
     };
 
     /**
@@ -476,6 +477,19 @@ class UnifiedAudioEngine {
     [[nodiscard]] Status startRecording(SessionId sessionId);
 
     /**
+     * @brief Start memory-based audio recording for a session
+     *
+     * Begins audio capture directly to memory buffer for later processing.
+     * This mode is optimal for scenarios requiring post-processing or
+     * immediate access to recorded data.
+     *
+     * @param sessionId Target session
+     * @param maxDurationSeconds Maximum recording duration (0 = no limit)
+     * @return Status::OK on success, error code on failure
+     */
+    [[nodiscard]] Status startMemoryRecording(SessionId sessionId, double maxDurationSeconds = 0.0);
+
+    /**
      * @brief Stop audio recording for a session
      *
      * Ends audio capture. Any buffered audio is processed before stopping.
@@ -484,7 +498,76 @@ class UnifiedAudioEngine {
      * @return Status::OK on success, error code on failure
      */
     [[nodiscard]] Status stopRecording(SessionId sessionId);
+
+    /**
+     * @brief Save recorded audio to file
+     *
+     * Saves the recorded audio data to a file. Works for both file-based
+     * and memory-based recordings.
+     *
+     * @param sessionId Target session
+     * @param filename Output filename
+     * @return Full path to saved file on success, error on failure
+     */
     [[nodiscard]] Result<std::string> saveRecording(SessionId sessionId, std::string_view filename);
+
+    /**
+     * @brief Get recorded audio data from memory
+     *
+     * Returns recorded audio samples directly from memory buffer.
+     * Only works for memory-based recordings.
+     *
+     * @param sessionId Target session
+     * @return Vector of audio samples (interleaved if multi-channel)
+     */
+    [[nodiscard]] Result<std::vector<float>> getRecordedAudioData(SessionId sessionId) const;
+
+    /**
+     * @brief Copy recorded audio data to external buffer
+     *
+     * Efficiently copies recorded audio data to a user-provided buffer.
+     * Only works for memory-based recordings.
+     *
+     * @param sessionId Target session
+     * @param buffer Destination buffer
+     * @param maxSamples Maximum samples to copy
+     * @return Number of samples actually copied
+     */
+    [[nodiscard]] Result<size_t>
+    copyRecordedAudioData(SessionId sessionId, float* buffer, size_t maxSamples) const;
+
+    /**
+     * @brief Clear memory recording buffer
+     *
+     * Clears the memory recording buffer, freeing up space for new recordings.
+     * Only affects memory-based recordings.
+     *
+     * @param sessionId Target session
+     * @return Status::OK on success, error code on failure
+     */
+    [[nodiscard]] Status clearRecordingBuffer(SessionId sessionId);
+
+    /**
+     * @brief Get recording mode information
+     */
+    enum class RecordingMode { FILE_BASED, MEMORY_BASED, HYBRID };
+
+    [[nodiscard]] Result<RecordingMode> getRecordingMode(SessionId sessionId) const;
+    [[nodiscard]] Status setRecordingMode(SessionId sessionId, RecordingMode mode);
+
+    /**
+     * @brief Get memory buffer usage information
+     */
+    struct MemoryBufferInfo {
+        size_t totalCapacityFrames;
+        size_t usedFrames;
+        size_t freeFrames;
+        double usagePercentage;
+        size_t memorySizeBytes;
+        bool isGrowthEnabled;
+        bool hasOverflowed;
+    };
+    [[nodiscard]] Result<MemoryBufferInfo> getMemoryBufferInfo(SessionId sessionId) const;
     [[nodiscard]] bool isRecording(SessionId sessionId) const;
     [[nodiscard]] Result<float> getRecordingLevel(SessionId sessionId) const;
     [[nodiscard]] Result<double> getRecordingDuration(SessionId sessionId) const;

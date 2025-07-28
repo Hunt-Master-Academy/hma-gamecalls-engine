@@ -32,7 +32,6 @@ import { DataValidator } from "../validation/data-validator.js";
  */
 class SessionRecorderModular {
   constructor(options = {}) {
-    // TODO: Initialize session recorder configuration
     this.config = {
       recordEvents: options.recordEvents !== false,
       recordUserInteractions: options.recordUserInteractions !== false,
@@ -52,7 +51,6 @@ class SessionRecorderModular {
       ...options,
     };
 
-    // TODO: Initialize recording state
     this.state = {
       isRecording: false,
       isPaused: false,
@@ -64,7 +62,6 @@ class SessionRecorderModular {
       warnings: [],
     };
 
-    // TODO: Initialize recording modules
     this.modules = {
       eventCapture: null,
       userInteractions: null,
@@ -74,12 +71,10 @@ class SessionRecorderModular {
       sessionStorage: null,
     };
 
-    // TODO: Initialize data management
     this.dataBuffer = [];
     this.validator = new DataValidator();
     this.recordingMetadata = {};
 
-    // TODO: Initialize event handlers
     this.eventHandlers = new Map();
 
     this.initializeSessionRecorder();
@@ -87,34 +82,26 @@ class SessionRecorderModular {
 
   /**
    * Initialize the session recording system
-   * TODO: Set up all recording modules and coordination logic
+   * Set up all recording modules and coordination logic
    */
   async initializeSessionRecorder() {
     try {
-      // TODO: Initialize privacy compliance first
       if (this.config.enablePrivacyCompliance) {
         await this.initializePrivacyCompliance();
       }
 
-      // TODO: Initialize storage module
       await this.initializeSessionStorage();
 
-      // TODO: Initialize recording modules based on configuration
       await this.initializeRecordingModules();
 
-      // TODO: Set up inter-module communication
       this.setupModuleCommunication();
 
-      // TODO: Set up automatic data flushing
       this.setupDataFlushing();
 
-      // TODO: Set up session lifecycle management
       this.setupSessionLifecycle();
 
-      // TODO: Set up error handling
       this.setupErrorHandling();
 
-      // TODO: Auto-start if configured
       if (this.config.autoStart) {
         await this.startRecording();
       }
@@ -128,11 +115,10 @@ class SessionRecorderModular {
 
   /**
    * Initialize privacy compliance module
-   * TODO: Set up privacy protection and consent management
+   * Set up privacy protection and consent management
    */
   async initializePrivacyCompliance() {
     try {
-      // TODO: Create privacy compliance instance
       this.modules.privacyCompliance = new PrivacyCompliance({
         gdprEnabled: true,
         ccpaEnabled: true,
@@ -141,7 +127,6 @@ class SessionRecorderModular {
         logComplianceEvents: true,
       });
 
-      // TODO: Check consent if user ID is provided
       if (
         this.config.userId &&
         !this.modules.privacyCompliance.hasValidConsent(this.config.userId)
@@ -161,11 +146,10 @@ class SessionRecorderModular {
 
   /**
    * Initialize session storage module
-   * TODO: Set up session data persistence and management
+   * Set up session data persistence and management
    */
   async initializeSessionStorage() {
     try {
-      // TODO: Create session storage instance
       this.modules.sessionStorage = new SessionStorage({
         sessionId: this.config.sessionId,
         userId: this.config.userId,
@@ -175,7 +159,6 @@ class SessionRecorderModular {
         flushInterval: this.config.flushInterval,
       });
 
-      // TODO: Initialize session metadata
       this.recordingMetadata = {
         sessionId: this.config.sessionId,
         userId: this.config.userId,
@@ -204,11 +187,10 @@ class SessionRecorderModular {
 
   /**
    * Initialize recording modules based on configuration
-   * TODO: Set up event, interaction, audio, and performance recording
+   * Set up event, interaction, audio, and performance recording
    */
   async initializeRecordingModules() {
     try {
-      // TODO: Initialize event capture module
       if (this.config.recordEvents) {
         this.modules.eventCapture = new EventCapture({
           targetElements: document,
@@ -221,7 +203,6 @@ class SessionRecorderModular {
         });
       }
 
-      // TODO: Initialize user interactions module
       if (this.config.recordUserInteractions) {
         this.modules.userInteractions = new UserInteractions({
           trackMouseMovements: true,
@@ -233,7 +214,6 @@ class SessionRecorderModular {
         });
       }
 
-      // TODO: Initialize audio capture module
       if (this.config.recordAudio) {
         this.modules.audioCapture = new AudioCapture({
           recordSystemAudio: true,
@@ -244,7 +224,6 @@ class SessionRecorderModular {
         });
       }
 
-      // TODO: Initialize performance tracking module
       if (this.config.recordPerformance) {
         this.modules.performanceTracking = new PerformanceTracking({
           trackResourceTiming: true,
@@ -273,27 +252,22 @@ class SessionRecorderModular {
    */
   setupModuleCommunication() {
     try {
-      // TODO: Set up event listeners for module communication
       Object.entries(this.modules).forEach(([moduleName, module]) => {
         if (module && typeof module.on === "function") {
-          // TODO: Listen for data events from modules
           module.on("data", (data) => {
             this.handleModuleData(moduleName, data);
           });
 
-          // TODO: Listen for error events from modules
           module.on("error", (error) => {
             this.handleModuleError(moduleName, error);
           });
 
-          // TODO: Listen for status events from modules
           module.on("status", (status) => {
             this.handleModuleStatus(moduleName, status);
           });
         }
       });
 
-      // TODO: Set up cross-module data sharing
       this.setupCrossModuleDataSharing();
 
       console.log("SessionRecorderModular: Module communication established");
@@ -310,14 +284,12 @@ class SessionRecorderModular {
    * TODO: Enable modules to share relevant data with each other
    */
   setupCrossModuleDataSharing() {
-    // TODO: Share user interaction data with event capture
     if (this.modules.userInteractions && this.modules.eventCapture) {
       this.modules.userInteractions.on("interaction", (interaction) => {
         this.modules.eventCapture.correlateWithInteraction(interaction);
       });
     }
 
-    // TODO: Share performance data with all modules
     if (this.modules.performanceTracking) {
       this.modules.performanceTracking.on("performance", (metrics) => {
         Object.values(this.modules).forEach((module) => {
@@ -328,7 +300,6 @@ class SessionRecorderModular {
       });
     }
 
-    // TODO: Share privacy filters with all data-generating modules
     if (this.modules.privacyCompliance) {
       const privacyFilter = (data) => {
         return this.modules.privacyCompliance.filterData(data);
@@ -344,16 +315,14 @@ class SessionRecorderModular {
 
   /**
    * Set up automatic data flushing to storage
-   * TODO: Implement periodic data flushing to prevent memory buildup
+   * Implement periodic data flushing to prevent memory buildup
    */
   setupDataFlushing() {
     try {
-      // TODO: Set up flush interval
       this.flushTimer = setInterval(() => {
         this.flushDataToStorage();
       }, this.config.flushInterval);
 
-      // TODO: Set up size-based flushing
       this.checkBufferSize = () => {
         const bufferSize = this.getBufferSize();
         if (bufferSize > this.config.bufferSize * 0.8) {
@@ -372,18 +341,16 @@ class SessionRecorderModular {
 
   /**
    * Set up session lifecycle management
-   * TODO: Handle session start, pause, resume, and end events
+   * Handle session start, pause, resume, and end events
    */
   setupSessionLifecycle() {
     try {
-      // TODO: Set up session timeout
       if (this.config.maxSessionDuration) {
         this.sessionTimeoutTimer = setTimeout(() => {
           this.stopRecording("session_timeout");
         }, this.config.maxSessionDuration);
       }
 
-      // TODO: Set up visibility change handling
       document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
           this.pauseRecording("tab_hidden");
@@ -392,12 +359,10 @@ class SessionRecorderModular {
         }
       });
 
-      // TODO: Set up beforeunload handling
       window.addEventListener("beforeunload", () => {
         this.stopRecording("page_unload");
       });
 
-      // TODO: Set up storage quota monitoring
       this.setupStorageQuotaMonitoring();
 
       console.log("SessionRecorderModular: Session lifecycle configured");
@@ -411,11 +376,10 @@ class SessionRecorderModular {
 
   /**
    * Set up error handling for the recording system
-   * TODO: Implement comprehensive error handling and recovery
+   * Implement comprehensive error handling and recovery
    */
   setupErrorHandling() {
     try {
-      // TODO: Set up global error handler
       window.addEventListener("error", (event) => {
         this.handleError("global_error", {
           message: event.message,
@@ -426,7 +390,6 @@ class SessionRecorderModular {
         });
       });
 
-      // TODO: Set up unhandled promise rejection handler
       window.addEventListener("unhandledrejection", (event) => {
         this.handleError("unhandled_promise_rejection", {
           reason: event.reason,
@@ -449,13 +412,11 @@ class SessionRecorderModular {
    */
   async startRecording() {
     try {
-      // TODO: Check if already recording
       if (this.state.isRecording) {
         console.warn("SessionRecorderModular: Recording already in progress");
         return false;
       }
 
-      // TODO: Check privacy consent
       if (this.config.enablePrivacyCompliance && this.config.userId) {
         if (
           !this.modules.privacyCompliance.hasValidConsent(this.config.userId)
@@ -464,16 +425,13 @@ class SessionRecorderModular {
         }
       }
 
-      // TODO: Update recording state
       this.state.isRecording = true;
       this.state.isPaused = false;
       this.state.startTime = Date.now();
       this.state.lastFlushTime = this.state.startTime;
 
-      // TODO: Update metadata
       this.recordingMetadata.startTime = this.state.startTime;
 
-      // TODO: Start all recording modules
       const startPromises = Object.entries(this.modules).map(
         async ([moduleName, module]) => {
           if (module && typeof module.startRecording === "function") {
@@ -493,7 +451,6 @@ class SessionRecorderModular {
 
       await Promise.allSettled(startPromises);
 
-      // TODO: Log recording start
       this.logEvent("recording_started", {
         sessionId: this.config.sessionId,
         userId: this.config.userId,
@@ -518,23 +475,19 @@ class SessionRecorderModular {
    */
   async stopRecording(reason = "manual_stop") {
     try {
-      // TODO: Check if recording is active
       if (!this.state.isRecording) {
         console.warn("SessionRecorderModular: No active recording to stop");
         return false;
       }
 
-      // TODO: Update recording state
       this.state.isRecording = false;
       this.state.endTime = Date.now();
 
-      // TODO: Update metadata
       this.recordingMetadata.endTime = this.state.endTime;
       this.recordingMetadata.duration =
         this.state.endTime - this.state.startTime;
       this.recordingMetadata.stopReason = reason;
 
-      // TODO: Stop all recording modules
       const stopPromises = Object.entries(this.modules).map(
         async ([moduleName, module]) => {
           if (module && typeof module.stopRecording === "function") {
@@ -554,13 +507,10 @@ class SessionRecorderModular {
 
       await Promise.allSettled(stopPromises);
 
-      // TODO: Final data flush
       await this.flushDataToStorage();
 
-      // TODO: Finalize session
       await this.finalizeSession();
 
-      // TODO: Clear timers
       if (this.flushTimer) {
         clearInterval(this.flushTimer);
         this.flushTimer = null;
@@ -571,7 +521,6 @@ class SessionRecorderModular {
         this.sessionTimeoutTimer = null;
       }
 
-      // TODO: Log recording end
       this.logEvent("recording_stopped", {
         sessionId: this.config.sessionId,
         duration: this.recordingMetadata.duration,
@@ -599,17 +548,14 @@ class SessionRecorderModular {
         return false;
       }
 
-      // TODO: Update state
       this.state.isPaused = true;
 
-      // TODO: Pause all recording modules
       Object.entries(this.modules).forEach(([moduleName, module]) => {
         if (module && typeof module.pauseRecording === "function") {
           module.pauseRecording();
         }
       });
 
-      // TODO: Log pause event
       this.logEvent("recording_paused", { reason });
 
       console.log(`SessionRecorderModular: Recording paused (${reason})`);
@@ -633,17 +579,14 @@ class SessionRecorderModular {
         return false;
       }
 
-      // TODO: Update state
       this.state.isPaused = false;
 
-      // TODO: Resume all recording modules
       Object.entries(this.modules).forEach(([moduleName, module]) => {
         if (module && typeof module.resumeRecording === "function") {
           module.resumeRecording();
         }
       });
 
-      // TODO: Log resume event
       this.logEvent("recording_resumed", { reason });
 
       console.log(`SessionRecorderModular: Recording resumed (${reason})`);
@@ -659,28 +602,24 @@ class SessionRecorderModular {
 
   /**
    * Handle data from recording modules
-   * TODO: Process and buffer data from individual modules
+   * Process and buffer data from individual modules
    */
   handleModuleData(moduleName, data) {
     try {
-      // TODO: Skip if not recording or paused
       if (!this.state.isRecording || this.state.isPaused) {
         return;
       }
 
-      // TODO: Apply privacy filters
       let filteredData = data;
       if (this.modules.privacyCompliance) {
         filteredData = this.modules.privacyCompliance.filterData(data);
       }
 
-      // TODO: Validate data
       if (!this.validator.validate(filteredData)) {
         console.warn(`SessionRecorderModular: Invalid data from ${moduleName}`);
         return;
       }
 
-      // TODO: Add metadata
       const enrichedData = {
         ...filteredData,
         timestamp: Date.now(),
@@ -689,16 +628,12 @@ class SessionRecorderModular {
         sequence: this.state.totalEvents++,
       };
 
-      // TODO: Add to buffer
       this.dataBuffer.push(enrichedData);
 
-      // TODO: Update size tracking
       this.state.totalSize += JSON.stringify(enrichedData).length;
 
-      // TODO: Check if buffer needs flushing
       this.checkBufferSize();
 
-      // TODO: Emit data event
       this.emit("data", enrichedData);
 
       if (this.config.debugMode) {
@@ -723,19 +658,15 @@ class SessionRecorderModular {
         return;
       }
 
-      // TODO: Prepare data for storage
       const dataToFlush = [...this.dataBuffer];
       this.dataBuffer = [];
 
-      // TODO: Store data
       if (this.modules.sessionStorage) {
         await this.modules.sessionStorage.storeData(dataToFlush);
       }
 
-      // TODO: Update flush time
       this.state.lastFlushTime = Date.now();
 
-      // TODO: Emit flush event
       this.emit("flush", {
         count: dataToFlush.length,
         size: JSON.stringify(dataToFlush).length,
@@ -762,7 +693,6 @@ class SessionRecorderModular {
    */
   async finalizeSession() {
     try {
-      // TODO: Generate session summary
       const sessionSummary = {
         ...this.recordingMetadata,
         stats: {
@@ -781,12 +711,10 @@ class SessionRecorderModular {
         ),
       };
 
-      // TODO: Store session summary
       if (this.modules.sessionStorage) {
         await this.modules.sessionStorage.storeSessionSummary(sessionSummary);
       }
 
-      // TODO: Emit session complete event
       this.emit("sessionComplete", sessionSummary);
 
       console.log("SessionRecorderModular: Session finalized successfully");
@@ -803,7 +731,7 @@ class SessionRecorderModular {
 
   /**
    * Get current recording status
-   * TODO: Return comprehensive status information
+   * Return comprehensive status information
    */
   getStatus() {
     return {
@@ -830,7 +758,7 @@ class SessionRecorderModular {
 
   /**
    * Generate unique session ID
-   * TODO: Create cryptographically secure session identifier
+   * Create cryptographically secure session identifier
    */
   generateSessionId() {
     const timestamp = Date.now().toString(36);
@@ -840,23 +768,20 @@ class SessionRecorderModular {
 
   /**
    * Clean up and destroy the session recorder
-   * TODO: Clean up resources and finalize recording
+   * Clean up resources and finalize recording
    */
   async destroy() {
     try {
-      // TODO: Stop recording if active
       if (this.state.isRecording) {
         await this.stopRecording("recorder_destroyed");
       }
 
-      // TODO: Destroy all modules
       Object.entries(this.modules).forEach(([moduleName, module]) => {
         if (module && typeof module.destroy === "function") {
           module.destroy();
         }
       });
 
-      // TODO: Clear buffers and state
       this.dataBuffer = [];
       this.eventHandlers.clear();
 
@@ -867,14 +792,11 @@ class SessionRecorderModular {
   }
 }
 
-// TODO: Export the SessionRecorderModular class
 export { SessionRecorderModular };
 
-// TODO: Export convenience factory function
 export const createSessionRecorder = (options) =>
   new SessionRecorderModular(options);
 
-// TODO: Export session utilities
 export const SessionRecorderUtils = {
   generateSessionId: () => {
     const timestamp = Date.now().toString(36);

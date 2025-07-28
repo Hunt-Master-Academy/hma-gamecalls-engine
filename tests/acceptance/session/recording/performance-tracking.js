@@ -27,7 +27,6 @@ import { EventCapture } from "./event-capture.js";
  */
 class PerformanceTracker {
   constructor(options = {}) {
-    // TODO: Initialize performance tracking configuration
     this.config = {
       trackingInterval: options.trackingInterval || 1000, // 1 second default
       metricsBufferSize: options.metricsBufferSize || 1000,
@@ -47,13 +46,11 @@ class PerformanceTracker {
       ...options,
     };
 
-    // TODO: Initialize performance monitoring components
     this.validator = new DataValidator();
     this.privacy = new PrivacyCompliance();
     this.encryption = new DataEncryption();
     this.eventCapture = new EventCapture();
 
-    // TODO: Initialize performance metrics storage
     this.metrics = {
       cpu: [],
       memory: [],
@@ -64,14 +61,12 @@ class PerformanceTracker {
       user: [],
     };
 
-    // TODO: Initialize monitoring state
     this.isTracking = false;
     this.trackingStartTime = null;
     this.lastTrackingTime = null;
     this.performanceObserver = null;
     this.intervalId = null;
 
-    // TODO: Initialize performance APIs availability
     this.apis = {
       performance: typeof performance !== "undefined",
       observer: typeof PerformanceObserver !== "undefined",
@@ -87,25 +82,20 @@ class PerformanceTracker {
 
   /**
    * Initialize performance tracking components and observers
-   * TODO: Set up performance observers and monitoring infrastructure
+   * Set up performance observers and monitoring infrastructure
    */
   initializePerformanceTracking() {
     try {
-      // TODO: Initialize Performance Observer for navigation timing
       if (this.apis.observer) {
         this.setupPerformanceObserver();
       }
 
-      // TODO: Initialize custom performance markers
       this.setupPerformanceMarkers();
 
-      // TODO: Initialize resource monitoring
       this.setupResourceMonitoring();
 
-      // TODO: Initialize network monitoring
       this.setupNetworkMonitoring();
 
-      // TODO: Initialize frame rate monitoring
       this.setupFrameRateMonitoring();
 
       console.log("PerformanceTracker: Initialized successfully");
@@ -116,16 +106,14 @@ class PerformanceTracker {
 
   /**
    * Set up Performance Observer for automatic metrics collection
-   * TODO: Configure observers for various performance entry types
+   * Configure observers for various performance entry types
    */
   setupPerformanceObserver() {
     try {
-      // TODO: Observe navigation timing
       this.performanceObserver = new PerformanceObserver((list) => {
         this.processPerformanceEntries(list.getEntries());
       });
 
-      // TODO: Start observing performance entries
       this.performanceObserver.observe({
         entryTypes: [
           "navigation",
@@ -148,17 +136,15 @@ class PerformanceTracker {
 
   /**
    * Set up custom performance markers for session tracking
-   * TODO: Create custom markers for session milestones
+   * Create custom markers for session milestones
    */
   setupPerformanceMarkers() {
     try {
-      // TODO: Mark session start
       if (this.apis.mark) {
         performance.mark("session-recording-start");
         performance.mark("performance-tracking-init");
       }
 
-      // TODO: Set up milestone markers
       this.milestones = {
         "session-start": null,
         "first-interaction": null,
@@ -178,21 +164,18 @@ class PerformanceTracker {
 
   /**
    * Set up resource monitoring for memory, CPU, and other system resources
-   * TODO: Implement comprehensive resource monitoring
+   * Implement comprehensive resource monitoring
    */
   setupResourceMonitoring() {
     try {
-      // TODO: Initialize memory monitoring
       if (this.config.enableMemoryMonitoring && this.apis.memory) {
         this.setupMemoryMonitoring();
       }
 
-      // TODO: Initialize CPU monitoring (approximation)
       if (this.config.enableCPUMonitoring) {
         this.setupCPUMonitoring();
       }
 
-      // TODO: Initialize DOM monitoring
       if (this.config.enableDOMMonitoring) {
         this.setupDOMMonitoring();
       }
@@ -211,7 +194,6 @@ class PerformanceTracker {
    * TODO: Monitor memory usage patterns and detect leaks
    */
   setupMemoryMonitoring() {
-    // TODO: Track memory usage over time
     this.memoryTracker = {
       baseline: performance.memory ? performance.memory.usedJSHeapSize : 0,
       peak: 0,
@@ -224,10 +206,9 @@ class PerformanceTracker {
 
   /**
    * Set up CPU monitoring using timing-based approximation
-   * TODO: Implement CPU usage estimation
+   * Implement CPU usage estimation
    */
   setupCPUMonitoring() {
-    // TODO: Use timing measurements to estimate CPU load
     this.cpuTracker = {
       baseline: performance.now(),
       samples: [],
@@ -242,14 +223,12 @@ class PerformanceTracker {
    * TODO: Monitor DOM performance metrics
    */
   setupDOMMonitoring() {
-    // TODO: Track DOM node count and mutations
     this.domTracker = {
       nodeCount: document.querySelectorAll("*").length,
       mutationCount: 0,
       maxDepth: this.calculateDOMDepth(),
     };
 
-    // TODO: Set up mutation observer for DOM changes
     this.setupDOMObserver();
 
     console.log("PerformanceTracker: DOM monitoring initialized");
@@ -261,7 +240,6 @@ class PerformanceTracker {
    */
   setupNetworkMonitoring() {
     try {
-      // TODO: Track network requests performance
       this.networkTracker = {
         requests: [],
         totalRequests: 0,
@@ -270,7 +248,6 @@ class PerformanceTracker {
         slowRequests: [],
       };
 
-      // TODO: Monitor fetch and XMLHttpRequest
       this.interceptNetworkRequests();
 
       console.log("PerformanceTracker: Network monitoring initialized");
@@ -287,7 +264,6 @@ class PerformanceTracker {
    * TODO: Monitor rendering performance and FPS
    */
   setupFrameRateMonitoring() {
-    // TODO: Track frame rate and rendering performance
     this.frameTracker = {
       frames: 0,
       startTime: performance.now(),
@@ -297,7 +273,6 @@ class PerformanceTracker {
       maxFps: 0,
     };
 
-    // TODO: Start frame rate monitoring
     this.startFrameRateMonitoring();
 
     console.log("PerformanceTracker: Frame rate monitoring initialized");
@@ -314,20 +289,16 @@ class PerformanceTracker {
     }
 
     try {
-      // TODO: Mark tracking start
       this.isTracking = true;
       this.trackingStartTime = performance.now();
       this.lastTrackingTime = this.trackingStartTime;
 
-      // TODO: Start periodic metrics collection
       this.intervalId = setInterval(() => {
         this.collectPerformanceMetrics();
       }, this.config.trackingInterval);
 
-      // TODO: Mark session milestone
       this.markMilestone("session-start");
 
-      // TODO: Start real-time monitoring if enabled
       if (this.config.enableRealTimeMonitoring) {
         this.startRealTimeMonitoring();
       }
@@ -351,22 +322,18 @@ class PerformanceTracker {
     }
 
     try {
-      // TODO: Stop periodic collection
       if (this.intervalId) {
         clearInterval(this.intervalId);
         this.intervalId = null;
       }
 
-      // TODO: Stop performance observer
       if (this.performanceObserver) {
         this.performanceObserver.disconnect();
       }
 
-      // TODO: Mark tracking end
       this.isTracking = false;
       const trackingDuration = performance.now() - this.trackingStartTime;
 
-      // TODO: Generate final performance summary
       const summary = this.generatePerformanceSummary(trackingDuration);
 
       console.log("PerformanceTracker: Stopped tracking");
@@ -386,36 +353,28 @@ class PerformanceTracker {
       const timestamp = performance.now();
       const metrics = {};
 
-      // TODO: Collect memory metrics
       if (this.config.enableMemoryMonitoring) {
         metrics.memory = this.collectMemoryMetrics();
       }
 
-      // TODO: Collect CPU metrics
       if (this.config.enableCPUMonitoring) {
         metrics.cpu = this.collectCPUMetrics();
       }
 
-      // TODO: Collect network metrics
       if (this.config.enableNetworkMonitoring) {
         metrics.network = this.collectNetworkMetrics();
       }
 
-      // TODO: Collect DOM metrics
       if (this.config.enableDOMMonitoring) {
         metrics.dom = this.collectDOMMetrics();
       }
 
-      // TODO: Collect rendering metrics
       metrics.rendering = this.collectRenderingMetrics();
 
-      // TODO: Collect audio-specific metrics
       metrics.audio = this.collectAudioMetrics();
 
-      // TODO: Store metrics with timestamp
       this.storeMetrics(timestamp, metrics);
 
-      // TODO: Check for performance thresholds
       this.checkPerformanceThresholds(metrics);
 
       this.lastTrackingTime = timestamp;
@@ -432,7 +391,6 @@ class PerformanceTracker {
     const metrics = {};
 
     try {
-      // TODO: Collect JavaScript heap metrics
       if (this.apis.memory) {
         const memory = performance.memory;
         metrics.jsHeapSizeLimit = memory.jsHeapSizeLimit;
@@ -441,13 +399,11 @@ class PerformanceTracker {
         metrics.memoryUsagePercent =
           (memory.usedJSHeapSize / memory.jsHeapSizeLimit) * 100;
 
-        // TODO: Update memory tracker
         this.memoryTracker.samples.push(memory.usedJSHeapSize);
         if (memory.usedJSHeapSize > this.memoryTracker.peak) {
           this.memoryTracker.peak = memory.usedJSHeapSize;
         }
 
-        // TODO: Detect potential garbage collection
         if (this.memoryTracker.samples.length > 1) {
           const lastSample =
             this.memoryTracker.samples[this.memoryTracker.samples.length - 2];
@@ -475,26 +431,21 @@ class PerformanceTracker {
     const metrics = {};
 
     try {
-      // TODO: Measure task execution time
       const startTime = performance.now();
 
-      // TODO: Perform timing-based CPU estimation
       const endTime = performance.now();
       const executionTime = endTime - startTime;
 
-      // TODO: Calculate CPU usage approximation
       metrics.estimatedCPUUsage = Math.min(
         100,
         (executionTime / this.cpuTracker.heavyTaskThreshold) * 100
       );
 
-      // TODO: Track timing samples
       this.cpuTracker.samples.push(executionTime);
       if (this.cpuTracker.samples.length > 100) {
         this.cpuTracker.samples.shift();
       }
 
-      // TODO: Calculate average execution time
       metrics.averageExecutionTime =
         this.cpuTracker.samples.reduce((a, b) => a + b, 0) /
         this.cpuTracker.samples.length;
@@ -516,7 +467,6 @@ class PerformanceTracker {
     const metrics = {};
 
     try {
-      // TODO: Get network request statistics
       const tracker = this.networkTracker;
       metrics.totalRequests = tracker.totalRequests;
       metrics.failedRequests = tracker.failedRequests;
@@ -527,7 +477,6 @@ class PerformanceTracker {
             100
           : 100;
 
-      // TODO: Calculate average latency
       if (tracker.requests.length > 0) {
         const totalLatency = tracker.requests.reduce(
           (sum, req) => sum + (req.duration || 0),
@@ -536,10 +485,8 @@ class PerformanceTracker {
         metrics.averageLatency = totalLatency / tracker.requests.length;
       }
 
-      // TODO: Count slow requests
       metrics.slowRequestCount = tracker.slowRequests.length;
 
-      // TODO: Get connection information if available
       if (navigator.connection) {
         metrics.connectionType = navigator.connection.effectiveType;
         metrics.downlink = navigator.connection.downlink;
@@ -563,21 +510,16 @@ class PerformanceTracker {
     const metrics = {};
 
     try {
-      // TODO: Count DOM nodes
       const nodeCount = document.querySelectorAll("*").length;
       metrics.nodeCount = nodeCount;
       metrics.nodeCountChange = nodeCount - this.domTracker.nodeCount;
 
-      // TODO: Calculate DOM depth
       metrics.maxDepth = this.calculateDOMDepth();
 
-      // TODO: Track mutation count
       metrics.mutationCount = this.domTracker.mutationCount;
 
-      // TODO: Update DOM tracker
       this.domTracker.nodeCount = nodeCount;
 
-      // TODO: Check for DOM performance issues
       if (nodeCount > this.config.thresholds.dom) {
         metrics.domSizeWarning = true;
       }
@@ -599,17 +541,14 @@ class PerformanceTracker {
     const metrics = {};
 
     try {
-      // TODO: Get current frame rate
       metrics.currentFPS = this.frameTracker.fps;
       metrics.minFPS = this.frameTracker.minFps;
       metrics.maxFPS = this.frameTracker.maxFps;
 
-      // TODO: Check for performance issues
       if (metrics.currentFPS < this.config.thresholds.fps) {
         metrics.lowFPSWarning = true;
       }
 
-      // TODO: Get paint timing if available
       if (this.apis.performance) {
         const paintEntries = performance.getEntriesByType("paint");
         if (paintEntries.length > 0) {
@@ -639,7 +578,6 @@ class PerformanceTracker {
     const metrics = {};
 
     try {
-      // TODO: Get audio context metrics if available
       if (window.AudioContext || window.webkitAudioContext) {
         const audioContext = window.audioContext || window.webkitAudioContext;
         if (audioContext) {
@@ -651,10 +589,8 @@ class PerformanceTracker {
         }
       }
 
-      // TODO: Track audio buffer performance
       metrics.audioBufferPerformance = this.getAudioBufferMetrics();
 
-      // TODO: Track WebRTC audio metrics if applicable
       metrics.webrtcMetrics = this.getWebRTCAudioMetrics();
     } catch (error) {
       console.error(
@@ -668,12 +604,11 @@ class PerformanceTracker {
 
   /**
    * Process performance entries from Performance Observer
-   * TODO: Handle different types of performance entries
+   * Handle different types of performance entries
    */
   processPerformanceEntries(entries) {
     entries.forEach((entry) => {
       try {
-        // TODO: Process different entry types
         switch (entry.entryType) {
           case "navigation":
             this.processNavigationEntry(entry);
@@ -702,16 +637,14 @@ class PerformanceTracker {
 
   /**
    * Mark a performance milestone
-   * TODO: Create custom performance markers for session events
+   * Create custom performance markers for session events
    */
   markMilestone(name, details = {}) {
     try {
-      // TODO: Create performance mark
       if (this.apis.mark) {
         performance.mark(`milestone-${name}`);
       }
 
-      // TODO: Store milestone data
       this.milestones[name] = {
         timestamp: performance.now(),
         details,
@@ -728,7 +661,7 @@ class PerformanceTracker {
 
   /**
    * Generate comprehensive performance summary
-   * TODO: Create detailed performance analysis report
+   * Create detailed performance analysis report
    */
   generatePerformanceSummary(duration) {
     try {
@@ -749,7 +682,6 @@ class PerformanceTracker {
         timestamp: new Date().toISOString(),
       };
 
-      // TODO: Validate and encrypt summary data
       const validatedSummary = this.validator.validate(summary);
       const encryptedSummary = this.encryption.encrypt(validatedSummary);
 
@@ -766,10 +698,9 @@ class PerformanceTracker {
 
   /**
    * Calculate DOM depth
-   * TODO: Determine maximum DOM tree depth
+   * Determine maximum DOM tree depth
    */
   calculateDOMDepth() {
-    // TODO: Implement DOM depth calculation
     let maxDepth = 0;
 
     function getDepth(element, currentDepth = 0) {
@@ -822,7 +753,7 @@ class PerformanceTracker {
 
   /**
    * Export performance data
-   * TODO: Export collected metrics for analysis
+   * Export collected metrics for analysis
    */
   exportData(format = "json") {
     try {
@@ -835,10 +766,8 @@ class PerformanceTracker {
         ),
       };
 
-      // TODO: Apply privacy compliance
       const compliantData = this.privacy.filterData(data);
 
-      // TODO: Format data according to requested format
       switch (format.toLowerCase()) {
         case "json":
           return JSON.stringify(compliantData, null, 2);
@@ -855,28 +784,24 @@ class PerformanceTracker {
 
   /**
    * Cleanup and destroy the performance tracker
-   * TODO: Clean up all monitoring and free resources
+   * Clean up all monitoring and free resources
    */
   destroy() {
     try {
-      // TODO: Stop tracking if active
       if (this.isTracking) {
         this.stopTracking();
       }
 
-      // TODO: Disconnect observers
       if (this.performanceObserver) {
         this.performanceObserver.disconnect();
         this.performanceObserver = null;
       }
 
-      // TODO: Clear intervals
       if (this.intervalId) {
         clearInterval(this.intervalId);
         this.intervalId = null;
       }
 
-      // TODO: Clear stored data
       this.metrics = null;
       this.milestones = null;
 
@@ -887,10 +812,8 @@ class PerformanceTracker {
   }
 }
 
-// TODO: Export the PerformanceTracker class
 export { PerformanceTracker };
 
-// TODO: Export convenience functions
 export const createPerformanceTracker = (options) =>
   new PerformanceTracker(options);
 export const trackSessionPerformance = (sessionId, options) => {
@@ -899,7 +822,6 @@ export const trackSessionPerformance = (sessionId, options) => {
   return tracker;
 };
 
-// TODO: Export performance utilities
 export const PerformanceUtils = {
   formatBytes: (bytes) => {
     if (bytes === 0) return "0 Bytes";

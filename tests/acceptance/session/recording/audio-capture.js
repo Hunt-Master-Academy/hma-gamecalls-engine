@@ -46,7 +46,7 @@ export class AudioCapture extends EventCapture {
   constructor(config = {}) {
     super(config);
 
-    // TODO: Initialize audio-specific configuration
+    // Initialize audio-specific configuration
     this.audioConfig = {
       enableMicrophoneCapture: config.enableMicrophoneCapture ?? true,
       enablePlaybackTracking: config.enablePlaybackTracking ?? true,
@@ -67,7 +67,7 @@ export class AudioCapture extends EventCapture {
       ...config,
     };
 
-    // TODO: Initialize audio system state
+    // Initialize audio system state
     this.audioState = {
       mediaStream: null,
       audioContext: null,
@@ -86,7 +86,7 @@ export class AudioCapture extends EventCapture {
       },
     };
 
-    // TODO: Initialize hunting call analytics
+    // Initialize hunting call analytics
     this.huntCallAnalytics = {
       callSessions: [],
       validationResults: new Map(),
@@ -108,7 +108,7 @@ export class AudioCapture extends EventCapture {
       },
     };
 
-    // TODO: Initialize audio processing components
+    // Initialize audio processing components
     this.audioProcessing = {
       fftSize: 2048,
       frequencyBins: null,
@@ -128,25 +128,25 @@ export class AudioCapture extends EventCapture {
    * @returns {void}
    */
   _initializeAudioCapture() {
-    // TODO: Setup audio context and processing
+    // Setup audio context and processing
     this._setupAudioContext();
 
-    // TODO: Setup microphone capture if enabled
+    // Setup microphone capture if enabled
     if (this.audioConfig.enableMicrophoneCapture) {
       this._setupMicrophoneCapture();
     }
 
-    // TODO: Setup playback tracking if enabled
+    // Setup playback tracking if enabled
     if (this.audioConfig.enablePlaybackTracking) {
       this._setupPlaybackTracking();
     }
 
-    // TODO: Setup quality analysis if enabled
+    // Setup quality analysis if enabled
     if (this.audioConfig.enableQualityAnalysis) {
       this._setupQualityAnalysis();
     }
 
-    // TODO: Setup hunt call validation if enabled
+    // Setup hunt call validation if enabled
     if (this.audioConfig.enableCallValidation) {
       this._setupCallValidation();
     }
@@ -161,18 +161,15 @@ export class AudioCapture extends EventCapture {
    */
   _setupAudioContext() {
     try {
-      // TODO: Initialize Web Audio API context
       this.audioState.audioContext = new (window.AudioContext ||
         window.webkitAudioContext)({
         sampleRate: this.audioConfig.sampleRate,
       });
 
-      // TODO: Setup analyzer node for frequency analysis
       this.audioState.analyserNode =
         this.audioState.audioContext.createAnalyser();
       this.audioState.analyserNode.fftSize = this.audioProcessing.fftSize;
 
-      // TODO: Initialize frequency analysis arrays
       const bufferLength = this.audioState.analyserNode.frequencyBinCount;
       this.audioProcessing.frequencyBins = new Uint8Array(bufferLength);
       this.audioProcessing.timedomainData = new Uint8Array(bufferLength);
@@ -192,18 +189,15 @@ export class AudioCapture extends EventCapture {
    * @returns {void}
    */
   _setupMicrophoneCapture() {
-    // TODO: Request microphone permissions and setup capture
     navigator.mediaDevices
       .getUserMedia(this.audioConfig.audioConstraints)
       .then((stream) => {
         this.audioState.mediaStream = stream;
 
-        // TODO: Connect stream to audio context
         const source =
           this.audioState.audioContext.createMediaStreamSource(stream);
         source.connect(this.audioState.analyserNode);
 
-        // TODO: Setup media recorder for actual recording
         this.audioState.mediaRecorder = new MediaRecorder(stream, {
           mimeType: "audio/webm;codecs=opus",
         });
@@ -225,26 +219,22 @@ export class AudioCapture extends EventCapture {
    * @returns {void}
    */
   _setupMediaRecorderEvents() {
-    // TODO: Handle recording data availability
     this.audioState.mediaRecorder.ondataavailable = (event) => {
       if (event.data.size > 0) {
         this._processRecordingData(event.data);
       }
     };
 
-    // TODO: Handle recording start
     this.audioState.mediaRecorder.onstart = () => {
       this.audioState.isRecording = true;
       this._onRecordingStart();
     };
 
-    // TODO: Handle recording stop
     this.audioState.mediaRecorder.onstop = () => {
       this.audioState.isRecording = false;
       this._onRecordingStop();
     };
 
-    // TODO: Handle recording errors
     this.audioState.mediaRecorder.onerror = (error) => {
       console.error("Media recorder error:", error);
       this._handleRecordingError(error);
@@ -259,14 +249,12 @@ export class AudioCapture extends EventCapture {
    * @returns {void}
    */
   _setupPlaybackTracking() {
-    // TODO: Track audio element playback events
     const audioElements = document.querySelectorAll("audio");
 
     audioElements.forEach((audio) => {
       this._attachPlaybackListeners(audio);
     });
 
-    // TODO: Setup mutation observer for dynamic audio elements
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         mutation.addedNodes.forEach((node) => {
@@ -289,22 +277,18 @@ export class AudioCapture extends EventCapture {
    * @returns {void}
    */
   _attachPlaybackListeners(audioElement) {
-    // TODO: Track play events
     audioElement.addEventListener("play", (event) => {
       this._trackPlaybackEvent("play", event.target);
     });
 
-    // TODO: Track pause events
     audioElement.addEventListener("pause", (event) => {
       this._trackPlaybackEvent("pause", event.target);
     });
 
-    // TODO: Track ended events
     audioElement.addEventListener("ended", (event) => {
       this._trackPlaybackEvent("ended", event.target);
     });
 
-    // TODO: Track time updates for detailed playback analysis
     audioElement.addEventListener("timeupdate", (event) => {
       this._trackPlaybackProgress(event.target);
     });
@@ -318,7 +302,6 @@ export class AudioCapture extends EventCapture {
    * @returns {void}
    */
   _setupQualityAnalysis() {
-    // TODO: Start continuous quality monitoring
     this._startQualityMonitoring();
   }
 
@@ -336,7 +319,6 @@ export class AudioCapture extends EventCapture {
         return;
       }
 
-      // TODO: Get frequency and time domain data
       this.audioState.analyserNode.getByteFrequencyData(
         this.audioProcessing.frequencyBins
       );
@@ -347,10 +329,8 @@ export class AudioCapture extends EventCapture {
         this.audioProcessing.frequencyData
       );
 
-      // TODO: Analyze audio quality metrics
       this._analyzeAudioQuality();
 
-      // TODO: Continue monitoring
       requestAnimationFrame(analyzeAudio);
     };
 
@@ -365,16 +345,12 @@ export class AudioCapture extends EventCapture {
    * @returns {void}
    */
   _analyzeAudioQuality() {
-    // TODO: Calculate signal level
     const signalLevel = this._calculateSignalLevel();
 
-    // TODO: Calculate noise level
     const noiseLevel = this._calculateNoiseLevel();
 
-    // TODO: Calculate clarity metric
     const clarity = this._calculateClarity();
 
-    // TODO: Update quality metrics
     this.audioState.qualityMetrics = {
       signalLevel,
       noiseLevel,
@@ -383,7 +359,6 @@ export class AudioCapture extends EventCapture {
       timestamp: Date.now(),
     };
 
-    // TODO: Trigger quality events if thresholds are met
     this._checkQualityThresholds();
   }
 
@@ -395,10 +370,8 @@ export class AudioCapture extends EventCapture {
    * @returns {void}
    */
   _setupCallValidation() {
-    // TODO: Initialize call validation models and patterns
     this._initializeCallPatterns();
 
-    // TODO: Setup real-time call analysis
     this._setupRealtimeCallAnalysis();
   }
 
@@ -414,7 +387,6 @@ export class AudioCapture extends EventCapture {
    */
   async startRecording(options = {}) {
     try {
-      // TODO: Validate recording prerequisites
       if (!this.audioState.mediaRecorder) {
         throw new Error("Media recorder not initialized");
       }
@@ -423,11 +395,9 @@ export class AudioCapture extends EventCapture {
         throw new Error("Recording already in progress");
       }
 
-      // TODO: Generate recording ID and setup session
       const recordingId = this._generateRecordingId();
       this.audioState.currentRecordingId = recordingId;
 
-      // TODO: Initialize recording session data
       const recordingSession = {
         id: recordingId,
         startTime: Date.now(),
@@ -441,10 +411,8 @@ export class AudioCapture extends EventCapture {
 
       this.audioState.recordings.set(recordingId, recordingSession);
 
-      // TODO: Start recording
       this.audioState.mediaRecorder.start(250); // Collect data every 250ms
 
-      // TODO: Setup recording timeout
       setTimeout(() => {
         if (
           this.audioState.isRecording &&
@@ -470,15 +438,12 @@ export class AudioCapture extends EventCapture {
    */
   async stopRecording() {
     try {
-      // TODO: Validate recording state
       if (!this.audioState.isRecording) {
         throw new Error("No recording in progress");
       }
 
-      // TODO: Stop media recorder
       this.audioState.mediaRecorder.stop();
 
-      // TODO: Get recording session
       const recordingSession = this.audioState.recordings.get(
         this.audioState.currentRecordingId
       );
@@ -488,7 +453,6 @@ export class AudioCapture extends EventCapture {
         recordingSession.actualDuration =
           recordingSession.endTime - recordingSession.startTime;
 
-        // TODO: Process recording data
         const recordingResults = await this._processCompletedRecording(
           recordingSession
         );
@@ -510,13 +474,11 @@ export class AudioCapture extends EventCapture {
    */
   async analyzeHuntCall(recordingId) {
     try {
-      // TODO: Get recording data
       const recording = this.audioState.recordings.get(recordingId);
       if (!recording) {
         throw new Error("Recording not found");
       }
 
-      // TODO: Perform comprehensive call analysis
       const analysisResults = {
         callIdentification: await this._identifyCallType(recording),
         frequencyAnalysis: await this._analyzeCallFrequency(recording),
@@ -526,7 +488,6 @@ export class AudioCapture extends EventCapture {
         recommendations: await this._generateCallRecommendations(recording),
       };
 
-      // TODO: Store analysis results
       recording.analysisResults = analysisResults;
       this.huntCallAnalytics.validationResults.set(
         recordingId,
@@ -547,7 +508,6 @@ export class AudioCapture extends EventCapture {
    * @returns {Object} Audio analytics data
    */
   getAudioAnalytics() {
-    // TODO: Return comprehensive audio analytics
     return {
       sessionMetrics: {
         totalRecordings: this.audioState.recordings.size,
@@ -570,7 +530,6 @@ export class AudioCapture extends EventCapture {
    * @returns {Object} Comprehensive audio session report
    */
   generateAudioReport() {
-    // TODO: Generate detailed audio session report
     const report = {
       overview: {
         sessionDuration: Date.now() - this.startTime,
@@ -595,7 +554,6 @@ export class AudioCapture extends EventCapture {
     return report;
   }
 
-  // TODO: Add helper methods for audio processing and analysis
   _processRecordingData(data) {
     /* Implementation needed */
   }

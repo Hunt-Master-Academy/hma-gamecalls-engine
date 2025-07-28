@@ -842,4 +842,289 @@ export class MetricsTracker {
   generateIntegrityHash(data) {
     return btoa(JSON.stringify(data)).substr(0, 16);
   }
+
+  /**
+   * Variant Metrics Generation
+   * Extracted from variant-controller.js for modularization
+   */
+  generateVariantMetrics(variantDefinition) {
+    const baseMetrics = [
+      "conversion_rate",
+      "user_engagement",
+      "error_rate",
+      "page_load_time",
+      "bounce_rate",
+      "session_duration",
+      "click_through_rate",
+      "user_satisfaction",
+    ];
+
+    // Add custom metrics based on variant configuration
+    const customMetrics = [];
+    if (variantDefinition.behaviorChanges) {
+      customMetrics.push("behavior_adoption_rate");
+    }
+    if (variantDefinition.uiModifications) {
+      customMetrics.push("ui_interaction_rate");
+    }
+    if (variantDefinition.contentVariations) {
+      customMetrics.push("content_engagement_rate");
+    }
+
+    return [...baseMetrics, ...customMetrics];
+  }
+
+  /**
+   * Evaluation Metrics Tracking
+   * Extracted from variant-controller.js for modularization
+   */
+  updateEvaluationMetrics(flagId, evaluationResult, timestamp = Date.now()) {
+    if (!this.evaluationMetrics) {
+      this.evaluationMetrics = new Map();
+    }
+
+    let flagMetrics = this.evaluationMetrics.get(flagId);
+    if (!flagMetrics) {
+      flagMetrics = {
+        totalEvaluations: 0,
+        trueEvaluations: 0,
+        falseEvaluations: 0,
+        errorEvaluations: 0,
+        lastEvaluated: null,
+        averageEvaluationTime: 0,
+        evaluationHistory: [],
+      };
+      this.evaluationMetrics.set(flagId, flagMetrics);
+    }
+
+    // Update counters
+    flagMetrics.totalEvaluations++;
+    flagMetrics.lastEvaluated = timestamp;
+
+    if (evaluationResult.success) {
+      if (evaluationResult.value === true) {
+        flagMetrics.trueEvaluations++;
+      } else {
+        flagMetrics.falseEvaluations++;
+      }
+    } else {
+      flagMetrics.errorEvaluations++;
+    }
+
+    // Update evaluation history
+    flagMetrics.evaluationHistory.push({
+      timestamp,
+      result: evaluationResult,
+      processingTime: evaluationResult.processingTime || 0,
+    });
+
+    // Keep only last 1000 evaluations
+    if (flagMetrics.evaluationHistory.length > 1000) {
+      flagMetrics.evaluationHistory =
+        flagMetrics.evaluationHistory.slice(-1000);
+    }
+
+    // Update average evaluation time
+    const recentEvaluations = flagMetrics.evaluationHistory.slice(-100);
+    flagMetrics.averageEvaluationTime =
+      recentEvaluations.reduce(
+        (sum, evaluation) => sum + evaluation.processingTime,
+        0
+      ) / recentEvaluations.length;
+
+    return flagMetrics;
+  }
+
+  /**
+   * Rollout Metrics Tracking
+   * Extracted from variant-controller.js for modularization
+   */
+  updateRolloutMetrics(rolloutId, stageData, metricsUpdate) {
+    if (!this.rolloutMetrics) {
+      this.rolloutMetrics = new Map();
+    }
+
+    let rolloutMetrics = this.rolloutMetrics.get(rolloutId);
+    if (!rolloutMetrics) {
+      rolloutMetrics = {
+        stagesCompleted: 0,
+        usersAffected: 0,
+        successRate: 0,
+        errorRate: 0,
+        performanceImpact: 0,
+        startTime: Date.now(),
+        lastUpdated: null,
+        stageHistory: [],
+      };
+      this.rolloutMetrics.set(rolloutId, rolloutMetrics);
+    }
+
+    // Update metrics with new data
+    if (metricsUpdate.stagesCompleted !== undefined) {
+      rolloutMetrics.stagesCompleted = metricsUpdate.stagesCompleted;
+    }
+    if (metricsUpdate.usersAffected !== undefined) {
+      rolloutMetrics.usersAffected += metricsUpdate.usersAffected;
+    }
+    if (metricsUpdate.successRate !== undefined) {
+      rolloutMetrics.successRate = metricsUpdate.successRate;
+    }
+    if (metricsUpdate.errorRate !== undefined) {
+      rolloutMetrics.errorRate = metricsUpdate.errorRate;
+    }
+    if (metricsUpdate.performanceImpact !== undefined) {
+      rolloutMetrics.performanceImpact = metricsUpdate.performanceImpact;
+    }
+
+    rolloutMetrics.lastUpdated = Date.now();
+
+    // Add stage to history
+    rolloutMetrics.stageHistory.push({
+      timestamp: Date.now(),
+      stage: stageData,
+      metrics: { ...metricsUpdate },
+    });
+
+    return rolloutMetrics;
+  }
+
+  /**
+   * Variant Performance Dashboard Generation
+   * Extracted from variant-controller.js for modularization
+   */
+  async generateVariantDashboard(variantDefinition) {
+    const metrics = this.generateVariantMetrics(variantDefinition);
+
+    const dashboard = {
+      name: `${variantDefinition.name}_dashboard`,
+      variantId: variantDefinition.id,
+      createdAt: Date.now(),
+      widgets: [
+        {
+          type: "conversion_funnel",
+          metrics: ["conversion_rate", "user_engagement"],
+          chartType: "funnel",
+        },
+        {
+          type: "error_monitoring",
+          metrics: ["error_rate"],
+          chartType: "line",
+        },
+        {
+          type: "performance_metrics",
+          metrics: ["page_load_time", "session_duration"],
+          chartType: "area",
+        },
+        {
+          type: "user_behavior",
+          metrics: ["bounce_rate", "click_through_rate"],
+          chartType: "bar",
+        },
+        {
+          type: "satisfaction_score",
+          metrics: ["user_satisfaction"],
+          chartType: "gauge",
+        },
+      ],
+      refreshInterval: 60000, // 1 minute
+      alertThresholds: {
+        conversion_rate: { min: 0.02, max: 0.2 },
+        error_rate: { max: 0.05 },
+        page_load_time: { max: 3000 },
+      },
+    };
+
+    return dashboard;
+  }
+
+  /**
+   * Alert Configuration Generation
+   * Extracted from variant-controller.js for modularization
+   */
+  async generateVariantAlerts(variantDefinition) {
+    const alerts = {
+      variantId: variantDefinition.id,
+      createdAt: Date.now(),
+      channels: {
+        email: {
+          enabled: true,
+          recipients: variantDefinition.alertRecipients || [],
+          severity: ["critical", "warning"],
+        },
+        slack: {
+          enabled: true,
+          channel: variantDefinition.slackChannel || "#experiments",
+          severity: ["critical", "warning", "info"],
+        },
+        pagerduty: {
+          enabled: variantDefinition.enablePagerDuty || false,
+          severity: ["critical"],
+        },
+      },
+      rules: [
+        {
+          name: "High Error Rate",
+          metric: "error_rate",
+          condition: "greater_than",
+          threshold: 0.05,
+          severity: "critical",
+        },
+        {
+          name: "Low Conversion Rate",
+          metric: "conversion_rate",
+          condition: "less_than",
+          threshold: 0.01,
+          severity: "warning",
+        },
+        {
+          name: "Performance Degradation",
+          metric: "page_load_time",
+          condition: "greater_than",
+          threshold: 5000,
+          severity: "warning",
+        },
+      ],
+    };
+
+    return alerts;
+  }
+
+  /**
+   * Metrics Summary for Variant Performance
+   */
+  getVariantMetricsSummary(variantId) {
+    const evaluationMetrics = this.evaluationMetrics.get(variantId) || {};
+    const rolloutMetrics = this.rolloutMetrics.get(variantId) || {};
+
+    return {
+      variantId,
+      evaluation: {
+        totalEvaluations: evaluationMetrics.totalEvaluations || 0,
+        successRate:
+          evaluationMetrics.totalEvaluations > 0
+            ? (
+                ((evaluationMetrics.trueEvaluations || 0) /
+                  evaluationMetrics.totalEvaluations) *
+                100
+              ).toFixed(2)
+            : 0,
+        errorRate:
+          evaluationMetrics.totalEvaluations > 0
+            ? (
+                ((evaluationMetrics.errorEvaluations || 0) /
+                  evaluationMetrics.totalEvaluations) *
+                100
+              ).toFixed(2)
+            : 0,
+        averageEvaluationTime: evaluationMetrics.averageEvaluationTime || 0,
+      },
+      rollout: {
+        stagesCompleted: rolloutMetrics.stagesCompleted || 0,
+        usersAffected: rolloutMetrics.usersAffected || 0,
+        currentSuccessRate: rolloutMetrics.successRate || 0,
+        currentErrorRate: rolloutMetrics.errorRate || 0,
+        performanceImpact: rolloutMetrics.performanceImpact || 0,
+      },
+    };
+  }
 }

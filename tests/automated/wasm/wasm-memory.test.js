@@ -1197,4 +1197,4 @@ describe("WASM Memory Management Tests", () => {
   });
 });
 
-export { wasmInstance, memoryTracker };
+// End of WASM Memory Management Tests

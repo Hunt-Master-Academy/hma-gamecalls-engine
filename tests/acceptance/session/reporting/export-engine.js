@@ -12,7 +12,6 @@
 
 export class ExportEngine {
   constructor(options = {}) {
-    // TODO: Initialize export engine configuration
     this.config = {
       supportedFormats: options.supportedFormats || [
         "html",
@@ -35,7 +34,6 @@ export class ExportEngine {
       ...options,
     };
 
-    // TODO: Initialize export processors
     this.processors = new Map();
     this.templates = new Map();
     this.exportQueue = [];
@@ -45,7 +43,6 @@ export class ExportEngine {
     this.loadTemplates();
   }
 
-  // TODO: Initialize format-specific export processors
   initializeExportProcessors() {
     // HTML processor
     this.processors.set("html", {
@@ -89,7 +86,6 @@ export class ExportEngine {
     });
   }
 
-  // TODO: Load report templates
   loadTemplates() {
     // Executive report template
     this.templates.set("executive_summary", {
@@ -146,7 +142,6 @@ export class ExportEngine {
     });
   }
 
-  // TODO: Export report data in specified format
   async exportReport(reportData, format, options = {}) {
     try {
       const exportId = this.generateExportId();
@@ -168,11 +163,9 @@ export class ExportEngine {
         branding: options.branding || this.config.branding,
       };
 
-      // TODO: Process the export
       const processor = this.processors.get(format);
       const result = await processor.process(reportData, context);
 
-      // TODO: Post-process (compression, watermark, etc.)
       const finalResult = await this.postProcess(result, context);
 
       return {
@@ -196,21 +189,17 @@ export class ExportEngine {
     }
   }
 
-  // TODO: Process HTML export
   async processHTMLExport(reportData, context) {
     const template = this.templates.get(context.template);
 
-    // TODO: Generate HTML content
     const htmlContent = await this.generateHTMLContent(
       reportData,
       template,
       context
     );
 
-    // TODO: Apply styling and branding
     const styledContent = await this.applyHTMLStyling(htmlContent, context);
 
-    // TODO: Embed charts and visualizations
     const finalContent = await this.embedHTMLVisualizations(
       styledContent,
       reportData,
@@ -220,7 +209,6 @@ export class ExportEngine {
     const filename = `${reportData.type}_${context.exportId}.html`;
     const filepath = `${this.config.outputDirectory}/${filename}`;
 
-    // TODO: Write file
     await this.writeFile(filepath, finalContent);
 
     return {
@@ -231,18 +219,15 @@ export class ExportEngine {
     };
   }
 
-  // TODO: Process PDF export
   async processPDFExport(reportData, context) {
     // First generate HTML version
     const htmlResult = await this.processHTMLExport(reportData, context);
 
-    // TODO: Convert HTML to PDF using configured engine
     const pdfBuffer = await this.convertHTMLToPDF(htmlResult.content, context);
 
     const filename = `${reportData.type}_${context.exportId}.pdf`;
     const filepath = `${this.config.outputDirectory}/${filename}`;
 
-    // TODO: Write PDF file
     await this.writeFile(filepath, pdfBuffer);
 
     return {
@@ -253,9 +238,7 @@ export class ExportEngine {
     };
   }
 
-  // TODO: Process JSON export
   async processJSONExport(reportData, context) {
-    // TODO: Structure data for JSON export
     const structuredData = {
       metadata: {
         exportId: context.exportId,
@@ -284,12 +267,9 @@ export class ExportEngine {
     };
   }
 
-  // TODO: Process CSV export
   async processCSVExport(reportData, context) {
-    // TODO: Extract tabular data from report
     const tabularData = await this.extractTabularData(reportData);
 
-    // TODO: Convert to CSV format
     const csvContent = await this.convertToCSV(tabularData, context);
 
     const filename = `${reportData.type}_${context.exportId}.csv`;
@@ -305,18 +285,14 @@ export class ExportEngine {
     };
   }
 
-  // TODO: Process Excel export
   async processExcelExport(reportData, context) {
-    // TODO: Create Excel workbook with multiple sheets
     const workbook = await this.createExcelWorkbook(reportData, context);
 
-    // TODO: Add charts and formatting
     const styledWorkbook = await this.styleExcelWorkbook(workbook, context);
 
     const filename = `${reportData.type}_${context.exportId}.xlsx`;
     const filepath = `${this.config.outputDirectory}/${filename}`;
 
-    // TODO: Write Excel file
     const buffer = await this.writeExcelFile(filepath, styledWorkbook);
 
     return {
@@ -327,13 +303,11 @@ export class ExportEngine {
     };
   }
 
-  // TODO: Batch export multiple reports
   async batchExport(reports, formats, options = {}) {
     const batchId = this.generateBatchId();
     const results = [];
 
     try {
-      // TODO: Process each report in each format
       for (const report of reports) {
         for (const format of formats) {
           const result = await this.exportReport(report, format, options);
@@ -346,7 +320,6 @@ export class ExportEngine {
         }
       }
 
-      // TODO: Create batch summary
       const summary = {
         batchId,
         totalReports: reports.length,
@@ -369,7 +342,6 @@ export class ExportEngine {
     }
   }
 
-  // TODO: Schedule automated exports
   async scheduleExport(reportConfig, schedule, options = {}) {
     const scheduleId = this.generateScheduleId();
 
@@ -385,13 +357,11 @@ export class ExportEngine {
       createdAt: new Date().toISOString(),
     };
 
-    // TODO: Add to scheduler
     await this.addToScheduler(scheduledExport);
 
     return scheduledExport;
   }
 
-  // TODO: Generate custom report template
   async createCustomTemplate(templateConfig) {
     const templateId = this.generateTemplateId();
 
@@ -412,11 +382,9 @@ export class ExportEngine {
     return template;
   }
 
-  // TODO: Post-process exported files
   async postProcess(result, context) {
     let processedResult = { ...result };
 
-    // TODO: Apply compression if enabled
     if (
       context.options.compression &&
       this.supportsCompression(context.format)
@@ -424,7 +392,6 @@ export class ExportEngine {
       processedResult = await this.compressFile(processedResult, context);
     }
 
-    // TODO: Apply watermark if specified
     if (context.options.watermark && this.supportsWatermark(context.format)) {
       processedResult = await this.applyWatermark(processedResult, context);
     }
@@ -463,7 +430,6 @@ export class ExportEngine {
     return templateMap[reportType] || "executive_summary";
   }
 
-  // TODO: Implement all processing methods
   async generateHTMLContent(reportData, template, context) {
     // Generate HTML using template engine
     return `<html><head><title>${reportData.type}</title></head><body><!-- Content --></body></html>`;

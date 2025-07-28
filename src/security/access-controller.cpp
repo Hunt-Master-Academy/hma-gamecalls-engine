@@ -1,9 +1,16 @@
-#include "security/access-controller.h"
+#include "huntmaster/security/access-controller.h"
 
 namespace huntmaster {
 namespace security {
 
-AccessController::AccessController() {
+// Pimpl implementation forward declaration
+struct AccessController::AccessControllerImpl {
+    // Add implementation details here when needed
+    AccessControllerImpl() = default;
+    ~AccessControllerImpl() = default;
+};
+
+AccessController::AccessController() : impl_(std::make_unique<AccessControllerImpl>()) {
     // TODO: Initialize access control systems and policies
     // TODO: Set up user authentication and authorization
     // TODO: Configure role-based access control (RBAC)
@@ -21,23 +28,7 @@ AccessController::AccessController() {
     // TODO: Configure access control integration systems
 }
 
-AccessController::~AccessController() {
-    // TODO: Clean up access control systems and resources
-    // TODO: Finalize access control audit logs and reports
-    // TODO: Clear access control session data securely
-    // TODO: Clean up access control caching systems
-    // TODO: Verify access control policy cleanup
-    // TODO: Finalize access control compliance data
-    // TODO: Clean up access control monitoring systems
-    // TODO: Secure access control credential cleanup
-    // TODO: Finalize access control threat detection
-    // TODO: Clean up access control debugging data
-    // TODO: Verify access control integration cleanup
-    // TODO: Generate final access control reports
-    // TODO: Clean up access control performance data
-    // TODO: Verify access control lifecycle completion
-    // TODO: Secure access control system shutdown
-}
+AccessController::~AccessController() = default;
 
 bool AccessController::authenticate(const std::string& username, const std::string& credentials) {
     // TODO: Implement secure user authentication mechanisms

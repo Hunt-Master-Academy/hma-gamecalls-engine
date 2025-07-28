@@ -12,7 +12,6 @@
 
 export class TemplateEngine {
   constructor(options = {}) {
-    // TODO: Initialize template engine configuration
     this.config = {
       defaultEngine: options.defaultEngine || "handlebars",
       supportedEngines: options.supportedEngines || [
@@ -42,7 +41,6 @@ export class TemplateEngine {
       ...options,
     };
 
-    // TODO: Initialize template components
     this.engines = new Map();
     this.templates = new Map();
     this.partials = new Map();
@@ -56,7 +54,6 @@ export class TemplateEngine {
     this.loadThemes();
   }
 
-  // TODO: Initialize template engines
   initializeEngines() {
     // Handlebars engine
     this.engines.set("handlebars", {
@@ -91,7 +88,6 @@ export class TemplateEngine {
     });
   }
 
-  // TODO: Load base report templates
   loadBaseTemplates() {
     // Executive report template
     this.templates.set("executive_report", {
@@ -439,7 +435,6 @@ export class TemplateEngine {
     });
   }
 
-  // TODO: Register template helpers
   registerHelpers() {
     // Date formatting helper
     this.helpers.set("formatDate", (date) => {
@@ -513,7 +508,6 @@ export class TemplateEngine {
     });
   }
 
-  // TODO: Load predefined themes
   loadThemes() {
     // Executive theme
     this.themes.set("executive_theme", {
@@ -585,16 +579,13 @@ export class TemplateEngine {
     });
   }
 
-  // TODO: Render report using specified template
   async renderReport(reportData, templateName, options = {}) {
     try {
-      // TODO: Get template configuration
       const template = this.templates.get(templateName);
       if (!template) {
         throw new Error(`Template not found: ${templateName}`);
       }
 
-      // TODO: Get template engine
       const engine = this.engines.get(
         template.engine || this.config.defaultEngine
       );
@@ -602,21 +593,18 @@ export class TemplateEngine {
         throw new Error(`Template engine not found: ${template.engine}`);
       }
 
-      // TODO: Prepare template context
       const context = await this.prepareTemplateContext(
         reportData,
         template,
         options
       );
 
-      // TODO: Apply theme
       const themedContext = await this.applyTheme(
         context,
         template.styling,
         options
       );
 
-      // TODO: Compile and render template
       const rendered = await engine.compile(template.template, themedContext);
 
       return {
@@ -636,7 +624,6 @@ export class TemplateEngine {
     }
   }
 
-  // TODO: Create custom template
   async createCustomTemplate(templateConfig) {
     const templateId = this.generateTemplateId();
 
@@ -653,42 +640,32 @@ export class TemplateEngine {
       custom: true,
     };
 
-    // TODO: Validate template
     const validation = await this.validateTemplate(customTemplate);
     if (!validation.isValid) {
       throw new Error(`Invalid template: ${validation.errors.join(", ")}`);
     }
 
-    // TODO: Store custom template
     this.templates.set(templateId, customTemplate);
 
     return customTemplate;
   }
 
-  // TODO: Compile template using Handlebars
   async compileHandlebars(template, context) {
-    // TODO: Register helpers with Handlebars
     for (const [name, helper] of this.helpers) {
       // Register helper with Handlebars instance
     }
 
-    // TODO: Compile and render
     return template; // Placeholder - would use actual Handlebars compilation
   }
 
-  // TODO: Compile template using Mustache
   async compileMustache(template, context) {
-    // TODO: Use Mustache.render
     return template; // Placeholder
   }
 
-  // TODO: Compile template using EJS
   async compileEJS(template, context) {
-    // TODO: Use EJS.render
     return template; // Placeholder
   }
 
-  // TODO: Compile plain text template
   async compileText(template, context) {
     // Simple variable replacement
     let result = template;
@@ -712,7 +689,6 @@ export class TemplateEngine {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   }
 
-  // TODO: Implement remaining methods
   async prepareTemplateContext(reportData, template, options) {
     return reportData;
   }

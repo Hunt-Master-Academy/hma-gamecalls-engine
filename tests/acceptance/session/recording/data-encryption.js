@@ -22,7 +22,6 @@ import { DataValidator } from "../validation/data-validator.js";
  */
 class DataEncryption {
   constructor(options = {}) {
-    // TODO: Initialize encryption configuration
     this.config = {
       algorithm: options.algorithm || "AES-GCM",
       keySize: options.keySize || 256,
@@ -40,10 +39,8 @@ class DataEncryption {
       ...options,
     };
 
-    // TODO: Initialize encryption components
     this.validator = new DataValidator();
 
-    // TODO: Initialize encryption state
     this.state = {
       isInitialized: false,
       currentKey: null,
@@ -58,14 +55,12 @@ class DataEncryption {
       keyRotationTimer: null,
     };
 
-    // TODO: Initialize crypto API compatibility
     this.cryptoAPI = {
       subtle: null,
       random: null,
       supported: false,
     };
 
-    // TODO: Initialize key storage
     this.keyStorage = new Map();
     this.encryptionCache = new Map();
 
@@ -74,28 +69,22 @@ class DataEncryption {
 
   /**
    * Initialize the encryption system
-   * TODO: Set up cryptographic APIs and key management
+   * Set up cryptographic APIs and key management
    */
   async initializeEncryption() {
     try {
-      // TODO: Check Web Crypto API support
       await this.checkCryptoSupport();
 
-      // TODO: Initialize cryptographic random number generator
       this.initializeRandom();
 
-      // TODO: Set up key derivation functions
       this.setupKeyDerivation();
 
-      // TODO: Initialize master encryption key
       await this.initializeMasterKey();
 
-      // TODO: Set up key rotation if enabled
       if (this.config.keyRotationInterval > 0) {
         this.setupKeyRotation();
       }
 
-      // TODO: Initialize integrity checking
       if (this.config.enableIntegrityCheck) {
         this.setupIntegrityChecking();
       }
@@ -110,11 +99,10 @@ class DataEncryption {
 
   /**
    * Check Web Crypto API support and compatibility
-   * TODO: Validate cryptographic API availability
+   * Validate cryptographic API availability
    */
   async checkCryptoSupport() {
     try {
-      // TODO: Check for Web Crypto API
       if (!window.crypto || !window.crypto.subtle) {
         throw new Error("Web Crypto API not supported");
       }
@@ -122,7 +110,6 @@ class DataEncryption {
       this.cryptoAPI.subtle = window.crypto.subtle;
       this.cryptoAPI.random = window.crypto.getRandomValues.bind(window.crypto);
 
-      // TODO: Test basic crypto operations
       await this.testCryptoOperations();
 
       this.cryptoAPI.supported = true;
@@ -135,15 +122,13 @@ class DataEncryption {
 
   /**
    * Test basic cryptographic operations
-   * TODO: Verify crypto API functionality with test operations
+   * Verify crypto API functionality with test operations
    */
   async testCryptoOperations() {
     try {
-      // TODO: Test random number generation
       const testRandom = new Uint8Array(16);
       this.cryptoAPI.random(testRandom);
 
-      // TODO: Test key generation
       const testKey = await this.cryptoAPI.subtle.generateKey(
         {
           name: this.config.algorithm,
@@ -153,7 +138,6 @@ class DataEncryption {
         ["encrypt", "decrypt"]
       );
 
-      // TODO: Test encryption/decryption
       const testData = new TextEncoder().encode("test");
       const testIv = new Uint8Array(this.config.ivSize);
       this.cryptoAPI.random(testIv);
@@ -176,7 +160,6 @@ class DataEncryption {
         encrypted
       );
 
-      // TODO: Verify test results
       const decryptedText = new TextDecoder().decode(decrypted);
       if (decryptedText !== "test") {
         throw new Error("Crypto test failed: decryption mismatch");
@@ -191,20 +174,17 @@ class DataEncryption {
 
   /**
    * Initialize cryptographic random number generator
-   * TODO: Set up secure random number generation
+   * Set up secure random number generation
    */
   initializeRandom() {
     try {
-      // TODO: Validate random number generator
       if (!this.cryptoAPI.random) {
         throw new Error("Cryptographic random number generator not available");
       }
 
-      // TODO: Test random quality
       const testBuffer = new Uint8Array(32);
       this.cryptoAPI.random(testBuffer);
 
-      // TODO: Basic entropy check
       const uniqueValues = new Set(testBuffer);
       if (uniqueValues.size < 16) {
         console.warn(
@@ -221,11 +201,10 @@ class DataEncryption {
 
   /**
    * Set up key derivation functions
-   * TODO: Initialize PBKDF2 and other key derivation methods
+   * Initialize PBKDF2 and other key derivation methods
    */
   setupKeyDerivation() {
     try {
-      // TODO: Validate key derivation algorithm support
       const supportedAlgorithms = ["PBKDF2", "HKDF"];
       if (!supportedAlgorithms.includes(this.config.keyDerivation)) {
         throw new Error(
@@ -233,7 +212,6 @@ class DataEncryption {
         );
       }
 
-      // TODO: Set up PBKDF2 parameters
       this.keyDerivationParams = {
         name: this.config.keyDerivation,
         hash: this.config.hashAlgorithm,
@@ -249,22 +227,18 @@ class DataEncryption {
 
   /**
    * Initialize master encryption key
-   * TODO: Generate or derive master key for encryption operations
+   * Generate or derive master key for encryption operations
    */
   async initializeMasterKey() {
     try {
-      // TODO: Check for existing key in secure storage
       let masterKey = await this.loadMasterKeyFromStorage();
 
       if (!masterKey) {
-        // TODO: Generate new master key
         masterKey = await this.generateMasterKey();
 
-        // TODO: Store master key securely
         await this.storeMasterKeySecurely(masterKey);
       }
 
-      // TODO: Validate master key
       await this.validateMasterKey(masterKey);
 
       this.state.currentKey = {
@@ -284,11 +258,10 @@ class DataEncryption {
 
   /**
    * Generate a new master encryption key
-   * TODO: Create cryptographically secure master key
+   * Create cryptographically secure master key
    */
   async generateMasterKey() {
     try {
-      // TODO: Generate key using Web Crypto API
       const key = await this.cryptoAPI.subtle.generateKey(
         {
           name: this.config.algorithm,
@@ -308,11 +281,10 @@ class DataEncryption {
 
   /**
    * Set up automatic key rotation
-   * TODO: Configure periodic key rotation for enhanced security
+   * Configure periodic key rotation for enhanced security
    */
   setupKeyRotation() {
     try {
-      // TODO: Set up rotation timer
       this.state.keyRotationTimer = setInterval(() => {
         this.rotateEncryptionKey();
       }, this.config.keyRotationInterval);
@@ -327,11 +299,10 @@ class DataEncryption {
 
   /**
    * Set up integrity checking mechanisms
-   * TODO: Configure data integrity validation
+   * Configure data integrity validation
    */
   setupIntegrityChecking() {
     try {
-      // TODO: Initialize HMAC for integrity checking
       this.integrityParams = {
         name: "HMAC",
         hash: this.config.hashAlgorithm,
@@ -345,35 +316,29 @@ class DataEncryption {
 
   /**
    * Encrypt data using current encryption key
-   * TODO: Perform AES-GCM encryption with integrity protection
+   * Perform AES-GCM encryption with integrity protection
    */
   async encrypt(data) {
     try {
-      // TODO: Validate input data
       if (!data) {
         throw new Error("No data provided for encryption");
       }
 
-      // TODO: Check if encryption is initialized
       if (!this.state.isInitialized || !this.state.currentKey) {
         throw new Error("Encryption not initialized");
       }
 
-      // TODO: Convert data to encrypted format
       const dataString = typeof data === "string" ? data : JSON.stringify(data);
       const dataBuffer = new TextEncoder().encode(dataString);
 
-      // TODO: Generate random IV
       const iv = new Uint8Array(this.config.ivSize);
       this.cryptoAPI.random(iv);
 
-      // TODO: Compress data if enabled
       let processedData = dataBuffer;
       if (this.config.enableCompression) {
         processedData = await this.compressData(dataBuffer);
       }
 
-      // TODO: Encrypt data
       const encryptedData = await this.cryptoAPI.subtle.encrypt(
         {
           name: this.config.algorithm,
@@ -383,7 +348,6 @@ class DataEncryption {
         processedData
       );
 
-      // TODO: Create encrypted package
       const encryptedPackage = {
         algorithm: this.config.algorithm,
         keyId: this.state.currentKey.keyId,
@@ -394,14 +358,12 @@ class DataEncryption {
         version: "1.0",
       };
 
-      // TODO: Add integrity check if enabled
       if (this.config.enableIntegrityCheck) {
         encryptedPackage.integrity = await this.calculateIntegrityHash(
           encryptedPackage
         );
       }
 
-      // TODO: Update statistics
       this.state.encryptionStats.totalEncrypted++;
       this.state.encryptionStats.totalSize += dataString.length;
 
@@ -420,16 +382,14 @@ class DataEncryption {
 
   /**
    * Decrypt data using appropriate encryption key
-   * TODO: Perform AES-GCM decryption with integrity validation
+   * Perform AES-GCM decryption with integrity validation
    */
   async decrypt(encryptedPackage) {
     try {
-      // TODO: Validate encrypted package
       if (!encryptedPackage || !encryptedPackage.data) {
         throw new Error("Invalid encrypted package");
       }
 
-      // TODO: Verify integrity if enabled
       if (this.config.enableIntegrityCheck && encryptedPackage.integrity) {
         const isValid = await this.verifyIntegrityHash(encryptedPackage);
         if (!isValid) {
@@ -437,17 +397,14 @@ class DataEncryption {
         }
       }
 
-      // TODO: Get decryption key
       const decryptionKey = await this.getDecryptionKey(encryptedPackage.keyId);
       if (!decryptionKey) {
         throw new Error(`Decryption key not found: ${encryptedPackage.keyId}`);
       }
 
-      // TODO: Reconstruct data arrays
       const iv = new Uint8Array(encryptedPackage.iv);
       const encryptedData = new Uint8Array(encryptedPackage.data);
 
-      // TODO: Decrypt data
       const decryptedBuffer = await this.cryptoAPI.subtle.decrypt(
         {
           name: encryptedPackage.algorithm,
@@ -457,16 +414,13 @@ class DataEncryption {
         encryptedData
       );
 
-      // TODO: Decompress if needed
       let processedBuffer = new Uint8Array(decryptedBuffer);
       if (encryptedPackage.compressed) {
         processedBuffer = await this.decompressData(processedBuffer);
       }
 
-      // TODO: Convert back to original format
       const decryptedString = new TextDecoder().decode(processedBuffer);
 
-      // TODO: Parse JSON if it was originally an object
       let result;
       try {
         result = JSON.parse(decryptedString);
@@ -474,7 +428,6 @@ class DataEncryption {
         result = decryptedString;
       }
 
-      // TODO: Update statistics
       this.state.encryptionStats.totalDecrypted++;
 
       if (this.config.debugMode) {
@@ -492,7 +445,7 @@ class DataEncryption {
 
   /**
    * Rotate encryption key for enhanced security
-   * TODO: Generate new key and retire old key
+   * Generate new key and retire old key
    */
   async rotateEncryptionKey() {
     try {
@@ -500,20 +453,17 @@ class DataEncryption {
         return;
       }
 
-      // TODO: Archive current key
       if (this.state.currentKey) {
         this.state.keyHistory.push({
           ...this.state.currentKey,
           retiredAt: Date.now(),
         });
 
-        // TODO: Limit key history size
         if (this.state.keyHistory.length > 10) {
           this.state.keyHistory = this.state.keyHistory.slice(-5);
         }
       }
 
-      // TODO: Generate new master key
       const newKey = await this.generateMasterKey();
 
       this.state.currentKey = {
@@ -524,7 +474,6 @@ class DataEncryption {
         keyId: this.generateKeyId(),
       };
 
-      // TODO: Store new key securely
       await this.storeMasterKeySecurely(newKey);
 
       console.log("DataEncryption: Encryption key rotated successfully");
@@ -536,11 +485,10 @@ class DataEncryption {
 
   /**
    * Compress data before encryption
-   * TODO: Apply compression algorithm to reduce data size
+   * Apply compression algorithm to reduce data size
    */
   async compressData(data) {
     try {
-      // TODO: Simple compression using CompressionStream if available
       if ("CompressionStream" in window) {
         const compressionStream = new CompressionStream("gzip");
         const writer = compressionStream.writable.getWriter();
@@ -559,7 +507,6 @@ class DataEncryption {
           }
         }
 
-        // TODO: Combine chunks
         const totalLength = chunks.reduce(
           (sum, chunk) => sum + chunk.length,
           0
@@ -573,7 +520,6 @@ class DataEncryption {
 
         return compressed;
       } else {
-        // TODO: Fallback to simple text compression
         return data; // No compression if not supported
       }
     } catch (error) {
@@ -587,11 +533,10 @@ class DataEncryption {
 
   /**
    * Decompress data after decryption
-   * TODO: Apply decompression algorithm to restore original data
+   * Apply decompression algorithm to restore original data
    */
   async decompressData(compressedData) {
     try {
-      // TODO: Simple decompression using DecompressionStream if available
       if ("DecompressionStream" in window) {
         const decompressionStream = new DecompressionStream("gzip");
         const writer = decompressionStream.writable.getWriter();
@@ -610,7 +555,6 @@ class DataEncryption {
           }
         }
 
-        // TODO: Combine chunks
         const totalLength = chunks.reduce(
           (sum, chunk) => sum + chunk.length,
           0
@@ -624,7 +568,6 @@ class DataEncryption {
 
         return decompressed;
       } else {
-        // TODO: Fallback if decompression not supported
         return compressedData;
       }
     } catch (error) {
@@ -638,14 +581,12 @@ class DataEncryption {
 
   /**
    * Calculate integrity hash for encrypted data
-   * TODO: Generate HMAC for data integrity verification
+   * Generate HMAC for data integrity verification
    */
   async calculateIntegrityHash(encryptedPackage) {
     try {
-      // TODO: Create integrity key from master key
       const integrityKey = await this.deriveIntegrityKey();
 
-      // TODO: Create data for integrity check
       const integrityData = new TextEncoder().encode(
         JSON.stringify({
           algorithm: encryptedPackage.algorithm,
@@ -656,7 +597,6 @@ class DataEncryption {
         })
       );
 
-      // TODO: Calculate HMAC
       const signature = await this.cryptoAPI.subtle.sign(
         "HMAC",
         integrityKey,
@@ -675,7 +615,7 @@ class DataEncryption {
 
   /**
    * Verify integrity hash for encrypted data
-   * TODO: Validate HMAC for data integrity verification
+   * Validate HMAC for data integrity verification
    */
   async verifyIntegrityHash(encryptedPackage) {
     try {
@@ -683,13 +623,11 @@ class DataEncryption {
         return false;
       }
 
-      // TODO: Calculate expected hash
       const expectedHash = await this.calculateIntegrityHash(encryptedPackage);
       if (!expectedHash) {
         return false;
       }
 
-      // TODO: Compare hashes
       const providedHash = encryptedPackage.integrity;
       if (expectedHash.length !== providedHash.length) {
         return false;
@@ -710,7 +648,7 @@ class DataEncryption {
 
   /**
    * Generate unique key identifier
-   * TODO: Create unique identifier for encryption keys
+   * Create unique identifier for encryption keys
    */
   generateKeyId() {
     const timestamp = Date.now().toString(36);
@@ -720,16 +658,14 @@ class DataEncryption {
 
   /**
    * Get decryption key by key ID
-   * TODO: Retrieve appropriate key for decryption
+   * Retrieve appropriate key for decryption
    */
   async getDecryptionKey(keyId) {
     try {
-      // TODO: Check current key
       if (this.state.currentKey && this.state.currentKey.keyId === keyId) {
         return this.state.currentKey.key;
       }
 
-      // TODO: Check key history
       const historicalKey = this.state.keyHistory.find(
         (k) => k.keyId === keyId
       );
@@ -737,7 +673,6 @@ class DataEncryption {
         return historicalKey.key;
       }
 
-      // TODO: Try to load from storage
       return await this.loadKeyFromStorage(keyId);
     } catch (error) {
       console.error("DataEncryption: Key retrieval failed:", error);
@@ -747,7 +682,7 @@ class DataEncryption {
 
   /**
    * Get encryption statistics
-   * TODO: Return comprehensive encryption usage statistics
+   * Return comprehensive encryption usage statistics
    */
   getEncryptionStats() {
     return {
@@ -764,7 +699,7 @@ class DataEncryption {
 
   /**
    * Handle encryption errors
-   * TODO: Process and log encryption-related errors
+   * Process and log encryption-related errors
    */
   handleError(errorType, error) {
     const errorRecord = {
@@ -776,7 +711,6 @@ class DataEncryption {
 
     console.error(`DataEncryption: ${errorType}`, error);
 
-    // TODO: Could emit error events here for external handling
     if (typeof this.emit === "function") {
       this.emit("error", errorRecord);
     }
@@ -784,23 +718,20 @@ class DataEncryption {
 
   /**
    * Clean up and destroy encryption system
-   * TODO: Securely clean up keys and resources
+   * Securely clean up keys and resources
    */
   async destroy() {
     try {
-      // TODO: Clear key rotation timer
       if (this.state.keyRotationTimer) {
         clearInterval(this.state.keyRotationTimer);
         this.state.keyRotationTimer = null;
       }
 
-      // TODO: Securely clear keys from memory
       this.state.currentKey = null;
       this.state.keyHistory = [];
       this.keyStorage.clear();
       this.encryptionCache.clear();
 
-      // TODO: Reset state
       this.state.isInitialized = false;
 
       console.log("DataEncryption: Destroyed successfully");
@@ -809,7 +740,6 @@ class DataEncryption {
     }
   }
 
-  // TODO: Placeholder methods for key storage (would implement with secure storage)
   async loadMasterKeyFromStorage() {
     return null;
   }
@@ -832,10 +762,8 @@ class DataEncryption {
   }
 }
 
-// TODO: Export the DataEncryption class
 export { DataEncryption };
 
-// TODO: Export convenience functions
 export const createDataEncryption = (options) => new DataEncryption(options);
 export const checkCryptoSupport = () => {
   return !!(
@@ -845,7 +773,6 @@ export const checkCryptoSupport = () => {
   );
 };
 
-// TODO: Export encryption utilities
 export const EncryptionUtils = {
   generateRandomBytes: (size) => {
     if (!checkCryptoSupport()) {

@@ -1,7 +1,9 @@
 // File: MFCCProcessor.cpp
 #include "huntmaster/core/MFCCProcessor.h"
 
+#include "huntmaster/core/ComponentErrorHandler.h"
 #include "huntmaster/core/DebugLogger.h"
+#include "huntmaster/core/ErrorLogger.h"
 
 #ifdef HAVE_KISSFFT
 #include "../kissfft/tools/kiss_fftr.h"
@@ -16,21 +18,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-// Enable debug output for MFCCProcessor
-#define DEBUG_MFCC_PROCESSOR 0
-
-// Debug logging macros
-#if DEBUG_MFCC_PROCESSOR
-#define MFCC_LOG_DEBUG(msg) std::cout << "[MFCC DEBUG] " << msg << std::endl
-#define MFCC_LOG_ERROR(msg) std::cerr << "[MFCC ERROR] " << msg << std::endl
-#else
-#define MFCC_LOG_DEBUG(msg) \
-    do {                    \
-    } while (0)
-#define MFCC_LOG_ERROR(msg) \
-    do {                    \
-    } while (0)
-#endif
+// Using centralized DebugLogger for consistent error reporting
 
 namespace huntmaster {
 
@@ -52,25 +40,82 @@ class MFCCProcessor::Impl {
     std::vector<float> melEnergies;
 
     Impl(const Config& cfg) : config(cfg) {
+        // Validate configuration parameters
+        if (config.sample_rate <= 0) {
+            ComponentErrorHandler::MFCCProcessorErrors::logInvalidConfiguration(
+                "sample_rate", std::to_string(config.sample_rate));
+            throw std::invalid_argument("Invalid sample rate");
+        }
+
+        if (config.frame_size <= 0 || (config.frame_size & (config.frame_size - 1)) != 0) {
+            ComponentErrorHandler::MFCCProcessorErrors::logInvalidConfiguration(
+                "frame_size", std::to_string(config.frame_size));
+            throw std::invalid_argument("Frame size must be a positive power of 2");
+        }
+
+        if (config.num_filters <= 0 || config.num_coefficients <= 0) {
+            ComponentErrorHandler::MFCCProcessorErrors::logInvalidConfiguration(
+                "filter_coefficients",
+                "filters=" + std::to_string(config.num_filters)
+                    + ", coeffs=" + std::to_string(config.num_coefficients));
+            throw std::invalid_argument("Invalid filter or coefficient count");
+        }
+
         if (config.high_freq == 0.0f) {
             config.high_freq = config.sample_rate / 2.0f;
         }
 
-#ifdef HAVE_KISSFFT
-        fftConfig = kiss_fftr_alloc(config.frame_size, 0, nullptr, nullptr);
-        fftOutput.resize(config.frame_size / 2 + 1);
-#endif
-
-        window.resize(config.frame_size);
-        for (size_t i = 0; i < config.frame_size; ++i) {
-            window[i] = 0.54f - 0.46f * cosf(2.0f * M_PI * i / (config.frame_size - 1));
+        if (config.high_freq > config.sample_rate / 2.0f) {
+            ComponentErrorHandler::MFCCProcessorErrors::logInvalidConfiguration(
+                "high_freq", std::to_string(config.high_freq));
+            config.high_freq = config.sample_rate / 2.0f;
+            LOG_WARN(Component::MFCC_PROCESSOR,
+                     "High frequency clamped to Nyquist: " + std::to_string(config.high_freq));
         }
 
-        initializeMelFilterBank();
-        initializeDCTMatrix();
+#ifdef HAVE_KISSFFT
+        try {
+            fftConfig = kiss_fftr_alloc(config.frame_size, 0, nullptr, nullptr);
+            if (!fftConfig) {
+                ComponentErrorHandler::MFCCProcessorErrors::logFFTInitializationFailure(
+                    "kiss_fftr_alloc returned null");
+                throw std::runtime_error("FFT initialization failed");
+            }
+            fftOutput.resize(config.frame_size / 2 + 1);
+        } catch (const std::exception& e) {
+            ComponentErrorHandler::MFCCProcessorErrors::logFFTInitializationFailure(e.what());
+            throw;
+        }
+#else
+        ComponentErrorHandler::MFCCProcessorErrors::logFFTInitializationFailure(
+            "KissFFT not available - HAVE_KISSFFT not defined");
+        throw std::runtime_error("FFT support not available");
+#endif
 
-        powerSpectrum.resize(config.frame_size / 2 + 1);
-        melEnergies.resize(config.num_filters);
+        try {
+            window.resize(config.frame_size);
+            for (size_t i = 0; i < config.frame_size; ++i) {
+                window[i] = 0.54f - 0.46f * cosf(2.0f * M_PI * i / (config.frame_size - 1));
+            }
+
+            initializeMelFilterBank();
+            initializeDCTMatrix();
+
+            powerSpectrum.resize(config.frame_size / 2 + 1);
+            melEnergies.resize(config.num_filters);
+
+            LOG_INFO(Component::MFCC_PROCESSOR,
+                     "MFCC processor initialized successfully - "
+                         + std::to_string(config.num_filters) + " filters, "
+                         + std::to_string(config.num_coefficients) + " coefficients");
+        } catch (const std::bad_alloc& e) {
+            ComponentErrorHandler::MFCCProcessorErrors::logMemoryExhaustion(0, 0);
+            throw;
+        } catch (const std::exception& e) {
+            ComponentErrorHandler::MFCCProcessorErrors::logInvalidConfiguration("initialization",
+                                                                                e.what());
+            throw;
+        }
     }
 
     ~Impl() {
@@ -150,39 +195,109 @@ class MFCCProcessor::Impl {
     huntmaster::expected<FeatureVector, MFCCError>
     extractFeatures(std::span<const float> audio_frame) {
         if (audio_frame.size() != config.frame_size) {
+            ComponentErrorHandler::MFCCProcessorErrors::logInvalidInputSize(audio_frame.size(),
+                                                                            config.frame_size);
             return huntmaster::unexpected(MFCCError::INVALID_INPUT);
         }
 
-#ifdef HAVE_KISSFFT
-        std::vector<float> windowedFrame(config.frame_size);
-        for (size_t i = 0; i < config.frame_size; ++i) {
-            windowedFrame[i] = audio_frame[i] * window[i];
-        }
-
-        kiss_fftr(fftConfig, windowedFrame.data(), fftOutput.data());
-
-        for (size_t i = 0; i < powerSpectrum.size(); ++i) {
-            powerSpectrum[i] = fftOutput[i].r * fftOutput[i].r + fftOutput[i].i * fftOutput[i].i;
-        }
-
-        for (size_t i = 0; i < config.num_filters; ++i) {
-            // Use std::inner_product for a clearer and more robust dot product calculation.
-            auto filter_row_start = melFilterBank.begin() + i * powerSpectrum.size();
-            melEnergies[i] = logf(std::inner_product(filter_row_start,
-                                                     filter_row_start + powerSpectrum.size(),
-                                                     powerSpectrum.begin(),
-                                                     0.0f)
-                                  + 1e-10f);
-        }
-
-        FeatureVector coefficients(config.num_coefficients, 0.0f);
-        for (size_t i = 0; i < config.num_coefficients; ++i) {
-            for (size_t j = 0; j < config.num_filters; ++j) {
-                coefficients[i] += dctMatrix[i * config.num_filters + j] * melEnergies[j];
+        // Validate input audio data
+        bool hasValidData = false;
+        float maxValue = 0.0f;
+        for (const float& sample : audio_frame) {
+            if (!std::isfinite(sample)) {
+                ComponentErrorHandler::MFCCProcessorErrors::logFeatureExtractionFailure(
+                    config.frame_size, "Non-finite values in audio frame");
+                return huntmaster::unexpected(MFCCError::INVALID_INPUT);
+            }
+            float absValue = std::abs(sample);
+            if (absValue > maxValue) {
+                maxValue = absValue;
+            }
+            if (absValue > 1e-8f) {
+                hasValidData = true;
             }
         }
-        return coefficients;
+
+        if (!hasValidData) {
+            LOG_DEBUG(Component::MFCC_PROCESSOR,
+                      "Input frame contains only silence (max value: " + std::to_string(maxValue)
+                          + ")");
+        }
+
+#ifdef HAVE_KISSFFT
+        try {
+            std::vector<float> windowedFrame(config.frame_size);
+            for (size_t i = 0; i < config.frame_size; ++i) {
+                windowedFrame[i] = audio_frame[i] * window[i];
+            }
+
+            kiss_fftr(fftConfig, windowedFrame.data(), fftOutput.data());
+
+            for (size_t i = 0; i < powerSpectrum.size(); ++i) {
+                powerSpectrum[i] =
+                    fftOutput[i].r * fftOutput[i].r + fftOutput[i].i * fftOutput[i].i;
+
+                // Check for numerical issues
+                if (!std::isfinite(powerSpectrum[i])) {
+                    ComponentErrorHandler::MFCCProcessorErrors::logFeatureExtractionFailure(
+                        config.frame_size, "Non-finite values in power spectrum");
+                    return huntmaster::unexpected(MFCCError::PROCESSING_FAILED);
+                }
+            }
+
+            // Apply mel filter bank
+            for (size_t i = 0; i < config.num_filters; ++i) {
+                try {
+                    auto filter_row_start = melFilterBank.begin() + i * powerSpectrum.size();
+                    melEnergies[i] =
+                        logf(std::inner_product(filter_row_start,
+                                                filter_row_start + powerSpectrum.size(),
+                                                powerSpectrum.begin(),
+                                                0.0f)
+                             + 1e-10f);
+
+                    if (!std::isfinite(melEnergies[i])) {
+                        ComponentErrorHandler::MFCCProcessorErrors::logFilterBankError(
+                            "Non-finite mel energy at filter " + std::to_string(i));
+                        return huntmaster::unexpected(MFCCError::PROCESSING_FAILED);
+                    }
+                } catch (const std::exception& e) {
+                    ComponentErrorHandler::MFCCProcessorErrors::logFilterBankError(
+                        "Filter " + std::to_string(i) + " processing error: " + e.what());
+                    return huntmaster::unexpected(MFCCError::PROCESSING_FAILED);
+                }
+            }
+
+            // Apply DCT
+            FeatureVector coefficients(config.num_coefficients, 0.0f);
+            for (size_t i = 0; i < config.num_coefficients; ++i) {
+                try {
+                    for (size_t j = 0; j < config.num_filters; ++j) {
+                        coefficients[i] += dctMatrix[i * config.num_filters + j] * melEnergies[j];
+                    }
+
+                    if (!std::isfinite(coefficients[i])) {
+                        ComponentErrorHandler::MFCCProcessorErrors::logDCTError(
+                            "Non-finite coefficient at index " + std::to_string(i));
+                        return huntmaster::unexpected(MFCCError::PROCESSING_FAILED);
+                    }
+                } catch (const std::exception& e) {
+                    ComponentErrorHandler::MFCCProcessorErrors::logDCTError(
+                        "DCT coefficient " + std::to_string(i) + " error: " + e.what());
+                    return huntmaster::unexpected(MFCCError::PROCESSING_FAILED);
+                }
+            }
+
+            return coefficients;
+        } catch (const std::exception& e) {
+            ComponentErrorHandler::MFCCProcessorErrors::logFeatureExtractionFailure(
+                config.frame_size,
+                "Unexpected error during MFCC extraction: " + std::string(e.what()));
+            return huntmaster::unexpected(MFCCError::PROCESSING_FAILED);
+        }
 #else
+        ComponentErrorHandler::MFCCProcessorErrors::logFFTInitializationFailure(
+            "FFT not available - HAVE_KISSFFT not defined");
         return huntmaster::unexpected(MFCCError::FFT_FAILED);
 #endif
     }
@@ -196,24 +311,28 @@ MFCCProcessor& MFCCProcessor::operator=(MFCCProcessor&&) noexcept = default;
 
 huntmaster::expected<MFCCProcessor::FeatureVector, MFCCError>
 MFCCProcessor::extractFeatures(std::span<const float> audio_frame) {
-    MFCC_LOG_DEBUG("extractFeatures called with frame size: " + std::to_string(audio_frame.size()));
+    LOG_DEBUG(Component::MFCC_PROCESSOR,
+              "extractFeatures called with frame size: " + std::to_string(audio_frame.size()));
     auto result = pimpl_->extractFeatures(audio_frame);
     if (result.has_value()) {
-        MFCC_LOG_DEBUG("extractFeatures successful, feature vector size: "
-                       + std::to_string(result->size()));
+        LOG_DEBUG(Component::MFCC_PROCESSOR,
+                  "extractFeatures successful, feature vector size: "
+                      + std::to_string(result->size()));
     } else {
-        MFCC_LOG_ERROR("extractFeatures failed with error");
+        LOG_ERROR(Component::MFCC_PROCESSOR,
+                  "extractFeatures failed - invalid input or processing error");
     }
     return result;
 }
 
 huntmaster::expected<MFCCProcessor::FeatureMatrix, MFCCError>
 MFCCProcessor::extractFeaturesFromBuffer(std::span<const float> audio_buffer, size_t hop_size) {
-    MFCC_LOG_DEBUG("extractFeaturesFromBuffer called with buffer size: "
-                   + std::to_string(audio_buffer.size())
-                   + ", hop_size: " + std::to_string(hop_size));
+    LOG_DEBUG(Component::MFCC_PROCESSOR,
+              "extractFeaturesFromBuffer called with buffer size: "
+                  + std::to_string(audio_buffer.size())
+                  + ", hop_size: " + std::to_string(hop_size));
     if (audio_buffer.empty()) {
-        MFCC_LOG_ERROR("extractFeaturesFromBuffer: empty buffer provided");
+        LOG_ERROR(Component::MFCC_PROCESSOR, "extractFeaturesFromBuffer: empty buffer provided");
         return huntmaster::unexpected(MFCCError::INVALID_INPUT);
     }
 

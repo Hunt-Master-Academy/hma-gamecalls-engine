@@ -11,10 +11,12 @@
  * @date July 24, 2025
  */
 
+#include <fstream>
+
 #include <gtest/gtest.h>
 
+#include "TestUtils.h"
 #include "huntmaster/core/AudioFormatConverter.h"
-#include "tests/lib/TestUtils.h"
 
 using namespace huntmaster;
 using namespace huntmaster::core;
@@ -22,6 +24,26 @@ using namespace huntmaster::test;
 
 // TODO: Phase 1.3 - Audio Format Converter Testing - COMPREHENSIVE FILE TODO
 // ===========================================================================
+
+// Forward declarations and placeholder types for TODO implementation
+namespace {
+enum class TestSignalType { SINE_WAVE, WHITE_NOISE, PINK_NOISE, CHIRP };
+
+struct TestResult {
+    std::string testName;
+    bool passed;
+    double executionTime;
+    std::string details;
+};
+
+struct QualityMetrics {
+    double snr;
+    double thd;
+    double dynamicRange;
+};
+
+enum class ErrorType { MEMORY_ERROR, IO_ERROR, CODEC_ERROR };
+}
 
 /**
  * @class AudioFormatConverterTest
@@ -252,9 +274,9 @@ TEST_F(AudioFormatConverterTest, WAVToPCMConversion) {
     EXPECT_TRUE(inputFormat.isValid);
 
     AudioConfig outputConfig;
-    outputConfig.sampleRate = 44100;
-    outputConfig.channels = 2;
-    outputConfig.bufferSize = 1024;
+    outputConfig.sample_rate = 44100;
+    outputConfig.channel_count = 2;
+    outputConfig.buffer_size = 1024;
 
     std::vector<uint8_t> outputData;
     bool conversionResult = converter_->convertFormat(
@@ -279,9 +301,9 @@ TEST_F(AudioFormatConverterTest, PCMToMP3Conversion) {
     auto inputFormat = AudioFormatDetector::detectFormat(inputData);
 
     AudioConfig outputConfig;
-    outputConfig.sampleRate = 44100;
-    outputConfig.channels = 2;
-    outputConfig.bufferSize = 1024;
+    outputConfig.sample_rate = 44100;
+    outputConfig.channel_count = 2;
+    outputConfig.buffer_size = 1024;
     // TODO: Add MP3-specific configuration
 
     std::vector<uint8_t> outputData;
@@ -313,8 +335,8 @@ TEST_F(AudioFormatConverterTest, FileToFileConversion) {
     outputFile.close();
 
     AudioConfig outputConfig;
-    outputConfig.sampleRate = 44100;
-    outputConfig.channels = 2;
+    outputConfig.sample_rate = 44100;
+    outputConfig.channel_count = 2;
 
     bool conversionResult = converter_->convertFile(
         testDataPath.string(), outputPath.string(), AudioFormat::MP3_VBR, outputConfig);
@@ -553,8 +575,8 @@ TEST_F(AudioFormatConverterTest, ConversionSpeedBenchmark) {
     auto inputFormat = AudioFormatDetector::detectFormat(inputData);
 
     AudioConfig outputConfig;
-    outputConfig.sampleRate = 44100;
-    outputConfig.channels = 2;
+    outputConfig.sample_rate = 44100;
+    outputConfig.channel_count = 2;
 
     measureConversionPerformance(
         [&]() {
@@ -580,8 +602,8 @@ TEST_F(AudioFormatConverterTest, MemoryUsageOptimization) {
         auto inputFormat = AudioFormatDetector::detectFormat(inputData);
 
         AudioConfig outputConfig;
-        outputConfig.sampleRate = 44100;
-        outputConfig.channels = 2;
+        outputConfig.sample_rate = 44100;
+        outputConfig.channel_count = 2;
 
         std::vector<uint8_t> outputData;
         converter_->convertFormat(
@@ -602,8 +624,8 @@ TEST_F(AudioFormatConverterTest, LargeFileHandling) {
     auto inputFormat = AudioFormatDetector::detectFormat(largeInputData);
 
     AudioConfig outputConfig;
-    outputConfig.sampleRate = 48000;
-    outputConfig.channels = 2;
+    outputConfig.sample_rate = 48000;
+    outputConfig.channel_count = 2;
 
     std::vector<uint8_t> outputData;
     bool conversionResult = converter_->convertFormat(
@@ -716,8 +738,8 @@ TEST_F(AudioFormatConverterTest, ObjectiveQualityMetrics) {
     auto originalFormat = AudioFormatDetector::detectFormat(originalData);
 
     AudioConfig config;
-    config.sampleRate = 44100;
-    config.channels = 2;
+    config.sample_rate = 44100;
+    config.channel_count = 2;
 
     // Convert to MP3 and back to WAV
     std::vector<uint8_t> mp3Data;
@@ -832,6 +854,12 @@ class AudioFormatTestUtils {
     static void generateTestReport(const std::vector<TestResult>& results,
                                    const std::string& outputPath);
 };
+
+// Stub implementations for TODO functions
+size_t getCurrentMemoryUsage() {
+    // TODO: Implement actual memory usage measurement
+    return 1024 * 1024;  // Return 1MB as placeholder
+}
 
 }  // Anonymous namespace
 

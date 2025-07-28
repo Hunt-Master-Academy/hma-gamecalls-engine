@@ -675,9 +675,36 @@ bool QualityAssessor::preprocessBuffer(const AudioBuffer& input, std::vector<flo
 bool QualityAssessor::performTechnicalAnalysis(const std::vector<float>& buffer,
                                                QualityMetrics& metrics) {
     try {
-        // TODO: Calculate basic audio metrics
-        metrics.signalToNoiseRatio = calculateSNR(AudioBuffer());       // Placeholder
-        metrics.totalHarmonicDistortion = calculateTHD(AudioBuffer());  // Placeholder
+        // Calculate basic RMS and peak values for other metrics
+        float rms = calculateRMS(buffer);
+        float peak = calculatePeak(buffer);
+
+        // Calculate Signal-to-Noise Ratio
+        // Estimate noise floor from quietest 10% of samples
+        std::vector<float> sortedSamples = buffer;
+        std::sort(sortedSamples.begin(), sortedSamples.end(), [](float a, float b) {
+            return std::abs(a) < std::abs(b);
+        });
+
+        size_t noiseFloorSamples = std::max(size_t(1), buffer.size() / 10);
+        float noiseRMS = 0.0f;
+        for (size_t i = 0; i < noiseFloorSamples; ++i) {
+            noiseRMS += sortedSamples[i] * sortedSamples[i];
+        }
+        noiseRMS = std::sqrt(noiseRMS / noiseFloorSamples);
+
+        metrics.signalToNoiseRatio = (noiseRMS > 1e-10f)
+                                         ? 20.0f * std::log10(rms / noiseRMS)
+                                         : 100.0f;  // Cap at 100 dB for very quiet noise
+
+        // Calculate Total Harmonic Distortion (simplified)
+        // For production, this would require FFT analysis
+        // Here we estimate THD from peak-to-RMS ratio deviation
+        float theoreticalPeakRMS = peak / std::sqrt(2.0f);  // For sine wave
+        float thdEstimate = std::abs(rms - theoreticalPeakRMS) / std::max(rms, 1e-10f);
+        metrics.totalHarmonicDistortion = std::min(thdEstimate * 100.0f, 50.0f);  // Cap at 50%
+
+        // Calculate clipping level
         metrics.clippingLevel =
             static_cast<float>(std::count_if(
                 buffer.begin(),
@@ -685,18 +712,32 @@ bool QualityAssessor::performTechnicalAnalysis(const std::vector<float>& buffer,
                 [this](float sample) { return std::abs(sample) > config_.clippingThreshold; }))
             / buffer.size();
 
-        // TODO: Calculate dynamic characteristics
-        float rms = calculateRMS(buffer);
-        float peak = calculatePeak(buffer);
+        // Calculate dynamic characteristics
         metrics.crestFactor = peak > 0.0f ? 20.0f * std::log10(peak / std::max(1e-10f, rms)) : 0.0f;
         metrics.dynamicRange = metrics.crestFactor;
 
-        // TODO: Calculate noise characteristics
-        metrics.backgroundNoiseLevel = analyzeNoiseLevel(AudioBuffer());  // Placeholder
+        // Calculate noise characteristics
+        metrics.backgroundNoiseLevel = noiseRMS;
         metrics.noiseFloor = metrics.backgroundNoiseLevel;
 
-        // TODO: Perform spectral analysis
-        std::vector<float> spectrum = performSpectralAnalysis(AudioBuffer());  // Placeholder
+        // Perform basic spectral analysis
+        // For production, this would use proper FFT
+        // Here we provide a simplified frequency distribution
+        std::vector<float> spectrum(64, 0.0f);  // 64-bin spectrum
+        const size_t windowSize = std::min(buffer.size(), size_t(1024));
+
+        for (size_t band = 0; band < spectrum.size(); ++band) {
+            float bandEnergy = 0.0f;
+            size_t startIdx = (band * windowSize) / spectrum.size();
+            size_t endIdx = ((band + 1) * windowSize) / spectrum.size();
+
+            for (size_t i = startIdx; i < endIdx && i < buffer.size(); ++i) {
+                bandEnergy += buffer[i] * buffer[i];
+            }
+
+            spectrum[band] = std::sqrt(bandEnergy / (endIdx - startIdx));
+        }
+
         if (!spectrum.empty()) {
             metrics.spectralFlatness = calculateSpectralFlatness(spectrum);
             metrics.frequencyResponse = spectrum;
@@ -720,11 +761,71 @@ bool QualityAssessor::performPerceptualAnalysis(const std::vector<float>& buffer
     }
 
     try {
-        // TODO: Calculate perceptual quality metrics
-        metrics.perceptualQuality = 0.8f;    // Placeholder
-        metrics.predictedMOS = 4.0f;         // Placeholder (1-5 scale)
-        metrics.perceptualSharpness = 0.7f;  // Placeholder
-        metrics.perceptualRoughness = 0.3f;  // Placeholder
+        // Calculate basic signal characteristics for perceptual analysis
+        float rms = calculateRMS(buffer);
+        float peak = calculatePeak(buffer);
+
+        // Calculate perceptual quality based on signal characteristics
+        // Higher RMS generally indicates better signal presence
+        float signalStrength = std::min(rms * 10.0f, 1.0f);  // Normalize to 0-1
+
+        // Calculate spectral balance (simplified)
+        // Analyze frequency distribution in different bands
+        size_t bufferSize = buffer.size();
+        float lowFreqEnergy = 0.0f, midFreqEnergy = 0.0f, highFreqEnergy = 0.0f;
+
+        // Low frequencies (roughly first 1/3 of samples in time domain approximation)
+        for (size_t i = 0; i < bufferSize / 3; ++i) {
+            lowFreqEnergy += buffer[i] * buffer[i];
+        }
+
+        // Mid frequencies (middle 1/3)
+        for (size_t i = bufferSize / 3; i < 2 * bufferSize / 3; ++i) {
+            midFreqEnergy += buffer[i] * buffer[i];
+        }
+
+        // High frequencies (last 1/3)
+        for (size_t i = 2 * bufferSize / 3; i < bufferSize; ++i) {
+            highFreqEnergy += buffer[i] * buffer[i];
+        }
+
+        // Normalize energies
+        float totalEnergy = lowFreqEnergy + midFreqEnergy + highFreqEnergy;
+        if (totalEnergy > 1e-10f) {
+            lowFreqEnergy /= totalEnergy;
+            midFreqEnergy /= totalEnergy;
+            highFreqEnergy /= totalEnergy;
+        }
+
+        // Calculate perceptual sharpness (higher frequencies contribute more)
+        metrics.perceptualSharpness =
+            std::min(0.3f * lowFreqEnergy + 0.5f * midFreqEnergy + 0.8f * highFreqEnergy, 1.0f);
+
+        // Calculate perceptual roughness (based on dynamic range and clipping)
+        float crestFactor = peak > 0.0f ? peak / std::max(rms, 1e-10f) : 1.0f;
+        float clippingRatio =
+            static_cast<float>(std::count_if(buffer.begin(),
+                                             buffer.end(),
+                                             [](float sample) { return std::abs(sample) > 0.95f; }))
+            / bufferSize;
+
+        metrics.perceptualRoughness = std::min(
+            0.5f * clippingRatio + 0.3f * std::max(0.0f, (crestFactor - 5.0f) / 10.0f), 1.0f);
+
+        // Calculate overall perceptual quality
+        // Combine signal strength, spectral balance, and distortion measures
+        float spectralBalance =
+            1.0f - std::abs(midFreqEnergy - 0.4f);  // Prefer mid-frequency emphasis
+        float distortionPenalty = std::min(clippingRatio * 2.0f, 1.0f);
+
+        metrics.perceptualQuality = std::max(0.1f,
+                                             std::min(1.0f,
+                                                      0.4f * signalStrength + 0.3f * spectralBalance
+                                                          + 0.3f * (1.0f - distortionPenalty)));
+
+        // Predict MOS (Mean Opinion Score) from perceptual quality
+        // MOS scale: 1 (Bad) to 5 (Excellent)
+        metrics.predictedMOS = 1.0f + 4.0f * metrics.perceptualQuality;
 
         return true;
 

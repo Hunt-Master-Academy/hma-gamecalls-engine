@@ -42,7 +42,8 @@ enum class Component : int {
     AUDIO_ENGINE = 11,
     FEATURE_EXTRACTION = 12,
     SIMILARITY_ANALYSIS = 13,
-    PERFORMANCE = 14
+    PERFORMANCE = 14,
+    MEMORY_MANAGER = 15
 };
 
 // Alias for backward compatibility with tools

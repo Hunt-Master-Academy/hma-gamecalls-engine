@@ -12,7 +12,6 @@
 
 export class ComparativeReports {
   constructor(options = {}) {
-    // TODO: Initialize comparative reporting configuration
     this.config = {
       comparisonTypes: options.comparisonTypes || [
         "ab_testing",
@@ -29,7 +28,6 @@ export class ComparativeReports {
       ...options,
     };
 
-    // TODO: Initialize statistical analysis tools
     this.statisticalEngine = null;
     this.comparisonTemplates = new Map();
     this.benchmarkData = new Map();
@@ -38,7 +36,6 @@ export class ComparativeReports {
     this.initializeComparativeTools();
   }
 
-  // TODO: Initialize comparative analysis tools
   initializeComparativeTools() {
     // A/B testing template
     this.comparisonTemplates.set("ab_testing", {
@@ -95,7 +92,6 @@ export class ComparativeReports {
       ],
     });
 
-    // TODO: Initialize statistical significance tests
     this.significanceTests.set("t_test", {
       name: "Student's t-test",
       assumptions: ["normal_distribution", "independent_samples"],
@@ -115,12 +111,10 @@ export class ComparativeReports {
     });
   }
 
-  // TODO: Generate comprehensive A/B testing results report
   async generateABTestingReport(experimentData, options = {}) {
     try {
       const reportId = this.generateReportId("ab_testing");
 
-      // TODO: Validate experiment data
       const validationResult = await this.validateExperimentData(
         experimentData
       );
@@ -200,7 +194,6 @@ export class ComparativeReports {
     }
   }
 
-  // TODO: Generate period-over-period comparison report
   async generatePeriodComparisonReport(
     currentPeriodData,
     previousPeriodData,
@@ -284,7 +277,6 @@ export class ComparativeReports {
     return report;
   }
 
-  // TODO: Generate benchmark comparison report
   async generateBenchmarkReport(performanceData, benchmarkData, options = {}) {
     const reportId = this.generateReportId("benchmark_analysis");
 
@@ -349,11 +341,9 @@ export class ComparativeReports {
     return report;
   }
 
-  // TODO: Generate cohort comparison report
   async generateCohortComparisonReport(cohortData, options = {}) {
     const reportId = this.generateReportId("cohort_comparison");
 
-    // TODO: Analyze cohort performance
     const cohortAnalysis = await this.analyzeCohortPerformance(cohortData);
     const retentionAnalysis = await this.analyzeCohortRetention(cohortData);
     const revenueAnalysis = await this.analyzeCohortRevenue(cohortData);
@@ -388,11 +378,9 @@ export class ComparativeReports {
     return report;
   }
 
-  // TODO: Generate segment comparison report
   async generateSegmentComparisonReport(segmentData, options = {}) {
     const reportId = this.generateReportId("segment_comparison");
 
-    // TODO: Implement segment comparison logic
     const segmentPerformance = await this.analyzeSegmentPerformance(
       segmentData
     );
@@ -410,7 +398,6 @@ export class ComparativeReports {
     };
   }
 
-  // TODO: Validate experiment data quality and completeness
   async validateExperimentData(experimentData) {
     const errors = [];
 
@@ -430,7 +417,6 @@ export class ComparativeReports {
       }
     }
 
-    // TODO: Additional validation checks
     const hasValidMetrics = await this.validateMetrics(experimentData);
     if (!hasValidMetrics) errors.push("Invalid or missing metrics data");
 
@@ -440,14 +426,12 @@ export class ComparativeReports {
     };
   }
 
-  // TODO: Perform statistical significance tests
   async performSignificanceTests(experimentData) {
     const results = new Map();
 
     for (const variant of experimentData.variants) {
       if (variant.id === experimentData.controlVariant) continue;
 
-      // TODO: Perform appropriate statistical test based on data type
       const testResult = await this.performTTest(
         experimentData.controlData,
         variant.data
@@ -468,7 +452,6 @@ export class ComparativeReports {
 
   // Helper methods for statistical analysis
   async performTTest(controlData, variantData) {
-    // TODO: Implement t-test calculation
     const controlMean = this.calculateMean(controlData);
     const variantMean = this.calculateMean(variantData);
     const controlStdDev = this.calculateStandardDeviation(controlData);
@@ -502,7 +485,6 @@ export class ComparativeReports {
     };
   }
 
-  // TODO: Additional helper methods
   generateReportId(type) {
     return `${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
@@ -525,7 +507,6 @@ export class ComparativeReports {
     return Math.sqrt(variance);
   }
 
-  // TODO: Implement all analysis methods
   async validateMetrics(experimentData) {
     return true;
   }

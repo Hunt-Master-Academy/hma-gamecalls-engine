@@ -22,7 +22,6 @@ import { DataValidator } from "../validation/data-validator.js";
  */
 class ConsentManager {
   constructor(options = {}) {
-    // TODO: Initialize consent manager configuration
     this.config = {
       gdprEnabled: options.gdprEnabled !== false,
       ccpaEnabled: options.ccpaEnabled !== false,
@@ -49,10 +48,8 @@ class ConsentManager {
       ...options,
     };
 
-    // TODO: Initialize consent components
     this.validator = new DataValidator();
 
-    // TODO: Initialize consent state
     this.state = {
       isInitialized: false,
       currentConsent: null,
@@ -63,7 +60,6 @@ class ConsentManager {
       consentRequired: true,
     };
 
-    // TODO: Initialize consent categories and purposes
     this.consentCategories = {
       necessary: {
         id: "necessary",
@@ -100,7 +96,6 @@ class ConsentManager {
       },
     };
 
-    // TODO: Initialize localization
     this.localizations = {
       en: {
         banner_title: "Cookie Consent",
@@ -114,7 +109,6 @@ class ConsentManager {
       },
     };
 
-    // TODO: Initialize event handlers
     this.eventHandlers = new Map();
 
     this.initializeConsentManager();
@@ -122,30 +116,24 @@ class ConsentManager {
 
   /**
    * Initialize the consent management system
-   * TODO: Set up consent collection and compliance checking
+   * Set up consent collection and compliance checking
    */
   async initializeConsentManager() {
     try {
-      // TODO: Load existing consent data
       await this.loadConsentData();
 
-      // TODO: Check consent requirements
       this.checkConsentRequirements();
 
-      // TODO: Set up consent banner if needed
       if (this.shouldShowConsentBanner()) {
         await this.showConsentBanner();
       }
 
-      // TODO: Set up consent reminder checking
       this.setupConsentReminders();
 
-      // TODO: Set up preference center
       if (this.config.enablePreferenceCenter) {
         this.setupPreferenceCenter();
       }
 
-      // TODO: Set up event listeners
       this.setupEventListeners();
 
       this.state.isInitialized = true;
@@ -158,20 +146,17 @@ class ConsentManager {
 
   /**
    * Load existing consent data from storage
-   * TODO: Retrieve and validate stored consent information
+   * Retrieve and validate stored consent information
    */
   async loadConsentData() {
     try {
-      // TODO: Load consent from localStorage
       const storedConsent = localStorage.getItem(this.config.storageKey);
       if (storedConsent) {
         const consentData = JSON.parse(storedConsent);
 
-        // TODO: Validate consent data
         if (this.validateConsentData(consentData)) {
           this.state.currentConsent = consentData;
 
-          // TODO: Check if consent is still valid
           if (this.isConsentExpired(consentData)) {
             this.state.currentConsent = null;
             localStorage.removeItem(this.config.storageKey);
@@ -179,7 +164,6 @@ class ConsentManager {
         }
       }
 
-      // TODO: Load consent history
       const historyKey = `${this.config.storageKey}_history`;
       const storedHistory = localStorage.getItem(historyKey);
       if (storedHistory) {
@@ -194,11 +178,10 @@ class ConsentManager {
 
   /**
    * Check if consent is required based on regulations
-   * TODO: Determine if user consent collection is needed
+   * Determine if user consent collection is needed
    */
   checkConsentRequirements() {
     try {
-      // TODO: Check if consent already exists and is valid
       if (
         this.state.currentConsent &&
         !this.isConsentExpired(this.state.currentConsent)
@@ -207,22 +190,18 @@ class ConsentManager {
         return;
       }
 
-      // TODO: Check jurisdiction requirements
       const userLocation = this.detectUserLocation();
 
-      // TODO: GDPR requirements (EU users)
       if (this.config.gdprEnabled && this.isEUUser(userLocation)) {
         this.state.consentRequired = true;
         return;
       }
 
-      // TODO: CCPA requirements (California users)
       if (this.config.ccpaEnabled && this.isCaliforniaUser(userLocation)) {
         this.state.consentRequired = true;
         return;
       }
 
-      // TODO: Default to requiring consent if configured
       this.state.consentRequired = this.config.requireExplicitConsent;
     } catch (error) {
       console.error(
@@ -236,10 +215,9 @@ class ConsentManager {
 
   /**
    * Determine if consent banner should be shown
-   * TODO: Check conditions for displaying consent banner
+   * Check conditions for displaying consent banner
    */
   shouldShowConsentBanner() {
-    // TODO: Show banner if consent is required and not already given
     return (
       this.config.enableConsentBanner &&
       this.state.consentRequired &&
@@ -249,20 +227,17 @@ class ConsentManager {
 
   /**
    * Show consent banner to user
-   * TODO: Display consent collection interface
+   * Display consent collection interface
    */
   async showConsentBanner() {
     try {
-      // TODO: Create banner element if it doesn't exist
       if (!this.consentBanner) {
         this.createConsentBanner();
       }
 
-      // TODO: Show banner
       this.consentBanner.style.display = "block";
       this.state.bannerVisible = true;
 
-      // TODO: Log banner display
       this.logConsentEvent("banner_displayed", {
         timestamp: Date.now(),
         required: this.state.consentRequired,
@@ -276,19 +251,16 @@ class ConsentManager {
 
   /**
    * Create consent banner UI element
-   * TODO: Build consent banner interface
+   * Build consent banner interface
    */
   createConsentBanner() {
     try {
-      // TODO: Create banner container
       this.consentBanner = document.createElement("div");
       this.consentBanner.id = "huntmaster-consent-banner";
       this.consentBanner.className = "huntmaster-consent-banner";
 
-      // TODO: Get localized text
       const texts = this.getLocalizedTexts();
 
-      // TODO: Create banner HTML
       this.consentBanner.innerHTML = `
                 <div class="consent-banner-content">
                     <div class="consent-banner-text">
@@ -309,13 +281,10 @@ class ConsentManager {
                 </div>
             `;
 
-      // TODO: Add banner styles
       this.addConsentBannerStyles();
 
-      // TODO: Add banner to page
       document.body.appendChild(this.consentBanner);
 
-      // TODO: Set up banner event listeners
       this.setupBannerEventListeners();
 
       console.log("ConsentManager: Consent banner created");
@@ -326,16 +295,14 @@ class ConsentManager {
 
   /**
    * Add CSS styles for consent banner
-   * TODO: Style the consent banner interface
+   * Style the consent banner interface
    */
   addConsentBannerStyles() {
     try {
-      // TODO: Check if styles already added
       if (document.getElementById("huntmaster-consent-styles")) {
         return;
       }
 
-      // TODO: Create style element
       const style = document.createElement("style");
       style.id = "huntmaster-consent-styles";
       style.textContent = `
@@ -438,11 +405,10 @@ class ConsentManager {
 
   /**
    * Set up event listeners for consent banner
-   * TODO: Handle banner button interactions
+   * Handle banner button interactions
    */
   setupBannerEventListeners() {
     try {
-      // TODO: Accept all button
       const acceptAllBtn = document.getElementById("consent-accept-all");
       if (acceptAllBtn) {
         acceptAllBtn.addEventListener("click", () => {
@@ -450,7 +416,6 @@ class ConsentManager {
         });
       }
 
-      // TODO: Reject all button
       const rejectAllBtn = document.getElementById("consent-reject-all");
       if (rejectAllBtn) {
         rejectAllBtn.addEventListener("click", () => {
@@ -458,7 +423,6 @@ class ConsentManager {
         });
       }
 
-      // TODO: Manage preferences button
       const manageBtn = document.getElementById("consent-manage");
       if (manageBtn) {
         manageBtn.addEventListener("click", () => {
@@ -475,20 +439,16 @@ class ConsentManager {
 
   /**
    * Accept all consent categories
-   * TODO: Grant consent for all categories
+   * Grant consent for all categories
    */
   acceptAllConsent() {
     try {
-      // TODO: Create consent object with all categories accepted
       const consent = this.createConsentObject(true);
 
-      // TODO: Save consent
       this.saveConsent(consent);
 
-      // TODO: Hide banner
       this.hideConsentBanner();
 
-      // TODO: Log consent event
       this.logConsentEvent("accept_all", {
         timestamp: Date.now(),
         categories: Object.keys(this.consentCategories),
@@ -502,20 +462,16 @@ class ConsentManager {
 
   /**
    * Reject all non-essential consent categories
-   * TODO: Deny consent for optional categories
+   * Deny consent for optional categories
    */
   rejectAllConsent() {
     try {
-      // TODO: Create consent object with only necessary categories
       const consent = this.createConsentObject(false);
 
-      // TODO: Save consent
       this.saveConsent(consent);
 
-      // TODO: Hide banner
       this.hideConsentBanner();
 
-      // TODO: Log consent event
       this.logConsentEvent("reject_all", {
         timestamp: Date.now(),
         categories: ["necessary"],
@@ -529,7 +485,7 @@ class ConsentManager {
 
   /**
    * Create consent object with specified acceptance
-   * TODO: Build consent data structure
+   * Build consent data structure
    */
   createConsentObject(acceptAll = false) {
     const consent = {
@@ -544,7 +500,6 @@ class ConsentManager {
         Date.now() + this.config.consentExpirationDays * 24 * 60 * 60 * 1000,
     };
 
-    // TODO: Set consent for each category
     Object.entries(this.consentCategories).forEach(([categoryId, category]) => {
       const accepted = category.required || acceptAll;
       consent.categories[categoryId] = {
@@ -553,7 +508,6 @@ class ConsentManager {
         required: category.required,
       };
 
-      // TODO: Add purposes if accepted
       if (accepted) {
         consent.purposes.push(...category.purposes);
       }
@@ -564,38 +518,31 @@ class ConsentManager {
 
   /**
    * Save consent data to storage
-   * TODO: Persist consent information
+   * Persist consent information
    */
   saveConsent(consent) {
     try {
-      // TODO: Validate consent data
       if (!this.validateConsentData(consent)) {
         throw new Error("Invalid consent data");
       }
 
-      // TODO: Store current consent
       localStorage.setItem(this.config.storageKey, JSON.stringify(consent));
       this.state.currentConsent = consent;
 
-      // TODO: Add to consent history
       this.state.consentHistory.push(consent);
 
-      // TODO: Limit history size
       if (this.state.consentHistory.length > 10) {
         this.state.consentHistory = this.state.consentHistory.slice(-5);
       }
 
-      // TODO: Save history
       const historyKey = `${this.config.storageKey}_history`;
       localStorage.setItem(
         historyKey,
         JSON.stringify(this.state.consentHistory)
       );
 
-      // TODO: Update state
       this.state.consentRequired = false;
 
-      // TODO: Emit consent change event
       this.emit("consentChanged", consent);
 
       console.log("ConsentManager: Consent saved successfully");
@@ -607,7 +554,7 @@ class ConsentManager {
 
   /**
    * Hide consent banner
-   * TODO: Remove consent banner from display
+   * Remove consent banner from display
    */
   hideConsentBanner() {
     try {
@@ -622,11 +569,10 @@ class ConsentManager {
 
   /**
    * Check if user has consent for specific purpose
-   * TODO: Validate consent for data processing purpose
+   * Validate consent for data processing purpose
    */
   hasConsentFor(purpose) {
     try {
-      // TODO: Check if consent exists and is valid
       if (
         !this.state.currentConsent ||
         this.isConsentExpired(this.state.currentConsent)
@@ -634,7 +580,6 @@ class ConsentManager {
         return false;
       }
 
-      // TODO: Check if purpose is included in consent
       return this.state.currentConsent.purposes.includes(purpose);
     } catch (error) {
       console.error("ConsentManager: Consent check failed:", error);
@@ -644,7 +589,7 @@ class ConsentManager {
 
   /**
    * Check if consent is expired
-   * TODO: Validate consent expiration status
+   * Validate consent expiration status
    */
   isConsentExpired(consent) {
     if (!consent || !consent.expiresAt) {
@@ -655,21 +600,18 @@ class ConsentManager {
 
   /**
    * Validate consent data structure
-   * TODO: Ensure consent data is properly formatted
+   * Ensure consent data is properly formatted
    */
   validateConsentData(consent) {
     try {
-      // TODO: Check required fields
       if (!consent.timestamp || !consent.version || !consent.categories) {
         return false;
       }
 
-      // TODO: Validate categories
       if (typeof consent.categories !== "object") {
         return false;
       }
 
-      // TODO: Check if at least necessary consent is given
       if (
         !consent.categories.necessary ||
         !consent.categories.necessary.accepted
@@ -686,7 +628,7 @@ class ConsentManager {
 
   /**
    * Get localized text based on user language
-   * TODO: Return appropriate language texts
+   * Return appropriate language texts
    */
   getLocalizedTexts() {
     const language = this.detectUserLanguage();
@@ -695,7 +637,7 @@ class ConsentManager {
 
   /**
    * Log consent-related events
-   * TODO: Track consent events for compliance audit
+   * Track consent events for compliance audit
    */
   logConsentEvent(eventType, data) {
     try {
@@ -707,7 +649,6 @@ class ConsentManager {
         url: window.location.href,
       };
 
-      // TODO: Store in consent log
       const logKey = `${this.config.storageKey}_log`;
       let log = [];
       try {
@@ -721,7 +662,6 @@ class ConsentManager {
 
       log.push(logEntry);
 
-      // TODO: Limit log size
       if (log.length > 100) {
         log = log.slice(-50);
       }
@@ -738,7 +678,7 @@ class ConsentManager {
 
   /**
    * Get current consent status
-   * TODO: Return comprehensive consent information
+   * Return comprehensive consent information
    */
   getConsentStatus() {
     return {
@@ -757,7 +697,7 @@ class ConsentManager {
 
   /**
    * Handle consent errors
-   * TODO: Process and log consent-related errors
+   * Process and log consent-related errors
    */
   handleError(errorType, error) {
     const errorRecord = {
@@ -772,25 +712,21 @@ class ConsentManager {
 
   /**
    * Clean up and destroy consent manager
-   * TODO: Clean up resources and event listeners
+   * Clean up resources and event listeners
    */
   async destroy() {
     try {
-      // TODO: Remove consent banner
       if (this.consentBanner && this.consentBanner.parentNode) {
         this.consentBanner.parentNode.removeChild(this.consentBanner);
       }
 
-      // TODO: Remove styles
       const styles = document.getElementById("huntmaster-consent-styles");
       if (styles && styles.parentNode) {
         styles.parentNode.removeChild(styles);
       }
 
-      // TODO: Clear event handlers
       this.eventHandlers.clear();
 
-      // TODO: Reset state
       this.state.isInitialized = false;
 
       console.log("ConsentManager: Destroyed successfully");
@@ -799,7 +735,6 @@ class ConsentManager {
     }
   }
 
-  // TODO: Placeholder methods for user detection (would implement with proper geolocation)
   detectUserLocation() {
     return "unknown";
   }
@@ -829,10 +764,8 @@ class ConsentManager {
   }
 }
 
-// TODO: Export the ConsentManager class
 export { ConsentManager };
 
-// TODO: Export convenience functions
 export const createConsentManager = (options) => new ConsentManager(options);
 export const checkConsentRequired = () => {
   // Simple check for common consent-requiring jurisdictions
@@ -844,7 +777,6 @@ export const checkConsentRequired = () => {
   return euTimezones.some((tz) => timezone.startsWith(tz));
 };
 
-// TODO: Export consent utilities
 export const ConsentUtils = {
   createConsentId: () => {
     return `consent_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;

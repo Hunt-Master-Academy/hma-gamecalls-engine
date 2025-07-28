@@ -66,7 +66,9 @@ enum class AudioFormat {
     MP3_VBR,      ///< MP3 Variable Bit Rate
     MP3_ABR,      ///< MP3 Average Bit Rate
     OGG_VORBIS,   ///< OGG Vorbis compression
+    OGG_OPUS,     ///< OGG Opus compression (low latency)
     FLAC,         ///< Free Lossless Audio Codec
+    AAC,          ///< AAC generic format
     AAC_LC,       ///< AAC Low Complexity
     AAC_HE,       ///< AAC High Efficiency
     AAC_HE_V2,    ///< AAC High Efficiency v2
@@ -102,6 +104,8 @@ struct AudioFormatInfo {
     uint16_t bitDepth;       ///< Bit depth (8, 16, 24, 32)
     uint64_t frameCount;     ///< Total number of audio frames
     double durationSeconds;  ///< Duration in seconds
+    double duration;         ///< Duration in seconds (alias for compatibility)
+    size_t fileSize;         ///< File size in bytes
 
     // Quality and performance
     uint32_t bitrate;         ///< Bitrate in bits per second
@@ -114,12 +118,113 @@ struct AudioFormatInfo {
 
     // Validation and error information
     bool isValid;                       ///< Format validation result
+    bool isValidated;                   ///< File validation completed
     bool hasCorruption;                 ///< Corruption detection result
+    bool hasMetadata;                   ///< Metadata available
     std::vector<std::string> warnings;  ///< Format warnings and issues
     std::vector<std::string> errors;    ///< Format errors and problems
 
     // Metadata
     std::unordered_map<std::string, std::string> metadata;  ///< Audio metadata
+};
+
+/**
+ * @brief Channel mixing modes for audio conversion
+ */
+enum class ChannelMixingMode {
+    SIMPLE,       ///< Simple channel mapping
+    BALANCED,     ///< Balanced mixing
+    INTELLIGENT,  ///< Intelligent channel routing
+    SURROUND      ///< Surround sound processing
+};
+
+/**
+ * @brief Resampling quality settings
+ */
+enum class ResamplingQuality {
+    FAST,      ///< Linear interpolation, lowest CPU usage
+    BALANCED,  ///< Cubic interpolation, balanced quality/performance
+    HIGH,      ///< Sinc interpolation, high quality
+    BEST       ///< Band-limited, highest quality, highest CPU usage
+};
+
+/**
+ * @brief Dithering types for bit-depth conversion
+ */
+enum class DitheringType {
+    NONE,            ///< No dithering (truncation)
+    RECTANGULAR,     ///< Simple rectangular dithering
+    TRIANGULAR,      ///< Triangular PDF dithering
+    GAUSSIAN,        ///< Gaussian PDF dithering
+    NOISE_SHAPED,    ///< Noise-shaped dithering
+    PSYCHOACOUSTIC,  ///< Psychoacoustically optimized
+    ERROR_FEEDBACK   ///< Error feedback dithering
+};
+
+/**
+ * @brief Conversion quality settings
+ */
+enum class ConversionQuality {
+    DRAFT,     ///< Fast, lower quality
+    STANDARD,  ///< Standard quality
+    HIGH,      ///< High quality
+    MAXIMUM    ///< Maximum quality, slower
+};
+
+/**
+ * @brief Conversion options configuration
+ */
+struct ConversionOptions {
+    AudioFormat targetFormat = AudioFormat::WAV_PCM;      ///< Target audio format
+    uint32_t targetSampleRate = 44100;                    ///< Target sample rate
+    uint16_t targetChannels = 2;                          ///< Target channel count
+    uint16_t targetBitDepth = 16;                         ///< Target bit depth
+    ConversionQuality quality = ConversionQuality::HIGH;  ///< Conversion quality
+    bool enableDithering = true;       ///< Enable dithering for bit depth conversion
+    bool preserveMetadata = true;      ///< Preserve metadata during conversion
+    bool enableNormalization = false;  ///< Enable audio normalization
+    float normalizationLevel = -3.0f;  ///< Normalization target level in dB
+};
+
+/**
+ * @brief Conversion performance metrics
+ */
+struct ConversionMetrics {
+    double conversionTime = 0.0;  ///< Total conversion time in seconds
+    double cpuUsage = 0.0;        ///< CPU usage percentage
+    size_t memoryUsage = 0;       ///< Memory usage in bytes
+    float qualityScore = 0.0f;    ///< Quality score (0.0-1.0)
+    size_t inputSize = 0;         ///< Input file size in bytes
+    size_t outputSize = 0;        ///< Output file size in bytes
+    bool success = false;         ///< Conversion success status
+};
+
+/**
+ * @brief Conversion time and resource estimation
+ */
+struct ConversionEstimate {
+    double estimatedTime = 0.0;
+    size_t estimatedMemory = 0;
+    float qualityLoss = 0.0f;
+    bool isRecommended = true;
+};
+
+/**
+ * @brief MP3 encoding configuration
+ */
+struct MP3Config {
+    int bitrate = 128;
+    int quality = 2;
+    bool vbr = false;
+};
+
+/**
+ * @brief OGG encoding configuration
+ */
+struct OGGConfig {
+    float quality = 0.4f;
+    int bitrate = 128;
+    bool managedBitrate = false;
 };
 
 // TODO 1.3.2: Format Detection and Analysis
@@ -440,37 +545,6 @@ class OGGFormatHandler {
  * [ ] Quality assessment and validation
  * [ ] Performance optimization and SIMD acceleration
  */
-enum class ResamplingQuality {
-    FAST,      ///< Linear interpolation, lowest CPU usage
-    BALANCED,  ///< Cubic interpolation, balanced quality/performance
-    HIGH,      ///< Sinc interpolation, high quality
-    BEST       ///< Band-limited, highest quality, highest CPU usage
-};
-
-/**
- * @brief Advanced dithering for bit-depth conversion
- *
- * TODO: Implement comprehensive dithering support with:
- * [ ] Rectangular dithering for simple applications
- * [ ] Triangular dithering for general use
- * [ ] Gaussian dithering for advanced applications
- * [ ] Noise shaping for improved perceptual quality
- * [ ] Psychoacoustically optimized dithering
- * [ ] Error feedback dithering for maximum quality
- * [ ] Configurable dither amplitude and characteristics
- * [ ] Quality assessment and perceptual validation
- * [ ] Performance optimization for real-time processing
- * [ ] Adaptive dithering based on signal characteristics
- */
-enum class DitheringType {
-    NONE,            ///< No dithering (truncation)
-    RECTANGULAR,     ///< Simple rectangular dithering
-    TRIANGULAR,      ///< Triangular PDF dithering
-    GAUSSIAN,        ///< Gaussian PDF dithering
-    NOISE_SHAPED,    ///< Noise-shaped dithering
-    PSYCHOACOUSTIC,  ///< Psychoacoustically optimized
-    ERROR_FEEDBACK   ///< Error feedback dithering
-};
 
 }  // namespace core
 }  // namespace huntmaster

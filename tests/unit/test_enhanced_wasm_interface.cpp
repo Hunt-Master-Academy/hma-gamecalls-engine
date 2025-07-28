@@ -13,8 +13,8 @@
 
 #include <gtest/gtest.h>
 
+#include "TestUtils.h"
 #include "huntmaster/platform/wasm/EnhancedWASMInterface.h"
-#include "tests/lib/TestUtils.h"
 
 using namespace huntmaster;
 using namespace huntmaster::wasm;

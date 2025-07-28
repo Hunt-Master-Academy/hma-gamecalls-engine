@@ -810,7 +810,7 @@ UserProgress SessionManager::getUserProgress(const std::string& user_id) const {
     return progress;
 }
 
-// TODO: Additional placeholder methods for complete implementation
+// Utility methods for session and recording management
 std::string SessionManager::generateSessionId() {
     return "session_" + std::to_string(++session_counter_) + "_"
            + std::to_string(getCurrentTimestamp());

@@ -14,9 +14,12 @@
 #include <memory>
 #include <vector>
 
+#define DR_WAV_IMPLEMENTATION
 #include <huntmaster/core/DebugConfig.h>
 #include <huntmaster/core/DebugLogger.h>
 #include <huntmaster/core/MFCCProcessor.h>
+
+#include "dr_wav.h"
 
 using huntmaster::DebugConfig;
 using huntmaster::DebugLogger;
@@ -149,91 +152,54 @@ struct WAVData {
                                            "Loading WAV file: " + filename);
         }
 
-        std::ifstream file(filename, std::ios::binary);
-        if (!file) {
-            std::cerr << "Could not open file: " << filename << std::endl;
+        // Use dr_wav to load any WAV format (including 32-bit IEEE float)
+        unsigned int drChannels;
+        unsigned int drSampleRate;
+        drwav_uint64 totalFrameCount;
+
+        float* pAudioData = drwav_open_file_and_read_pcm_frames_f32(
+            filename.c_str(), &drChannels, &drSampleRate, &totalFrameCount, nullptr);
+
+        if (pAudioData == nullptr) {
+            std::cerr << "Could not load WAV file: " << filename << std::endl;
             DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
                                            huntmaster::DebugLevel::ERROR,
-                                           "Could not open file: " + filename);
+                                           "Could not load WAV file: " + filename);
             return false;
         }
 
-        // Read WAV header (simplified - assumes PCM format)
-        char header[44];
-        file.read(header, 44);
-
-        if (std::string(header, 4) != "RIFF" || std::string(header + 8, 4) != "WAVE") {
-            std::cerr << "Not a valid WAV file" << std::endl;
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::ERROR,
-                                           "Not a valid WAV file: " + filename);
-            return false;
-        }
-
-        // Extract sample rate and channels from header
-        sampleRate = *reinterpret_cast<uint32_t*>(header + 24);
-        channels = *reinterpret_cast<uint16_t*>(header + 22);
-        uint16_t bitsPerSample = *reinterpret_cast<uint16_t*>(header + 34);
+        sampleRate = drSampleRate;
+        channels = static_cast<uint16_t>(drChannels);
 
         if (enableDebug) {
             DebugLogger::getInstance().log(
                 huntmaster::DebugComponent::TOOLS,
                 huntmaster::DebugLevel::DEBUG,
-                "WAV properties - Sample Rate: " + std::to_string(sampleRate)
-                    + " Hz, Channels: " + std::to_string(channels)
-                    + ", Bits per sample: " + std::to_string(bitsPerSample));
-            monitor.checkpoint("WAV header parsed");
+                "WAV properties - Sample Rate: " + std::to_string(sampleRate) + " Hz, Channels: "
+                    + std::to_string(channels) + ", Frames: " + std::to_string(totalFrameCount));
+            monitor.checkpoint("WAV file loaded with dr_wav");
         }
 
-        std::cout << "WAV Info: " << sampleRate << " Hz, " << channels << " channels, "
-                  << bitsPerSample << " bits" << std::endl;
+        std::cout << "WAV Info: " << sampleRate << " Hz, " << channels << " channels" << std::endl;
 
-        // Read sample data
-        file.seekg(0, std::ios::end);
-        size_t fileSize = file.tellg();
-        size_t dataSize = fileSize - 44;  // Subtract header size
+        // Convert to mono if stereo (take only first channel)
+        samples.clear();
+        samples.reserve(totalFrameCount);
+
+        for (drwav_uint64 i = 0; i < totalFrameCount; ++i) {
+            // Take only the first channel if multi-channel
+            samples.push_back(pAudioData[i * channels]);
+        }
+
+        // Free the dr_wav allocated memory
+        drwav_free(pAudioData, nullptr);
 
         if (enableDebug) {
             DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
                                            huntmaster::DebugLevel::DEBUG,
-                                           "File size: " + std::to_string(fileSize)
-                                               + " bytes, Data size: " + std::to_string(dataSize)
-                                               + " bytes");
-        }
-
-        if (bitsPerSample == 16) {
-            std::vector<int16_t> rawSamples(dataSize / 2);
-            file.seekg(44);
-            file.read(reinterpret_cast<char*>(rawSamples.data()), dataSize);
-
-            if (enableDebug) {
-                DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                               huntmaster::DebugLevel::DEBUG,
-                                               "Read " + std::to_string(rawSamples.size())
-                                                   + " raw samples");
-                monitor.checkpoint("Raw samples read");
-            }
-
-            // Convert to float and take only first channel if stereo
-            samples.reserve(rawSamples.size() / channels);
-            for (size_t i = 0; i < rawSamples.size(); i += channels) {
-                samples.push_back(static_cast<float>(rawSamples[i]) / 32768.0f);
-            }
-
-            if (enableDebug) {
-                DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                               huntmaster::DebugLevel::DEBUG,
-                                               "Converted to " + std::to_string(samples.size())
-                                                   + " float samples");
-                monitor.checkpoint("Sample conversion completed");
-            }
-        } else {
-            std::cerr << "Unsupported bit depth: " << bitsPerSample << std::endl;
-            DebugLogger::getInstance().log(huntmaster::DebugComponent::TOOLS,
-                                           huntmaster::DebugLevel::ERROR,
-                                           "Unsupported bit depth: "
-                                               + std::to_string(bitsPerSample));
-            return false;
+                                           "Converted to " + std::to_string(samples.size())
+                                               + " mono float samples");
+            monitor.checkpoint("Sample conversion completed");
         }
 
         // Calculate some basic statistics

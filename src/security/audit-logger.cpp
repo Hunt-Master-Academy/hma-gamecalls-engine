@@ -13,6 +13,9 @@
 
 #include "huntmaster/security/audit-logger.h"
 
+#include <algorithm>
+#include <ctime>
+
 namespace huntmaster {
 namespace security {
 
@@ -32,6 +35,10 @@ AuditLogger::AuditLogger(const AuditConfig& config) : config_(config) {
     // TODO: Initialize audit log lifecycle management
     // TODO: Set up audit log security policies
     // TODO: Configure audit log operational readiness
+}
+
+AuditLogger::~AuditLogger() {
+    // Cleanup handled automatically by RAII
 }
 
 void AuditLogger::logSecurityEvent(const SecurityEvent& event) {
@@ -104,13 +111,13 @@ void AuditLogger::logSystemChange(const SystemChangeEvent& change) {
     // TODO: Log system event optimization and tuning
     // TODO: Record system event operational readiness
     // TODO: Generate system event audit trail
-}
-// TODO: Update system change metrics
-// TODO: Check for unauthorized changes
-// TODO: Apply change approval tracking
-// TODO: Log to system audit trail
-// TODO: Update configuration tracking
-// TODO: Trigger change management alerts
+
+    // TODO: Update system change metrics
+    // TODO: Check for unauthorized changes
+    // TODO: Apply change approval tracking
+    // TODO: Log to system audit trail
+    // TODO: Update configuration tracking
+    // TODO: Trigger change management alerts
 }
 
 void AuditLogger::logComplianceEvent(const ComplianceEvent& event) {

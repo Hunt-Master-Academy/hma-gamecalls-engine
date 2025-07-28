@@ -22,7 +22,6 @@ import { DataValidator } from "../validation/data-validator.js";
  */
 class BehaviorPatterns {
   constructor(options = {}) {
-    // TODO: Initialize behavior analysis configuration
     this.config = {
       enableClickPatterns: options.enableClickPatterns !== false,
       enableScrollPatterns: options.enableScrollPatterns !== false,
@@ -38,10 +37,8 @@ class BehaviorPatterns {
       ...options,
     };
 
-    // TODO: Initialize analysis components
     this.validator = new DataValidator();
 
-    // TODO: Initialize pattern recognition state
     this.state = {
       isInitialized: false,
       currentSession: null,
@@ -56,7 +53,6 @@ class BehaviorPatterns {
       },
     };
 
-    // TODO: Initialize pattern classifiers
     this.patternClassifiers = {
       click: new ClickPatternClassifier(),
       scroll: new ScrollPatternClassifier(),
@@ -65,7 +61,6 @@ class BehaviorPatterns {
       anomaly: new AnomalyDetector(),
     };
 
-    // TODO: Initialize behavioral models
     this.behavioralModels = {
       userTypes: ["explorer", "goal_oriented", "browser", "power_user"],
       engagementLevels: ["low", "medium", "high", "very_high"],
@@ -77,7 +72,6 @@ class BehaviorPatterns {
       ],
     };
 
-    // TODO: Initialize pattern templates
     this.patternTemplates = new Map();
 
     this.initializeBehaviorAnalysis();
@@ -85,26 +79,20 @@ class BehaviorPatterns {
 
   /**
    * Initialize behavior pattern analysis system
-   * TODO: Set up pattern recognition and analysis pipeline
+   * Set up pattern recognition and analysis pipeline
    */
   async initializeBehaviorAnalysis() {
     try {
-      // TODO: Load existing patterns from storage
       await this.loadPatternDatabase();
 
-      // TODO: Initialize pattern classifiers
       await this.initializeClassifiers();
 
-      // TODO: Set up real-time analysis
       this.setupRealTimeAnalysis();
 
-      // TODO: Set up batch processing
       this.setupBatchProcessing();
 
-      // TODO: Load behavioral models
       await this.loadBehavioralModels();
 
-      // TODO: Set up pattern learning
       if (this.config.enableMachineLearning) {
         this.setupPatternLearning();
       }
@@ -119,11 +107,10 @@ class BehaviorPatterns {
 
   /**
    * Load existing pattern database from storage
-   * TODO: Retrieve stored behavior patterns and classifications
+   * Retrieve stored behavior patterns and classifications
    */
   async loadPatternDatabase() {
     try {
-      // TODO: Load patterns from localStorage
       const storedPatterns = localStorage.getItem(
         "huntmaster_behavior_patterns"
       );
@@ -132,7 +119,6 @@ class BehaviorPatterns {
         this.state.patternDatabase = new Map(Object.entries(patterns));
       }
 
-      // TODO: Load pattern templates
       const storedTemplates = localStorage.getItem(
         "huntmaster_pattern_templates"
       );
@@ -154,31 +140,26 @@ class BehaviorPatterns {
 
   /**
    * Initialize pattern classifiers
-   * TODO: Set up machine learning models for pattern recognition
+   * Set up machine learning models for pattern recognition
    */
   async initializeClassifiers() {
     try {
-      // TODO: Initialize click pattern classifier
       if (this.config.enableClickPatterns) {
         await this.patternClassifiers.click.initialize();
       }
 
-      // TODO: Initialize scroll pattern classifier
       if (this.config.enableScrollPatterns) {
         await this.patternClassifiers.scroll.initialize();
       }
 
-      // TODO: Initialize navigation pattern classifier
       if (this.config.enableNavigationPatterns) {
         await this.patternClassifiers.navigation.initialize();
       }
 
-      // TODO: Initialize engagement analyzer
       if (this.config.enableEngagementAnalysis) {
         await this.patternClassifiers.engagement.initialize();
       }
 
-      // TODO: Initialize anomaly detector
       if (this.config.enableAnomalyDetection) {
         await this.patternClassifiers.anomaly.initialize();
       }
@@ -194,11 +175,10 @@ class BehaviorPatterns {
 
   /**
    * Set up real-time behavior analysis
-   * TODO: Configure continuous pattern analysis during sessions
+   * Configure continuous pattern analysis during sessions
    */
   setupRealTimeAnalysis() {
     try {
-      // TODO: Set up analysis timer
       setInterval(() => {
         if (this.state.currentSession && !this.state.processingActive) {
           this.analyzeCurrentSession();
@@ -216,11 +196,10 @@ class BehaviorPatterns {
 
   /**
    * Set up batch processing for historical analysis
-   * TODO: Configure batch analysis of stored session data
+   * Configure batch analysis of stored session data
    */
   setupBatchProcessing() {
     try {
-      // TODO: Set up batch processing queue
       this.processingTimer = setInterval(() => {
         if (
           this.state.analysisQueue.length > 0 &&
@@ -238,11 +217,10 @@ class BehaviorPatterns {
 
   /**
    * Load behavioral models and templates
-   * TODO: Initialize user behavior classification models
+   * Initialize user behavior classification models
    */
   async loadBehavioralModels() {
     try {
-      // TODO: Define click pattern templates
       this.patternTemplates.set("rapid_clicking", {
         type: "click",
         description:
@@ -252,7 +230,6 @@ class BehaviorPatterns {
         confidence: 0.8,
       });
 
-      // TODO: Define scroll pattern templates
       this.patternTemplates.set("scan_reading", {
         type: "scroll",
         description: "Fast scrolling pattern indicating scanning behavior",
@@ -261,7 +238,6 @@ class BehaviorPatterns {
         confidence: 0.7,
       });
 
-      // TODO: Define navigation pattern templates
       this.patternTemplates.set("goal_oriented", {
         type: "navigation",
         description: "Direct navigation to specific content",
@@ -270,7 +246,6 @@ class BehaviorPatterns {
         confidence: 0.9,
       });
 
-      // TODO: Define engagement pattern templates
       this.patternTemplates.set("high_engagement", {
         type: "engagement",
         description: "High user engagement with content",
@@ -288,11 +263,10 @@ class BehaviorPatterns {
 
   /**
    * Set up pattern learning for continuous improvement
-   * TODO: Configure machine learning pipeline for pattern discovery
+   * Configure machine learning pipeline for pattern discovery
    */
   setupPatternLearning() {
     try {
-      // TODO: Set up learning algorithm
       this.learningAlgorithm = {
         method: "clustering",
         minSamples: 50,
@@ -300,7 +274,6 @@ class BehaviorPatterns {
         updateFrequency: 24 * 60 * 60 * 1000, // Daily
       };
 
-      // TODO: Set up learning timer
       setInterval(() => {
         this.updatePatternModels();
       }, this.learningAlgorithm.updateFrequency);
@@ -313,7 +286,7 @@ class BehaviorPatterns {
 
   /**
    * Analyze current session for behavior patterns
-   * TODO: Perform real-time pattern analysis on active session
+   * Perform real-time pattern analysis on active session
    */
   async analyzeCurrentSession() {
     try {
@@ -331,28 +304,24 @@ class BehaviorPatterns {
         anomalies: [],
       };
 
-      // TODO: Analyze click patterns
       if (this.config.enableClickPatterns) {
         analysis.patterns.click = await this.analyzeClickPatterns(
           this.state.currentSession
         );
       }
 
-      // TODO: Analyze scroll patterns
       if (this.config.enableScrollPatterns) {
         analysis.patterns.scroll = await this.analyzeScrollPatterns(
           this.state.currentSession
         );
       }
 
-      // TODO: Analyze navigation patterns
       if (this.config.enableNavigationPatterns) {
         analysis.patterns.navigation = await this.analyzeNavigationPatterns(
           this.state.currentSession
         );
       }
 
-      // TODO: Analyze engagement patterns
       if (this.config.enableEngagementAnalysis) {
         analysis.patterns.engagement = await this.analyzeEngagementPatterns(
           this.state.currentSession
@@ -362,20 +331,16 @@ class BehaviorPatterns {
         );
       }
 
-      // TODO: Detect anomalies
       if (this.config.enableAnomalyDetection) {
         analysis.anomalies = await this.detectAnomalies(
           this.state.currentSession
         );
       }
 
-      // TODO: Classify user type
       analysis.userType = this.classifyUserType(analysis.patterns);
 
-      // TODO: Store analysis results
       this.storeAnalysis(analysis);
 
-      // TODO: Update statistics
       this.state.stats.analysisTime += Date.now() - startTime;
       this.state.stats.patternsFound += Object.keys(analysis.patterns).length;
       this.state.stats.anomaliesDetected += analysis.anomalies.length;
@@ -391,7 +356,7 @@ class BehaviorPatterns {
 
   /**
    * Analyze click patterns in session data
-   * TODO: Identify click behavior patterns and classifications
+   * Identify click behavior patterns and classifications
    */
   async analyzeClickPatterns(sessionData) {
     try {
@@ -409,20 +374,15 @@ class BehaviorPatterns {
         return patterns;
       }
 
-      // TODO: Calculate click rate
       const sessionDuration = sessionData.endTime - sessionData.startTime;
       patterns.clickRate = clickEvents.length / (sessionDuration / 60000); // clicks per minute
 
-      // TODO: Detect rapid clicking
       patterns.rapidClicking = this.detectRapidClicking(clickEvents);
 
-      // TODO: Analyze click distribution
       patterns.clickDistribution = this.analyzeClickDistribution(clickEvents);
 
-      // TODO: Identify dominant elements
       patterns.dominantElements = this.identifyDominantElements(clickEvents);
 
-      // TODO: Detect frustration indicators
       patterns.frustrationIndicators =
         this.detectFrustrationIndicators(clickEvents);
 
@@ -435,7 +395,7 @@ class BehaviorPatterns {
 
   /**
    * Analyze scroll patterns in session data
-   * TODO: Identify scroll behavior patterns and reading habits
+   * Identify scroll behavior patterns and reading habits
    */
   async analyzeScrollPatterns(sessionData) {
     try {
@@ -453,19 +413,14 @@ class BehaviorPatterns {
         return patterns;
       }
 
-      // TODO: Calculate scroll depth
       patterns.scrollDepth = this.calculateScrollDepth(scrollEvents);
 
-      // TODO: Calculate average scroll speed
       patterns.scrollSpeed = this.calculateScrollSpeed(scrollEvents);
 
-      // TODO: Classify reading pattern
       patterns.readingPattern = this.classifyReadingPattern(scrollEvents);
 
-      // TODO: Identify pause points
       patterns.pausePoints = this.identifyPausePoints(scrollEvents);
 
-      // TODO: Detect backtracking
       patterns.backtracking = this.detectScrollBacktracking(scrollEvents);
 
       return patterns;
@@ -477,7 +432,7 @@ class BehaviorPatterns {
 
   /**
    * Analyze navigation patterns in session data
-   * TODO: Identify navigation behavior and user intent
+   * Identify navigation behavior and user intent
    */
   async analyzeNavigationPatterns(sessionData) {
     try {
@@ -495,20 +450,15 @@ class BehaviorPatterns {
         return patterns;
       }
 
-      // TODO: Calculate session depth
       patterns.sessionDepth = navigationEvents.length;
 
-      // TODO: Build navigation path
       patterns.navigationPath = this.buildNavigationPath(navigationEvents);
 
-      // TODO: Calculate backtracking ratio
       patterns.backtrackingRatio =
         this.calculateBacktrackingRatio(navigationEvents);
 
-      // TODO: Detect goal-oriented behavior
       patterns.goalOriented = this.detectGoalOrientedBehavior(navigationEvents);
 
-      // TODO: Detect exploratory behavior
       patterns.exploratoryBehavior =
         this.detectExploratoryBehavior(navigationEvents);
 
@@ -524,7 +474,7 @@ class BehaviorPatterns {
 
   /**
    * Analyze engagement patterns in session data
-   * TODO: Measure user engagement and interaction quality
+   * Measure user engagement and interaction quality
    */
   async analyzeEngagementPatterns(sessionData) {
     try {
@@ -537,23 +487,17 @@ class BehaviorPatterns {
         dropOffPoints: [],
       };
 
-      // TODO: Calculate session duration
       patterns.sessionDuration = sessionData.endTime - sessionData.startTime;
 
-      // TODO: Count total interactions
       patterns.interactionCount = this.countTotalInteractions(sessionData);
 
-      // TODO: Calculate engagement score
       patterns.engagementScore = this.calculateEngagementScore(sessionData);
 
-      // TODO: Calculate attention span
       patterns.attentionSpan = this.calculateAttentionSpan(sessionData);
 
-      // TODO: Identify peak engagement time
       patterns.peakEngagementTime =
         this.identifyPeakEngagementTime(sessionData);
 
-      // TODO: Identify drop-off points
       patterns.dropOffPoints = this.identifyDropOffPoints(sessionData);
 
       return patterns;
@@ -568,13 +512,12 @@ class BehaviorPatterns {
 
   /**
    * Detect anomalies in user behavior
-   * TODO: Identify unusual or suspicious behavior patterns
+   * Identify unusual or suspicious behavior patterns
    */
   async detectAnomalies(sessionData) {
     try {
       const anomalies = [];
 
-      // TODO: Detect bot-like behavior
       const botLikeScore = this.calculateBotLikeScore(sessionData);
       if (botLikeScore > 0.8) {
         anomalies.push({
@@ -584,18 +527,15 @@ class BehaviorPatterns {
         });
       }
 
-      // TODO: Detect unusual speed patterns
       const speedAnomaly = this.detectSpeedAnomalies(sessionData);
       if (speedAnomaly) {
         anomalies.push(speedAnomaly);
       }
 
-      // TODO: Detect impossible interactions
       const impossibleInteractions =
         this.detectImpossibleInteractions(sessionData);
       anomalies.push(...impossibleInteractions);
 
-      // TODO: Detect suspicious navigation
       const suspiciousNavigation = this.detectSuspiciousNavigation(sessionData);
       if (suspiciousNavigation) {
         anomalies.push(suspiciousNavigation);
@@ -610,7 +550,7 @@ class BehaviorPatterns {
 
   /**
    * Classify user type based on behavior patterns
-   * TODO: Categorize user based on behavioral analysis
+   * Categorize user based on behavioral analysis
    */
   classifyUserType(patterns) {
     try {
@@ -621,7 +561,6 @@ class BehaviorPatterns {
         power_user: 0,
       };
 
-      // TODO: Score based on navigation patterns
       if (patterns.navigation) {
         if (patterns.navigation.exploratoryBehavior) {
           scores.explorer += 0.3;
@@ -634,7 +573,6 @@ class BehaviorPatterns {
         }
       }
 
-      // TODO: Score based on engagement patterns
       if (patterns.engagement) {
         if (patterns.engagement.engagementScore > 0.8) {
           scores.power_user += 0.3;
@@ -645,14 +583,12 @@ class BehaviorPatterns {
         }
       }
 
-      // TODO: Score based on interaction patterns
       if (patterns.click) {
         if (patterns.click.clickRate > 20) {
           scores.power_user += 0.2;
         }
       }
 
-      // TODO: Return highest scoring type
       const maxScore = Math.max(...Object.values(scores));
       const userType = Object.keys(scores).find(
         (type) => scores[type] === maxScore
@@ -670,7 +606,7 @@ class BehaviorPatterns {
 
   /**
    * Classify engagement level based on patterns
-   * TODO: Determine user engagement intensity
+   * Determine user engagement intensity
    */
   classifyEngagementLevel(engagementPatterns) {
     try {
@@ -695,21 +631,18 @@ class BehaviorPatterns {
 
   /**
    * Store analysis results
-   * TODO: Persist behavior analysis data
+   * Persist behavior analysis data
    */
   storeAnalysis(analysis) {
     try {
-      // TODO: Store in pattern database
       this.state.patternDatabase.set(analysis.sessionId, analysis);
 
-      // TODO: Persist to storage
       const patternsObj = Object.fromEntries(this.state.patternDatabase);
       localStorage.setItem(
         "huntmaster_behavior_patterns",
         JSON.stringify(patternsObj)
       );
 
-      // TODO: Update statistics
       this.state.stats.totalSessions++;
 
       console.log(
@@ -722,7 +655,7 @@ class BehaviorPatterns {
 
   /**
    * Get behavior analysis summary
-   * TODO: Return comprehensive behavior analysis statistics
+   * Return comprehensive behavior analysis statistics
    */
   getAnalysisSummary() {
     return {
@@ -741,7 +674,7 @@ class BehaviorPatterns {
 
   /**
    * Handle behavior analysis errors
-   * TODO: Process and log behavior analysis errors
+   * Process and log behavior analysis errors
    */
   handleError(errorType, error) {
     const errorRecord = {
@@ -756,21 +689,18 @@ class BehaviorPatterns {
 
   /**
    * Clean up and destroy behavior analysis system
-   * TODO: Clean up resources and timers
+   * Clean up resources and timers
    */
   async destroy() {
     try {
-      // TODO: Clear processing timer
       if (this.processingTimer) {
         clearInterval(this.processingTimer);
         this.processingTimer = null;
       }
 
-      // TODO: Clear pattern database
       this.state.patternDatabase.clear();
       this.patternTemplates.clear();
 
-      // TODO: Reset state
       this.state.isInitialized = false;
 
       console.log("BehaviorPatterns: Destroyed successfully");
@@ -779,7 +709,6 @@ class BehaviorPatterns {
     }
   }
 
-  // TODO: Placeholder methods for pattern analysis implementations
   extractClickEvents(sessionData) {
     return [];
   }
@@ -863,7 +792,6 @@ class BehaviorPatterns {
   }
 }
 
-// TODO: Pattern classifier classes (simplified implementations)
 class ClickPatternClassifier {
   async initialize() {
     console.log("ClickPatternClassifier initialized");
@@ -894,14 +822,11 @@ class AnomalyDetector {
   }
 }
 
-// TODO: Export the BehaviorPatterns class
 export { BehaviorPatterns };
 
-// TODO: Export convenience functions
 export const createBehaviorPatterns = (options) =>
   new BehaviorPatterns(options);
 
-// TODO: Export behavior utilities
 export const BehaviorUtils = {
   calculateSimilarity: (pattern1, pattern2) => {
     // Simple cosine similarity implementation

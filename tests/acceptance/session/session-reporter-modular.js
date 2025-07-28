@@ -10,7 +10,6 @@
  * - Batch processing
  */
 
-// TODO: Import all reporting modules
 import { ExecutiveReports } from "./reporting/executive-reports.js";
 import { TechnicalReports } from "./reporting/technical-reports.js";
 import { UXReports } from "./reporting/ux-reports.js";
@@ -23,7 +22,6 @@ import { ArchiveManager } from "./reporting/archive-manager.js";
 
 export class SessionReporterModular {
   constructor(options = {}) {
-    // TODO: Initialize reporter configuration
     this.config = {
       defaultFormats: options.defaultFormats || ["html", "pdf"],
       autoSchedule: options.autoSchedule !== false,
@@ -40,7 +38,6 @@ export class SessionReporterModular {
       ...options,
     };
 
-    // TODO: Initialize reporting modules
     this.executiveReports = new ExecutiveReports(this.config);
     this.technicalReports = new TechnicalReports(this.config);
     this.uxReports = new UXReports(this.config);
@@ -51,18 +48,15 @@ export class SessionReporterModular {
     this.templateEngine = new TemplateEngine(this.config);
     this.archiveManager = new ArchiveManager(this.config);
 
-    // TODO: Initialize reporting pipeline
     this.reportQueue = [];
     this.reportCache = new Map();
     this.scheduledReports = new Map();
     this.isProcessing = false;
     this.reportTemplates = new Map();
 
-    // TODO: Setup event handlers
     this.setupEventHandlers();
   }
 
-  // TODO: Setup event handlers for cross-module communication
   setupEventHandlers() {
     // Handle report generation events
     this.executiveReports.on?.("report-generated", (report) => {
@@ -81,7 +75,6 @@ export class SessionReporterModular {
     });
   }
 
-  // TODO: Generate comprehensive session report
   async generateSessionReport(
     sessionData,
     reportType = "comprehensive",
@@ -91,7 +84,6 @@ export class SessionReporterModular {
       const reportId = this.generateReportId();
       const startTime = Date.now();
 
-      // TODO: Determine which reports to generate
       const reportsToGenerate = this.determineReportsToGenerate(
         reportType,
         options
@@ -99,7 +91,6 @@ export class SessionReporterModular {
 
       const reports = {};
 
-      // TODO: Generate executive report if requested
       if (reportsToGenerate.includes("executive")) {
         reports.executive =
           await this.executiveReports.generateExecutiveSummary(
@@ -108,7 +99,6 @@ export class SessionReporterModular {
           );
       }
 
-      // TODO: Generate technical report if requested
       if (reportsToGenerate.includes("technical")) {
         reports.technical =
           await this.technicalReports.generateSystemHealthReport(
@@ -117,7 +107,6 @@ export class SessionReporterModular {
           );
       }
 
-      // TODO: Generate UX report if requested
       if (reportsToGenerate.includes("ux")) {
         reports.ux = await this.uxReports.generateUXOverviewReport(
           sessionData,
@@ -125,7 +114,6 @@ export class SessionReporterModular {
         );
       }
 
-      // TODO: Generate QA report if requested
       if (reportsToGenerate.includes("qa")) {
         reports.qa = await this.qaReports.generateQASummaryReport(
           options.testData || [],
@@ -134,14 +122,12 @@ export class SessionReporterModular {
         );
       }
 
-      // TODO: Create comprehensive report summary
       const comprehensiveReport = {
         id: reportId,
         type: reportType,
         generatedAt: new Date().toISOString(),
         timeframe: options.timeframe,
 
-        // TODO: Meta information
         meta: {
           sessionCount: sessionData.length,
           dataQuality: this.assessDataQuality(sessionData),
@@ -150,23 +136,17 @@ export class SessionReporterModular {
           version: "1.0.0",
         },
 
-        // TODO: Individual reports
         reports,
 
-        // TODO: Cross-report insights
         insights: await this.generateCrossReportInsights(reports),
 
-        // TODO: Executive summary combining all reports
         executiveSummary: await this.generateCombinedExecutiveSummary(reports),
 
-        // TODO: Action items from all reports
         actionItems: await this.consolidateActionItems(reports),
 
-        // TODO: Recommendations from all reports
         recommendations: await this.consolidateRecommendations(reports),
       };
 
-      // TODO: Cache the comprehensive report
       this.cacheReport(comprehensiveReport);
 
       return comprehensiveReport;
@@ -176,7 +156,6 @@ export class SessionReporterModular {
     }
   }
 
-  // TODO: Export report in multiple formats
   async exportReport(
     reportData,
     formats = this.config.defaultFormats,
@@ -213,7 +192,6 @@ export class SessionReporterModular {
     };
   }
 
-  // TODO: Generate and export report in one operation
   async generateAndExportReport(
     sessionData,
     reportType,
@@ -236,7 +214,6 @@ export class SessionReporterModular {
     };
   }
 
-  // TODO: Schedule recurring report generation
   async scheduleReport(scheduleConfig) {
     const scheduleId = this.generateScheduleId();
 
@@ -254,14 +231,12 @@ export class SessionReporterModular {
       subscribers: scheduleConfig.subscribers || [],
     };
 
-    // TODO: Add to scheduler
     this.scheduledReports.set(scheduleId, scheduledReport);
     await this.addToScheduler(scheduledReport);
 
     return scheduledReport;
   }
 
-  // TODO: Generate batch reports for multiple sessions/timeframes
   async generateBatchReports(batchConfig) {
     const batchId = this.generateBatchId();
     const results = [];
@@ -301,7 +276,6 @@ export class SessionReporterModular {
     }
   }
 
-  // TODO: Get dashboard data for reporting overview
   getReportingDashboard() {
     return {
       recentReports: Array.from(this.reportCache.values())
@@ -326,7 +300,6 @@ export class SessionReporterModular {
     };
   }
 
-  // TODO: Create custom report template
   async createCustomTemplate(templateConfig) {
     const template = await this.exportEngine.createCustomTemplate(
       templateConfig
@@ -335,7 +308,6 @@ export class SessionReporterModular {
     return template;
   }
 
-  // TODO: Determine which reports to generate based on type
   determineReportsToGenerate(reportType, options) {
     const reportMap = {
       comprehensive: ["executive", "technical", "ux", "qa"],
@@ -357,7 +329,6 @@ export class SessionReporterModular {
     return baseReports;
   }
 
-  // TODO: Generate insights across multiple reports
   async generateCrossReportInsights(reports) {
     const insights = [];
 
@@ -397,7 +368,6 @@ export class SessionReporterModular {
     return insights;
   }
 
-  // TODO: Generate combined executive summary
   async generateCombinedExecutiveSummary(reports) {
     const summary = {
       overallStatus: this.determineOverallStatus(reports),
@@ -410,7 +380,6 @@ export class SessionReporterModular {
     return summary;
   }
 
-  // TODO: Generate comparative analysis report
   async generateComparativeReport(
     currentData,
     comparisonData,
@@ -469,7 +438,6 @@ export class SessionReporterModular {
     }
   }
 
-  // TODO: Distribute report through multiple channels
   async distributeReport(reportData, distributionConfig) {
     try {
       const distribution = await this.distributionSystem.distributeReport(
@@ -483,7 +451,6 @@ export class SessionReporterModular {
     }
   }
 
-  // TODO: Schedule report distribution
   async scheduleReportDistribution(reportConfig, schedule, distributionConfig) {
     try {
       const scheduledDistribution =
@@ -499,7 +466,6 @@ export class SessionReporterModular {
     }
   }
 
-  // TODO: Archive completed report
   async archiveReport(reportData, metadata = {}) {
     try {
       const archiveResult = await this.archiveManager.archiveReport(
@@ -513,7 +479,6 @@ export class SessionReporterModular {
     }
   }
 
-  // TODO: Search archived reports
   async searchArchivedReports(query, options = {}) {
     try {
       const searchResults = await this.archiveManager.searchReports(
@@ -527,7 +492,6 @@ export class SessionReporterModular {
     }
   }
 
-  // TODO: Retrieve archived report
   async retrieveArchivedReport(archiveId, options = {}) {
     try {
       const retrievedReport = await this.archiveManager.retrieveReport(
@@ -541,7 +505,6 @@ export class SessionReporterModular {
     }
   }
 
-  // TODO: Create custom template using template engine
   async createCustomReportTemplate(templateConfig) {
     try {
       const customTemplate = await this.templateEngine.createCustomTemplate(
@@ -554,7 +517,6 @@ export class SessionReporterModular {
     }
   }
 
-  // TODO: Render report with custom template
   async renderReportWithTemplate(reportData, templateName, options = {}) {
     try {
       const renderedReport = await this.templateEngine.renderReport(
@@ -569,7 +531,6 @@ export class SessionReporterModular {
     }
   }
 
-  // TODO: Run retention cleanup on archived reports
   async runRetentionCleanup(reportType = null) {
     try {
       const cleanupResults = await this.archiveManager.runRetentionCleanup(
@@ -582,7 +543,6 @@ export class SessionReporterModular {
     }
   }
 
-  // TODO: Consolidate action items from all reports
   async consolidateActionItems(reports) {
     const allActionItems = [];
 
@@ -596,7 +556,6 @@ export class SessionReporterModular {
     return this.deduplicateAndPrioritizeActionItems(allActionItems);
   }
 
-  // TODO: Consolidate recommendations from all reports
   async consolidateRecommendations(reports) {
     const allRecommendations = [];
 

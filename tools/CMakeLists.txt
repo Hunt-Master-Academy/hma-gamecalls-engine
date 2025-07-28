@@ -15,6 +15,9 @@ message(STATUS "Configuring native tools...")
 # Find all .cpp files in the tools directory
 file(GLOB TOOL_SOURCES "${PROJECT_TOOLS_DIR}/*.cpp")
 
+# Exclude tools that are handled by other CMake files
+list(REMOVE_ITEM TOOL_SOURCES "${PROJECT_TOOLS_DIR}/IOOptimizationDemo.cpp")
+
 # Create executable for each tool source file
 foreach(tool_source_path ${TOOL_SOURCES})
     # Extract the tool name from the filename (without extension)

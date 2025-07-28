@@ -44,7 +44,6 @@ export class EventCapture extends EventTarget {
   constructor(config = {}) {
     super();
 
-    // TODO: Implement configuration validation
     this.config = {
       enableDOMEvents: config.enableDOMEvents ?? true,
       enableUserInteractions: config.enableUserInteractions ?? true,
@@ -56,12 +55,10 @@ export class EventCapture extends EventTarget {
       ...config,
     };
 
-    // TODO: Initialize component dependencies
     this.validator = new DataValidator();
     this.privacy = new PrivacyCompliance(this.config.privacySettings);
     this.encryption = new DataEncryption();
 
-    // TODO: Initialize event buffer and state
     this.eventBuffer = [];
     this.isCapturing = false;
     this.sessionId = null;
@@ -69,14 +66,12 @@ export class EventCapture extends EventTarget {
     this.eventHandlers = new Map();
     this.flushTimer = null;
 
-    // TODO: Initialize event type configurations
     this.eventTypes = {
       dom: ["click", "input", "change", "focus", "blur", "scroll", "resize"],
       user: ["mousemove", "mousedown", "mouseup", "keydown", "keyup", "wheel"],
       system: ["load", "unload", "beforeunload", "error", "online", "offline"],
     };
 
-    // TODO: Initialize performance monitoring
     this.performanceMetrics = {
       eventsCapture: 0,
       eventsFiltered: 0,
@@ -96,7 +91,6 @@ export class EventCapture extends EventTarget {
    * @returns {void}
    */
   _initializeCapture() {
-    // TODO: Setup event listeners based on configuration
     if (this.config.enableDOMEvents) {
       this._setupDOMEventCapture();
     }
@@ -109,10 +103,8 @@ export class EventCapture extends EventTarget {
       this._setupSystemEventCapture();
     }
 
-    // TODO: Setup buffer management
     this._setupBufferManagement();
 
-    // TODO: Setup performance monitoring
     this._setupPerformanceMonitoring();
   }
 
@@ -124,7 +116,6 @@ export class EventCapture extends EventTarget {
    * @returns {void}
    */
   _setupDOMEventCapture() {
-    // TODO: Implement DOM event listener registration
     this.eventTypes.dom.forEach((eventType) => {
       if (!this.config.excludeEvents.includes(eventType)) {
         const handler = this._createEventHandler(eventType, "dom");
@@ -145,7 +136,6 @@ export class EventCapture extends EventTarget {
    * @returns {void}
    */
   _setupUserInteractionCapture() {
-    // TODO: Implement user interaction event listener registration
     this.eventTypes.user.forEach((eventType) => {
       if (!this.config.excludeEvents.includes(eventType)) {
         const handler = this._createEventHandler(eventType, "user");
@@ -166,7 +156,6 @@ export class EventCapture extends EventTarget {
    * @returns {void}
    */
   _setupSystemEventCapture() {
-    // TODO: Implement system event listener registration
     this.eventTypes.system.forEach((eventType) => {
       if (!this.config.excludeEvents.includes(eventType)) {
         const handler = this._createEventHandler(eventType, "system");
@@ -195,16 +184,12 @@ export class EventCapture extends EventTarget {
       const startTime = performance.now();
 
       try {
-        // TODO: Create event record
         const eventRecord = this._createEventRecord(event, eventType, category);
 
-        // TODO: Apply privacy filtering
         const filteredRecord = this.privacy.filterEventData(eventRecord);
 
         if (filteredRecord) {
-          // TODO: Validate event data
           if (this.validator.validateEventRecord(filteredRecord)) {
-            // TODO: Add to buffer
             this._addToBuffer(filteredRecord);
             this.performanceMetrics.eventsProcessed++;
           } else {
@@ -216,7 +201,6 @@ export class EventCapture extends EventTarget {
 
         this.performanceMetrics.eventsCapture++;
 
-        // TODO: Update performance metrics
         const processingTime = performance.now() - startTime;
         this._updateAverageProcessingTime(processingTime);
       } catch (error) {
@@ -237,7 +221,6 @@ export class EventCapture extends EventTarget {
    * @returns {Object} Structured event record
    */
   _createEventRecord(event, eventType, category) {
-    // TODO: Create comprehensive event record structure
     const baseRecord = {
       id: this._generateEventId(),
       sessionId: this.sessionId,
@@ -251,7 +234,6 @@ export class EventCapture extends EventTarget {
       userAgent: navigator.userAgent,
     };
 
-    // TODO: Add event-specific data
     return this._enrichEventRecord(baseRecord, event, eventType, category);
   }
 
@@ -267,7 +249,6 @@ export class EventCapture extends EventTarget {
    * @returns {Object} Enriched event record
    */
   _enrichEventRecord(baseRecord, event, eventType, category) {
-    // TODO: Add category-specific enrichment
     switch (category) {
       case "dom":
         return this._enrichDOMEvent(baseRecord, event);
@@ -290,7 +271,6 @@ export class EventCapture extends EventTarget {
    * @returns {Object} Enriched DOM event record
    */
   _enrichDOMEvent(baseRecord, event) {
-    // TODO: Add DOM-specific event data
     const enrichedRecord = { ...baseRecord };
 
     if (event.target) {
@@ -329,7 +309,6 @@ export class EventCapture extends EventTarget {
    * @returns {Object} Enriched user event record
    */
   _enrichUserEvent(baseRecord, event) {
-    // TODO: Add user interaction-specific event data
     const enrichedRecord = { ...baseRecord };
 
     if (event.type.startsWith("mouse")) {
@@ -376,7 +355,6 @@ export class EventCapture extends EventTarget {
    * @returns {Object} Enriched system event record
    */
   _enrichSystemEvent(baseRecord, event) {
-    // TODO: Add system-specific event data
     const enrichedRecord = { ...baseRecord };
 
     if (event.type === "error") {
@@ -422,14 +400,12 @@ export class EventCapture extends EventTarget {
    * @returns {void}
    */
   _addToBuffer(eventRecord) {
-    // TODO: Implement buffer management with size limits
     this.eventBuffer.push(eventRecord);
 
     if (this.eventBuffer.length >= this.config.bufferSize) {
       this.flushBuffer();
     }
 
-    // TODO: Emit buffer update event
     this.dispatchEvent(
       new CustomEvent("bufferUpdate", {
         detail: {
@@ -449,7 +425,6 @@ export class EventCapture extends EventTarget {
    */
   async startCapture(sessionId) {
     try {
-      // TODO: Validate session ID and initialize capture
       if (!sessionId || typeof sessionId !== "string") {
         throw new Error("Valid session ID required");
       }
@@ -458,10 +433,8 @@ export class EventCapture extends EventTarget {
       this.startTime = Date.now();
       this.isCapturing = true;
 
-      // TODO: Clear existing buffer
       this.eventBuffer = [];
 
-      // TODO: Reset performance metrics
       this.performanceMetrics = {
         eventsCapture: 0,
         eventsFiltered: 0,
@@ -470,10 +443,8 @@ export class EventCapture extends EventTarget {
         averageProcessingTime: 0,
       };
 
-      // TODO: Start buffer flush timer
       this._startFlushTimer();
 
-      // TODO: Emit capture started event
       this.dispatchEvent(
         new CustomEvent("captureStarted", {
           detail: { sessionId, startTime: this.startTime },
@@ -496,16 +467,12 @@ export class EventCapture extends EventTarget {
    */
   async stopCapture() {
     try {
-      // TODO: Stop capture and flush remaining events
       this.isCapturing = false;
 
-      // TODO: Stop flush timer
       this._stopFlushTimer();
 
-      // TODO: Flush remaining events
       await this.flushBuffer();
 
-      // TODO: Emit capture stopped event
       this.dispatchEvent(
         new CustomEvent("captureStopped", {
           detail: {
@@ -531,7 +498,6 @@ export class EventCapture extends EventTarget {
    * @returns {Promise<Object[]>} Flushed events
    */
   async flushBuffer() {
-    // TODO: Implement buffer flush with encryption
     if (this.eventBuffer.length === 0) {
       return [];
     }
@@ -540,12 +506,10 @@ export class EventCapture extends EventTarget {
       const eventsToFlush = [...this.eventBuffer];
       this.eventBuffer = [];
 
-      // TODO: Encrypt events before flushing
       const encryptedEvents = await this.encryption.encryptEvents(
         eventsToFlush
       );
 
-      // TODO: Emit buffer flush event
       this.dispatchEvent(
         new CustomEvent("bufferFlushed", {
           detail: {
@@ -571,7 +535,6 @@ export class EventCapture extends EventTarget {
    * @returns {Object} Current capture status and metrics
    */
   getStatus() {
-    // TODO: Return comprehensive status information
     return {
       isCapturing: this.isCapturing,
       sessionId: this.sessionId,
@@ -592,13 +555,10 @@ export class EventCapture extends EventTarget {
    */
   updateConfig(newConfig) {
     try {
-      // TODO: Validate and update configuration
       const updatedConfig = { ...this.config, ...newConfig };
 
-      // TODO: Apply configuration changes
       this.config = updatedConfig;
 
-      // TODO: Reinitialize if needed
       if (this.isCapturing) {
         console.warn("Configuration updated during active capture");
       }
@@ -618,19 +578,16 @@ export class EventCapture extends EventTarget {
    */
   async dispose() {
     try {
-      // TODO: Stop capture if active
       if (this.isCapturing) {
         await this.stopCapture();
       }
 
-      // TODO: Remove all event listeners
       this.eventHandlers.forEach((handler, key) => {
         const [category, eventType] = key.split(":");
         const target = category === "system" ? window : document;
         target.removeEventListener(eventType, handler);
       });
 
-      // TODO: Clear references
       this.eventHandlers.clear();
       this.eventBuffer = [];
 
@@ -640,7 +597,6 @@ export class EventCapture extends EventTarget {
     }
   }
 
-  // TODO: Add helper methods for internal operations
   _generateEventId() {
     /* Implementation needed */
   }

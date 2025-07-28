@@ -1086,13 +1086,9 @@ describe("WASM Function Export Tests", () => {
       // Validate all exported functions
       const validation = functionRegistry.validateExports(wasmModule.exports);
 
-      expect(validation.isValid).to.be.true,
-        `Missing functions: ${validation.missingFunctions.join(', ')}, Invalid functions: ${validation.invalidFunctions.join(', ')}`
-      );
+      expect(validation.isValid).to.be.true;
 
-      expect(validation.totalFound).to.equal(validation.totalRequired,
-        "All required functions should be found"
-      );
+      expect(validation.totalFound).to.equal(validation.totalRequired);
 
       // Test a representative sample of functions to ensure they work
       const testFunctions = [

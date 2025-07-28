@@ -1,9 +1,24 @@
-#include "security/memory-guard.h"
+#include "huntmaster/security/memory-guard.h"
 
 namespace huntmaster {
 namespace security {
 
-MemoryGuard::MemoryGuard() {
+// PIMPL Implementation
+struct MemoryGuard::MemoryGuardImpl {
+    GuardConfig config;
+    MemoryStats stats;
+
+    MemoryGuardImpl(const GuardConfig& cfg) : config(cfg) {
+        // Initialize implementation
+    }
+
+    ~MemoryGuardImpl() {
+        // Cleanup implementation
+    }
+};
+
+MemoryGuard::MemoryGuard(const GuardConfig& config)
+    : impl_(std::make_unique<MemoryGuardImpl>(config)) {
     // TODO: Initialize memory protection systems and guard mechanisms
     // TODO: Set up memory allocation tracking and monitoring
     // TODO: Configure stack overflow protection and detection

@@ -106,62 +106,321 @@ export class CrossBrowserTesting {
   // =================================================
 
   async detectBrowserCapabilities(session) {
-    // TODO: Detect browser capabilities and feature support
-    const capabilities = {
-      webAudio: await this.testWebAudioSupport(session),
-      webGL: await this.testWebGLSupport(session),
-      webAssembly: await this.testWebAssemblySupport(session),
-      mediaDevices: await this.testMediaDevicesSupport(session),
-      modernJS: await this.testModernJavaScriptSupport(session),
-      css3: await this.testCSS3Support(session),
-      localStorage: await this.testLocalStorageSupport(session),
-      indexedDB: await this.testIndexedDBSupport(session),
-      serviceWorker: await this.testServiceWorkerSupport(session),
-      fileAPI: await this.testFileAPISupport(session),
-    };
+    console.log(`🔍 Detecting capabilities for ${session.browserType}...`);
 
-    // TODO: Calculate compatibility score
-    const compatibilityScore = this.calculateCompatibilityScore(capabilities);
-    capabilities.compatibilityScore = compatibilityScore;
+    try {
+      // Detect browser capabilities and feature support
+      const capabilities = {
+        webAudio: await this.testWebAudioSupport(session),
+        webGL: await this.testWebGLSupport(session),
+        webAssembly: await this.testWebAssemblySupport(session),
+        mediaDevices: await this.testMediaDevicesSupport(session),
+        modernJS: await this.testModernJavaScriptSupport(session),
+        css3: await this.testCSS3Support(session),
+        localStorage: await this.testLocalStorageSupport(session),
+        indexedDB: await this.testIndexedDBSupport(session),
+        serviceWorker: await this.testServiceWorkerSupport(session),
+        fileAPI: await this.testFileAPISupport(session),
+        timestamp: Date.now(),
+        browserType: session.browserType
+      };
 
-    return capabilities;
+      // Calculate compatibility score
+      const compatibilityScore = this.calculateCompatibilityScore(capabilities);
+      capabilities.compatibilityScore = compatibilityScore;
+
+      // Store in compatibility matrix
+      this.compatibilityMatrix.set(session.browserType, capabilities);
+
+      console.log(`✅ ${session.browserType} capabilities detected - Score: ${compatibilityScore}%`);
+      return capabilities;
+
+    } catch (error) {
+      console.error(`❌ Failed to detect capabilities for ${session.browserType}:`, error);
+
+      // Return minimal capability set on error
+      return {
+        error: error.message,
+        browserType: session.browserType,
+        webAudio: { supported: false, error: 'Detection failed' },
+        webGL: { supported: false, error: 'Detection failed' },
+        webAssembly: { supported: false, error: 'Detection failed' },
+        compatibilityScore: 0,
+        timestamp: Date.now()
+      };
+    }
   }
 
   async testWebAudioSupport(session) {
-    // TODO: Test Web Audio API support
-    return {
-      supported: true, // Mock result
-      version: "1.0",
-      features: {
-        audioContext: true,
-        gainNode: true,
-        analyserNode: true,
-        scriptProcessor: true,
-        audioWorklet: true,
-      },
-      limitations: [],
-    };
+    try {
+      // Test Web Audio API support
+      const webAudioTest = {
+        supported: false,
+        version: null,
+        features: {
+          audioContext: false,
+          gainNode: false,
+          analyserNode: false,
+          scriptProcessor: false,
+          audioWorklet: false,
+          mediaStreamSource: false,
+          offline: false
+        },
+        limitations: [],
+        sampleRates: [],
+        maxChannels: 0
+      };
+
+      // Simulate browser-specific Web Audio API detection
+      if (typeof window !== 'undefined') {
+        // Test AudioContext availability
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          webAudioTest.supported = true;
+          webAudioTest.features.audioContext = true;
+
+          try {
+            const ctx = new AudioContext();
+            webAudioTest.sampleRates = [ctx.sampleRate];
+            webAudioTest.maxChannels = ctx.destination.maxChannelCount;
+
+            // Test specific nodes
+            webAudioTest.features.gainNode = typeof ctx.createGain === 'function';
+            webAudioTest.features.analyserNode = typeof ctx.createAnalyser === 'function';
+            webAudioTest.features.scriptProcessor = typeof ctx.createScriptProcessor === 'function';
+            webAudioTest.features.audioWorklet = 'audioWorklet' in ctx;
+            webAudioTest.features.mediaStreamSource = typeof ctx.createMediaStreamSource === 'function';
+
+            // Test offline context
+            webAudioTest.features.offline = typeof OfflineAudioContext !== 'undefined';
+
+            ctx.close();
+          } catch (error) {
+            webAudioTest.limitations.push(`AudioContext creation failed: ${error.message}`);
+          }
+        } else {
+          webAudioTest.limitations.push('AudioContext not available');
+        }
+      } else {
+        // Node.js environment - mark as unsupported
+        webAudioTest.limitations.push('Browser environment required');
+      }
+
+      // Browser-specific adjustments
+      switch (session.browserType) {
+        case 'safari':
+          if (webAudioTest.supported) {
+            webAudioTest.limitations.push('Requires user interaction to start');
+          }
+          break;
+        case 'firefox':
+          if (!webAudioTest.features.audioWorklet) {
+            webAudioTest.limitations.push('AudioWorklet support limited');
+          }
+          break;
+      }
+
+      return webAudioTest;
+
+    } catch (error) {
+      return {
+        supported: false,
+        error: error.message,
+        features: {},
+        limitations: ['Detection failed']
+      };
+    }
   }
 
   async testWebGLSupport(session) {
-    // TODO: Test WebGL support and capabilities
-    return {
-      supported: true,
-      version: "2.0",
-      renderer: "Mock Renderer",
-      maxTextureSize: 16384,
-      extensions: ["OES_texture_float", "WEBGL_depth_texture"],
-    };
+    try {
+      // Test WebGL support and capabilities
+      const webGLTest = {
+        supported: false,
+        version: null,
+        features: {
+          webgl1: false,
+          webgl2: false,
+          extensions: [],
+          maxTextureSize: 0,
+          maxVertexAttribs: 0,
+          maxFragmentUniforms: 0
+        },
+        limitations: [],
+        renderer: null,
+        vendor: null
+      };
+
+      if (typeof window !== 'undefined' && window.document) {
+        const canvas = document.createElement('canvas');
+
+        // Test WebGL 1.0
+        let gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (gl) {
+          webGLTest.supported = true;
+          webGLTest.version = '1.0';
+          webGLTest.features.webgl1 = true;
+
+          // Get WebGL info
+          const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+          if (debugInfo) {
+            webGLTest.renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+            webGLTest.vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+          }
+
+          // Get capabilities
+          webGLTest.features.maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+          webGLTest.features.maxVertexAttribs = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);
+          webGLTest.features.maxFragmentUniforms = gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS);
+
+          // Get extensions
+          webGLTest.features.extensions = gl.getSupportedExtensions() || [];
+        }
+
+        // Test WebGL 2.0
+        gl = canvas.getContext('webgl2');
+        if (gl) {
+          webGLTest.features.webgl2 = true;
+          webGLTest.version = '2.0';
+        }
+
+        if (!webGLTest.supported) {
+          webGLTest.limitations.push('WebGL not supported or disabled');
+        }
+
+      } else {
+        webGLTest.limitations.push('Browser environment required');
+      }
+
+      // Browser-specific notes
+      switch (session.browserType) {
+        case 'chrome':
+          if (!webGLTest.supported) {
+            webGLTest.limitations.push('May be disabled in headless mode');
+          }
+          break;
+        case 'safari':
+          webGLTest.limitations.push('Performance may vary on older hardware');
+          break;
+      }
+
+      return webGLTest;
+
+    } catch (error) {
+      return {
+        supported: false,
+        error: error.message,
+        features: {},
+        limitations: ['Detection failed']
+      };
+    }
   }
 
   async testWebAssemblySupport(session) {
-    // TODO: Test WebAssembly support
-    return {
-      supported: true,
-      streaming: true,
-      threads: false,
-      simd: true,
-    };
+    try {
+      // Test WebAssembly support
+      const wasmTest = {
+        supported: false,
+        version: null,
+        features: {
+          instantiate: false,
+          compile: false,
+          streaming: false,
+          simd: false,
+          threads: false,
+          bigint: false
+        },
+        limitations: [],
+        performance: null
+      };
+
+      if (typeof WebAssembly !== 'undefined') {
+        wasmTest.supported = true;
+        wasmTest.version = '1.0';
+
+        // Test basic features
+        wasmTest.features.instantiate = typeof WebAssembly.instantiate === 'function';
+        wasmTest.features.compile = typeof WebAssembly.compile === 'function';
+        wasmTest.features.streaming = typeof WebAssembly.instantiateStreaming === 'function' &&
+                                     typeof WebAssembly.compileStreaming === 'function';
+
+        // Test advanced features
+        try {
+          // Simple WASM module for testing
+          const wasmBinary = new Uint8Array([
+            0x00, 0x61, 0x73, 0x6d, 0x01, 0x00, 0x00, 0x00,
+            0x01, 0x07, 0x01, 0x60, 0x02, 0x7f, 0x7f, 0x01, 0x7f,
+            0x03, 0x02, 0x01, 0x00,
+            0x07, 0x07, 0x01, 0x03, 0x61, 0x64, 0x64, 0x00, 0x00,
+            0x0a, 0x09, 0x01, 0x07, 0x00, 0x20, 0x00, 0x20, 0x01, 0x6a, 0x0b
+          ]);
+
+          const startTime = performance.now();
+          const module = await WebAssembly.instantiate(wasmBinary);
+          const endTime = performance.now();
+
+          wasmTest.performance = {
+            instantiationTime: endTime - startTime,
+            compilationSupported: true
+          };
+
+          // Test the function
+          const result = module.instance.exports.add(5, 3);
+          if (result === 8) {
+            wasmTest.features.basicExecution = true;
+          }
+
+        } catch (wasmError) {
+          wasmTest.limitations.push(`Basic WASM test failed: ${wasmError.message}`);
+        }
+
+        // Check for SIMD support (experimental)
+        try {
+          if ('simd' in WebAssembly) {
+            wasmTest.features.simd = true;
+          }
+        } catch (e) {
+          // SIMD not supported
+        }
+
+        // Check for threads support
+        if (typeof SharedArrayBuffer !== 'undefined') {
+          wasmTest.features.threads = true;
+        } else {
+          wasmTest.limitations.push('SharedArrayBuffer not available (threads unsupported)');
+        }
+
+        // Check BigInt support
+        wasmTest.features.bigint = typeof BigInt !== 'undefined';
+
+      } else {
+        wasmTest.limitations.push('WebAssembly not available');
+      }
+
+      // Browser-specific notes
+      switch (session.browserType) {
+        case 'safari':
+          if (wasmTest.features.threads) {
+            wasmTest.limitations.push('Thread support may be limited');
+          }
+          break;
+        case 'firefox':
+          if (!wasmTest.features.simd) {
+            wasmTest.limitations.push('SIMD support may require feature flag');
+          }
+          break;
+      }
+
+      return wasmTest;
+
+    } catch (error) {
+      return {
+        supported: false,
+        error: error.message,
+        features: {},
+        limitations: ['Detection failed']
+      };
+    }
   }
 
   // TODO 3.2D.4: Compatibility Testing Scenarios
@@ -570,28 +829,349 @@ export class CrossBrowserTesting {
   // =============================
 
   calculateCompatibilityScore(capabilities) {
-    // TODO: Calculate overall compatibility score based on capabilities
+    // Calculate overall compatibility score based on capabilities
     const weights = {
-      webAudio: 30,
-      webGL: 15,
-      webAssembly: 15,
-      mediaDevices: 15,
-      modernJS: 10,
-      css3: 10,
-      localStorage: 5,
+      webAudio: 30,      // Critical for audio processing
+      webGL: 15,         // Important for visualizations
+      webAssembly: 15,   // Important for performance
+      mediaDevices: 15,  // Important for audio input
+      modernJS: 10,      // Required for modern features
+      css3: 10,          // Required for UI
+      localStorage: 5,   // Nice to have for caching
+      indexedDB: 5,      // Nice to have for data storage
+      serviceWorker: 5,  // Nice to have for offline support
+      fileAPI: 10        // Important for file handling
     };
 
     let totalScore = 0;
     let totalWeight = 0;
+    let featureScores = {};
 
-    for (const [feature, capability] of Object.entries(capabilities)) {
-      if (weights[feature] && capability.supported) {
-        totalScore += weights[feature];
+    for (const [feature, weight] of Object.entries(weights)) {
+      totalWeight += weight;
+
+      if (capabilities[feature]) {
+        let featureScore = 0;
+
+        if (capabilities[feature].supported) {
+          featureScore = weight;
+
+          // Apply feature-specific scoring adjustments
+          switch (feature) {
+            case 'webAudio':
+              // Reduce score based on limitations
+              if (capabilities[feature].limitations && capabilities[feature].limitations.length > 0) {
+                featureScore *= 0.8;
+              }
+              // Bonus for advanced features
+              if (capabilities[feature].features?.audioWorklet) {
+                featureScore *= 1.1;
+              }
+              break;
+
+            case 'webGL':
+              // Bonus for WebGL 2.0 support
+              if (capabilities[feature].features?.webgl2) {
+                featureScore *= 1.2;
+              }
+              break;
+
+            case 'webAssembly':
+              // Bonus for advanced WASM features
+              let wasmBonus = 1.0;
+              if (capabilities[feature].features?.streaming) wasmBonus += 0.1;
+              if (capabilities[feature].features?.simd) wasmBonus += 0.1;
+              if (capabilities[feature].features?.threads) wasmBonus += 0.1;
+              featureScore *= wasmBonus;
+              break;
+          }
+        }
+
+        featureScores[feature] = Math.round(featureScore);
+        totalScore += featureScore;
       }
-      totalWeight += weights[feature] || 0;
     }
 
-    return totalWeight > 0 ? (totalScore / totalWeight) * 100 : 0;
+    const compatibilityScore = Math.round((totalScore / totalWeight) * 100);
+
+    return {
+      overall: Math.min(100, Math.max(0, compatibilityScore)),
+      breakdown: featureScores,
+      totalPossible: totalWeight,
+      totalAchieved: Math.round(totalScore),
+      grade: this.getCompatibilityGrade(compatibilityScore)
+    };
+  }
+
+  getCompatibilityGrade(score) {
+    if (score >= 90) return 'A+';
+    if (score >= 85) return 'A';
+    if (score >= 80) return 'A-';
+    if (score >= 75) return 'B+';
+    if (score >= 70) return 'B';
+    if (score >= 65) return 'B-';
+    if (score >= 60) return 'C+';
+    if (score >= 55) return 'C';
+    if (score >= 50) return 'C-';
+    if (score >= 45) return 'D+';
+    if (score >= 40) return 'D';
+    return 'F';
+  }
+
+  // Additional helper methods for cross-browser testing
+  async testMediaDevicesSupport(session) {
+    try {
+      const mediaTest = {
+        supported: false,
+        features: {
+          getUserMedia: false,
+          getDisplayMedia: false,
+          enumerateDevices: false
+        },
+        devices: [],
+        limitations: []
+      };
+
+      if (typeof navigator !== 'undefined' && navigator.mediaDevices) {
+        mediaTest.supported = true;
+        mediaTest.features.getUserMedia = typeof navigator.mediaDevices.getUserMedia === 'function';
+        mediaTest.features.getDisplayMedia = typeof navigator.mediaDevices.getDisplayMedia === 'function';
+        mediaTest.features.enumerateDevices = typeof navigator.mediaDevices.enumerateDevices === 'function';
+
+        // Try to enumerate devices
+        if (mediaTest.features.enumerateDevices) {
+          try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            mediaTest.devices = devices.map(device => ({
+              kind: device.kind,
+              label: device.label,
+              deviceId: device.deviceId ? '[PRESENT]' : '[MISSING]'
+            }));
+          } catch (error) {
+            mediaTest.limitations.push(`Device enumeration failed: ${error.message}`);
+          }
+        }
+      } else {
+        mediaTest.limitations.push('MediaDevices API not available');
+      }
+
+      return mediaTest;
+    } catch (error) {
+      return {
+        supported: false,
+        error: error.message,
+        limitations: ['Detection failed']
+      };
+    }
+  }
+
+  async testModernJavaScriptSupport(session) {
+    const jsTest = {
+      supported: false,
+      features: {
+        es6: false,
+        es2017: false,
+        es2018: false,
+        modules: false,
+        workers: false,
+        promises: false,
+        asyncAwait: false,
+        proxy: false,
+        weakMap: false
+      },
+      limitations: []
+    };
+
+    try {
+      // Test ES6 features
+      jsTest.features.es6 = typeof Symbol !== 'undefined' &&
+                           typeof Map !== 'undefined' &&
+                           typeof Set !== 'undefined';
+
+      // Test ES2017+ features
+      jsTest.features.asyncAwait = (async () => true)().constructor.name === 'Promise';
+      jsTest.features.promises = typeof Promise !== 'undefined';
+
+      // Test advanced features
+      jsTest.features.proxy = typeof Proxy !== 'undefined';
+      jsTest.features.weakMap = typeof WeakMap !== 'undefined';
+      jsTest.features.workers = typeof Worker !== 'undefined';
+
+      // Test modules (simplified check)
+      jsTest.features.modules = typeof document !== 'undefined' && 'noModule' in document.createElement('script');      jsTest.supported = jsTest.features.es6 && jsTest.features.promises;
+
+      if (!jsTest.features.asyncAwait) {
+        jsTest.limitations.push('async/await not supported');
+      }
+      if (!jsTest.features.modules) {
+        jsTest.limitations.push('ES6 modules may not be supported');
+      }
+
+    } catch (error) {
+      jsTest.limitations.push(`Feature detection failed: ${error.message}`);
+    }
+
+    return jsTest;
+  }
+
+  async testCSS3Support(session) {
+    const cssTest = {
+      supported: false,
+      features: {
+        flexbox: false,
+        grid: false,
+        transforms: false,
+        animations: false,
+        variables: false,
+        mediaQueries: false
+      },
+      limitations: []
+    };
+
+    try {
+      if (typeof window !== 'undefined' && window.CSS) {
+        cssTest.features.flexbox = CSS.supports('display', 'flex');
+        cssTest.features.grid = CSS.supports('display', 'grid');
+        cssTest.features.transforms = CSS.supports('transform', 'translateX(1px)');
+        cssTest.features.animations = CSS.supports('animation-name', 'test');
+        cssTest.features.variables = CSS.supports('--custom-property', 'value');
+        cssTest.features.mediaQueries = typeof window.matchMedia === 'function';
+
+        cssTest.supported = cssTest.features.flexbox && cssTest.features.transforms;
+      } else {
+        cssTest.limitations.push('CSS.supports API not available');
+      }
+    } catch (error) {
+      cssTest.limitations.push(`CSS feature detection failed: ${error.message}`);
+    }
+
+    return cssTest;
+  }
+
+  async testLocalStorageSupport(session) {
+    const storageTest = {
+      supported: false,
+      features: {
+        localStorage: false,
+        sessionStorage: false,
+        quota: 0
+      },
+      limitations: []
+    };
+
+    try {
+      if (typeof window !== 'undefined') {
+        // Test localStorage
+        try {
+          const testKey = '__test_storage__';
+          localStorage.setItem(testKey, 'test');
+          localStorage.removeItem(testKey);
+          storageTest.features.localStorage = true;
+        } catch (e) {
+          storageTest.limitations.push('localStorage not available or disabled');
+        }
+
+        // Test sessionStorage
+        try {
+          const testKey = '__test_session__';
+          sessionStorage.setItem(testKey, 'test');
+          sessionStorage.removeItem(testKey);
+          storageTest.features.sessionStorage = true;
+        } catch (e) {
+          storageTest.limitations.push('sessionStorage not available or disabled');
+        }
+
+        storageTest.supported = storageTest.features.localStorage || storageTest.features.sessionStorage;
+      } else {
+        storageTest.limitations.push('Browser environment required');
+      }
+    } catch (error) {
+      storageTest.limitations.push(`Storage test failed: ${error.message}`);
+    }
+
+    return storageTest;
+  }
+
+  async testIndexedDBSupport(session) {
+    const idbTest = {
+      supported: false,
+      version: null,
+      limitations: []
+    };
+
+    try {
+      if (typeof window !== 'undefined' && window.indexedDB) {
+        idbTest.supported = true;
+        idbTest.version = 'Available';
+      } else {
+        idbTest.limitations.push('IndexedDB not available');
+      }
+    } catch (error) {
+      idbTest.limitations.push(`IndexedDB test failed: ${error.message}`);
+    }
+
+    return idbTest;
+  }
+
+  async testServiceWorkerSupport(session) {
+    const swTest = {
+      supported: false,
+      features: {
+        registration: false,
+        cache: false,
+        push: false
+      },
+      limitations: []
+    };
+
+    try {
+      if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+        swTest.supported = true;
+        swTest.features.registration = typeof navigator.serviceWorker.register === 'function';
+        swTest.features.cache = typeof window.caches !== 'undefined';
+        swTest.features.push = 'PushManager' in window;
+      } else {
+        swTest.limitations.push('Service Workers not supported');
+      }
+    } catch (error) {
+      swTest.limitations.push(`Service Worker test failed: ${error.message}`);
+    }
+
+    return swTest;
+  }
+
+  async testFileAPISupport(session) {
+    const fileTest = {
+      supported: false,
+      features: {
+        fileReader: false,
+        blob: false,
+        url: false,
+        dragDrop: false
+      },
+      limitations: []
+    };
+
+    try {
+      fileTest.features.fileReader = typeof FileReader !== 'undefined';
+      fileTest.features.blob = typeof Blob !== 'undefined';
+      fileTest.features.url = typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function';
+      fileTest.features.dragDrop = typeof window !== 'undefined' && 'DataTransfer' in window;
+
+      fileTest.supported = fileTest.features.fileReader && fileTest.features.blob;
+
+      if (!fileTest.features.url) {
+        fileTest.limitations.push('URL.createObjectURL not supported');
+      }
+      if (!fileTest.features.dragDrop) {
+        fileTest.limitations.push('Drag and drop not supported');
+      }
+    } catch (error) {
+      fileTest.limitations.push(`File API test failed: ${error.message}`);
+    }
+
+    return fileTest;
+  }
   }
 
   calculateOverallScore(results) {

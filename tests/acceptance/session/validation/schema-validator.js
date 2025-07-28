@@ -19,7 +19,7 @@
 
 class SchemaValidator {
   constructor(options = {}) {
-    // TODO: Initialize schema validation configuration
+    // Initialize schema validation configuration
     this.config = {
       strictMode: options.strictMode || true,
       allowAdditionalProperties: options.allowAdditionalProperties || false,
@@ -29,7 +29,7 @@ class SchemaValidator {
       ...options,
     };
 
-    // TODO: Set up schema registry and caching
+    // Set up schema registry and caching
     this.schemaRegistry = new Map();
     this.validationCache = new Map();
     this.formatValidators = new Map();
@@ -45,11 +45,10 @@ class SchemaValidator {
   }
 
   /**
-   * TODO: Initialize default schemas
+   * Initialize default schemas
    * Set up built-in schemas for common session data structures
    */
   initializeDefaultSchemas() {
-    // TODO: Session data schema
     this.registerSchema("session", {
       $schema: "http://json-schema.org/draft-07/schema#",
       type: "object",
@@ -87,7 +86,6 @@ class SchemaValidator {
       additionalProperties: false,
     });
 
-    // TODO: Audio data schema
     this.registerSchema("audioData", {
       $schema: "http://json-schema.org/draft-07/schema#",
       type: "object",
@@ -124,7 +122,6 @@ class SchemaValidator {
       additionalProperties: false,
     });
 
-    // TODO: Performance metrics schema
     this.registerSchema("performanceMetrics", {
       $schema: "http://json-schema.org/draft-07/schema#",
       type: "object",
@@ -174,30 +171,26 @@ class SchemaValidator {
   }
 
   /**
-   * TODO: Initialize format validators
+   * Initialize format validators
    * Set up custom format validation functions
    */
   initializeFormatValidators() {
-    // TODO: Date-time format validator
     this.addFormatValidator("date-time", (value) => {
       const dateRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$/;
       return dateRegex.test(value) && !isNaN(Date.parse(value));
     });
 
-    // TODO: UUID format validator
     this.addFormatValidator("uuid", (value) => {
       const uuidRegex =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
       return uuidRegex.test(value);
     });
 
-    // TODO: Audio format validator
     this.addFormatValidator("audio-format", (value) => {
       const validFormats = ["wav", "mp3", "flac", "ogg", "aac", "m4a"];
       return validFormats.includes(value.toLowerCase());
     });
 
-    // TODO: Session ID format validator
     this.addFormatValidator("session-id", (value) => {
       return /^[a-zA-Z0-9-_]{8,64}$/.test(value);
     });
@@ -212,7 +205,6 @@ class SchemaValidator {
       throw new Error("Schema name and definition are required");
     }
 
-    // TODO: Validate the schema itself
     this.validateSchemaStructure(schema);
 
     this.schemaRegistry.set(name, {
@@ -222,14 +214,13 @@ class SchemaValidator {
       lastUsed: null,
     });
 
-    // TODO: Clear related cache entries
     this.clearCacheForSchema(name);
 
     return this;
   }
 
   /**
-   * TODO: Validate data against schema
+   * Validate data against schema
    * Main validation method that checks data against a registered schema
    */
   async validateSchema(data, schemaName, options = {}) {
@@ -237,7 +228,6 @@ class SchemaValidator {
     this.validationStats.totalValidations++;
 
     try {
-      // TODO: Check cache first
       const cacheKey = this.generateCacheKey(data, schemaName, options);
       if (this.config.cacheSchemas && this.validationCache.has(cacheKey)) {
         this.validationStats.cacheHits++;
@@ -245,29 +235,24 @@ class SchemaValidator {
       }
       this.validationStats.cacheMisses++;
 
-      // TODO: Get schema from registry
       const schemaEntry = this.schemaRegistry.get(schemaName);
       if (!schemaEntry) {
         throw new Error(`Schema '${schemaName}' not found in registry`);
       }
 
-      // TODO: Update schema usage statistics
       schemaEntry.usageCount++;
       schemaEntry.lastUsed = Date.now();
 
-      // TODO: Perform validation
       const result = await this.performSchemaValidation(
         data,
         schemaEntry.schema,
         options
       );
 
-      // TODO: Add execution metadata
       result.executionTime = performance.now() - startTime;
       result.schemaName = schemaName;
       result.timestamp = Date.now();
 
-      // TODO: Cache result if enabled
       if (this.config.cacheSchemas) {
         this.validationCache.set(cacheKey, result);
         // Limit cache size
@@ -291,7 +276,7 @@ class SchemaValidator {
   }
 
   /**
-   * TODO: Perform schema validation
+   * Perform schema validation
    * Core schema validation logic with comprehensive checking
    */
   async performSchemaValidation(
@@ -303,13 +288,11 @@ class SchemaValidator {
   ) {
     const errors = [];
 
-    // TODO: Check maximum depth to prevent infinite recursion
     if (depth > this.config.maxDepth) {
       errors.push(`Maximum validation depth exceeded at path: ${path}`);
       return { isValid: false, errors };
     }
 
-    // TODO: Validate type
     if (schema.type) {
       const typeResult = this.validateType(data, schema.type, path);
       if (!typeResult.isValid) {
@@ -318,24 +301,20 @@ class SchemaValidator {
       }
     }
 
-    // TODO: Validate enum values
     if (schema.enum && !schema.enum.includes(data)) {
       errors.push(`Value at ${path} must be one of: ${schema.enum.join(", ")}`);
     }
 
-    // TODO: Validate string constraints
     if (typeof data === "string") {
       const stringResult = this.validateStringConstraints(data, schema, path);
       errors.push(...stringResult.errors);
     }
 
-    // TODO: Validate number constraints
     if (typeof data === "number") {
       const numberResult = this.validateNumberConstraints(data, schema, path);
       errors.push(...numberResult.errors);
     }
 
-    // TODO: Validate array constraints
     if (Array.isArray(data)) {
       const arrayResult = await this.validateArrayConstraints(
         data,
@@ -347,7 +326,6 @@ class SchemaValidator {
       errors.push(...arrayResult.errors);
     }
 
-    // TODO: Validate object constraints
     if (data && typeof data === "object" && !Array.isArray(data)) {
       const objectResult = await this.validateObjectConstraints(
         data,
@@ -363,7 +341,7 @@ class SchemaValidator {
   }
 
   /**
-   * TODO: Validate data type
+   * Validate data type
    * Check if data matches the expected type
    */
   validateType(data, expectedType, path) {
@@ -386,7 +364,7 @@ class SchemaValidator {
   }
 
   /**
-   * TODO: Validate string constraints
+   * Validate string constraints
    * Check string-specific validation rules
    */
   validateStringConstraints(data, schema, path) {
@@ -426,7 +404,7 @@ class SchemaValidator {
   }
 
   /**
-   * TODO: Validate number constraints
+   * Validate number constraints
    * Check number-specific validation rules
    */
   validateNumberConstraints(data, schema, path) {
@@ -472,7 +450,7 @@ class SchemaValidator {
   }
 
   /**
-   * TODO: Validate array constraints
+   * Validate array constraints
    * Check array-specific validation rules and validate items
    */
   async validateArrayConstraints(data, schema, options, path, depth) {
@@ -494,7 +472,6 @@ class SchemaValidator {
       errors.push(`Array at ${path} contains duplicate items`);
     }
 
-    // TODO: Validate array items
     if (schema.items) {
       for (let i = 0; i < data.length; i++) {
         const itemPath = `${path}[${i}]`;
@@ -513,13 +490,12 @@ class SchemaValidator {
   }
 
   /**
-   * TODO: Validate object constraints
+   * Validate object constraints
    * Check object-specific validation rules and validate properties
    */
   async validateObjectConstraints(data, schema, options, path, depth) {
     const errors = [];
 
-    // TODO: Check required properties
     if (schema.required) {
       for (const requiredProp of schema.required) {
         if (!(requiredProp in data)) {
@@ -530,7 +506,6 @@ class SchemaValidator {
       }
     }
 
-    // TODO: Validate properties
     if (schema.properties) {
       for (const [propName, propSchema] of Object.entries(schema.properties)) {
         if (propName in data) {
@@ -547,7 +522,6 @@ class SchemaValidator {
       }
     }
 
-    // TODO: Check additional properties
     if (
       !this.config.allowAdditionalProperties &&
       schema.additionalProperties === false
@@ -566,7 +540,7 @@ class SchemaValidator {
   }
 
   /**
-   * TODO: Add format validator
+   * Add format validator
    * Register a custom format validation function
    */
   addFormatValidator(format, validator) {

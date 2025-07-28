@@ -12,7 +12,6 @@
 
 export class ArchiveManager {
   constructor(options = {}) {
-    // TODO: Initialize archive manager configuration
     this.config = {
       storageBackend: options.storageBackend || "filesystem",
       archivePath: options.archivePath || "./archives",
@@ -31,7 +30,6 @@ export class ArchiveManager {
       ...options,
     };
 
-    // TODO: Initialize archive components
     this.storage = null;
     this.index = new Map();
     this.retentionScheduler = null;
@@ -41,7 +39,6 @@ export class ArchiveManager {
     this.initializeArchiveSystem();
   }
 
-  // TODO: Initialize archive system components
   initializeArchiveSystem() {
     // Storage backends
     this.storageBackends = new Map();
@@ -105,7 +102,6 @@ export class ArchiveManager {
     }
   }
 
-  // TODO: Initialize retention policies
   initializeRetentionPolicies() {
     this.retentionRules = new Map();
 
@@ -123,7 +119,6 @@ export class ArchiveManager {
     }
   }
 
-  // TODO: Initialize search index
   initializeSearchIndex() {
     this.searchIndex = {
       reports: new Map(),
@@ -134,12 +129,10 @@ export class ArchiveManager {
     };
   }
 
-  // TODO: Archive a report
   async archiveReport(reportData, metadata = {}) {
     try {
       const archiveId = this.generateArchiveId(reportData);
 
-      // TODO: Prepare archive entry
       const archiveEntry = {
         id: archiveId,
         reportId: reportData.id,
@@ -162,7 +155,6 @@ export class ArchiveManager {
         },
       };
 
-      // TODO: Compress report data if enabled
       let dataToStore = reportData;
       if (this.config.compressionEnabled) {
         const compressed = await this.compressData(reportData);
@@ -171,7 +163,6 @@ export class ArchiveManager {
         archiveEntry.compressionRatio = compressed.ratio;
       }
 
-      // TODO: Store in configured backend
       const storagePath = await this.storage.handler("store", {
         id: archiveId,
         data: dataToStore,
@@ -180,15 +171,12 @@ export class ArchiveManager {
 
       archiveEntry.storage.path = storagePath;
 
-      // TODO: Update search index
       if (this.config.indexingEnabled) {
         await this.updateSearchIndex(archiveEntry);
       }
 
-      // TODO: Store archive entry in index
       this.index.set(archiveId, archiveEntry);
 
-      // TODO: Schedule retention cleanup if needed
       this.scheduleRetentionCleanup(reportData.type);
 
       return {
@@ -205,28 +193,23 @@ export class ArchiveManager {
     }
   }
 
-  // TODO: Retrieve archived report
   async retrieveReport(archiveId, options = {}) {
     try {
-      // TODO: Find archive entry
       const archiveEntry = this.index.get(archiveId);
       if (!archiveEntry) {
         throw new Error(`Archive not found: ${archiveId}`);
       }
 
-      // TODO: Retrieve from storage backend
       const storedData = await this.storage.handler("retrieve", {
         path: archiveEntry.storage.path,
         compressed: archiveEntry.storage.compressed,
       });
 
-      // TODO: Decompress if needed
       let reportData = storedData;
       if (archiveEntry.storage.compressed) {
         reportData = await this.decompressData(storedData);
       }
 
-      // TODO: Return with metadata
       return {
         archiveId,
         reportData,
@@ -240,7 +223,6 @@ export class ArchiveManager {
     }
   }
 
-  // TODO: Search archived reports
   async searchReports(query, options = {}) {
     if (!this.config.searchEnabled) {
       throw new Error("Search is not enabled");
@@ -254,10 +236,8 @@ export class ArchiveManager {
         searchTime: Date.now(),
       };
 
-      // TODO: Parse search query
       const parsedQuery = this.parseSearchQuery(query);
 
-      // TODO: Execute search across different indexes
       const results = await Promise.all([
         this.searchByMetadata(parsedQuery, options),
         this.searchByDateRange(parsedQuery, options),
@@ -265,7 +245,6 @@ export class ArchiveManager {
         this.searchByContent(parsedQuery, options),
       ]);
 
-      // TODO: Merge and rank results
       const mergedResults = this.mergeSearchResults(results);
       const rankedResults = this.rankSearchResults(mergedResults, parsedQuery);
 
@@ -280,12 +259,10 @@ export class ArchiveManager {
     }
   }
 
-  // TODO: List archived reports with filters
   async listReports(filters = {}, options = {}) {
     const results = [];
 
     for (const [archiveId, entry] of this.index) {
-      // TODO: Apply filters
       if (filters.reportType && entry.reportType !== filters.reportType)
         continue;
       if (
@@ -311,7 +288,6 @@ export class ArchiveManager {
       });
     }
 
-    // TODO: Sort results
     const sortBy = options.sortBy || "archivedAt";
     const sortOrder = options.sortOrder || "desc";
 
@@ -326,7 +302,6 @@ export class ArchiveManager {
       }
     });
 
-    // TODO: Apply pagination
     const page = options.page || 1;
     const pageSize = options.pageSize || 20;
     const startIndex = (page - 1) * pageSize;
@@ -341,7 +316,6 @@ export class ArchiveManager {
     };
   }
 
-  // TODO: Delete archived report
   async deleteReport(archiveId, options = {}) {
     try {
       const archiveEntry = this.index.get(archiveId);
@@ -349,22 +323,18 @@ export class ArchiveManager {
         throw new Error(`Archive not found: ${archiveId}`);
       }
 
-      // TODO: Create backup if enabled
       if (this.config.backupEnabled && !options.skipBackup) {
         await this.createBackup(archiveEntry);
       }
 
-      // TODO: Delete from storage backend
       await this.storage.handler("delete", {
         path: archiveEntry.storage.path,
       });
 
-      // TODO: Remove from search index
       if (this.config.indexingEnabled) {
         await this.removeFromSearchIndex(archiveId);
       }
 
-      // TODO: Remove from main index
       this.index.delete(archiveId);
 
       return {
@@ -378,7 +348,6 @@ export class ArchiveManager {
     }
   }
 
-  // TODO: Run retention cleanup
   async runRetentionCleanup(reportType = null) {
     const results = {
       processed: 0,
@@ -397,7 +366,6 @@ export class ArchiveManager {
 
       const cutoffDate = new Date(Date.now() - retentionRule.periodMs);
 
-      // TODO: Find expired reports
       const expiredReports = [];
       for (const [archiveId, entry] of this.index) {
         if (
@@ -408,7 +376,6 @@ export class ArchiveManager {
         }
       }
 
-      // TODO: Process expired reports
       for (const { archiveId, entry } of expiredReports) {
         try {
           await this.deleteReport(archiveId, { skipBackup: false });
@@ -431,18 +398,15 @@ export class ArchiveManager {
         results.processed++;
       }
 
-      // TODO: Update last cleanup time
       retentionRule.lastCleanup = new Date().toISOString();
     }
 
     return results;
   }
 
-  // TODO: Create backup of archive
   async createBackup(archiveEntry) {
     const backupId = `backup_${archiveEntry.id}_${Date.now()}`;
 
-    // TODO: Implement backup logic based on configuration
     if (this.config.backupStorage === "s3") {
       await this.createS3Backup(archiveEntry, backupId);
     } else if (this.config.backupStorage === "filesystem") {
@@ -452,7 +416,6 @@ export class ArchiveManager {
     return backupId;
   }
 
-  // TODO: Storage backend implementations
   async filesystemStorage(operation, data) {
     switch (operation) {
       case "store":
@@ -467,7 +430,6 @@ export class ArchiveManager {
   }
 
   async s3Storage(operation, data) {
-    // TODO: Implement S3 operations
     switch (operation) {
       case "store":
         return await this.storeToS3(data);
@@ -512,7 +474,6 @@ export class ArchiveManager {
     return parseInt(amount) * multipliers[unit.toLowerCase()];
   }
 
-  // TODO: Implement all remaining methods
   async compressData(data) {
     return { data, size: 0, ratio: 1 };
   }

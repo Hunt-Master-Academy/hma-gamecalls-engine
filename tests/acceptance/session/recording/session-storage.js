@@ -25,7 +25,6 @@ import { DataEncryption } from "./data-encryption.js";
  */
 class SessionStorage {
   constructor(options = {}) {
-    // TODO: Initialize storage configuration
     this.config = {
       storageType: options.storageType || "indexeddb", // 'indexeddb', 'localstorage', 'memory'
       databaseName: options.databaseName || "huntmaster-sessions",
@@ -45,12 +44,10 @@ class SessionStorage {
       ...options,
     };
 
-    // TODO: Initialize storage components
     this.validator = new DataValidator();
     this.privacy = new PrivacyCompliance();
     this.encryption = new DataEncryption();
 
-    // TODO: Initialize storage state
     this.state = {
       isInitialized: false,
       database: null,
@@ -66,18 +63,15 @@ class SessionStorage {
       },
     };
 
-    // TODO: Initialize storage engines
     this.storageEngines = {
       indexeddb: null,
       localstorage: null,
       memory: new Map(),
     };
 
-    // TODO: Initialize data buffers
     this.writeBuffer = [];
     this.compressionWorker = null;
 
-    // TODO: Initialize event handlers
     this.eventHandlers = new Map();
 
     this.initializeStorage();
@@ -85,30 +79,24 @@ class SessionStorage {
 
   /**
    * Initialize the storage system
-   * TODO: Set up storage engine and database connections
+   * Set up storage engine and database connections
    */
   async initializeStorage() {
     try {
-      // TODO: Initialize storage engine based on configuration
       await this.initializeStorageEngine();
 
-      // TODO: Set up data compression if enabled
       if (this.config.compressionEnabled) {
         await this.initializeCompressionWorker();
       }
 
-      // TODO: Set up automatic cleanup if enabled
       if (this.config.autoCleanup) {
         this.setupAutoCleanup();
       }
 
-      // TODO: Set up storage quota monitoring
       await this.setupStorageQuotaMonitoring();
 
-      // TODO: Set up periodic flushing
       this.setupPeriodicFlushing();
 
-      // TODO: Initialize current session
       if (this.config.sessionId) {
         await this.initializeSession(this.config.sessionId);
       }
@@ -123,7 +111,7 @@ class SessionStorage {
 
   /**
    * Initialize storage engine (IndexedDB, localStorage, or memory)
-   * TODO: Set up the appropriate storage backend
+   * Set up the appropriate storage backend
    */
   async initializeStorageEngine() {
     try {
@@ -157,27 +145,23 @@ class SessionStorage {
 
   /**
    * Initialize IndexedDB storage engine
-   * TODO: Set up IndexedDB database and object stores
+   * Set up IndexedDB database and object stores
    */
   async initializeIndexedDB() {
     return new Promise((resolve, reject) => {
       try {
-        // TODO: Check if IndexedDB is supported
         if (!window.indexedDB) {
           throw new Error("IndexedDB not supported");
         }
 
-        // TODO: Open database connection
         const request = indexedDB.open(
           this.config.databaseName,
           this.config.databaseVersion
         );
 
-        // TODO: Handle database upgrade
         request.onupgradeneeded = (event) => {
           const db = event.target.result;
 
-          // TODO: Create sessions object store
           if (!db.objectStoreNames.contains("sessions")) {
             const sessionsStore = db.createObjectStore("sessions", {
               keyPath: "sessionId",
@@ -191,7 +175,6 @@ class SessionStorage {
             });
           }
 
-          // TODO: Create events object store
           if (!db.objectStoreNames.contains("events")) {
             const eventsStore = db.createObjectStore("events", {
               keyPath: "eventId",
@@ -208,7 +191,6 @@ class SessionStorage {
             eventsStore.createIndex("module", "module", { unique: false });
           }
 
-          // TODO: Create metadata object store
           if (!db.objectStoreNames.contains("metadata")) {
             const metadataStore = db.createObjectStore("metadata", {
               keyPath: "key",
@@ -218,12 +200,10 @@ class SessionStorage {
           console.log("SessionStorage: IndexedDB schema created/updated");
         };
 
-        // TODO: Handle successful connection
         request.onsuccess = (event) => {
           this.state.database = event.target.result;
           this.storageEngines.indexeddb = this.state.database;
 
-          // TODO: Set up error handler
           this.state.database.onerror = (error) => {
             console.error("SessionStorage: IndexedDB error:", error);
             this.handleError("indexeddb_error", error);
@@ -232,7 +212,6 @@ class SessionStorage {
           resolve();
         };
 
-        // TODO: Handle connection errors
         request.onerror = (event) => {
           reject(
             new Error(`IndexedDB connection failed: ${event.target.error}`)
@@ -250,21 +229,18 @@ class SessionStorage {
 
   /**
    * Initialize localStorage storage engine
-   * TODO: Set up localStorage with namespace management
+   * Set up localStorage with namespace management
    */
   initializeLocalStorage() {
     try {
-      // TODO: Check if localStorage is available
       if (!window.localStorage) {
         throw new Error("localStorage not supported");
       }
 
-      // TODO: Test localStorage functionality
       const testKey = `${this.config.databaseName}_test`;
       localStorage.setItem(testKey, "test");
       localStorage.removeItem(testKey);
 
-      // TODO: Set up localStorage engine
       this.storageEngines.localstorage = {
         setItem: (key, value) => {
           const namespacedKey = `${this.config.databaseName}_${key}`;
@@ -299,11 +275,10 @@ class SessionStorage {
 
   /**
    * Initialize memory storage engine
-   * TODO: Set up in-memory storage with Map structure
+   * Set up in-memory storage with Map structure
    */
   initializeMemoryStorage() {
     try {
-      // TODO: Set up memory storage structure
       this.storageEngines.memory = {
         sessions: new Map(),
         events: new Map(),
@@ -327,11 +302,10 @@ class SessionStorage {
 
   /**
    * Initialize compression worker for data compression
-   * TODO: Set up web worker for background compression
+   * Set up web worker for background compression
    */
   async initializeCompressionWorker() {
     try {
-      // TODO: Create compression worker using inline script
       const compressionWorkerScript = `
                 // Compression worker for session data
                 self.onmessage = function(e) {
@@ -366,16 +340,13 @@ class SessionStorage {
                 }
             `;
 
-      // TODO: Create blob URL for worker
       const blob = new Blob([compressionWorkerScript], {
         type: "application/javascript",
       });
       const workerUrl = URL.createObjectURL(blob);
 
-      // TODO: Initialize worker
       this.compressionWorker = new Worker(workerUrl);
 
-      // TODO: Set up worker message handling
       this.compressionWorker.onmessage = (event) => {
         this.handleCompressionWorkerMessage(event.data);
       };
@@ -385,7 +356,6 @@ class SessionStorage {
         this.handleError("compression_worker_error", error);
       };
 
-      // TODO: Clean up blob URL
       URL.revokeObjectURL(workerUrl);
 
       console.log("SessionStorage: Compression worker initialized");
@@ -394,7 +364,6 @@ class SessionStorage {
         "SessionStorage: Compression worker initialization failed:",
         error
       );
-      // TODO: Disable compression if worker fails
       this.config.compressionEnabled = false;
     }
   }
@@ -409,17 +378,14 @@ class SessionStorage {
         return;
       }
 
-      // TODO: Add events to write buffer
       this.writeBuffer.push(...events);
 
-      // TODO: Update current session stats
       if (this.state.currentSession) {
         this.state.currentSession.stats.eventCount += events.length;
         this.state.currentSession.stats.totalSize +=
           JSON.stringify(events).length;
       }
 
-      // TODO: Flush buffer if it's getting large
       if (this.writeBuffer.length >= this.config.batchSize) {
         await this.flushBuffer();
       }
@@ -437,11 +403,10 @@ class SessionStorage {
 
   /**
    * Store session summary data
-   * TODO: Store session summary for quick access
+   * Store session summary for quick access
    */
   async storeSessionSummary(summary) {
     try {
-      // TODO: Create summary record
       const summaryRecord = {
         sessionId: summary.sessionId,
         userId: summary.userId,
@@ -450,10 +415,8 @@ class SessionStorage {
         type: "summary",
       };
 
-      // TODO: Apply privacy filters
       const filteredSummary = this.privacy.filterData(summaryRecord);
 
-      // TODO: Store summary based on storage type
       switch (this.config.storageType) {
         case "indexeddb":
           await this.storeSummaryIndexedDB(filteredSummary);
@@ -485,14 +448,11 @@ class SessionStorage {
         return;
       }
 
-      // TODO: Get events to flush
       const eventsToFlush = [...this.writeBuffer];
       this.writeBuffer = [];
 
-      // TODO: Process events with privacy and encryption
       const processedEvents = await this.processEventsForStorage(eventsToFlush);
 
-      // TODO: Store events based on storage type
       switch (this.config.storageType) {
         case "indexeddb":
           await this.storeEventsIndexedDB(processedEvents);
@@ -518,16 +478,14 @@ class SessionStorage {
 
   /**
    * Process events for storage (privacy, encryption, compression)
-   * TODO: Apply all processing steps before storage
+   * Apply all processing steps before storage
    */
   async processEventsForStorage(events) {
     try {
-      // TODO: Apply privacy filters to each event
       let processedEvents = events.map((event) => {
         return this.privacy.filterData(event);
       });
 
-      // TODO: Add storage metadata
       processedEvents = processedEvents.map((event, index) => ({
         ...event,
         eventId: `${event.sessionId}_${Date.now()}_${index}`,
@@ -535,7 +493,6 @@ class SessionStorage {
         processed: true,
       }));
 
-      // TODO: Encrypt if enabled
       if (this.config.encryptionEnabled) {
         processedEvents = await Promise.all(
           processedEvents.map((event) => this.encryption.encrypt(event))
@@ -551,7 +508,7 @@ class SessionStorage {
 
   /**
    * Get storage statistics and usage information
-   * TODO: Return comprehensive storage statistics
+   * Return comprehensive storage statistics
    */
   async getStorageStats() {
     try {
@@ -576,7 +533,7 @@ class SessionStorage {
 
   /**
    * Handle storage errors
-   * TODO: Process and log storage errors
+   * Process and log storage errors
    */
   handleError(errorType, error) {
     const errorRecord = {
@@ -588,7 +545,6 @@ class SessionStorage {
 
     this.state.errors.push(errorRecord);
 
-    // TODO: Limit error log size
     if (this.state.errors.length > 100) {
       this.state.errors = this.state.errors.slice(-50);
     }
@@ -598,26 +554,22 @@ class SessionStorage {
 
   /**
    * Cleanup and destroy storage system
-   * TODO: Clean up resources and close connections
+   * Clean up resources and close connections
    */
   async destroy() {
     try {
-      // TODO: Flush any remaining data
       if (this.writeBuffer.length > 0) {
         await this.flushBuffer();
       }
 
-      // TODO: Close database connections
       if (this.state.database) {
         this.state.database.close();
       }
 
-      // TODO: Terminate compression worker
       if (this.compressionWorker) {
         this.compressionWorker.terminate();
       }
 
-      // TODO: Clear state
       this.writeBuffer = [];
       this.state.isInitialized = false;
 
@@ -628,10 +580,8 @@ class SessionStorage {
   }
 }
 
-// TODO: Export the SessionStorage class
 export { SessionStorage };
 
-// TODO: Export convenience functions
 export const createSessionStorage = (options) => new SessionStorage(options);
 export const getStorageQuota = async () => {
   if ("storage" in navigator && "estimate" in navigator.storage) {
@@ -640,7 +590,6 @@ export const getStorageQuota = async () => {
   return null;
 };
 
-// TODO: Export storage utilities
 export const StorageUtils = {
   generateEventId: (sessionId, timestamp, index) => {
     return `${sessionId}_${timestamp}_${index}`;

@@ -18,7 +18,6 @@
 
 class DataValidator {
   constructor(options = {}) {
-    // TODO: Initialize data validation configuration
     this.config = {
       strictMode: options.strictMode || false,
       autoCorrect: options.autoCorrect || true,
@@ -28,13 +27,11 @@ class DataValidator {
       ...options,
     };
 
-    // TODO: Set up validation rule registry
     this.validationRules = new Map();
     this.customValidators = new Map();
     this.validationHistory = [];
     this.errorPatterns = new Map();
 
-    // TODO: Initialize integrity monitoring system
     this.integrityMonitor = {
       checksumCache: new Map(),
       lastValidation: null,
@@ -47,11 +44,10 @@ class DataValidator {
   }
 
   /**
-   * TODO: Initialize default validation rules
+   * Initialize default validation rules
    * Set up built-in validation rules for common data types and patterns
    */
   initializeDefaultRules() {
-    // TODO: Audio data validation rules
     this.addValidationRule("audioData", {
       type: "array",
       minLength: 1,
@@ -61,7 +57,6 @@ class DataValidator {
       validator: this.validateAudioSamples.bind(this),
     });
 
-    // TODO: Session metadata validation rules
     this.addValidationRule("sessionMetadata", {
       type: "object",
       required: ["sessionId", "timestamp", "userId"],
@@ -73,7 +68,6 @@ class DataValidator {
       validator: this.validateSessionMetadata.bind(this),
     });
 
-    // TODO: Performance metrics validation rules
     this.addValidationRule("performanceMetrics", {
       type: "object",
       required: ["cpuUsage", "memoryUsage", "latency"],
@@ -87,7 +81,7 @@ class DataValidator {
   }
 
   /**
-   * TODO: Add custom validation rule
+   * Add custom validation rule
    * Register a new validation rule with the validation engine
    */
   addValidationRule(name, rule) {
@@ -105,20 +99,18 @@ class DataValidator {
   }
 
   /**
-   * TODO: Validate data against schema
+   * Validate data against schema
    * Primary validation method that checks data against defined rules
    */
   async validateData(data, schemaName, options = {}) {
     const startTime = performance.now();
 
     try {
-      // TODO: Retrieve validation schema
       const schema = this.validationRules.get(schemaName);
       if (!schema) {
         throw new Error(`Validation schema '${schemaName}' not found`);
       }
 
-      // TODO: Perform basic type validation
       const typeValidation = await this.performTypeValidation(data, schema);
       if (!typeValidation.isValid) {
         return this.createValidationResult(
@@ -128,7 +120,6 @@ class DataValidator {
         );
       }
 
-      // TODO: Perform constraint validation
       const constraintValidation = await this.performConstraintValidation(
         data,
         schema
@@ -141,7 +132,6 @@ class DataValidator {
         );
       }
 
-      // TODO: Run custom validator if present
       if (schema.validator) {
         const customValidation = await schema.validator(data, options);
         if (!customValidation.isValid) {
@@ -153,7 +143,6 @@ class DataValidator {
         }
       }
 
-      // TODO: Update validation statistics
       schema.usageCount++;
       this.integrityMonitor.validationCount++;
 
@@ -168,13 +157,12 @@ class DataValidator {
   }
 
   /**
-   * TODO: Perform type validation
+   * Perform type validation
    * Validate data types against schema requirements
    */
   async performTypeValidation(data, schema) {
     const errors = [];
 
-    // TODO: Check basic type
     if (
       schema.type &&
       typeof data !== schema.type &&
@@ -183,7 +171,6 @@ class DataValidator {
       errors.push(`Expected type '${schema.type}', got '${typeof data}'`);
     }
 
-    // TODO: Check array element types
     if (schema.type === "array" && Array.isArray(data) && schema.elementType) {
       const invalidElements = data.filter((item, index) => {
         if (typeof item !== schema.elementType) {
@@ -198,7 +185,6 @@ class DataValidator {
       });
     }
 
-    // TODO: Check object properties
     if (schema.type === "object" && schema.properties) {
       for (const [key, propSchema] of Object.entries(schema.properties)) {
         if (data[key] !== undefined) {
@@ -219,13 +205,12 @@ class DataValidator {
   }
 
   /**
-   * TODO: Perform constraint validation
+   * Perform constraint validation
    * Validate data constraints like ranges, patterns, required fields
    */
   async performConstraintValidation(data, schema) {
     const errors = [];
 
-    // TODO: Check required fields for objects
     if (schema.required && schema.type === "object") {
       for (const requiredField of schema.required) {
         if (data[requiredField] === undefined || data[requiredField] === null) {
@@ -234,7 +219,6 @@ class DataValidator {
       }
     }
 
-    // TODO: Check string patterns
     if (schema.pattern && typeof data === "string") {
       if (!schema.pattern.test(data)) {
         errors.push(
@@ -243,7 +227,6 @@ class DataValidator {
       }
     }
 
-    // TODO: Check numeric ranges
     if (typeof data === "number") {
       if (schema.min !== undefined && data < schema.min) {
         errors.push(`Value ${data} is below minimum ${schema.min}`);
@@ -253,7 +236,6 @@ class DataValidator {
       }
     }
 
-    // TODO: Check array constraints
     if (Array.isArray(data)) {
       if (schema.minLength !== undefined && data.length < schema.minLength) {
         errors.push(
@@ -266,7 +248,6 @@ class DataValidator {
         );
       }
 
-      // TODO: Check array element ranges
       if (schema.range && schema.elementType === "number") {
         const [min, max] = schema.range;
         data.forEach((value, index) => {
@@ -279,7 +260,6 @@ class DataValidator {
       }
     }
 
-    // TODO: Check string length constraints
     if (typeof data === "string") {
       if (schema.minLength !== undefined && data.length < schema.minLength) {
         errors.push(
@@ -297,13 +277,12 @@ class DataValidator {
   }
 
   /**
-   * TODO: Validate audio samples
+   * Validate audio samples
    * Custom validator for audio data arrays
    */
   async validateAudioSamples(data, options = {}) {
     const errors = [];
 
-    // TODO: Check for NaN or infinite values
     const invalidSamples = data.filter((sample, index) => {
       if (isNaN(sample) || !isFinite(sample)) {
         errors.push(`Invalid audio sample at index ${index}: ${sample}`);
@@ -312,7 +291,6 @@ class DataValidator {
       return false;
     });
 
-    // TODO: Check for DC offset
     if (options.checkDCOffset !== false) {
       const dcOffset =
         data.reduce((sum, sample) => sum + sample, 0) / data.length;
@@ -321,7 +299,6 @@ class DataValidator {
       }
     }
 
-    // TODO: Check for clipping
     if (options.checkClipping !== false) {
       const clippedSamples = data.filter(
         (sample) => Math.abs(sample) >= 0.99
@@ -340,13 +317,12 @@ class DataValidator {
   }
 
   /**
-   * TODO: Validate session metadata
+   * Validate session metadata
    * Custom validator for session metadata objects
    */
   async validateSessionMetadata(data, options = {}) {
     const errors = [];
 
-    // TODO: Validate timestamp
     const now = Date.now();
     if (data.timestamp > now) {
       errors.push("Session timestamp cannot be in the future");
@@ -357,7 +333,6 @@ class DataValidator {
       errors.push("Session timestamp is too old (more than 1 year)");
     }
 
-    // TODO: Validate session duration if present
     if (data.duration !== undefined) {
       if (data.duration < 0) {
         errors.push("Session duration cannot be negative");
@@ -368,7 +343,6 @@ class DataValidator {
       }
     }
 
-    // TODO: Validate user agent if present
     if (data.userAgent && typeof data.userAgent === "string") {
       if (data.userAgent.length > 500) {
         errors.push("User agent string is too long");
@@ -379,30 +353,26 @@ class DataValidator {
   }
 
   /**
-   * TODO: Validate performance data
+   * Validate performance data
    * Custom validator for performance metrics
    */
   async validatePerformanceData(data, options = {}) {
     const errors = [];
 
-    // TODO: Check for realistic CPU usage patterns
     if (data.cpuUsage > 95) {
       errors.push("CPU usage is critically high (>95%)");
     }
 
-    // TODO: Check memory usage patterns
     if (data.memoryUsage > 1024 * 1024 * 1024) {
       // 1GB
       errors.push("Memory usage is extremely high (>1GB)");
     }
 
-    // TODO: Check latency values
     if (data.latency > 1000) {
       // 1 second
       errors.push("Latency is critically high (>1000ms)");
     }
 
-    // TODO: Check for performance anomalies
     if (data.frameRate && data.frameRate < 30) {
       errors.push("Frame rate is below acceptable threshold (<30fps)");
     }
@@ -435,7 +405,6 @@ class DataValidator {
       });
     }
 
-    // TODO: Generate batch summary
     const summary = this.generateBatchSummary(results);
     return {
       results,
@@ -445,7 +414,7 @@ class DataValidator {
   }
 
   /**
-   * TODO: Generate batch validation summary
+   * Generate batch validation summary
    * Create summary statistics for batch validation results
    */
   generateBatchSummary(results) {
@@ -521,7 +490,6 @@ class DataValidator {
       ...metadata,
     };
 
-    // TODO: Store validation history
     this.validationHistory.push(result);
     if (this.validationHistory.length > 1000) {
       this.validationHistory = this.validationHistory.slice(-1000);

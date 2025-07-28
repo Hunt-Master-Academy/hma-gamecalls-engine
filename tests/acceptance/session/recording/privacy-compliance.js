@@ -23,7 +23,6 @@ import { DataEncryption } from "./data-encryption.js";
  */
 class PrivacyCompliance {
   constructor(options = {}) {
-    // TODO: Initialize privacy compliance configuration
     this.config = {
       gdprEnabled: options.gdprEnabled !== false,
       ccpaEnabled: options.ccpaEnabled !== false,
@@ -38,16 +37,13 @@ class PrivacyCompliance {
       ...options,
     };
 
-    // TODO: Initialize compliance components
     this.validator = new DataValidator();
     this.encryption = new DataEncryption();
 
-    // TODO: Initialize privacy state
     this.consentStatus = new Map(); // userId -> consent details
     this.dataSubjects = new Map(); // userId -> subject rights data
     this.complianceLog = [];
 
-    // TODO: Initialize data classification rules
     this.sensitiveDataPatterns = {
       email: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
       phone: /(\+\d{1,2}\s?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/g,
@@ -57,7 +53,6 @@ class PrivacyCompliance {
       personalName: /\b[A-Z][a-z]+ [A-Z][a-z]+\b/g,
     };
 
-    // TODO: Initialize blocked elements selectors
     this.blockedSelectors = [
       'input[type="password"]',
       'input[type="email"]',
@@ -70,7 +65,6 @@ class PrivacyCompliance {
       "[data-private]",
     ];
 
-    // TODO: Initialize compliance frameworks
     this.complianceFrameworks = {
       gdpr: {
         lawfulBases: [
@@ -105,20 +99,16 @@ class PrivacyCompliance {
 
   /**
    * Initialize privacy compliance system
-   * TODO: Set up privacy protection mechanisms and compliance monitoring
+   * Set up privacy protection mechanisms and compliance monitoring
    */
   initializePrivacyCompliance() {
     try {
-      // TODO: Load existing consent records
       this.loadConsentRecords();
 
-      // TODO: Initialize data subject registry
       this.initializeDataSubjectRegistry();
 
-      // TODO: Set up compliance monitoring
       this.setupComplianceMonitoring();
 
-      // TODO: Initialize privacy-aware event handlers
       this.setupPrivacyEventHandlers();
 
       console.log("PrivacyCompliance: Initialized successfully");
@@ -129,16 +119,14 @@ class PrivacyCompliance {
 
   /**
    * Load existing consent records from storage
-   * TODO: Retrieve and validate stored consent information
+   * Retrieve and validate stored consent information
    */
   loadConsentRecords() {
     try {
-      // TODO: Load consent records from local storage
       const storedConsent = localStorage.getItem("huntmaster_consent_records");
       if (storedConsent) {
         const consentData = JSON.parse(storedConsent);
 
-        // TODO: Validate and load consent records
         Object.entries(consentData).forEach(([userId, consent]) => {
           if (this.validateConsentRecord(consent)) {
             this.consentStatus.set(userId, consent);
@@ -159,11 +147,10 @@ class PrivacyCompliance {
 
   /**
    * Initialize data subject registry for rights management
-   * TODO: Set up registry for tracking data subject rights and requests
+   * Set up registry for tracking data subject rights and requests
    */
   initializeDataSubjectRegistry() {
     try {
-      // TODO: Load existing data subject records
       const storedSubjects = localStorage.getItem("huntmaster_data_subjects");
       if (storedSubjects) {
         const subjectData = JSON.parse(storedSubjects);
@@ -186,15 +173,13 @@ class PrivacyCompliance {
 
   /**
    * Set up compliance monitoring and logging
-   * TODO: Initialize monitoring for compliance violations and events
+   * Initialize monitoring for compliance violations and events
    */
   setupComplianceMonitoring() {
-    // TODO: Initialize compliance event logging
     if (this.config.logComplianceEvents) {
       this.startComplianceLogging();
     }
 
-    // TODO: Set up automatic compliance checks
     setInterval(() => {
       this.performComplianceAudit();
     }, 60000); // Check every minute
@@ -204,10 +189,9 @@ class PrivacyCompliance {
 
   /**
    * Set up privacy-aware event handlers
-   * TODO: Initialize event handlers that respect privacy settings
+   * Initialize event handlers that respect privacy settings
    */
   setupPrivacyEventHandlers() {
-    // TODO: Override default event capture to apply privacy filters
     document.addEventListener(
       "input",
       (event) => {
@@ -222,7 +206,6 @@ class PrivacyCompliance {
       true
     );
 
-    // TODO: Monitor for privacy-sensitive operations
     document.addEventListener("copy", (event) => {
       if (this.containsSensitiveData(event.clipboardData?.getData("text"))) {
         this.logComplianceEvent("sensitive_data_copy", {
@@ -236,28 +219,24 @@ class PrivacyCompliance {
 
   /**
    * Check if user has provided valid consent
-   * TODO: Validate consent status for data processing
+   * Validate consent status for data processing
    */
   hasValidConsent(userId, purpose = "session_recording") {
     try {
-      // TODO: Get consent record for user
       const consent = this.consentStatus.get(userId);
       if (!consent) {
         return false;
       }
 
-      // TODO: Check if consent is valid and not expired
       const now = Date.now();
       if (consent.expiresAt && now > consent.expiresAt) {
         return false;
       }
 
-      // TODO: Check if consent covers the specific purpose
       if (!consent.purposes.includes(purpose)) {
         return false;
       }
 
-      // TODO: Check if consent is withdrawn
       if (consent.withdrawn) {
         return false;
       }
@@ -271,17 +250,15 @@ class PrivacyCompliance {
 
   /**
    * Record user consent for data processing
-   * TODO: Store and validate user consent information
+   * Store and validate user consent information
    */
   recordConsent(userId, consentDetails) {
     try {
-      // TODO: Validate consent details
       const validatedConsent = this.validateConsentRecord(consentDetails);
       if (!validatedConsent) {
         throw new Error("Invalid consent details");
       }
 
-      // TODO: Create consent record
       const consentRecord = {
         userId,
         timestamp: Date.now(),
@@ -295,11 +272,9 @@ class PrivacyCompliance {
         version: "1.0",
       };
 
-      // TODO: Store consent record
       this.consentStatus.set(userId, consentRecord);
       this.saveConsentRecords();
 
-      // TODO: Log compliance event
       this.logComplianceEvent("consent_recorded", {
         userId,
         purposes: consentRecord.purposes,
@@ -316,11 +291,10 @@ class PrivacyCompliance {
 
   /**
    * Withdraw user consent
-   * TODO: Process consent withdrawal and stop data processing
+   * Process consent withdrawal and stop data processing
    */
   withdrawConsent(userId, reason = "user_request") {
     try {
-      // TODO: Get existing consent record
       const consent = this.consentStatus.get(userId);
       if (!consent) {
         console.warn(
@@ -329,19 +303,15 @@ class PrivacyCompliance {
         return false;
       }
 
-      // TODO: Mark consent as withdrawn
       consent.withdrawn = true;
       consent.withdrawnAt = Date.now();
       consent.withdrawalReason = reason;
 
-      // TODO: Update stored consent
       this.consentStatus.set(userId, consent);
       this.saveConsentRecords();
 
-      // TODO: Trigger data processing stop
       this.stopDataProcessing(userId);
 
-      // TODO: Log compliance event
       this.logComplianceEvent("consent_withdrawn", {
         userId,
         reason,
@@ -358,25 +328,20 @@ class PrivacyCompliance {
 
   /**
    * Filter data to remove or anonymize sensitive information
-   * TODO: Apply privacy filters and anonymization to data
+   * Apply privacy filters and anonymization to data
    */
   filterData(data) {
     try {
-      // TODO: Deep clone data to avoid modifying original
       let filteredData = JSON.parse(JSON.stringify(data));
 
-      // TODO: Apply anonymization if enabled
       if (this.config.anonymizationEnabled) {
         filteredData = this.anonymizeData(filteredData);
       }
 
-      // TODO: Remove sensitive fields
       filteredData = this.removeSensitiveFields(filteredData);
 
-      // TODO: Apply data minimization
       filteredData = this.applyDataMinimization(filteredData);
 
-      // TODO: Validate filtered data
       return this.validator.validate(filteredData);
     } catch (error) {
       console.error("PrivacyCompliance: Data filtering failed:", error);
@@ -386,21 +351,18 @@ class PrivacyCompliance {
 
   /**
    * Anonymize personally identifiable information
-   * TODO: Apply anonymization techniques to protect privacy
+   * Apply anonymization techniques to protect privacy
    */
   anonymizeData(data) {
     try {
-      // TODO: Convert data to string for pattern matching
       let dataStr = JSON.stringify(data);
 
-      // TODO: Apply anonymization patterns
       Object.entries(this.sensitiveDataPatterns).forEach(([type, pattern]) => {
         dataStr = dataStr.replace(pattern, (match) => {
           return this.anonymizeValue(match, type);
         });
       });
 
-      // TODO: Parse back to object
       return JSON.parse(dataStr);
     } catch (error) {
       console.error("PrivacyCompliance: Data anonymization failed:", error);
@@ -410,35 +372,29 @@ class PrivacyCompliance {
 
   /**
    * Anonymize a specific value based on its type
-   * TODO: Apply type-specific anonymization techniques
+   * Apply type-specific anonymization techniques
    */
   anonymizeValue(value, type) {
     switch (type) {
       case "email":
-        // TODO: Anonymize email (keep domain for analytics)
         const emailParts = value.split("@");
         return `${emailParts[0].substr(0, 2)}***@${emailParts[1]}`;
 
       case "phone":
-        // TODO: Anonymize phone number
         return value.replace(/\d/g, (digit, index) =>
           index < 3 || index > value.length - 4 ? digit : "*"
         );
 
       case "ssn":
-        // TODO: Anonymize SSN
         return value.replace(/\d/g, "*");
 
       case "creditCard":
-        // TODO: Anonymize credit card (show last 4 digits)
         return value.replace(/\d(?=\d{4})/g, "*");
 
       case "ipAddress":
-        // TODO: Anonymize IP address (keep network portion)
         return this.anonymizeIP(value);
 
       case "personalName":
-        // TODO: Anonymize personal names
         return value.replace(
           /\b[A-Z][a-z]+/g,
           (name) => name.charAt(0) + "*".repeat(name.length - 1)
@@ -451,13 +407,12 @@ class PrivacyCompliance {
 
   /**
    * Anonymize IP address for privacy protection
-   * TODO: Apply IP anonymization while preserving analytical value
+   * Apply IP anonymization while preserving analytical value
    */
   anonymizeIP(ip) {
     if (!ip) return ip;
 
     try {
-      // TODO: IPv4 anonymization (zero out last octet)
       if (ip.includes(".")) {
         const parts = ip.split(".");
         if (parts.length === 4) {
@@ -465,7 +420,6 @@ class PrivacyCompliance {
         }
       }
 
-      // TODO: IPv6 anonymization (zero out last 80 bits)
       if (ip.includes(":")) {
         const parts = ip.split(":");
         return parts.slice(0, Math.ceil(parts.length / 2)).join(":") + "::";
@@ -496,7 +450,6 @@ class PrivacyCompliance {
       "passport",
     ];
 
-    // TODO: Recursively remove sensitive fields
     const removeSensitive = (obj) => {
       if (Array.isArray(obj)) {
         return obj.map(removeSensitive);
@@ -518,10 +471,9 @@ class PrivacyCompliance {
 
   /**
    * Apply data minimization principles
-   * TODO: Remove unnecessary data to minimize privacy exposure
+   * Remove unnecessary data to minimize privacy exposure
    */
   applyDataMinimization(data) {
-    // TODO: Define essential fields for session recording
     const essentialFields = [
       "timestamp",
       "eventType",
@@ -533,7 +485,6 @@ class PrivacyCompliance {
       "errors",
     ];
 
-    // TODO: Apply minimization based on purpose
     if (this.config.strictMode) {
       return this.keepOnlyEssentialFields(data, essentialFields);
     }
@@ -543,20 +494,18 @@ class PrivacyCompliance {
 
   /**
    * Check if an element should be blocked from recording
-   * TODO: Determine if element contains sensitive data
+   * Determine if element contains sensitive data
    */
   shouldBlockElement(element) {
     if (!element) return false;
 
     try {
-      // TODO: Check against blocked selectors
       for (const selector of this.blockedSelectors) {
         if (element.matches && element.matches(selector)) {
           return true;
         }
       }
 
-      // TODO: Check for sensitive attributes
       const sensitiveAttributes = [
         "data-sensitive",
         "data-private",
@@ -568,7 +517,6 @@ class PrivacyCompliance {
         }
       }
 
-      // TODO: Check element content for sensitive patterns
       const content = element.value || element.textContent || "";
       if (this.containsSensitiveData(content)) {
         return true;
@@ -588,7 +536,6 @@ class PrivacyCompliance {
   containsSensitiveData(text) {
     if (!text || typeof text !== "string") return false;
 
-    // TODO: Check against sensitive data patterns
     for (const pattern of Object.values(this.sensitiveDataPatterns)) {
       if (pattern.test(text)) {
         return true;
@@ -600,11 +547,10 @@ class PrivacyCompliance {
 
   /**
    * Handle data subject rights requests (GDPR/CCPA)
-   * TODO: Process data subject rights requests
+   * Process data subject rights requests
    */
   async handleDataSubjectRequest(userId, requestType, details = {}) {
     try {
-      // TODO: Validate request type
       const validRequestTypes = [
         "access",
         "rectification",
@@ -616,7 +562,6 @@ class PrivacyCompliance {
         throw new Error(`Invalid request type: ${requestType}`);
       }
 
-      // TODO: Create request record
       const request = {
         requestId: `req_${Date.now()}_${Math.random()
           .toString(36)
@@ -629,7 +574,6 @@ class PrivacyCompliance {
         response: null,
       };
 
-      // TODO: Process request based on type
       let response;
       switch (requestType) {
         case "access":
@@ -645,12 +589,10 @@ class PrivacyCompliance {
           response = { message: "Request type not yet implemented" };
       }
 
-      // TODO: Update request status
       request.status = "completed";
       request.response = response;
       request.completedAt = Date.now();
 
-      // TODO: Log compliance event
       this.logComplianceEvent("data_subject_request", {
         requestId: request.requestId,
         userId,
@@ -667,7 +609,7 @@ class PrivacyCompliance {
 
   /**
    * Log compliance events for audit trail
-   * TODO: Create comprehensive compliance audit log
+   * Create comprehensive compliance audit log
    */
   logComplianceEvent(eventType, details) {
     if (!this.config.logComplianceEvents) return;
@@ -682,15 +624,12 @@ class PrivacyCompliance {
         url: window.location.href,
       };
 
-      // TODO: Add to compliance log
       this.complianceLog.push(logEntry);
 
-      // TODO: Limit log size to prevent memory issues
       if (this.complianceLog.length > 1000) {
         this.complianceLog = this.complianceLog.slice(-500);
       }
 
-      // TODO: Store compliance log
       this.saveComplianceLog();
 
       console.log(`PrivacyCompliance: Logged event ${eventType}`);
@@ -704,7 +643,7 @@ class PrivacyCompliance {
 
   /**
    * Perform automated compliance audit
-   * TODO: Check for compliance violations and issues
+   * Check for compliance violations and issues
    */
   performComplianceAudit() {
     try {
@@ -717,7 +656,6 @@ class PrivacyCompliance {
         issues: [],
       };
 
-      // TODO: Check for expired consents
       for (const [userId, consent] of this.consentStatus.entries()) {
         if (consent.expiresAt && Date.now() > consent.expiresAt) {
           auditResults.expiredConsents++;
@@ -733,7 +671,6 @@ class PrivacyCompliance {
         }
       }
 
-      // TODO: Log audit results
       this.logComplianceEvent("compliance_audit", auditResults);
 
       return auditResults;
@@ -745,7 +682,7 @@ class PrivacyCompliance {
 
   /**
    * Save consent records to storage
-   * TODO: Persist consent records for compliance
+   * Persist consent records for compliance
    */
   saveConsentRecords() {
     try {
@@ -764,7 +701,7 @@ class PrivacyCompliance {
 
   /**
    * Save compliance log to storage
-   * TODO: Persist compliance events for audit trail
+   * Persist compliance events for audit trail
    */
   saveComplianceLog() {
     try {
@@ -779,15 +716,13 @@ class PrivacyCompliance {
 
   /**
    * Cleanup and destroy privacy compliance system
-   * TODO: Clean up privacy protection and save final state
+   * Clean up privacy protection and save final state
    */
   destroy() {
     try {
-      // TODO: Save final compliance state
       this.saveConsentRecords();
       this.saveComplianceLog();
 
-      // TODO: Clear sensitive data from memory
       this.consentStatus.clear();
       this.dataSubjects.clear();
       this.complianceLog = [];
@@ -799,10 +734,8 @@ class PrivacyCompliance {
   }
 }
 
-// TODO: Export the PrivacyCompliance class
 export { PrivacyCompliance };
 
-// TODO: Export convenience functions
 export const createPrivacyCompliance = (options) =>
   new PrivacyCompliance(options);
 export const checkGDPRCompliance = (data, userId) => {
@@ -810,7 +743,6 @@ export const checkGDPRCompliance = (data, userId) => {
   return privacy.hasValidConsent(userId) ? privacy.filterData(data) : null;
 };
 
-// TODO: Export privacy utilities
 export const PrivacyUtils = {
   anonymizeEmail: (email) => {
     const parts = email.split("@");

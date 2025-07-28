@@ -22,7 +22,6 @@ import { DataValidator } from "../validation/data-validator.js";
  */
 class StatisticalAnalysis {
   constructor(options = {}) {
-    // TODO: Initialize statistical analysis configuration
     this.config = {
       enableDescriptiveStats: options.enableDescriptiveStats !== false,
       enableInferentialStats: options.enableInferentialStats !== false,
@@ -41,10 +40,8 @@ class StatisticalAnalysis {
       ...options,
     };
 
-    // TODO: Initialize analysis components
     this.validator = new DataValidator();
 
-    // TODO: Initialize statistical state
     this.state = {
       isInitialized: false,
       analysisHistory: [],
@@ -60,7 +57,6 @@ class StatisticalAnalysis {
       },
     };
 
-    // TODO: Initialize statistical calculators
     this.calculators = {
       descriptive: new DescriptiveStatistics(),
       inferential: new InferentialStatistics(),
@@ -70,7 +66,6 @@ class StatisticalAnalysis {
       hypothesis: new HypothesisTesting(),
     };
 
-    // TODO: Initialize data distributions
     this.distributions = {
       normal: new NormalDistribution(),
       binomial: new BinomialDistribution(),
@@ -79,7 +74,6 @@ class StatisticalAnalysis {
       uniform: new UniformDistribution(),
     };
 
-    // TODO: Initialize statistical models
     this.modelTypes = [
       "linear_regression",
       "logistic_regression",
@@ -94,26 +88,20 @@ class StatisticalAnalysis {
 
   /**
    * Initialize statistical analysis system
-   * TODO: Set up statistical computing and analysis pipeline
+   * Set up statistical computing and analysis pipeline
    */
   async initializeStatisticalAnalysis() {
     try {
-      // TODO: Load historical analysis data
       await this.loadAnalysisHistory();
 
-      // TODO: Initialize statistical calculators
       await this.initializeCalculators();
 
-      // TODO: Set up real-time analysis
       this.setupRealTimeAnalysis();
 
-      // TODO: Set up background computation
       this.setupBackgroundComputation();
 
-      // TODO: Load statistical models
       await this.loadStatisticalModels();
 
-      // TODO: Initialize data cache
       this.initializeDataCache();
 
       this.state.isInitialized = true;
@@ -126,11 +114,10 @@ class StatisticalAnalysis {
 
   /**
    * Load historical analysis data from storage
-   * TODO: Retrieve stored statistical analysis results
+   * Retrieve stored statistical analysis results
    */
   async loadAnalysisHistory() {
     try {
-      // TODO: Load analysis history from localStorage
       const storedHistory = localStorage.getItem(
         "huntmaster_statistical_history"
       );
@@ -138,7 +125,6 @@ class StatisticalAnalysis {
         this.state.analysisHistory = JSON.parse(storedHistory);
       }
 
-      // TODO: Load cached computations
       const storedCache = localStorage.getItem("huntmaster_statistical_cache");
       if (storedCache) {
         const cache = JSON.parse(storedCache);
@@ -158,36 +144,30 @@ class StatisticalAnalysis {
 
   /**
    * Initialize statistical calculators
-   * TODO: Set up statistical computation modules
+   * Set up statistical computation modules
    */
   async initializeCalculators() {
     try {
-      // TODO: Initialize descriptive statistics calculator
       if (this.config.enableDescriptiveStats) {
         await this.calculators.descriptive.initialize();
       }
 
-      // TODO: Initialize inferential statistics calculator
       if (this.config.enableInferentialStats) {
         await this.calculators.inferential.initialize();
       }
 
-      // TODO: Initialize correlation analysis
       if (this.config.enableCorrelationAnalysis) {
         await this.calculators.correlation.initialize();
       }
 
-      // TODO: Initialize regression analysis
       if (this.config.enableRegressionAnalysis) {
         await this.calculators.regression.initialize();
       }
 
-      // TODO: Initialize time series analysis
       if (this.config.enableTimeSeriesAnalysis) {
         await this.calculators.timeSeries.initialize();
       }
 
-      // TODO: Initialize hypothesis testing
       if (this.config.enableHypothesisTesting) {
         await this.calculators.hypothesis.initialize();
       }
@@ -203,11 +183,10 @@ class StatisticalAnalysis {
 
   /**
    * Set up real-time statistical analysis
-   * TODO: Configure continuous statistical computation
+   * Configure continuous statistical computation
    */
   setupRealTimeAnalysis() {
     try {
-      // TODO: Set up analysis timer
       setInterval(() => {
         if (this.state.computationQueue.length > 0) {
           this.processComputationQueue();
@@ -225,11 +204,10 @@ class StatisticalAnalysis {
 
   /**
    * Set up background computation for intensive analysis
-   * TODO: Configure background statistical processing
+   * Configure background statistical processing
    */
   setupBackgroundComputation() {
     try {
-      // TODO: Set up web worker for intensive computations
       if (typeof Worker !== "undefined") {
         this.computationWorker = this.createComputationWorker();
       }
@@ -245,11 +223,10 @@ class StatisticalAnalysis {
 
   /**
    * Load statistical models from storage
-   * TODO: Retrieve trained statistical models
+   * Retrieve trained statistical models
    */
   async loadStatisticalModels() {
     try {
-      // TODO: Load models from storage
       const storedModels = localStorage.getItem(
         "huntmaster_statistical_models"
       );
@@ -271,18 +248,16 @@ class StatisticalAnalysis {
 
   /**
    * Initialize data cache for performance optimization
-   * TODO: Set up statistical computation caching
+   * Set up statistical computation caching
    */
   initializeDataCache() {
     try {
-      // TODO: Set cache size limits
       this.cacheConfig = {
         maxSize: 1000,
         ttl: 3600000, // 1 hour
         cleanupInterval: 300000, // 5 minutes
       };
 
-      // TODO: Set up cache cleanup
       setInterval(() => {
         this.cleanupDataCache();
       }, this.cacheConfig.cleanupInterval);
@@ -295,7 +270,7 @@ class StatisticalAnalysis {
 
   /**
    * Analyze session data with descriptive statistics
-   * TODO: Calculate comprehensive descriptive statistics
+   * Calculate comprehensive descriptive statistics
    */
   async analyzeDescriptiveStatistics(sessionData) {
     try {
@@ -305,10 +280,8 @@ class StatisticalAnalysis {
         results: {},
       };
 
-      // TODO: Extract numerical data
       const numericalData = this.extractNumericalData(sessionData);
 
-      // TODO: Calculate central tendencies
       analysis.results.centralTendencies = {
         mean: this.calculateMean(numericalData),
         median: this.calculateMedian(numericalData),
@@ -317,7 +290,6 @@ class StatisticalAnalysis {
         harmonicMean: this.calculateHarmonicMean(numericalData),
       };
 
-      // TODO: Calculate variability measures
       analysis.results.variability = {
         range: this.calculateRange(numericalData),
         variance: this.calculateVariance(numericalData),
@@ -327,17 +299,14 @@ class StatisticalAnalysis {
         interquartileRange: this.calculateIQR(numericalData),
       };
 
-      // TODO: Calculate distribution shape
       analysis.results.shape = {
         skewness: this.calculateSkewness(numericalData),
         kurtosis: this.calculateKurtosis(numericalData),
         normality: this.testNormality(numericalData),
       };
 
-      // TODO: Calculate percentiles
       analysis.results.percentiles = this.calculatePercentiles(numericalData);
 
-      // TODO: Calculate frequency distributions
       analysis.results.frequencies =
         this.calculateFrequencyDistribution(numericalData);
 
@@ -350,7 +319,7 @@ class StatisticalAnalysis {
 
   /**
    * Perform inferential statistical analysis
-   * TODO: Conduct hypothesis testing and confidence intervals
+   * Conduct hypothesis testing and confidence intervals
    */
   async analyzeInferentialStatistics(sampleData, populationParams = null) {
     try {
@@ -360,14 +329,12 @@ class StatisticalAnalysis {
         results: {},
       };
 
-      // TODO: Calculate confidence intervals
       analysis.results.confidenceIntervals = {
         mean: this.calculateConfidenceInterval(sampleData, "mean"),
         proportion: this.calculateConfidenceInterval(sampleData, "proportion"),
         variance: this.calculateConfidenceInterval(sampleData, "variance"),
       };
 
-      // TODO: Perform hypothesis tests
       if (populationParams) {
         analysis.results.hypothesisTests = {
           tTest: this.performTTest(sampleData, populationParams),
@@ -380,13 +347,11 @@ class StatisticalAnalysis {
         };
       }
 
-      // TODO: Calculate effect sizes
       analysis.results.effectSizes = this.calculateEffectSizes(
         sampleData,
         populationParams
       );
 
-      // TODO: Calculate power analysis
       analysis.results.powerAnalysis = this.calculatePowerAnalysis(sampleData);
 
       return analysis;
@@ -398,7 +363,7 @@ class StatisticalAnalysis {
 
   /**
    * Perform correlation analysis
-   * TODO: Analyze relationships between variables
+   * Analyze relationships between variables
    */
   async analyzeCorrelations(dataMatrix) {
     try {
@@ -408,24 +373,18 @@ class StatisticalAnalysis {
         results: {},
       };
 
-      // TODO: Calculate Pearson correlation
       analysis.results.pearson = this.calculatePearsonCorrelation(dataMatrix);
 
-      // TODO: Calculate Spearman correlation
       analysis.results.spearman = this.calculateSpearmanCorrelation(dataMatrix);
 
-      // TODO: Calculate Kendall's tau
       analysis.results.kendall = this.calculateKendallTau(dataMatrix);
 
-      // TODO: Calculate partial correlations
       analysis.results.partial = this.calculatePartialCorrelations(dataMatrix);
 
-      // TODO: Test correlation significance
       analysis.results.significance = this.testCorrelationSignificance(
         analysis.results
       );
 
-      // TODO: Create correlation matrix
       analysis.results.matrix = this.createCorrelationMatrix(dataMatrix);
 
       return analysis;
@@ -437,7 +396,7 @@ class StatisticalAnalysis {
 
   /**
    * Perform regression analysis
-   * TODO: Analyze predictive relationships between variables
+   * Analyze predictive relationships between variables
    */
   async analyzeRegression(independentVars, dependentVar, modelType = "linear") {
     try {
@@ -448,14 +407,11 @@ class StatisticalAnalysis {
         results: {},
       };
 
-      // TODO: Prepare data for regression
       const data = this.prepareRegressionData(independentVars, dependentVar);
 
-      // TODO: Fit regression model
       const model = await this.fitRegressionModel(data, modelType);
       analysis.results.model = model;
 
-      // TODO: Calculate model statistics
       analysis.results.statistics = {
         rSquared: this.calculateRSquared(model),
         adjustedRSquared: this.calculateAdjustedRSquared(model),
@@ -465,16 +421,12 @@ class StatisticalAnalysis {
         bic: this.calculateBIC(model),
       };
 
-      // TODO: Calculate coefficients and significance
       analysis.results.coefficients = this.analyzeCoefficients(model);
 
-      // TODO: Perform residual analysis
       analysis.results.residuals = this.analyzeResiduals(model);
 
-      // TODO: Calculate predictions and intervals
       analysis.results.predictions = this.calculatePredictions(model, data);
 
-      // TODO: Validate model assumptions
       analysis.results.assumptions = this.validateAssumptions(model);
 
       return analysis;
@@ -486,7 +438,7 @@ class StatisticalAnalysis {
 
   /**
    * Perform time series analysis
-   * TODO: Analyze temporal patterns and trends
+   * Analyze temporal patterns and trends
    */
   async analyzeTimeSeries(timeSeriesData) {
     try {
@@ -496,36 +448,30 @@ class StatisticalAnalysis {
         results: {},
       };
 
-      // TODO: Decompose time series
       analysis.results.decomposition = {
         trend: this.extractTrend(timeSeriesData),
         seasonal: this.extractSeasonal(timeSeriesData),
         residual: this.extractResidual(timeSeriesData),
       };
 
-      // TODO: Test for stationarity
       analysis.results.stationarity = {
         adfTest: this.performADFTest(timeSeriesData),
         kpssTest: this.performKPSSTest(timeSeriesData),
         ppTest: this.performPPTest(timeSeriesData),
       };
 
-      // TODO: Identify autocorrelation
       analysis.results.autocorrelation = {
         acf: this.calculateACF(timeSeriesData),
         pacf: this.calculatePACF(timeSeriesData),
         ljungBox: this.performLjungBoxTest(timeSeriesData),
       };
 
-      // TODO: Fit ARIMA model
       if (this.config.enableAdvancedModeling) {
         analysis.results.arima = await this.fitARIMAModel(timeSeriesData);
       }
 
-      // TODO: Generate forecasts
       analysis.results.forecasts = this.generateForecasts(timeSeriesData);
 
-      // TODO: Calculate forecast accuracy
       analysis.results.accuracy = this.calculateForecastAccuracy(
         analysis.results.forecasts
       );
@@ -539,7 +485,7 @@ class StatisticalAnalysis {
 
   /**
    * Perform comprehensive statistical analysis
-   * TODO: Run full statistical analysis suite
+   * Run full statistical analysis suite
    */
   async performComprehensiveAnalysis(sessionData) {
     try {
@@ -551,14 +497,12 @@ class StatisticalAnalysis {
         results: {},
       };
 
-      // TODO: Descriptive statistics
       if (this.config.enableDescriptiveStats) {
         analysis.results.descriptive = await this.analyzeDescriptiveStatistics(
           sessionData
         );
       }
 
-      // TODO: Correlation analysis
       if (this.config.enableCorrelationAnalysis) {
         const dataMatrix = this.buildDataMatrix(sessionData);
         analysis.results.correlation = await this.analyzeCorrelations(
@@ -566,7 +510,6 @@ class StatisticalAnalysis {
         );
       }
 
-      // TODO: Trend analysis
       if (this.config.enableTrendAnalysis) {
         const timeSeriesData = this.extractTimeSeriesData(sessionData);
         analysis.results.timeSeries = await this.analyzeTimeSeries(
@@ -574,7 +517,6 @@ class StatisticalAnalysis {
         );
       }
 
-      // TODO: Regression analysis
       if (this.config.enableRegressionAnalysis) {
         const { independent, dependent } =
           this.extractRegressionVariables(sessionData);
@@ -584,10 +526,8 @@ class StatisticalAnalysis {
         );
       }
 
-      // TODO: Store analysis results
       this.storeAnalysis(analysis);
 
-      // TODO: Update statistics
       const analysisTime = Date.now() - startTime;
       this.state.stats.totalAnalyses++;
       this.state.stats.computationTime += analysisTime;
@@ -608,25 +548,21 @@ class StatisticalAnalysis {
 
   /**
    * Store statistical analysis results
-   * TODO: Persist analysis data and models
+   * Persist analysis data and models
    */
   storeAnalysis(analysis) {
     try {
-      // TODO: Add to analysis history
       this.state.analysisHistory.push(analysis);
 
-      // TODO: Limit history size
       if (this.state.analysisHistory.length > 1000) {
         this.state.analysisHistory = this.state.analysisHistory.slice(-1000);
       }
 
-      // TODO: Persist to storage
       localStorage.setItem(
         "huntmaster_statistical_history",
         JSON.stringify(this.state.analysisHistory)
       );
 
-      // TODO: Cache results
       this.state.dataCache.set(analysis.sessionId, analysis);
 
       console.log(
@@ -639,7 +575,7 @@ class StatisticalAnalysis {
 
   /**
    * Get statistical analysis summary
-   * TODO: Return comprehensive statistical summary
+   * Return comprehensive statistical summary
    */
   getAnalysisSummary() {
     return {
@@ -661,7 +597,7 @@ class StatisticalAnalysis {
 
   /**
    * Clean up data cache
-   * TODO: Remove expired cache entries
+   * Remove expired cache entries
    */
   cleanupDataCache() {
     try {
@@ -686,7 +622,7 @@ class StatisticalAnalysis {
 
   /**
    * Handle statistical analysis errors
-   * TODO: Process and log statistical analysis errors
+   * Process and log statistical analysis errors
    */
   handleError(errorType, error) {
     const errorRecord = {
@@ -701,23 +637,19 @@ class StatisticalAnalysis {
 
   /**
    * Clean up and destroy statistical analysis system
-   * TODO: Clean up resources and workers
+   * Clean up resources and workers
    */
   async destroy() {
     try {
-      // TODO: Terminate computation worker
       if (this.computationWorker) {
         this.computationWorker.terminate();
         this.computationWorker = null;
       }
 
-      // TODO: Clear data cache
       this.state.dataCache.clear();
 
-      // TODO: Clear analysis history
       this.state.analysisHistory = [];
 
-      // TODO: Reset state
       this.state.isInitialized = false;
 
       console.log("StatisticalAnalysis: Destroyed successfully");
@@ -726,7 +658,6 @@ class StatisticalAnalysis {
     }
   }
 
-  // TODO: Placeholder methods for statistical calculations
   extractNumericalData(sessionData) {
     return [];
   }
@@ -903,7 +834,6 @@ class StatisticalAnalysis {
   }
 }
 
-// TODO: Statistical calculator classes (simplified implementations)
 class DescriptiveStatistics {
   async initialize() {
     console.log("DescriptiveStatistics initialized");
@@ -940,7 +870,6 @@ class HypothesisTesting {
   }
 }
 
-// TODO: Distribution classes (simplified implementations)
 class NormalDistribution {
   pdf(x, mean = 0, std = 1) {
     return 0;
@@ -986,14 +915,11 @@ class UniformDistribution {
   } // Placeholder
 }
 
-// TODO: Export the StatisticalAnalysis class
 export { StatisticalAnalysis };
 
-// TODO: Export convenience functions
 export const createStatisticalAnalysis = (options) =>
   new StatisticalAnalysis(options);
 
-// TODO: Export statistical utilities
 export const StatUtils = {
   normalizeData: (data) => {
     // Z-score normalization

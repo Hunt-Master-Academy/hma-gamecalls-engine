@@ -5,6 +5,7 @@
 > The source code for this project is made available for **portfolio review and evaluation purposes only.** It is not licensed for use of any kind, commercial or non-commercial, without express written permission from the authorThis project uses **CMake FetchContent** for automatic dependency management:
 
 - **KissFFT**: Fast Fourier Transform library (automatically downloaded)
+- **FFTW3**: Optional high-performance FFT library for WaveformAnalyzer (system package)
 - **GoogleTest**: Testing framework (automatically downloaded)
 - **Google Benchmark**: Performance benchmarking (automatically downloaded)
 - **Emscripten SDK**: WebAssembly compilation toolchain (`tools/emsdk`)
@@ -29,6 +30,23 @@ cmake --build build
 - ✅ **No submodule management** - CMake handles everything
 - ✅ **Consistent versions** - locked dependency versions across builds
 - ✅ **CI/CD friendly** - reliable automated builds
+
+### Optional FFTW3 Support
+
+For enhanced WaveformAnalyzer performance, install FFTW3:
+
+```bash
+# Ubuntu/Debian
+sudo apt-get install libfftw3-dev
+
+# macOS (Homebrew)
+brew install fftw
+
+# Windows (vcpkg)
+vcpkg install fftw3
+```
+
+**Note**: WaveformAnalyzer will automatically fall back to a stub implementation if FFTW3 is not available.
 
 For inquiries, please contact info@huntmasteracademy.com.
 
@@ -105,6 +123,8 @@ The Huntmaster Audio Engine's core C++ components and web interface are complete
 **🎵 Complete Audio Processing Pipeline**: Modern C++20 architecture with session-based processing, real-time audio analysis, and cross-platform compatibility
 
 **🔧 Advanced Feature Extraction**: MFCC (Mel-Frequency Cepstral Coefficients) processing with KissFFT integration for high-performance spectral analysis
+
+**📊 Advanced Waveform Analysis**: Comprehensive WaveformAnalyzer with multi-resolution waveform generation, FFT-based spectrum analysis, color-coded visualization, and peak detection algorithms with optional FFTW3 acceleration
 
 **⚡ Real-time Processing**: Lock-free audio buffer management with real-time RMS/Peak monitoring and voice activity detection (VAD)
 

@@ -23,7 +23,6 @@ import { DataValidator } from "../validation/data-validator.js";
  */
 class VisualizationEngine {
   constructor(options = {}) {
-    // TODO: Initialize visualization engine configuration
     this.config = {
       enableInteractiveCharts: options.enableInteractiveCharts !== false,
       enableDashboards: options.enableDashboards !== false,
@@ -68,10 +67,8 @@ class VisualizationEngine {
       ...options,
     };
 
-    // TODO: Initialize visualization components
     this.validator = new DataValidator();
 
-    // TODO: Initialize visualization state
     this.state = {
       isInitialized: false,
       currentTheme: this.config.defaultTheme,
@@ -91,7 +88,6 @@ class VisualizationEngine {
       },
     };
 
-    // TODO: Initialize visualization types
     this.visualizationTypes = {
       charts: {
         line: "LineChart",
@@ -128,7 +124,6 @@ class VisualizationEngine {
       },
     };
 
-    // TODO: Initialize chart engines
     this.chartEngines = {
       canvas: new CanvasChartEngine(),
       svg: new SVGChartEngine(),
@@ -136,7 +131,6 @@ class VisualizationEngine {
       d3: new D3ChartEngine(),
     };
 
-    // TODO: Initialize dashboard components
     this.dashboardComponents = {
       layout: new DashboardLayoutManager(),
       widgets: new WidgetManager(),
@@ -144,7 +138,6 @@ class VisualizationEngine {
       export: new ExportManager(),
     };
 
-    // TODO: Initialize color palettes and themes
     this.themes = {
       huntmaster: this.createHuntmasterTheme(),
       light: this.createLightTheme(),
@@ -158,35 +151,28 @@ class VisualizationEngine {
 
   /**
    * Initialize visualization engine
-   * TODO: Set up visualization components and rendering contexts
+   * Set up visualization components and rendering contexts
    */
   async initializeVisualizationEngine() {
     try {
-      // TODO: Initialize rendering contexts
       await this.initializeRenderingContexts();
 
-      // TODO: Set up chart engines
       await this.initializeChartEngines();
 
-      // TODO: Configure dashboard system
       if (this.config.enableDashboards) {
         await this.initializeDashboardSystem();
       }
 
-      // TODO: Set up real-time visualization
       if (this.config.enableRealTimeVisualization) {
         this.setupRealTimeVisualization();
       }
 
-      // TODO: Initialize export capabilities
       if (this.config.enableExportCapabilities) {
         this.setupExportCapabilities();
       }
 
-      // TODO: Set up theme system
       this.setupThemeSystem();
 
-      // TODO: Configure responsive design
       this.setupResponsiveDesign();
 
       this.state.isInitialized = true;
@@ -199,19 +185,16 @@ class VisualizationEngine {
 
   /**
    * Initialize rendering contexts for different chart engines
-   * TODO: Set up canvas, SVG, and WebGL rendering contexts
+   * Set up canvas, SVG, and WebGL rendering contexts
    */
   async initializeRenderingContexts() {
     try {
-      // TODO: Initialize Canvas contexts
       const canvasContexts = this.createCanvasContexts();
       this.state.renderingContexts.set("canvas", canvasContexts);
 
-      // TODO: Initialize SVG contexts
       const svgContexts = this.createSVGContexts();
       this.state.renderingContexts.set("svg", svgContexts);
 
-      // TODO: Initialize WebGL contexts
       if (this.isWebGLSupported()) {
         const webglContexts = this.createWebGLContexts();
         this.state.renderingContexts.set("webgl", webglContexts);
@@ -229,25 +212,22 @@ class VisualizationEngine {
 
   /**
    * Initialize chart engines
-   * TODO: Set up different chart rendering engines
+   * Set up different chart rendering engines
    */
   async initializeChartEngines() {
     try {
-      // TODO: Initialize Canvas chart engine
       await this.chartEngines.canvas.initialize({
         maxDataPoints: this.config.maxDataPoints,
         animationDuration: this.config.animationDuration,
         theme: this.config.defaultTheme,
       });
 
-      // TODO: Initialize SVG chart engine
       await this.chartEngines.svg.initialize({
         exportFormats: this.config.exportFormats,
         interactive: this.config.enableInteractiveCharts,
         theme: this.config.defaultTheme,
       });
 
-      // TODO: Initialize WebGL chart engine for high-performance visualizations
       if (this.isWebGLSupported()) {
         await this.chartEngines.webgl.initialize({
           maxDataPoints: this.config.maxDataPoints * 10,
@@ -256,7 +236,6 @@ class VisualizationEngine {
         });
       }
 
-      // TODO: Initialize D3 chart engine for advanced visualizations
       await this.chartEngines.d3.initialize({
         customVisualizations: true,
         dataBinding: true,
@@ -275,11 +254,10 @@ class VisualizationEngine {
 
   /**
    * Initialize dashboard system
-   * TODO: Set up dashboard layout and widget management
+   * Set up dashboard layout and widget management
    */
   async initializeDashboardSystem() {
     try {
-      // TODO: Initialize layout manager
       await this.dashboardComponents.layout.initialize({
         gridSystem: true,
         responsiveBreakpoints: this.config.responsiveBreakpoints,
@@ -287,14 +265,12 @@ class VisualizationEngine {
         resize: true,
       });
 
-      // TODO: Initialize widget manager
       await this.dashboardComponents.widgets.initialize({
         widgetTypes: Object.keys(this.visualizationTypes.charts),
         customWidgets: true,
         templateLibrary: true,
       });
 
-      // TODO: Initialize filter manager
       await this.dashboardComponents.filters.initialize({
         globalFilters: true,
         localFilters: true,
@@ -313,37 +289,29 @@ class VisualizationEngine {
 
   /**
    * Create a line chart visualization
-   * TODO: Generate interactive line chart for time series data
+   * Generate interactive line chart for time series data
    */
   async createLineChart(data, options = {}) {
     try {
-      // TODO: Validate chart data
       if (!this.validator.validate(data)) {
         throw new Error("Invalid data for line chart");
       }
 
-      // TODO: Process chart configuration
       const chartConfig = this.processChartConfig("line", data, options);
 
-      // TODO: Select appropriate chart engine
       const engine = this.selectChartEngine(chartConfig);
 
-      // TODO: Create chart instance
       const chart = await engine.createLineChart(data, chartConfig);
 
-      // TODO: Apply theme and styling
       chart.applyTheme(this.state.currentTheme);
 
-      // TODO: Set up interactivity
       if (this.config.enableInteractiveCharts) {
         this.setupChartInteractivity(chart, chartConfig);
       }
 
-      // TODO: Register chart
       const chartId = this.generateChartId("line");
       this.state.activeVisualizations.set(chartId, chart);
 
-      // TODO: Update statistics
       this.state.stats.chartsCreated++;
       this.state.stats.totalVisualizations++;
 
@@ -358,37 +326,30 @@ class VisualizationEngine {
 
   /**
    * Create a heatmap visualization
-   * TODO: Generate interactive heatmap for user interaction data
+   * Generate interactive heatmap for user interaction data
    */
   async createHeatmap(data, options = {}) {
     try {
-      // TODO: Validate heatmap data
       if (!this.validator.validate(data)) {
         throw new Error("Invalid data for heatmap");
       }
 
-      // TODO: Process heatmap configuration
       const heatmapConfig = this.processHeatmapConfig(data, options);
 
-      // TODO: Create heatmap instance
       const heatmap = await this.chartEngines.canvas.createHeatmap(
         data,
         heatmapConfig
       );
 
-      // TODO: Apply color scheme
       heatmap.applyColorScheme(this.getColorScheme(options.colorScheme));
 
-      // TODO: Set up click interactions
       if (this.config.enableInteractiveCharts) {
         this.setupHeatmapInteractivity(heatmap, heatmapConfig);
       }
 
-      // TODO: Register heatmap
       const heatmapId = this.generateChartId("heatmap");
       this.state.activeVisualizations.set(heatmapId, heatmap);
 
-      // TODO: Update statistics
       this.state.stats.heatmapsGenerated++;
       this.state.stats.totalVisualizations++;
 
@@ -403,44 +364,36 @@ class VisualizationEngine {
 
   /**
    * Create user journey visualization
-   * TODO: Generate user flow diagram with path analysis
+   * Generate user flow diagram with path analysis
    */
   async createUserJourneyVisualization(data, options = {}) {
     try {
-      // TODO: Validate journey data
       if (!this.validator.validate(data)) {
         throw new Error("Invalid data for user journey visualization");
       }
 
-      // TODO: Process journey paths
       const journeyPaths = this.processJourneyPaths(data);
 
-      // TODO: Calculate flow metrics
       const flowMetrics = this.calculateFlowMetrics(journeyPaths);
 
-      // TODO: Create journey configuration
       const journeyConfig = this.processJourneyConfig(
         journeyPaths,
         flowMetrics,
         options
       );
 
-      // TODO: Create journey visualization
       const journey = await this.chartEngines.d3.createUserJourney(
         journeyPaths,
         journeyConfig
       );
 
-      // TODO: Add interactive elements
       if (this.config.enableInteractiveCharts) {
         this.setupJourneyInteractivity(journey, journeyConfig);
       }
 
-      // TODO: Register visualization
       const journeyId = this.generateChartId("userJourney");
       this.state.activeVisualizations.set(journeyId, journey);
 
-      // TODO: Update statistics
       this.state.stats.userFlowsVisualized++;
       this.state.stats.totalVisualizations++;
 
@@ -460,33 +413,28 @@ class VisualizationEngine {
 
   /**
    * Create dashboard with multiple visualizations
-   * TODO: Generate comprehensive analytics dashboard
+   * Generate comprehensive analytics dashboard
    */
   async createDashboard(config) {
     try {
-      // TODO: Validate dashboard configuration
       if (!this.validator.validate(config)) {
         throw new Error("Invalid dashboard configuration");
       }
 
-      // TODO: Create dashboard layout
       const layout = await this.dashboardComponents.layout.createLayout(
         config.layout
       );
 
-      // TODO: Create dashboard widgets
       const widgets = [];
       for (const widgetConfig of config.widgets) {
         const widget = await this.createDashboardWidget(widgetConfig);
         widgets.push(widget);
       }
 
-      // TODO: Set up dashboard filters
       const filters = await this.dashboardComponents.filters.createFilters(
         config.filters
       );
 
-      // TODO: Create dashboard instance
       const dashboard = {
         id: this.generateDashboardId(),
         layout,
@@ -497,15 +445,12 @@ class VisualizationEngine {
         updatedAt: Date.now(),
       };
 
-      // TODO: Set up real-time updates
       if (this.config.enableRealTimeVisualization) {
         this.setupDashboardRealTimeUpdates(dashboard);
       }
 
-      // TODO: Register dashboard
       this.state.dashboards.set(dashboard.id, dashboard);
 
-      // TODO: Update statistics
       this.state.stats.dashboardsCreated++;
 
       console.log(
@@ -521,34 +466,28 @@ class VisualizationEngine {
 
   /**
    * Create real-time visualization stream
-   * TODO: Set up real-time data visualization with live updates
+   * Set up real-time data visualization with live updates
    */
   async createRealTimeVisualization(dataStream, options = {}) {
     try {
-      // TODO: Validate stream configuration
       if (!dataStream || typeof dataStream.subscribe !== "function") {
         throw new Error("Invalid data stream for real-time visualization");
       }
 
-      // TODO: Create streaming chart configuration
       const streamConfig = this.processStreamConfig(options);
 
-      // TODO: Create streaming chart
       const streamChart = await this.chartEngines.canvas.createStreamingChart(
         streamConfig
       );
 
-      // TODO: Set up data stream subscription
       const subscription = dataStream.subscribe({
         next: (data) => this.updateStreamingChart(streamChart, data),
         error: (error) => this.handleStreamError(streamChart, error),
         complete: () => this.finalizeStreamingChart(streamChart),
       });
 
-      // TODO: Set up buffer management
       this.setupStreamBufferManagement(streamChart, streamConfig);
 
-      // TODO: Register streaming visualization
       const streamId = this.generateChartId("stream");
       this.state.activeVisualizations.set(streamId, {
         chart: streamChart,
@@ -572,16 +511,14 @@ class VisualizationEngine {
 
   /**
    * Export visualization to specified format
-   * TODO: Export charts and dashboards in various formats
+   * Export charts and dashboards in various formats
    */
   async exportVisualization(visualizationId, format, options = {}) {
     try {
-      // TODO: Validate export parameters
       if (!this.config.exportFormats.includes(format)) {
         throw new Error(`Unsupported export format: ${format}`);
       }
 
-      // TODO: Get visualization instance
       const visualization =
         this.state.activeVisualizations.get(visualizationId) ||
         this.state.dashboards.get(visualizationId);
@@ -590,24 +527,20 @@ class VisualizationEngine {
         throw new Error(`Visualization not found: ${visualizationId}`);
       }
 
-      // TODO: Process export configuration
       const exportConfig = this.processExportConfig(format, options);
 
-      // TODO: Generate export data
       const exportData = await this.generateExportData(
         visualization,
         format,
         exportConfig
       );
 
-      // TODO: Apply export formatting
       const formattedData = this.applyExportFormatting(
         exportData,
         format,
         exportConfig
       );
 
-      // TODO: Create export package
       const exportPackage = {
         id: this.generateExportId(),
         visualizationId,
@@ -618,10 +551,8 @@ class VisualizationEngine {
         options: exportConfig,
       };
 
-      // TODO: Queue export for processing
       this.state.exportQueue.push(exportPackage);
 
-      // TODO: Update statistics
       this.state.stats.exportsGenerated++;
 
       console.log(
@@ -637,36 +568,30 @@ class VisualizationEngine {
 
   /**
    * Update visualization with new data
-   * TODO: Refresh visualization with updated dataset
+   * Refresh visualization with updated dataset
    */
   async updateVisualization(visualizationId, newData, options = {}) {
     try {
-      // TODO: Get visualization instance
       const visualization =
         this.state.activeVisualizations.get(visualizationId);
       if (!visualization) {
         throw new Error(`Visualization not found: ${visualizationId}`);
       }
 
-      // TODO: Validate new data
       if (!this.validator.validate(newData)) {
         throw new Error("Invalid data for visualization update");
       }
 
-      // TODO: Process update configuration
       const updateConfig = this.processUpdateConfig(options);
 
-      // TODO: Apply data transformation
       const transformedData = this.transformDataForUpdate(
         newData,
         visualization,
         updateConfig
       );
 
-      // TODO: Update visualization
       await visualization.updateData(transformedData, updateConfig);
 
-      // TODO: Apply animations if enabled
       if (updateConfig.animated && this.config.animationDuration > 0) {
         await this.animateVisualizationUpdate(visualization, updateConfig);
       }
@@ -684,27 +609,23 @@ class VisualizationEngine {
 
   /**
    * Apply theme to visualization
-   * TODO: Change visualization theme and styling
+   * Change visualization theme and styling
    */
   async applyTheme(visualizationId, themeName) {
     try {
-      // TODO: Validate theme
       if (!this.themes[themeName]) {
         throw new Error(`Unknown theme: ${themeName}`);
       }
 
-      // TODO: Get visualization instance
       const visualization =
         this.state.activeVisualizations.get(visualizationId);
       if (!visualization) {
         throw new Error(`Visualization not found: ${visualizationId}`);
       }
 
-      // TODO: Apply theme
       const theme = this.themes[themeName];
       await visualization.applyTheme(theme);
 
-      // TODO: Update current theme if global
       if (visualizationId === "global") {
         this.state.currentTheme = themeName;
         await this.applyGlobalTheme(theme);
@@ -723,11 +644,10 @@ class VisualizationEngine {
 
   /**
    * Setup responsive design for visualizations
-   * TODO: Configure responsive behavior for different screen sizes
+   * Configure responsive behavior for different screen sizes
    */
   setupResponsiveDesign() {
     try {
-      // TODO: Set up media query listeners
       Object.entries(this.config.responsiveBreakpoints).forEach(
         ([size, width]) => {
           const mediaQuery = window.matchMedia(`(max-width: ${width}px)`);
@@ -737,7 +657,6 @@ class VisualizationEngine {
         }
       );
 
-      // TODO: Set up resize observer for containers
       if (typeof ResizeObserver !== "undefined") {
         this.resizeObserver = new ResizeObserver((entries) => {
           entries.forEach((entry) => this.handleContainerResize(entry));
@@ -752,7 +671,7 @@ class VisualizationEngine {
 
   /**
    * Create Huntmaster theme
-   * TODO: Define the default Huntmaster theme colors and styling
+   * Define the default Huntmaster theme colors and styling
    */
   createHuntmasterTheme() {
     return {
@@ -779,7 +698,7 @@ class VisualizationEngine {
 
   /**
    * Get visualization summary
-   * TODO: Return comprehensive visualization engine status
+   * Return comprehensive visualization engine status
    */
   getVisualizationSummary() {
     return {
@@ -802,7 +721,7 @@ class VisualizationEngine {
 
   /**
    * Handle visualization engine errors
-   * TODO: Process and log visualization errors
+   * Process and log visualization errors
    */
   handleError(errorType, error) {
     const errorRecord = {
@@ -817,28 +736,24 @@ class VisualizationEngine {
 
   /**
    * Clean up and destroy visualization engine
-   * TODO: Clean up resources and remove event listeners
+   * Clean up resources and remove event listeners
    */
   async destroy() {
     try {
-      // TODO: Destroy all active visualizations
       this.state.activeVisualizations.forEach(async (visualization, id) => {
         await this.destroyVisualization(id);
       });
 
-      // TODO: Destroy all dashboards
       this.state.dashboards.forEach(async (dashboard, id) => {
         await this.destroyDashboard(id);
       });
 
-      // TODO: Clean up chart engines
       Object.values(this.chartEngines).forEach((engine) => {
         if (engine && typeof engine.destroy === "function") {
           engine.destroy();
         }
       });
 
-      // TODO: Remove event listeners
       if (this.resizeObserver) {
         this.resizeObserver.disconnect();
       }
@@ -849,7 +764,6 @@ class VisualizationEngine {
     }
   }
 
-  // TODO: Placeholder methods for visualization engine implementations
   createCanvasContexts() {
     return {};
   }
@@ -997,7 +911,6 @@ class VisualizationEngine {
   }
 }
 
-// TODO: Chart engine classes (simplified implementations)
 class CanvasChartEngine {
   async initialize(options) {
     this.options = options;
@@ -1042,7 +955,6 @@ class D3ChartEngine {
   }
 }
 
-// TODO: Dashboard component classes
 class DashboardLayoutManager {
   async initialize(options) {
     this.options = options;
@@ -1079,7 +991,6 @@ class ExportManager {
   }
 }
 
-// TODO: Mock chart class for demonstration
 class MockChart {
   constructor(type, data, config) {
     this.type = type;
@@ -1099,14 +1010,11 @@ class MockChart {
   }
 }
 
-// TODO: Export the VisualizationEngine class
 export { VisualizationEngine };
 
-// TODO: Export convenience functions
 export const createVisualizationEngine = (options) =>
   new VisualizationEngine(options);
 
-// TODO: Export visualization utilities
 export const VisualizationUtils = {
   generateColorPalette: (baseColor, count) => {
     const colors = [];

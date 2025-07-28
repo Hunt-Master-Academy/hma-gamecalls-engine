@@ -22,7 +22,6 @@ import { DataValidator } from "../validation/data-validator.js";
  */
 class MLModels {
   constructor(options = {}) {
-    // TODO: Initialize ML configuration
     this.config = {
       enableSupervisedLearning: options.enableSupervisedLearning !== false,
       enableUnsupervisedLearning: options.enableUnsupervisedLearning !== false,
@@ -44,10 +43,8 @@ class MLModels {
       ...options,
     };
 
-    // TODO: Initialize ML components
     this.validator = new DataValidator();
 
-    // TODO: Initialize ML state
     this.state = {
       isInitialized: false,
       trainedModels: new Map(),
@@ -65,7 +62,6 @@ class MLModels {
       },
     };
 
-    // TODO: Initialize model types
     this.modelTypes = {
       supervised: {
         classification: [
@@ -97,7 +93,6 @@ class MLModels {
       },
     };
 
-    // TODO: Initialize algorithms
     this.algorithms = {
       supervised: new SupervisedLearning(),
       unsupervised: new UnsupervisedLearning(),
@@ -106,7 +101,6 @@ class MLModels {
       online: new OnlineLearning(),
     };
 
-    // TODO: Initialize feature engineering
     this.featureEngineering = new FeatureEngineering();
 
     this.initializeMLSystem();
@@ -114,28 +108,22 @@ class MLModels {
 
   /**
    * Initialize machine learning system
-   * TODO: Set up ML pipeline and model management
+   * Set up ML pipeline and model management
    */
   async initializeMLSystem() {
     try {
-      // TODO: Load existing models
       await this.loadTrainedModels();
 
-      // TODO: Initialize algorithms
       await this.initializeAlgorithms();
 
-      // TODO: Set up model validation
       this.setupModelValidation();
 
-      // TODO: Set up feature engineering
       await this.setupFeatureEngineering();
 
-      // TODO: Set up automated training
       if (this.config.enableAutoML) {
         this.setupAutoML();
       }
 
-      // TODO: Set up model monitoring
       this.setupModelMonitoring();
 
       this.state.isInitialized = true;
@@ -148,11 +136,10 @@ class MLModels {
 
   /**
    * Load existing trained models from storage
-   * TODO: Retrieve persisted ML models and metadata
+   * Retrieve persisted ML models and metadata
    */
   async loadTrainedModels() {
     try {
-      // TODO: Load models from localStorage
       const storedModels = localStorage.getItem("huntmaster_ml_models");
       if (storedModels) {
         const models = JSON.parse(storedModels);
@@ -164,7 +151,6 @@ class MLModels {
         }
       }
 
-      // TODO: Load performance metrics
       const storedPerformance = localStorage.getItem(
         "huntmaster_model_performance"
       );
@@ -173,7 +159,6 @@ class MLModels {
         this.state.modelPerformance = new Map(Object.entries(performance));
       }
 
-      // TODO: Load training history
       const storedHistory = localStorage.getItem("huntmaster_training_history");
       if (storedHistory) {
         this.state.trainingHistory = JSON.parse(storedHistory);
@@ -189,31 +174,26 @@ class MLModels {
 
   /**
    * Initialize ML algorithms
-   * TODO: Set up machine learning algorithm implementations
+   * Set up machine learning algorithm implementations
    */
   async initializeAlgorithms() {
     try {
-      // TODO: Initialize supervised learning
       if (this.config.enableSupervisedLearning) {
         await this.algorithms.supervised.initialize();
       }
 
-      // TODO: Initialize unsupervised learning
       if (this.config.enableUnsupervisedLearning) {
         await this.algorithms.unsupervised.initialize();
       }
 
-      // TODO: Initialize neural networks
       if (this.config.enableNeuralNetworks) {
         await this.algorithms.neural.initialize();
       }
 
-      // TODO: Initialize ensemble methods
       if (this.config.enableEnsembleMethods) {
         await this.algorithms.ensemble.initialize();
       }
 
-      // TODO: Initialize online learning
       if (this.config.enableOnlineLearning) {
         await this.algorithms.online.initialize();
       }
@@ -226,11 +206,10 @@ class MLModels {
 
   /**
    * Set up model validation framework
-   * TODO: Configure model validation and evaluation
+   * Configure model validation and evaluation
    */
   setupModelValidation() {
     try {
-      // TODO: Define validation strategies
       this.validationStrategies = {
         holdout: this.holdoutValidation.bind(this),
         cross_validation: this.crossValidation.bind(this),
@@ -238,7 +217,6 @@ class MLModels {
         bootstrap: this.bootstrapValidation.bind(this),
       };
 
-      // TODO: Define evaluation metrics
       this.evaluationMetrics = {
         classification: [
           "accuracy",
@@ -272,14 +250,13 @@ class MLModels {
 
   /**
    * Set up feature engineering pipeline
-   * TODO: Configure automated feature engineering
+   * Configure automated feature engineering
    */
   async setupFeatureEngineering() {
     try {
       if (this.config.enableFeatureEngineering) {
         await this.featureEngineering.initialize();
 
-        // TODO: Define feature transformation strategies
         this.featureTransformations = {
           numerical: [
             "standardize",
@@ -310,11 +287,10 @@ class MLModels {
 
   /**
    * Set up automated machine learning
-   * TODO: Configure AutoML pipeline for model selection
+   * Configure AutoML pipeline for model selection
    */
   setupAutoML() {
     try {
-      // TODO: Define AutoML configuration
       this.autoMLConfig = {
         maxTrials: 50,
         objective: "val_accuracy",
@@ -325,7 +301,6 @@ class MLModels {
         ensembling: true,
       };
 
-      // TODO: Set up automated training scheduler
       setInterval(() => {
         this.runAutoMLExperiments();
       }, 3600000); // Run every hour
@@ -338,11 +313,10 @@ class MLModels {
 
   /**
    * Set up model monitoring and drift detection
-   * TODO: Configure model performance monitoring
+   * Configure model performance monitoring
    */
   setupModelMonitoring() {
     try {
-      // TODO: Set up performance monitoring
       this.monitoringConfig = {
         performanceThreshold: 0.1, // 10% performance drop
         dataDriftThreshold: 0.05,
@@ -351,7 +325,6 @@ class MLModels {
         retrainingThreshold: 0.15,
       };
 
-      // TODO: Set up monitoring timer
       setInterval(() => {
         this.monitorModelPerformance();
       }, this.monitoringConfig.monitoringInterval);
@@ -364,7 +337,7 @@ class MLModels {
 
   /**
    * Train a machine learning model
-   * TODO: Train model with specified algorithm and data
+   * Train model with specified algorithm and data
    */
   async trainModel(modelType, algorithm, trainData, targetData, options = {}) {
     try {
@@ -373,20 +346,16 @@ class MLModels {
 
       console.log(`MLModels: Starting training for ${modelId}`);
 
-      // TODO: Prepare training data
       const processedData = await this.preprocessTrainingData(
         trainData,
         targetData
       );
 
-      // TODO: Split data for validation
       const { trainSet, validationSet, testSet } =
         this.splitData(processedData);
 
-      // TODO: Initialize model
       const model = await this.initializeModel(modelType, algorithm, options);
 
-      // TODO: Set up training configuration
       const trainingConfig = {
         batchSize: this.config.trainingBatchSize,
         epochs: this.config.maxEpochs,
@@ -396,7 +365,6 @@ class MLModels {
         ...options,
       };
 
-      // TODO: Train the model
       const trainingResult = await this.executeTraining(
         model,
         trainSet,
@@ -404,13 +372,10 @@ class MLModels {
         trainingConfig
       );
 
-      // TODO: Validate model performance
       const performance = await this.validateModel(model, testSet);
 
-      // TODO: Store trained model
       await this.storeTrainedModel(modelId, model, performance);
 
-      // TODO: Record training history
       const trainingRecord = {
         modelId,
         modelType,
@@ -421,7 +386,6 @@ class MLModels {
       };
       this.state.trainingHistory.push(trainingRecord);
 
-      // TODO: Update statistics
       this.state.stats.totalModels++;
       this.state.stats.trainingSessions++;
       this.state.stats.trainingTime += trainingRecord.trainingTime;
@@ -440,39 +404,33 @@ class MLModels {
 
   /**
    * Make predictions using trained model
-   * TODO: Generate predictions for new data
+   * Generate predictions for new data
    */
   async predict(modelId, inputData, options = {}) {
     try {
-      // TODO: Validate model exists
       if (!this.state.trainedModels.has(modelId)) {
         throw new Error(`Model ${modelId} not found`);
       }
 
       const model = this.state.trainedModels.get(modelId);
 
-      // TODO: Preprocess input data
       const processedData = await this.preprocessPredictionData(
         inputData,
         model.preprocessor
       );
 
-      // TODO: Make predictions
       const predictions = await model.predict(processedData);
 
-      // TODO: Post-process predictions
       const finalPredictions = await this.postprocessPredictions(
         predictions,
         model.postprocessor
       );
 
-      // TODO: Cache predictions if enabled
       if (options.cache) {
         const cacheKey = this.generateCacheKey(modelId, inputData);
         this.state.predictionCache.set(cacheKey, finalPredictions);
       }
 
-      // TODO: Update statistics
       this.state.stats.predictions++;
 
       return finalPredictions;
@@ -485,7 +443,7 @@ class MLModels {
 
   /**
    * Evaluate model performance
-   * TODO: Comprehensive model evaluation and metrics
+   * Comprehensive model evaluation and metrics
    */
   async evaluateModel(modelId, testData, targetData) {
     try {
@@ -494,17 +452,14 @@ class MLModels {
         throw new Error(`Model ${modelId} not found`);
       }
 
-      // TODO: Make predictions on test data
       const predictions = await this.predict(modelId, testData);
 
-      // TODO: Calculate evaluation metrics
       const metrics = await this.calculateMetrics(
         predictions,
         targetData,
         model.type
       );
 
-      // TODO: Generate detailed evaluation report
       const evaluation = {
         modelId,
         timestamp: Date.now(),
@@ -518,7 +473,6 @@ class MLModels {
         predictions: predictions.slice(0, 100), // Sample predictions
       };
 
-      // TODO: Store evaluation results
       this.state.modelPerformance.set(modelId, evaluation);
 
       return evaluation;
@@ -531,7 +485,7 @@ class MLModels {
 
   /**
    * Perform hyperparameter optimization
-   * TODO: Optimize model hyperparameters using various strategies
+   * Optimize model hyperparameters using various strategies
    */
   async optimizeHyperparameters(
     modelType,
@@ -548,13 +502,11 @@ class MLModels {
       const optimizationResults = [];
       const searchStrategy = this.config.searchStrategy || "random_search";
 
-      // TODO: Generate hyperparameter combinations
       const parameterCombinations = this.generateParameterCombinations(
         searchSpace,
         searchStrategy
       );
 
-      // TODO: Evaluate each combination
       for (const params of parameterCombinations) {
         try {
           const result = await this.trainModel(
@@ -580,7 +532,6 @@ class MLModels {
         }
       }
 
-      // TODO: Find best parameters
       const bestResult = optimizationResults.reduce((best, current) =>
         current.performance.score > best.performance.score ? current : best
       );
@@ -598,7 +549,7 @@ class MLModels {
 
   /**
    * Perform feature selection
-   * TODO: Select most important features for model training
+   * Select most important features for model training
    */
   async selectFeatures(data, target, method = "correlation") {
     try {
@@ -614,13 +565,11 @@ class MLModels {
         throw new Error(`Unknown feature selection method: ${method}`);
       }
 
-      // TODO: Apply feature selection method
       const selectedFeatures = await featureSelectionMethods[method](
         data,
         target
       );
 
-      // TODO: Calculate feature importance scores
       const importanceScores = await this.calculateFeatureImportanceScores(
         data,
         target,
@@ -642,7 +591,7 @@ class MLModels {
 
   /**
    * Perform ensemble learning
-   * TODO: Combine multiple models for improved performance
+   * Combine multiple models for improved performance
    */
   async createEnsemble(modelIds, ensembleMethod = "voting") {
     try {
@@ -654,16 +603,13 @@ class MLModels {
         throw new Error("At least 2 models required for ensemble");
       }
 
-      // TODO: Create ensemble model
       const ensemble = await this.algorithms.ensemble.create(
         models,
         ensembleMethod
       );
 
-      // TODO: Generate ensemble ID
       const ensembleId = this.generateModelId("ensemble", ensembleMethod);
 
-      // TODO: Store ensemble model
       this.state.trainedModels.set(ensembleId, ensemble);
 
       console.log(
@@ -679,7 +625,7 @@ class MLModels {
 
   /**
    * Get model information and statistics
-   * TODO: Return comprehensive model information
+   * Return comprehensive model information
    */
   getModelInfo(modelId) {
     try {
@@ -707,7 +653,7 @@ class MLModels {
 
   /**
    * Get ML system summary
-   * TODO: Return comprehensive ML system statistics
+   * Return comprehensive ML system statistics
    */
   getMLSummary() {
     return {
@@ -733,7 +679,7 @@ class MLModels {
 
   /**
    * Handle ML errors
-   * TODO: Process and log ML errors
+   * Process and log ML errors
    */
   handleError(errorType, error) {
     const errorRecord = {
@@ -748,21 +694,17 @@ class MLModels {
 
   /**
    * Clean up and destroy ML system
-   * TODO: Clean up models and resources
+   * Clean up models and resources
    */
   async destroy() {
     try {
-      // TODO: Clear trained models
       this.state.trainedModels.clear();
 
-      // TODO: Clear caches
       this.state.predictionCache.clear();
       this.state.modelPerformance.clear();
 
-      // TODO: Clear training history
       this.state.trainingHistory = [];
 
-      // TODO: Reset state
       this.state.isInitialized = false;
 
       console.log("MLModels: Destroyed successfully");
@@ -771,7 +713,6 @@ class MLModels {
     }
   }
 
-  // TODO: Placeholder methods for ML implementations
   deserializeModel(modelData) {
     return {};
   }
@@ -858,7 +799,6 @@ class MLModels {
   }
 }
 
-// TODO: Algorithm implementation classes (simplified)
 class SupervisedLearning {
   async initialize() {
     console.log("SupervisedLearning initialized");
@@ -898,13 +838,10 @@ class FeatureEngineering {
   }
 }
 
-// TODO: Export the MLModels class
 export { MLModels };
 
-// TODO: Export convenience functions
 export const createMLModels = (options) => new MLModels(options);
 
-// TODO: Export ML utilities
 export const MLUtils = {
   normalizeFeatures: (features) => {
     // Feature normalization

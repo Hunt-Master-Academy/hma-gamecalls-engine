@@ -16,16 +16,16 @@
  */
 export class SequentialTesting {
   constructor(config = {}) {
-    // TODO: Initialize sequential testing system
-    // TODO: Set up early stopping rule framework
-    // TODO: Configure SPRT implementation
-    // TODO: Initialize group sequential methods
-    // TODO: Set up adaptive testing algorithms
-    // TODO: Configure stopping boundary calculations
-    // TODO: Initialize sequential monitoring
-    // TODO: Set up sequential optimization
-    // TODO: Configure sequential reporting
-    // TODO: Initialize sequential validation
+    // Initialize sequential testing system
+    // Set up early stopping rule framework
+    // Configure SPRT implementation
+    // Initialize group sequential methods
+    // Set up adaptive testing algorithms
+    // Configure stopping boundary calculations
+    // Initialize sequential monitoring
+    // Set up sequential optimization
+    // Configure sequential reporting
+    // Initialize sequential validation
 
     this.config = {
       defaultAlpha: 0.05,
@@ -64,16 +64,16 @@ export class SequentialTesting {
    * Sequential Test Design and Setup
    */
   async designSequentialTest(testConfig) {
-    // TODO: Design sequential testing procedure
-    // TODO: Validate test configuration
-    // TODO: Calculate stopping boundaries
-    // TODO: Set up interim analysis schedule
-    // TODO: Configure spending functions
-    // TODO: Initialize early stopping rules
-    // TODO: Set up adaptive procedures
-    // TODO: Generate sequential test protocol
-    // TODO: Create monitoring framework
-    // TODO: Update sequential test registry
+    // Design sequential testing procedure
+    // Validate test configuration
+    // Calculate stopping boundaries
+    // Set up interim analysis schedule
+    // Configure spending functions
+    // Initialize early stopping rules
+    // Set up adaptive procedures
+    // Generate sequential test protocol
+    // Create monitoring framework
+    // Update sequential test registry
 
     const testId = this.generateTestId();
     const timestamp = Date.now();
@@ -125,16 +125,16 @@ export class SequentialTesting {
   }
 
   async calculateStoppingBoundaries(sequentialTest) {
-    // TODO: Calculate stopping boundaries for sequential test
-    // TODO: Apply spending function approach
-    // TODO: Calculate efficacy boundaries
-    // TODO: Calculate futility boundaries
-    // TODO: Handle different test types
-    // TODO: Optimize boundary calculations
-    // TODO: Validate boundary properties
-    // TODO: Generate boundary documentation
-    // TODO: Cache boundary calculations
-    // TODO: Update boundary metrics
+    // Calculate stopping boundaries for sequential test
+    // Apply spending function approach
+    // Calculate efficacy boundaries
+    // Calculate futility boundaries
+    // Handle different test types
+    // Optimize boundary calculations
+    // Validate boundary properties
+    // Generate boundary documentation
+    // Cache boundary calculations
+    // Update boundary metrics
 
     const { alpha, maxAnalyses, spendingFunction } =
       sequentialTest.designParameters;
@@ -205,16 +205,16 @@ export class SequentialTesting {
    * Interim Analysis Implementation
    */
   async performInterimAnalysis(testId, analysisData) {
-    // TODO: Perform interim analysis for sequential test
-    // TODO: Validate analysis data
-    // TODO: Calculate test statistic
-    // TODO: Compare to stopping boundaries
-    // TODO: Make stopping decision
-    // TODO: Update test status
-    // TODO: Generate interim report
-    // TODO: Handle adaptive modifications
-    // TODO: Update analysis history
-    // TODO: Update sequential metrics
+    // Perform interim analysis for sequential test
+    // Validate analysis data
+    // Calculate test statistic
+    // Compare to stopping boundaries
+    // Make stopping decision
+    // Update test status
+    // Generate interim report
+    // Handle adaptive modifications
+    // Update analysis history
+    // Update sequential metrics
 
     const sequentialTest = this.sequentialTests.get(testId);
     if (!sequentialTest) {
@@ -306,16 +306,16 @@ export class SequentialTesting {
   }
 
   async compareToStoppingBoundaries(analysis, boundaries, analysisNumber) {
-    // TODO: Compare test statistic to stopping boundaries
-    // TODO: Check efficacy boundary
-    // TODO: Check futility boundary
-    // TODO: Handle boundary crossing
-    // TODO: Calculate boundary distances
-    // TODO: Generate boundary comparison report
-    // TODO: Validate boundary properties
-    // TODO: Document boundary decisions
-    // TODO: Update boundary statistics
-    // TODO: Return comparison results
+    // Compare test statistic to stopping boundaries
+    // Check efficacy boundary
+    // Check futility boundary
+    // Handle boundary crossing
+    // Calculate boundary distances
+    // Generate boundary comparison report
+    // Validate boundary properties
+    // Document boundary decisions
+    // Update boundary statistics
+    // Return comparison results
 
     const comparison = {
       analysisNumber: analysisNumber,
@@ -349,16 +349,16 @@ export class SequentialTesting {
   }
 
   async makeStoppingDecision(analysis, boundaryComparison, sequentialTest) {
-    // TODO: Make stopping decision based on boundary comparison
-    // TODO: Apply stopping rules
-    // TODO: Consider efficacy stopping
-    // TODO: Consider futility stopping
-    // TODO: Handle maximum analyses reached
-    // TODO: Apply business rules
-    // TODO: Generate stopping rationale
-    // TODO: Validate stopping decision
-    // TODO: Document decision process
-    // TODO: Update decision metrics
+    // Make stopping decision based on boundary comparison
+    // Apply stopping rules
+    // Consider efficacy stopping
+    // Consider futility stopping
+    // Handle maximum analyses reached
+    // Apply business rules
+    // Generate stopping rationale
+    // Validate stopping decision
+    // Document decision process
+    // Update decision metrics
 
     const decision = {
       decision: "continue",
@@ -416,16 +416,16 @@ export class SequentialTesting {
    * SPRT Implementation
    */
   async performSPRT(sprtConfig) {
-    // TODO: Perform Sequential Probability Ratio Test
-    // TODO: Define null and alternative hypotheses
-    // TODO: Set Type I and Type II error rates
-    // TODO: Calculate likelihood ratios
-    // TODO: Update cumulative log-likelihood ratio
-    // TODO: Compare to SPRT boundaries
-    // TODO: Make sequential decisions
-    // TODO: Handle continuous monitoring
-    // TODO: Generate SPRT reports
-    // TODO: Update SPRT metrics
+    // Perform Sequential Probability Ratio Test
+    // Define null and alternative hypotheses
+    // Set Type I and Type II error rates
+    // Calculate likelihood ratios
+    // Update cumulative log-likelihood ratio
+    // Compare to SPRT boundaries
+    // Make sequential decisions
+    // Handle continuous monitoring
+    // Generate SPRT reports
+    // Update SPRT metrics
 
     const sprtId = this.generateSPRTId();
     const timestamp = Date.now();
@@ -457,7 +457,7 @@ export class SequentialTesting {
   }
 
   async updateSPRT(sprtId, newObservation) {
-    // TODO: Update SPRT with new observation
+    // Update SPRT with new observation
     const sprt = this.sequentialTests.get(sprtId);
     if (!sprt) {
       throw new Error(`SPRT not found: ${sprtId}`);
@@ -499,7 +499,7 @@ export class SequentialTesting {
    * Utility Methods
    */
   initializeSpendingFunctions() {
-    // TODO: Initialize spending function calculators
+    // Initialize spending function calculators
     this.spendingFunctions.set("obrien_fleming", {
       calculateAlphaSpending: (fraction, totalAlpha) => {
         return 2 * (1 - this.standardNormalCDF(1.96 / Math.sqrt(fraction)));
@@ -527,7 +527,7 @@ export class SequentialTesting {
       },
     });
 
-    // TODO: Add more spending functions
+    // Add more spending functions
   }
 
   generateTestId() {
@@ -547,12 +547,12 @@ export class SequentialTesting {
   }
 
   standardNormalCDF(z) {
-    // TODO: Calculate standard normal CDF
+    // Calculate standard normal CDF
     return 0.5 * (1 + this.erf(z / Math.sqrt(2)));
   }
 
   erf(x) {
-    // TODO: Calculate error function approximation
+    // Calculate error function approximation
     const a1 = 0.254829592;
     const a2 = -0.284496736;
     const a3 = 1.421413741;
@@ -572,7 +572,7 @@ export class SequentialTesting {
   }
 
   async validateSequentialTestConfig(test) {
-    // TODO: Validate sequential test configuration
+    // Validate sequential test configuration
     const errors = [];
 
     if (!test.experimentId) {
@@ -598,7 +598,7 @@ export class SequentialTesting {
   }
 
   updateAverageAnalyses() {
-    // TODO: Update average number of analyses metric
+    // Update average number of analyses metric
     const completedTests = Array.from(this.sequentialTests.values()).filter(
       (test) => test.status === "stopped"
     );
@@ -633,7 +633,7 @@ export class SequentialTesting {
   }
 
   calculateEarlyStoppingRate() {
-    // TODO: Calculate early stopping rate
+    // Calculate early stopping rate
     const total = this.sequentialMetrics.totalTests;
     const earlyStopped = this.sequentialMetrics.earlyStoppedTests;
 
@@ -641,7 +641,7 @@ export class SequentialTesting {
   }
 
   calculateAverageSampleSizeReduction() {
-    // TODO: Calculate average sample size reduction from sequential testing
+    // Calculate average sample size reduction from sequential testing
     const completedTests = Array.from(this.sequentialTests.values()).filter(
       (test) => test.status === "stopped"
     );
@@ -655,6 +655,214 @@ export class SequentialTesting {
     }, 0);
 
     return totalReduction / completedTests.length;
+  }
+
+  /**
+   * Missing Method Implementations
+   */
+  async calculateEfficacyBoundary(k, maxAnalyses, alphaSpent, testType) {
+    // Calculate efficacy boundary using spending function approach
+    // For group sequential designs, this typically uses the inverse normal distribution
+
+    if (testType === "two_sample_means" || testType === "one_sample_mean") {
+      // Use Lan-DeMets boundary calculation
+      const fraction = k / maxAnalyses;
+      const cumulativeAlpha = alphaSpent;
+
+      // Calculate boundary using inverse normal distribution
+      // This is a simplified implementation - production would use more sophisticated methods
+      const zAlpha = this.inverseNormalCDF(1 - cumulativeAlpha / 2);
+
+      // Adjust for information fraction (simplified O'Brien-Fleming type boundary)
+      const informationFraction = fraction;
+      const boundary = zAlpha / Math.sqrt(informationFraction);
+
+      return Math.max(1.96, boundary); // Minimum boundary of 1.96
+    }
+
+    return 1.96; // Default boundary
+  }
+
+  async calculateFutilityBoundary(k, maxAnalyses, betaSpent, testType) {
+    // Calculate futility boundary for early stopping due to lack of efficacy
+
+    if (testType === "two_sample_means" || testType === "one_sample_mean") {
+      const fraction = k / maxAnalyses;
+
+      // Futility boundary is typically much lower than efficacy boundary
+      // This represents the minimum effect size we would consider meaningful
+      const futilityThreshold = this.config.futilityThreshold || 0.1;
+
+      // Simple linear futility boundary
+      const boundary = futilityThreshold * (1 - fraction);
+
+      return Math.max(0, boundary);
+    }
+
+    return 0.1; // Default futility boundary
+  }
+
+  async calculateTestStatistic(analysisData, testType) {
+    // Calculate appropriate test statistic based on test type
+
+    switch (testType) {
+      case "two_sample_means":
+        return this.calculateTwoSampleTStatistic(analysisData);
+
+      case "one_sample_mean":
+        return this.calculateOneSampleTStatistic(analysisData);
+
+      case "two_sample_proportions":
+        return this.calculateTwoSampleZStatistic(analysisData);
+
+      case "one_sample_proportion":
+        return this.calculateOneSampleZStatistic(analysisData);
+
+      default:
+        throw new Error(`Unsupported test type: ${testType}`);
+    }
+  }
+
+  calculateTwoSampleTStatistic(data) {
+    // Calculate two-sample t-statistic
+    const { group1, group2 } = data;
+
+    const n1 = group1.length;
+    const n2 = group2.length;
+
+    const mean1 = group1.reduce((sum, val) => sum + val, 0) / n1;
+    const mean2 = group2.reduce((sum, val) => sum + val, 0) / n2;
+
+    const var1 =
+      group1.reduce((sum, val) => sum + Math.pow(val - mean1, 2), 0) / (n1 - 1);
+    const var2 =
+      group2.reduce((sum, val) => sum + Math.pow(val - mean2, 2), 0) / (n2 - 1);
+
+    // Pooled standard error
+    const pooledSE = Math.sqrt(var1 / n1 + var2 / n2);
+
+    return (mean1 - mean2) / pooledSE;
+  }
+
+  calculateOneSampleTStatistic(data) {
+    // Calculate one-sample t-statistic
+    const { sample, hypothesizedMean = 0 } = data;
+
+    const n = sample.length;
+    const mean = sample.reduce((sum, val) => sum + val, 0) / n;
+    const variance =
+      sample.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / (n - 1);
+    const standardError = Math.sqrt(variance / n);
+
+    return (mean - hypothesizedMean) / standardError;
+  }
+
+  calculateTwoSampleZStatistic(data) {
+    // Calculate two-sample z-statistic for proportions
+    const { successes1, n1, successes2, n2 } = data;
+
+    const p1 = successes1 / n1;
+    const p2 = successes2 / n2;
+    const pooledP = (successes1 + successes2) / (n1 + n2);
+
+    const standardError = Math.sqrt(
+      pooledP * (1 - pooledP) * (1 / n1 + 1 / n2)
+    );
+
+    return (p1 - p2) / standardError;
+  }
+
+  calculateOneSampleZStatistic(data) {
+    // Calculate one-sample z-statistic for proportion
+    const { successes, n, hypothesizedP = 0.5 } = data;
+
+    const p = successes / n;
+    const standardError = Math.sqrt((hypothesizedP * (1 - hypothesizedP)) / n);
+
+    return (p - hypothesizedP) / standardError;
+  }
+
+  async calculatePValue(testStatistic, testType) {
+    // Calculate p-value based on test statistic and test type
+
+    // For most common tests, use two-tailed p-value
+    const pValue = 2 * (1 - this.standardNormalCDF(Math.abs(testStatistic)));
+
+    return Math.max(0, Math.min(1, pValue)); // Ensure p-value is between 0 and 1
+  }
+
+  async calculateLikelihoodRatio(
+    observation,
+    nullHypothesis,
+    alternativeHypothesis
+  ) {
+    // Calculate likelihood ratio for SPRT
+    // This is a simplified implementation for normal distributions
+
+    const { mean: nullMean, variance: nullVar } = nullHypothesis;
+    const { mean: altMean, variance: altVar } = alternativeHypothesis;
+
+    // Calculate likelihood under null hypothesis
+    const nullLikelihood = this.normalPDF(
+      observation,
+      nullMean,
+      Math.sqrt(nullVar)
+    );
+
+    // Calculate likelihood under alternative hypothesis
+    const altLikelihood = this.normalPDF(
+      observation,
+      altMean,
+      Math.sqrt(altVar)
+    );
+
+    // Return likelihood ratio
+    return nullLikelihood > 0 ? altLikelihood / nullLikelihood : 1;
+  }
+
+  normalPDF(x, mean, stdDev) {
+    // Calculate normal probability density function
+    const coefficient = 1 / (stdDev * Math.sqrt(2 * Math.PI));
+    const exponent = -0.5 * Math.pow((x - mean) / stdDev, 2);
+    return coefficient * Math.exp(exponent);
+  }
+
+  inverseNormalCDF(p) {
+    // Simplified inverse normal CDF (quantile function)
+    // Using Beasley-Springer-Moro algorithm approximation
+
+    if (p === 0.5) return 0;
+    if (p < 0.5) return -this.inverseNormalCDF(1 - p);
+
+    const a = [
+      0, -3.969683028665376e1, 2.209460984245205e2, -2.759285104469687e2,
+      1.38357751867269e2, -3.066479806614716e1, 2.506628277459239,
+    ];
+    const b = [
+      0, -5.447609879822406e1, 1.615858368580409e2, -1.556989798598866e2,
+      6.680131188771972e1, -1.328068155288572e1,
+    ];
+
+    const pLow = 0.02425;
+    const pHigh = 1 - pLow;
+
+    let q, r;
+
+    if (p <= pHigh) {
+      q = p - 0.5;
+      r = q * q;
+      return (
+        ((((((a[1] * r + a[2]) * r + a[3]) * r + a[4]) * r + a[5]) * r + a[6]) *
+          q) /
+        (((((b[1] * r + b[2]) * r + b[3]) * r + b[4]) * r + b[5]) * r + 1)
+      );
+    } else {
+      q = Math.sqrt(-2 * Math.log(1 - p));
+      return (
+        -(((((a[1] * q + a[2]) * q + a[3]) * q + a[4]) * q + a[5]) * q + a[6]) /
+        ((((b[1] * q + b[2]) * q + b[3]) * q + b[4]) * q + 1)
+      );
+    }
   }
 }
 

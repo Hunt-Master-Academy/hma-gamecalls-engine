@@ -28,6 +28,30 @@ set(UNIFIED_ENGINE_CORE_SOURCES
     "${PROJECT_SOURCE_DIR}/core/AudioLevelProcessor.cpp"
     "${PROJECT_SOURCE_DIR}/core/DebugLogger.cpp"
     "${PROJECT_SOURCE_DIR}/core/RealtimeScorer.cpp"
+    "${PROJECT_SOURCE_DIR}/core/ErrorLogger.cpp"
+    "${PROJECT_SOURCE_DIR}/core/ComponentErrorHandler.cpp"
+    "${PROJECT_SOURCE_DIR}/core/ErrorMonitor.cpp"
+    "${PROJECT_SOURCE_DIR}/core/PerformanceProfiler.cpp"
+)
+
+# Add performance profiling sources
+set(PROFILING_SOURCES
+    "${PROJECT_SOURCE_DIR}/profiling/PerformanceProfiler.cpp"
+)
+
+# Add security framework sources
+set(SECURITY_SOURCES
+    "${PROJECT_SOURCE_DIR}/security/access-controller.cpp"
+    "${PROJECT_SOURCE_DIR}/security/audit-logger.cpp"
+    "${PROJECT_SOURCE_DIR}/security/crypto-manager.cpp"
+    "${PROJECT_SOURCE_DIR}/security/input-validator.cpp"
+    "${PROJECT_SOURCE_DIR}/security/memory-guard.cpp"
+    "${PROJECT_SOURCE_DIR}/security/memory-protection.cpp"
+)
+
+# Add visualization sources
+set(VISUALIZATION_SOURCES
+    "${PROJECT_SOURCE_DIR}/visualization/WaveformAnalyzer.cpp"
 )
 
 # ==============================================================================
@@ -35,7 +59,7 @@ set(UNIFIED_ENGINE_CORE_SOURCES
 # ==============================================================================
 
 # Create the unified engine library
-add_library(UnifiedAudioEngine STATIC ${UNIFIED_ENGINE_CORE_SOURCES})
+add_library(UnifiedAudioEngine STATIC ${UNIFIED_ENGINE_CORE_SOURCES} ${PROFILING_SOURCES} ${SECURITY_SOURCES} ${VISUALIZATION_SOURCES})
 
 # Set public include directories. Any target linking to UnifiedAudioEngine will inherit these.
 target_include_directories(UnifiedAudioEngine PUBLIC
@@ -51,6 +75,27 @@ target_include_directories(UnifiedAudioEngine PUBLIC
 # Link core dependencies
 target_link_libraries(UnifiedAudioEngine PUBLIC kissfft)
 target_compile_definitions(UnifiedAudioEngine PUBLIC HAVE_KISSFFT)
+
+# Link FFTW3 if available
+if(FFTW3_FOUND)
+    if(FFTW3_LIBRARIES)
+        target_link_libraries(UnifiedAudioEngine PUBLIC ${FFTW3_LIBRARIES})
+    else()
+        target_link_libraries(UnifiedAudioEngine PUBLIC ${FFTW3_LIBRARY})
+    endif()
+
+    if(FFTW3_INCLUDE_DIRS)
+        target_include_directories(UnifiedAudioEngine PUBLIC ${FFTW3_INCLUDE_DIRS})
+    else()
+        target_include_directories(UnifiedAudioEngine PUBLIC ${FFTW3_INCLUDE_DIR})
+    endif()
+
+    target_compile_definitions(UnifiedAudioEngine PUBLIC HAVE_FFTW3)
+    message(STATUS "FFTW3 support enabled for WaveformAnalyzer")
+else()
+    target_compile_definitions(UnifiedAudioEngine PUBLIC FFTW_DISABLE)
+    message(STATUS "FFTW3 support disabled - using stub implementation")
+endif()
 
 # ==============================================================================
 # Platform-Specific Configuration

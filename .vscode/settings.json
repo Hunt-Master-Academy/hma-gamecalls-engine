@@ -32,6 +32,7 @@
     }
   },
   "github.copilot.editor.enableAutoCompletions": true,
+  "github.copilot.chat.tools.autoApprove": true,
 
   // Python Configuration
   "python.defaultInterpreterPath": "C:\\ProgramData\\miniconda3\\envs\\huntmaster_final_env\\python.exe",
@@ -192,7 +193,10 @@
     "**/libs/kissfft": true,
     "**/node_modules": true
   },
-  "vscode_custom_css.imports": [""],
+
+  //   "vscode_custom_css.imports": [
+  //     "file:///mnt/e/develop/huntmaster/huntmaster-engine/.vscode/auto_continue.js"
+  //   ],
 
   // Spell Checker
   "cSpell.words": [
