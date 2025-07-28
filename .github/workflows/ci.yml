@@ -1,13 +1,19 @@
 # File: .github/workflows/ci.yml
 # CI/CD configuration for GitHub Actions
+# DISABLED - Actions suspended until deployment readiness
 
 name: Huntmaster Engine CI
 
+# DISABLED: Automatic triggers suspended - only manual execution allowed
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:  # Manual trigger only
+
+# DISABLED TRIGGERS:
+# on:
+#   push:
+#     branches: [main, develop]
+#   pull_request:
+#     branches: [main]
 
 jobs:
   build-native:
