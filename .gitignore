@@ -99,6 +99,17 @@ Icon
 *~
 .directory
 
+# === Transient Files ===
+# Logs, reports, and other temporary files that should not be committed.
+*.log
+*.txt
+*_REPORT.md
+*_COMPLETE.md
+*_SUMMARY.md
+Dev_Progress.md
+MVP_Feature_Gap_Analysis.md
+VAD_ITERATION_COMPLETE.md
+
 # === Development Artifacts ===
 OLD-*
 *.orig

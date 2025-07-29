@@ -603,7 +603,7 @@ void ComponentErrorHandler::UnifiedEngineErrors::logSessionError(const std::stri
 
     LOG_ERROR_WITH_CONTEXT(Component::UNIFIED_ENGINE,
                            ErrorSeverity::HIGH,
-                           ErrorCategory::SESSION,
+                           ErrorCategory::RESOURCE,
                            "UE_SESS_001",
                            "Session management error",
                            context);

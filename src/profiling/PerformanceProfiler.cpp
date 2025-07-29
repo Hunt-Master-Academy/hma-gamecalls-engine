@@ -13,6 +13,9 @@
 #include <numeric>
 #include <sstream>
 
+#include "huntmaster/core/ComponentErrorHandler.h"
+#include "huntmaster/core/DebugLogger.h"
+
 #ifdef _WIN32
 #include <psapi.h>
 #include <windows.h>
@@ -417,7 +420,9 @@ void PerformanceProfiler::applyAutomaticOptimizations(SessionId sessionId,
     for (const auto& suggestion : suggestions) {
         if (suggestion.component == "DTW_Comparison" && suggestion.parameter == "window_ratio") {
             float newRatio = std::stof(suggestion.suggestedValue);
-            engine->configureDTW(sessionId, newRatio, true);
+            if (engine->configureDTW(sessionId, newRatio, true) != UnifiedAudioEngine::Status::OK) {
+                // Handle error appropriately
+            }
         }
         // Additional optimizations can be applied here as the engine API expands
     }
@@ -641,7 +646,7 @@ PerformanceBenchmark::BenchmarkResult PerformanceBenchmark::benchmarkRealTimePro
 
     // Time the processing
     auto startTime = std::chrono::high_resolution_clock::now();
-    size_t initialMemory = getCurrentMemoryUsage();
+    size_t initialMemory = this->getCurrentMemoryUsage();
 
     size_t totalProcessed = 0;
     for (size_t i = 0; i < testAudio.size(); i += chunkSize) {
@@ -679,7 +684,10 @@ PerformanceBenchmark::BenchmarkResult PerformanceBenchmark::benchmarkRealTimePro
     result.performanceCategory = categorizePerfomance(result);
 
     // Cleanup
-    engine_->destroySession(sessionId);
+    if (engine_->destroySession(sessionId) != UnifiedAudioEngine::Status::OK) {
+        huntmaster::ComponentErrorHandler::UnifiedEngineErrors::logSessionError(
+            std::to_string(sessionId), "Failed to destroy session during benchmark cleanup.");
+    }
 
     return result;
 }

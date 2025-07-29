@@ -184,7 +184,9 @@
     "stack": "cpp",
     "valarray": "cpp",
     "xhash": "cpp",
-    "xtree": "cpp"
+    "xtree": "cpp",
+    "xlocmes": "cpp",
+    "locale": "cpp"
   },
 
   // Exclude Patterns

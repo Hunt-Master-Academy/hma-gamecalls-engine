@@ -1,5 +1,6 @@
 #pragma once
 
+#include <atomic>
 #include <chrono>
 #include <map>
 #include <memory>
@@ -19,41 +20,55 @@ class PerformanceProfiler {
     struct TimingData {
         std::chrono::high_resolution_clock::time_point start_time;
         std::chrono::high_resolution_clock::time_point end_time;
-        std::chrono::nanoseconds duration{0};
-        size_t call_count{0};
-        std::chrono::nanoseconds total_time{0};
-        std::chrono::nanoseconds min_time{std::chrono::nanoseconds::max()};
-        std::chrono::nanoseconds max_time{0};
+        std::chrono::nanoseconds duration;
+        size_t call_count;
+        std::chrono::nanoseconds total_time;
+        std::chrono::nanoseconds min_time;
+        std::chrono::nanoseconds max_time;
         std::thread::id thread_id;
+
+        TimingData()
+            : duration(0), call_count(0), total_time(0), min_time(std::chrono::nanoseconds::max()),
+              max_time(0) {}
     };
 
     struct MemorySnapshot {
-        size_t total_allocated{0};
-        size_t peak_usage{0};
-        size_t current_usage{0};
+        size_t total_allocated;
+        size_t peak_usage;
+        size_t current_usage;
         std::chrono::high_resolution_clock::time_point timestamp;
+
+        MemorySnapshot() : total_allocated(0), peak_usage(0), current_usage(0) {}
     };
 
     struct BottleneckAnalysis {
         std::string operation_name;
-        std::chrono::nanoseconds average_duration{0};
-        double cpu_utilization{0.0};
-        size_t memory_delta{0};
-        double bottleneck_score{0.0};  // 0-100, higher = more problematic
+        std::chrono::nanoseconds average_duration;
+        double cpu_utilization;
+        size_t memory_delta;
+        double bottleneck_score;  // 0-100, higher = more problematic
         std::string recommendation;
+
+        BottleneckAnalysis()
+            : average_duration(0), cpu_utilization(0.0), memory_delta(0), bottleneck_score(0.0) {}
     };
 
     struct ProfilerConfig {
-        bool enable_timing{true};
-        bool enable_memory_tracking{true};
-        bool enable_thread_tracking{true};
-        bool enable_bottleneck_detection{true};
-        std::chrono::milliseconds sampling_interval{1};
-        size_t max_samples{10000};
-        double bottleneck_threshold{0.1};  // 10% of total time
+        bool enable_timing;
+        bool enable_memory_tracking;
+        bool enable_thread_tracking;
+        bool enable_bottleneck_detection;
+        std::chrono::milliseconds sampling_interval;
+        size_t max_samples;
+        double bottleneck_threshold;  // 10% of total time
+
+        ProfilerConfig()
+            : enable_timing(true), enable_memory_tracking(true), enable_thread_tracking(true),
+              enable_bottleneck_detection(true), sampling_interval(1), max_samples(10000),
+              bottleneck_threshold(0.1) {}
     };
 
-    explicit PerformanceProfiler(const ProfilerConfig& config = ProfilerConfig{});
+    explicit PerformanceProfiler(const ProfilerConfig& config = ProfilerConfig());
     ~PerformanceProfiler() = default;
 
     // Core profiling methods

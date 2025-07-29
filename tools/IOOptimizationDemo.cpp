@@ -6,30 +6,40 @@
  * to improve file recording and playback performance in the Huntmaster Audio Engine.
  */
 
+#include <atomic>
 #include <chrono>
 #include <filesystem>
 #include <iomanip>
 #include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <vector>
+
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "dr_wav.h"
 #include "huntmaster/core/AdvancedIOOptimizer.h"
 #include "huntmaster/core/OptimizedAudioIO.h"
-#include "huntmaster/core/OptimizedAudioRecorder.h"
+#include "huntmaster/core/OptimizedAudioRecorder.hh"
 
-using namespace huntmaster;
-using namespace huntmaster::io;
+namespace huntmaster {
 
 class IOOptimizationDemo {
   private:
-    std::unique_ptr<MasterIOOptimizer> optimizer_;
-    std::unique_ptr<StorageAnalyzer> storageAnalyzer_;
+    std::unique_ptr<io::MasterIOOptimizer> optimizer_;
+    std::unique_ptr<io::StorageAnalyzer> storageAnalyzer_;
 
   public:
     IOOptimizationDemo() {
         // Initialize with balanced profile for interactive audio work
-        MasterIOOptimizer::OptimizationProfile profile;
+        io::MasterIOOptimizer::OptimizationProfile profile;
         profile.workloadType =
-            MasterIOOptimizer::OptimizationProfile::WorkloadType::INTERACTIVE_PLAYBACK;
+            io::MasterIOOptimizer::OptimizationProfile::WorkloadType::INTERACTIVE_PLAYBACK;
         profile.maxLatency = std::chrono::microseconds(5000);  // 5ms max latency
         profile.minThroughputMBps = 100.0;                     // 100 MB/s minimum
         profile.enableCompression = false;                     // Prioritize latency over storage
@@ -37,7 +47,11 @@ class IOOptimizationDemo {
         profile.enablePrefetch = true;
         profile.enableNUMAOptimization = true;
 
-        optimizer_ = std::make_unique<MasterIOOptimizer>(profile);
+        optimizer_ = std::make_unique<io::MasterIOOptimizer>(profile);
+        if (!optimizer_->initialize()) {
+            std::cerr << "Failed to initialize Master IO Optimizer!" << std::endl;
+            throw std::runtime_error("Optimizer initialization failed.");
+        }
     }
 
     void demonstrateStorageAnalysis(const std::string& path) {
@@ -45,7 +59,7 @@ class IOOptimizationDemo {
         std::cout << "Analyzing storage for path: " << path << std::endl;
 
         // Analyze storage characteristics
-        auto characteristics = StorageAnalyzer::analyzeStorage(path);
+        auto characteristics = io::StorageAnalyzer::analyzeStorage(path);
 
         std::cout << "\nDetected Storage Characteristics:" << std::endl;
         std::cout << "  Device Type: " << storageTypeToString(characteristics.deviceType)
@@ -63,7 +77,7 @@ class IOOptimizationDemo {
                   << std::endl;
 
         // Get optimization recommendations
-        auto suggestions = StorageAnalyzer::getStorageOptimizations(characteristics);
+        auto suggestions = io::StorageAnalyzer::getStorageOptimizations(characteristics);
 
         std::cout << "\nOptimization Recommendations:" << std::endl;
         std::cout << "  Recommended Buffer Size: " << (suggestions.recommendedBufferSize / 1024)
@@ -79,7 +93,7 @@ class IOOptimizationDemo {
 
         // Perform benchmark if requested
         std::cout << "\nPerforming storage benchmark..." << std::endl;
-        auto benchmarkResults = StorageAnalyzer::benchmarkStorage(path, 50);  // 50MB test
+        auto benchmarkResults = io::StorageAnalyzer::benchmarkStorage(path, 50);  // 50MB test
 
         std::cout << "Benchmark Results:" << std::endl;
         std::cout << "  Measured Sequential Throughput: " << std::fixed << std::setprecision(1)
@@ -91,7 +105,7 @@ class IOOptimizationDemo {
     void demonstrateNUMAOptimization() {
         std::cout << "\n=== NUMA Optimization Demo ===" << std::endl;
 
-        NUMAAudioAllocator allocator;
+        io::NUMAAudioAllocator allocator;
         auto topology = allocator.getTopology();
 
         std::cout << "NUMA System: " << (topology.isNUMASystem ? "Yes" : "No") << std::endl;
@@ -129,13 +143,13 @@ class IOOptimizationDemo {
     void demonstrateAdaptiveBuffering() {
         std::cout << "\n=== Adaptive Buffer Management Demo ===" << std::endl;
 
-        AdaptiveBufferManager::BufferConfig config;
+        io::AdaptiveBufferManager::BufferConfig config;
         config.initialSizeBytes = 64 * 1024;                         // Start with 64KB
         config.minSizeBytes = 16 * 1024;                             // Minimum 16KB
         config.maxSizeBytes = 1024 * 1024;                           // Maximum 1MB
         config.adaptationInterval = std::chrono::milliseconds(500);  // Adapt every 500ms
 
-        AdaptiveBufferManager bufferManager(config);
+        io::AdaptiveBufferManager bufferManager(config);
 
         std::cout << "Initial buffer configuration:" << std::endl;
         std::cout << "  Initial size: " << (config.initialSizeBytes / 1024) << " KB" << std::endl;
@@ -195,13 +209,13 @@ class IOOptimizationDemo {
     void demonstrateAdvancedAsyncIO(const std::string& testFile) {
         std::cout << "\n=== Advanced Async I/O Demo ===" << std::endl;
 
-        AdvancedAsyncIO::Config config;
-        config.preferredEngine = AdvancedAsyncIO::Engine::AUTO_DETECT;
+        io::AdvancedAsyncIO::Config config;
+        config.preferredEngine = io::AdvancedAsyncIO::Engine::AUTO_DETECT;
         config.queueDepth = 64;
         config.enableBatching = true;
         config.batchSize = 8;
 
-        AdvancedAsyncIO asyncIO(config);
+        io::AdvancedAsyncIO asyncIO(config);
 
         if (!asyncIO.initialize()) {
             std::cerr << "Failed to initialize advanced async I/O" << std::endl;
@@ -281,10 +295,11 @@ class IOOptimizationDemo {
     void demonstrateSystemOptimization(const std::string& audioPath) {
         std::cout << "\n=== System-Wide I/O Optimization Demo ===" << std::endl;
 
-        if (!optimizer_->initialize()) {
-            std::cerr << "Failed to initialize master I/O optimizer" << std::endl;
-            return;
-        }
+        // The optimizer is now initialized in the constructor
+        // if (!optimizer_->initialize()) {
+        //     std::cerr << "Failed to initialize master I/O optimizer" << std::endl;
+        //     return;
+        // }
 
         // Optimize for the given audio path
         auto optimizedHandle = optimizer_->optimizeForPath(audioPath);
@@ -339,76 +354,63 @@ class IOOptimizationDemo {
     }
 
   private:
-    std::string storageTypeToString(StorageCharacteristics::DeviceType type) {
+    std::string storageTypeToString(io::StorageCharacteristics::DeviceType type) {
         switch (type) {
-            case StorageCharacteristics::DeviceType::HDD:
+            case io::StorageCharacteristics::DeviceType::HDD:
                 return "HDD";
-            case StorageCharacteristics::DeviceType::SSD_SATA:
+            case io::StorageCharacteristics::DeviceType::SSD_SATA:
                 return "SATA SSD";
-            case StorageCharacteristics::DeviceType::SSD_NVME:
+            case io::StorageCharacteristics::DeviceType::SSD_NVME:
                 return "NVMe SSD";
-            case StorageCharacteristics::DeviceType::NETWORK_STORAGE:
+            case io::StorageCharacteristics::DeviceType::NETWORK_STORAGE:
                 return "Network Storage";
-            case StorageCharacteristics::DeviceType::MEMORY_DISK:
+            case io::StorageCharacteristics::DeviceType::MEMORY_DISK:
                 return "Memory Disk";
             default:
                 return "Unknown";
         }
     }
 
-    std::string engineTypeToString(AdvancedAsyncIO::Engine engine) {
+    std::string engineTypeToString(io::AdvancedAsyncIO::Engine engine) {
         switch (engine) {
-            case AdvancedAsyncIO::Engine::THREAD_POOL:
+            case io::AdvancedAsyncIO::Engine::THREAD_POOL:
                 return "Thread Pool";
-            case AdvancedAsyncIO::Engine::IO_URING:
+            case io::AdvancedAsyncIO::Engine::IO_URING:
                 return "io_uring";
-            case AdvancedAsyncIO::Engine::IOCP:
+            case io::AdvancedAsyncIO::Engine::IOCP:
                 return "IOCP";
-            case AdvancedAsyncIO::Engine::EPOLL:
+            case io::AdvancedAsyncIO::Engine::EPOLL:
                 return "epoll";
             default:
-                return "Unknown";
+                return "Auto-Detect";
         }
     }
 };
+
+}  // namespace huntmaster
 
 int main(int argc, char* argv[]) {
     std::cout << "Huntmaster Audio Engine - Advanced I/O Optimization Demo" << std::endl;
     std::cout << "========================================================" << std::endl;
 
-    std::string audioPath = "/tmp";
-    if (argc > 1) {
-        audioPath = argv[1];
-    }
-
-    if (!std::filesystem::exists(audioPath)) {
-        std::cerr << "Error: Path '" << audioPath << "' does not exist" << std::endl;
+    if (argc < 2) {
+        std::cerr << "Usage: " << argv[0] << " <path_for_io_tests>" << std::endl;
         return 1;
     }
 
-    try {
-        IOOptimizationDemo demo;
+    std::string testPath = argv[1];
 
-        // Run all demonstrations
-        demo.demonstrateStorageAnalysis(audioPath);
+    try {
+        huntmaster::IOOptimizationDemo demo;
+
+        demo.demonstrateStorageAnalysis(testPath);
         demo.demonstrateNUMAOptimization();
         demo.demonstrateAdaptiveBuffering();
-        demo.demonstrateAdvancedAsyncIO(audioPath + "/async_test.tmp");
-        demo.demonstrateSystemOptimization(audioPath);
-
-        std::cout << "\n=== Demo Complete ===" << std::endl;
-        std::cout << "All I/O optimization features demonstrated successfully!" << std::endl;
-
-        std::cout << "\nKey Benefits of Advanced I/O Optimization:" << std::endl;
-        std::cout << "• Automatic storage device detection and optimization" << std::endl;
-        std::cout << "• NUMA-aware memory allocation for multi-CPU systems" << std::endl;
-        std::cout << "• Adaptive buffer sizing based on usage patterns" << std::endl;
-        std::cout << "• Advanced async I/O with io_uring support on Linux" << std::endl;
-        std::cout << "• Comprehensive performance monitoring and auto-tuning" << std::endl;
-        std::cout << "• Intelligent compression for storage-constrained scenarios" << std::endl;
+        demo.demonstrateAdvancedAsyncIO(testPath + "/async_test_file.dat");
+        demo.demonstrateSystemOptimization(testPath + "/sample_audio.wav");
 
     } catch (const std::exception& e) {
-        std::cerr << "Demo error: " << e.what() << std::endl;
+        std::cerr << "An error occurred: " << e.what() << std::endl;
         return 1;
     }
 

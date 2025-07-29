@@ -10,6 +10,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <functional>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -267,13 +268,18 @@ class AutoProfiler {
 class PerformanceBenchmark {
   public:
     struct BenchmarkConfig {
-        std::vector<int> testDurations{1, 5, 10, 30};       // seconds
-        std::vector<int> chunkSizes{256, 512, 1024, 2048};  // samples
-        std::vector<float> sampleRates{22050.0f, 44100.0f, 48000.0f};
-        int numRuns{5};
-        bool enableMemoryProfiling{true};
-        bool enableLatencyProfiling{true};
-        bool enableQualityValidation{true};
+        std::vector<int> testDurations;  // seconds
+        std::vector<int> chunkSizes;     // samples
+        std::vector<float> sampleRates;
+        int numRuns;
+        bool enableMemoryProfiling;
+        bool enableLatencyProfiling;
+        bool enableQualityValidation;
+
+        BenchmarkConfig()
+            : testDurations{1, 5, 10, 30}, chunkSizes{256, 512, 1024, 2048},
+              sampleRates{22050.0f, 44100.0f, 48000.0f}, numRuns(5), enableMemoryProfiling(true),
+              enableLatencyProfiling(true), enableQualityValidation(true) {}
     };
 
     struct BenchmarkResult {
@@ -316,6 +322,7 @@ class PerformanceBenchmark {
     UnifiedAudioEngine* engine_;
     std::vector<float> generateTestAudio(int durationSeconds, float sampleRate);
     std::string categorizePerfomance(const BenchmarkResult& result) const;
+    size_t getCurrentMemoryUsage() const;
 };
 
 }  // namespace profiling

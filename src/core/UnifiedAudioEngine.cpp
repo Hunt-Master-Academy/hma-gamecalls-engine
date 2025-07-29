@@ -275,7 +275,7 @@ UnifiedAudioEngine::Result<std::unique_ptr<UnifiedAudioEngine>> UnifiedAudioEngi
         auto engine = std::unique_ptr<UnifiedAudioEngine>(new UnifiedAudioEngine());
 
         // Verify engine components are properly initialized
-        if (!engine || !engine->pImpl) {
+        if (!engine || !engine->pimpl) {
             ComponentErrorHandler::UnifiedEngineErrors::logInitializationError(
                 "ENGINE_INIT_FAILED: Failed to create engine instance or implementation");
             return Result<std::unique_ptr<UnifiedAudioEngine>>{nullptr, Status::INIT_FAILED};
@@ -302,7 +302,7 @@ UnifiedAudioEngine::Result<std::unique_ptr<UnifiedAudioEngine>> UnifiedAudioEngi
     }
 }
 
-UnifiedAudioEngine::UnifiedAudioEngine() : pImpl(std::make_unique<Impl>()) {
+UnifiedAudioEngine::UnifiedAudioEngine() : pimpl(std::make_unique<Impl>()) {
     LOG_DEBUG(Component::UNIFIED_ENGINE, "UnifiedAudioEngine constructor called");
 
     // Initialize error monitoring for the engine if not already started
@@ -329,226 +329,226 @@ UnifiedAudioEngine::~UnifiedAudioEngine() {
 
 // Session management
 UnifiedAudioEngine::Result<SessionId> UnifiedAudioEngine::createSession(float sampleRate) {
-    return pImpl->createSession(sampleRate);
+    return pimpl->createSession(sampleRate);
 }
 
 UnifiedAudioEngine::Status UnifiedAudioEngine::destroySession(SessionId sessionId) {
-    return pImpl->destroySession(sessionId);
+    return pimpl->destroySession(sessionId);
 }
 
 std::vector<SessionId> UnifiedAudioEngine::getActiveSessions() const {
-    return pImpl->getActiveSessions();
+    return pimpl->getActiveSessions();
 }
 
 // Master call management
 UnifiedAudioEngine::Status UnifiedAudioEngine::loadMasterCall(SessionId sessionId,
                                                               std::string_view masterCallId) {
-    return pImpl->loadMasterCall(sessionId, masterCallId);
+    return pimpl->loadMasterCall(sessionId, masterCallId);
 }
 
 UnifiedAudioEngine::Status UnifiedAudioEngine::unloadMasterCall(SessionId sessionId) {
-    return pImpl->unloadMasterCall(sessionId);
+    return pimpl->unloadMasterCall(sessionId);
 }
 
 UnifiedAudioEngine::Result<std::string>
 UnifiedAudioEngine::getCurrentMasterCall(SessionId sessionId) const {
-    return pImpl->getCurrentMasterCall(sessionId);
+    return pimpl->getCurrentMasterCall(sessionId);
 }
 
 // Audio processing
 UnifiedAudioEngine::Status
 UnifiedAudioEngine::processAudioChunk(SessionId sessionId, std::span<const float> audioBuffer) {
-    return pImpl->processAudioChunk(sessionId, audioBuffer);
+    return pimpl->processAudioChunk(sessionId, audioBuffer);
 }
 
 UnifiedAudioEngine::Result<float> UnifiedAudioEngine::getSimilarityScore(SessionId sessionId) {
-    return pImpl->getSimilarityScore(sessionId);
+    return pimpl->getSimilarityScore(sessionId);
 }
 
 UnifiedAudioEngine::Result<int> UnifiedAudioEngine::getFeatureCount(SessionId sessionId) const {
-    return pImpl->getFeatureCount(sessionId);
+    return pimpl->getFeatureCount(sessionId);
 }
 
 // Real-time scoring features using RealtimeScorer toolset
 UnifiedAudioEngine::Status
 UnifiedAudioEngine::setRealtimeScorerConfig(SessionId sessionId,
                                             const RealtimeScorerConfig& config) {
-    return pImpl->setRealtimeScorerConfig(sessionId, config);
+    return pimpl->setRealtimeScorerConfig(sessionId, config);
 }
 
 UnifiedAudioEngine::Result<RealtimeScoringResult>
 UnifiedAudioEngine::getDetailedScore(SessionId sessionId) {
-    return pImpl->getDetailedScore(sessionId);
+    return pimpl->getDetailedScore(sessionId);
 }
 
 UnifiedAudioEngine::Result<RealtimeFeedback>
 UnifiedAudioEngine::getRealtimeFeedback(SessionId sessionId) {
-    return pImpl->getRealtimeFeedback(sessionId);
+    return pimpl->getRealtimeFeedback(sessionId);
 }
 
 UnifiedAudioEngine::Result<std::string> UnifiedAudioEngine::exportScoreToJson(SessionId sessionId) {
-    return pImpl->exportScoreToJson(sessionId);
+    return pimpl->exportScoreToJson(sessionId);
 }
 
 UnifiedAudioEngine::Result<std::string>
 UnifiedAudioEngine::exportFeedbackToJson(SessionId sessionId) {
-    return pImpl->exportFeedbackToJson(sessionId);
+    return pimpl->exportFeedbackToJson(sessionId);
 }
 
 UnifiedAudioEngine::Result<std::string>
 UnifiedAudioEngine::exportScoringHistoryToJson(SessionId sessionId, size_t maxCount) {
-    return pImpl->exportScoringHistoryToJson(sessionId, maxCount);
+    return pimpl->exportScoringHistoryToJson(sessionId, maxCount);
 }
 
 // Session state
 bool UnifiedAudioEngine::isSessionActive(SessionId sessionId) const {
-    return pImpl->isSessionActive(sessionId);
+    return pimpl->isSessionActive(sessionId);
 }
 
 UnifiedAudioEngine::Result<float>
 UnifiedAudioEngine::getSessionDuration(SessionId sessionId) const {
-    return pImpl->getSessionDuration(sessionId);
+    return pimpl->getSessionDuration(sessionId);
 }
 
 UnifiedAudioEngine::Status UnifiedAudioEngine::resetSession(SessionId sessionId) {
-    return pImpl->resetSession(sessionId);
+    return pimpl->resetSession(sessionId);
 }
 
 // Recording
 UnifiedAudioEngine::Status UnifiedAudioEngine::startRecording(SessionId sessionId) {
-    return pImpl->startRecording(sessionId);
+    return pimpl->startRecording(sessionId);
 }
 
 UnifiedAudioEngine::Status UnifiedAudioEngine::stopRecording(SessionId sessionId) {
-    return pImpl->stopRecording(sessionId);
+    return pimpl->stopRecording(sessionId);
 }
 
 UnifiedAudioEngine::Result<std::string>
 UnifiedAudioEngine::saveRecording(SessionId sessionId, std::string_view filename) {
-    return pImpl->saveRecording(sessionId, filename);
+    return pimpl->saveRecording(sessionId, filename);
 }
 
 bool UnifiedAudioEngine::isRecording(SessionId sessionId) const {
-    return pImpl->isRecording(sessionId);
+    return pimpl->isRecording(sessionId);
 }
 
 UnifiedAudioEngine::Result<float> UnifiedAudioEngine::getRecordingLevel(SessionId sessionId) const {
-    return pImpl->getRecordingLevel(sessionId);
+    return pimpl->getRecordingLevel(sessionId);
 }
 
 UnifiedAudioEngine::Result<double>
 UnifiedAudioEngine::getRecordingDuration(SessionId sessionId) const {
-    return pImpl->getRecordingDuration(sessionId);
+    return pimpl->getRecordingDuration(sessionId);
 }
 
 // Memory-Based Recording Methods
 UnifiedAudioEngine::Status UnifiedAudioEngine::startMemoryRecording(SessionId sessionId,
                                                                     double maxDurationSeconds) {
-    return pImpl->startMemoryRecording(sessionId, maxDurationSeconds);
+    return pimpl->startMemoryRecording(sessionId, maxDurationSeconds);
 }
 
 UnifiedAudioEngine::Result<std::vector<float>>
 UnifiedAudioEngine::getRecordedAudioData(SessionId sessionId) const {
-    return pImpl->getRecordedAudioData(sessionId);
+    return pimpl->getRecordedAudioData(sessionId);
 }
 
 UnifiedAudioEngine::Result<size_t> UnifiedAudioEngine::copyRecordedAudioData(
     SessionId sessionId, float* buffer, size_t maxSamples) const {
-    return pImpl->copyRecordedAudioData(sessionId, buffer, maxSamples);
+    return pimpl->copyRecordedAudioData(sessionId, buffer, maxSamples);
 }
 
 UnifiedAudioEngine::Status UnifiedAudioEngine::clearRecordingBuffer(SessionId sessionId) {
-    return pImpl->clearRecordingBuffer(sessionId);
+    return pimpl->clearRecordingBuffer(sessionId);
 }
 
 UnifiedAudioEngine::Result<UnifiedAudioEngine::RecordingMode>
 UnifiedAudioEngine::getRecordingMode(SessionId sessionId) const {
-    return pImpl->getRecordingMode(sessionId);
+    return pimpl->getRecordingMode(sessionId);
 }
 
 UnifiedAudioEngine::Status UnifiedAudioEngine::setRecordingMode(SessionId sessionId,
                                                                 RecordingMode mode) {
-    return pImpl->setRecordingMode(sessionId, mode);
+    return pimpl->setRecordingMode(sessionId, mode);
 }
 
 UnifiedAudioEngine::Result<UnifiedAudioEngine::MemoryBufferInfo>
 UnifiedAudioEngine::getMemoryBufferInfo(SessionId sessionId) const {
-    return pImpl->getMemoryBufferInfo(sessionId);
+    return pimpl->getMemoryBufferInfo(sessionId);
 }
 
 // Audio Playback
 UnifiedAudioEngine::Status UnifiedAudioEngine::playMasterCall(SessionId sessionId,
                                                               std::string_view masterCallId) {
-    return pImpl->playMasterCall(sessionId, masterCallId);
+    return pimpl->playMasterCall(sessionId, masterCallId);
 }
 
 UnifiedAudioEngine::Status UnifiedAudioEngine::playRecording(SessionId sessionId,
                                                              std::string_view filename) {
-    return pImpl->playRecording(sessionId, filename);
+    return pimpl->playRecording(sessionId, filename);
 }
 
 UnifiedAudioEngine::Status UnifiedAudioEngine::stopPlayback(SessionId sessionId) {
-    return pImpl->stopPlayback(sessionId);
+    return pimpl->stopPlayback(sessionId);
 }
 
 bool UnifiedAudioEngine::isPlaying(SessionId sessionId) const {
-    return pImpl->isPlaying(sessionId);
+    return pimpl->isPlaying(sessionId);
 }
 
 UnifiedAudioEngine::Result<double>
 UnifiedAudioEngine::getPlaybackPosition(SessionId sessionId) const {
-    return pImpl->getPlaybackPosition(sessionId);
+    return pimpl->getPlaybackPosition(sessionId);
 }
 
 UnifiedAudioEngine::Status UnifiedAudioEngine::setPlaybackVolume(SessionId sessionId,
                                                                  float volume) {
-    return pImpl->setPlaybackVolume(sessionId, volume);
+    return pimpl->setPlaybackVolume(sessionId, volume);
 }
 
 // Real-time Session Management
 UnifiedAudioEngine::Result<SessionId> UnifiedAudioEngine::startRealtimeSession(float sampleRate,
                                                                                int bufferSize) {
-    return pImpl->startRealtimeSession(sampleRate, bufferSize);
+    return pimpl->startRealtimeSession(sampleRate, bufferSize);
 }
 
 UnifiedAudioEngine::Status UnifiedAudioEngine::endRealtimeSession(SessionId sessionId) {
-    return pImpl->endRealtimeSession(sessionId);
+    return pimpl->endRealtimeSession(sessionId);
 }
 
 bool UnifiedAudioEngine::isRealtimeSession(SessionId sessionId) const {
-    return pImpl->isRealtimeSession(sessionId);
+    return pimpl->isRealtimeSession(sessionId);
 }
 
 // Voice Activity Detection Configuration
 UnifiedAudioEngine::Status UnifiedAudioEngine::configureVAD(SessionId sessionId,
                                                             const VADConfig& config) {
-    return pImpl->configureVAD(sessionId, config);
+    return pimpl->configureVAD(sessionId, config);
 }
 
 UnifiedAudioEngine::Result<VADConfig> UnifiedAudioEngine::getVADConfig(SessionId sessionId) const {
-    return pImpl->getVADConfig(sessionId);
+    return pimpl->getVADConfig(sessionId);
 }
 
 bool UnifiedAudioEngine::isVADActive(SessionId sessionId) const {
-    return pImpl->isVADActive(sessionId);
+    return pimpl->isVADActive(sessionId);
 }
 
 UnifiedAudioEngine::Status UnifiedAudioEngine::enableVAD(SessionId sessionId, bool enable) {
-    return pImpl->enableVAD(sessionId, enable);
+    return pimpl->enableVAD(sessionId, enable);
 }
 
 UnifiedAudioEngine::Status UnifiedAudioEngine::disableVAD(SessionId sessionId) {
-    return pImpl->disableVAD(sessionId);
+    return pimpl->disableVAD(sessionId);
 }
 
 // DTW Configuration
 UnifiedAudioEngine::Status
 UnifiedAudioEngine::configureDTW(SessionId sessionId, float windowRatio, bool enableSIMD) {
-    return pImpl->configureDTW(sessionId, windowRatio, enableSIMD);
+    return pimpl->configureDTW(sessionId, windowRatio, enableSIMD);
 }
 
 UnifiedAudioEngine::Result<float> UnifiedAudioEngine::getDTWWindowRatio(SessionId sessionId) const {
-    return pImpl->getDTWWindowRatio(sessionId);
+    return pimpl->getDTWWindowRatio(sessionId);
 }
 
 // === Implementation Details ===
@@ -600,7 +600,7 @@ UnifiedAudioEngine::Result<SessionId> UnifiedAudioEngine::Impl::createSession(fl
         return {sessionId, Status::OK};
 
     } catch (const std::bad_alloc& e) {
-        ComponentErrorHandler::MemoryErrors::logMemoryAllocationError("SessionState", 
+        ComponentErrorHandler::MemoryErrors::logMemoryAllocationError("SessionState",
                                                                       sizeof(SessionState));
         return Result<SessionId>{INVALID_SESSION_ID, Status::OUT_OF_MEMORY};
 
@@ -814,7 +814,8 @@ UnifiedAudioEngine::Impl::processAudioChunk(SessionId sessionId,
             if (session->currentSegmentBuffer.size() > 10000000) {  // 10M samples
                 ComponentErrorHandler::UnifiedEngineErrors::logResourceLimitError(
                     "segment_buffer",
-                    "10000000 samples exceeded: " + std::to_string(session->currentSegmentBuffer.size()));
+                    "10000000 samples exceeded: "
+                        + std::to_string(session->currentSegmentBuffer.size()));
                 // Clear buffer to prevent memory exhaustion
                 session->currentSegmentBuffer.clear();
                 LOG_WARN(Component::UNIFIED_ENGINE,
@@ -822,43 +823,27 @@ UnifiedAudioEngine::Impl::processAudioChunk(SessionId sessionId,
                              + std::to_string(sessionId));
             }
         }
-}
-
-// Extract features from the accumulated audio segments
-if (!session->currentSegmentBuffer.empty()) {
-    try {
-        extractMFCCFeatures(*session);
     } catch (const std::exception& e) {
-        ComponentErrorHandler::MFCCProcessorErrors::logFeatureExtractionError(
-            512, "MFCC feature extraction failed: " + std::string(e.what()));
+        ComponentErrorHandler::UnifiedEngineErrors::logProcessingError(
+            "AUDIO_CHUNK_PROCESSING_ERROR",
+            "Exception during audio chunk processing: " + std::string(e.what()));
         return Status::PROCESSING_ERROR;
     }
-}
 
-LOG_TRACE(Component::UNIFIED_ENGINE,
-          "Audio chunk processed successfully for session " + std::to_string(sessionId));
-return Status::OK;
-}
-catch (const std::exception& e) {
-    ComponentErrorHandler::UnifiedEngineErrors::logProcessingError(
-        "AUDIO_PROCESSING_EXCEPTION",
-        "Exception during audio chunk processing: " + std::string(e.what()));
-    return Status::PROCESSING_ERROR;
-}
-catch (...) {
-    ComponentErrorHandler::UnifiedEngineErrors::logProcessingError(
-        "AUDIO_PROCESSING_UNKNOWN_EXCEPTION", "Unknown exception during audio chunk processing");
-    return Status::PROCESSING_ERROR;
-}
-}
-ComponentErrorHandler::UnifiedEngineErrors::logProcessingError(
-    "AUDIO_PROCESSING_UNKNOWN_EXCEPTION",
-    "Unknown exception during audio chunk processing",
-    sessionId,
-    {{"buffer_size", std::to_string(audioBuffer.size())}});
-return Status::PROCESSING_ERROR;
-}
-}
+    // Extract features from the accumulated audio segments
+    if (!session->currentSegmentBuffer.empty()) {
+        try {
+            extractMFCCFeatures(*session);
+        } catch (const std::exception& e) {
+            ComponentErrorHandler::MFCCProcessorErrors::logFeatureExtractionError(
+                512, "MFCC feature extraction failed: " + std::string(e.what()));
+            return Status::PROCESSING_ERROR;
+        }
+    }
+
+    LOG_TRACE(Component::UNIFIED_ENGINE,
+              "Audio chunk processed successfully for session " + std::to_string(sessionId));
+    return Status::OK;
 }
 
 UnifiedAudioEngine::Result<float>

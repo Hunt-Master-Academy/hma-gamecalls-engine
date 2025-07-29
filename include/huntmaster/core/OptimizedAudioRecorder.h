@@ -16,8 +16,17 @@
 
 namespace huntmaster {
 
+namespace io {
 // Forward declarations
 class MasterIOOptimizer;
+}
+
+namespace huntmaster {
+
+namespace io {
+// Forward declarations
+class MasterIOOptimizer;
+}
 
 /**
  * @brief High-performance audio recorder with optimized I/O and multiple recording modes
@@ -73,7 +82,7 @@ class OptimizedAudioRecorder {
     std::unique_ptr<Impl> pImpl;
 
   public:
-    explicit OptimizedAudioRecorder(const Config& config = {});
+    explicit OptimizedAudioRecorder(const Config& config = Config{});
     ~OptimizedAudioRecorder();
 
     /**
@@ -236,7 +245,7 @@ class OptimizedAudioPlayer {
     std::unique_ptr<Impl> pImpl;
 
   public:
-    explicit OptimizedAudioPlayer(const Config& config = {});
+    explicit OptimizedAudioPlayer(const Config& config = Config{});
     ~OptimizedAudioPlayer();
 
     /**
@@ -341,7 +350,7 @@ class BatchAudioProcessor {
     std::unique_ptr<Impl> pImpl;
 
   public:
-    explicit BatchAudioProcessor(const Config& config = {});
+    explicit BatchAudioProcessor(const Config& config = Config{});
     ~BatchAudioProcessor();
 
     /**
