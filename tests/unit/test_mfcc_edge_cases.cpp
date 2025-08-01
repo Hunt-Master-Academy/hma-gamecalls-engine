@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <limits>
+#include <random>
 #include <vector>
 
 #include <gtest/gtest.h>

@@ -36,7 +36,7 @@ struct Result {
         return value;
     }
 };
-}
+}  // namespace huntmaster
 
 using namespace huntmaster;
 
@@ -371,8 +371,6 @@ TEST_F(HighCoverageTest, ComprehensiveFeatureExtractionPaths) {
             << "Feature extraction mismatch for " << test.description;
     }
 }
-
-}  // End test cases
 
 // Additional test runner for coverage measurement
 int main(int argc, char** argv) {

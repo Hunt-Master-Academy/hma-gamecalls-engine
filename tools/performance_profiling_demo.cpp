@@ -7,6 +7,7 @@
  */
 
 #include <chrono>
+#include <cmath>
 #include <iostream>
 #include <memory>
 #include <thread>

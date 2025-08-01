@@ -97,7 +97,8 @@ TEST_F(DTWUnifiedTest, BasicDTWFunctionality) {
 
     // Load the audio file for comparison
     unsigned int channels, sampleRate;
-    auto audioData = loadAudioFile("../data/master_calls/buck_grunt.wav", channels, sampleRate);
+    auto masterCallPath = TestPaths::getMasterCallFile("buck_grunt", ".wav");
+    auto audioData = loadAudioFile(masterCallPath.string(), channels, sampleRate);
 
     if (audioData.empty()) {
         auto destroyResult = engine->destroySession(sessionId);
@@ -161,7 +162,8 @@ TEST_F(DTWUnifiedTest, DTWWithChunkedProcessing) {
 
     // Load the audio file for comparison
     unsigned int channels, sampleRate;
-    auto audioData = loadAudioFile("../data/master_calls/buck_grunt.wav", channels, sampleRate);
+    auto masterCallPath = TestPaths::getMasterCallFile("buck_grunt", ".wav");
+    auto audioData = loadAudioFile(masterCallPath.string(), channels, sampleRate);
 
     if (audioData.empty()) {
         auto destroyResult = engine->destroySession(sessionId);
@@ -240,7 +242,8 @@ TEST_F(DTWUnifiedTest, DTWConsistencyTest) {
 
         // Load the audio file
         unsigned int channels, sampleRate;
-        auto audioData = loadAudioFile("../data/master_calls/buck_grunt.wav", channels, sampleRate);
+        auto masterCallPath = TestPaths::getMasterCallFile("buck_grunt", ".wav");
+        auto audioData = loadAudioFile(masterCallPath.string(), channels, sampleRate);
 
         if (audioData.empty()) {
             auto destroyResult = engine->destroySession(sessionId);
@@ -318,7 +321,8 @@ TEST_F(DTWUnifiedTest, SelfSimilarityTest) {
 
     // Load the SAME audio file that we loaded as master
     unsigned int channels, sampleRate;
-    auto audioData = loadAudioFile("../data/master_calls/buck_grunt.wav", channels, sampleRate);
+    auto masterCallPath = TestPaths::getMasterCallFile("buck_grunt", ".wav");
+    auto audioData = loadAudioFile(masterCallPath.string(), channels, sampleRate);
 
     if (audioData.empty()) {
         auto destroyResult = engine->destroySession(sessionId);

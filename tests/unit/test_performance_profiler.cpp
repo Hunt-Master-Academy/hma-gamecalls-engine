@@ -1,4 +1,5 @@
 #include <chrono>
+#include <fstream>
 #include <thread>
 
 #include <gtest/gtest.h>
@@ -46,7 +47,7 @@ TEST_F(PerformanceProfilerTest, BasicTimingMeasurement) {
 TEST_F(PerformanceProfilerTest, ScopedTimerRAII) {
     // Test RAII scoped timer
     {
-        auto timer = profiler_->createScopedTimer("scoped_test");
+        PerformanceProfiler::ScopedTimer timer(*profiler_, "scoped_test");
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }  // Timer ends here automatically
 
@@ -203,13 +204,8 @@ class UnifiedAudioEnginePerformanceTest : public ::testing::Test {
 
         profiler_ = std::make_unique<PerformanceProfiler>(config);
 
-        UnifiedAudioEngine::Config engine_config;
-        engine_config.sample_rate = 16000;
-        engine_config.max_recording_duration = 10.0;
-        engine_config.silence_threshold = 0.01;
-
-        engine_ = UnifiedAudioEngine::create(engine_config);
-        ASSERT_TRUE(engine_.has_value());
+        engine_ = UnifiedAudioEngine::create();
+        ASSERT_TRUE(engine_.isOk());
     }
 
     void TearDown() override {
@@ -218,33 +214,33 @@ class UnifiedAudioEnginePerformanceTest : public ::testing::Test {
     }
 
     std::unique_ptr<PerformanceProfiler> profiler_;
-    std::optional<UnifiedAudioEngine> engine_;
+    UnifiedAudioEngine::Result<std::unique_ptr<UnifiedAudioEngine>> engine_;
 };
 
 TEST_F(UnifiedAudioEnginePerformanceTest, SessionManagementProfiling) {
-    ASSERT_TRUE(engine_.has_value());
+    ASSERT_TRUE(engine_.isOk());
 
     // Profile session creation
     {
-        auto timer = profiler_->createScopedTimer("session_creation");
-        auto session_result = engine_->createSession();
-        ASSERT_TRUE(session_result.has_value());
+        PerformanceProfiler::ScopedTimer timer(*profiler_, "session_creation");
+        auto session_result = engine_.value->createSession();
+        ASSERT_TRUE(session_result.isOk());
     }
 
     // Profile multiple sessions
-    std::vector<UnifiedAudioEngine::SessionId> session_ids;
+    std::vector<SessionId> session_ids;
     for (int i = 0; i < 10; ++i) {
-        auto timer = profiler_->createScopedTimer("batch_session_creation");
-        auto session_result = engine_->createSession();
-        ASSERT_TRUE(session_result.has_value());
-        session_ids.push_back(session_result.value());
+        PerformanceProfiler::ScopedTimer timer(*profiler_, "batch_session_creation");
+        auto session_result = engine_.value->createSession();
+        ASSERT_TRUE(session_result.isOk());
+        session_ids.push_back(session_result.value);
     }
 
     // Profile session cleanup
     for (const auto& session_id : session_ids) {
-        auto timer = profiler_->createScopedTimer("session_cleanup");
-        auto result = engine_->removeSession(session_id);
-        EXPECT_TRUE(result.has_value());
+        PerformanceProfiler::ScopedTimer timer(*profiler_, "session_cleanup");
+        auto result = engine_.value->destroySession(session_id);
+        EXPECT_EQ(result, UnifiedAudioEngine::Status::OK);
     }
 
     // Analyze performance
@@ -261,11 +257,11 @@ TEST_F(UnifiedAudioEnginePerformanceTest, SessionManagementProfiling) {
 }
 
 TEST_F(UnifiedAudioEnginePerformanceTest, AudioProcessingProfiling) {
-    ASSERT_TRUE(engine_.has_value());
+    ASSERT_TRUE(engine_.isOk());
 
-    auto session_result = engine_->createSession();
-    ASSERT_TRUE(session_result.has_value());
-    auto session_id = session_result.value();
+    auto session_result = engine_.value->createSession();
+    ASSERT_TRUE(session_result.isOk());
+    auto session_id = session_result.value;
 
     // Start continuous monitoring
     profiler_->startContinuousMonitoring();
@@ -275,9 +271,10 @@ TEST_F(UnifiedAudioEnginePerformanceTest, AudioProcessingProfiling) {
 
     for (int i = 0; i < 100; ++i) {
         {
-            auto timer = profiler_->createScopedTimer("audio_processing");
-            auto result = engine_->processAudioChunk(session_id, test_audio_chunk);
-            // Processing result depends on engine implementation
+            PerformanceProfiler::ScopedTimer timer(*profiler_, "audio_processing");
+            auto result = engine_.value->processAudioChunk(session_id, test_audio_chunk);
+            // Ensure processing completed successfully
+            EXPECT_EQ(result, UnifiedAudioEngine::Status::OK);
         }
 
         // Record memory usage periodically
@@ -298,7 +295,8 @@ TEST_F(UnifiedAudioEnginePerformanceTest, AudioProcessingProfiling) {
     profiler_->generateReport("engine_audio_processing_performance.txt");
 
     // Clean up
-    engine_->removeSession(session_id);
+    auto cleanup_result = engine_.value->destroySession(session_id);
+    EXPECT_EQ(cleanup_result, UnifiedAudioEngine::Status::OK);
 }
 
 }  // namespace test

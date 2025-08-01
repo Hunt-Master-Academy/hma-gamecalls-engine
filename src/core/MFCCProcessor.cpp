@@ -6,7 +6,7 @@
 #include "huntmaster/core/ErrorLogger.h"
 
 #ifdef HAVE_KISSFFT
-#include "../kissfft/tools/kiss_fftr.h"
+#include "kiss_fftr.h"
 #endif
 
 #include <algorithm>

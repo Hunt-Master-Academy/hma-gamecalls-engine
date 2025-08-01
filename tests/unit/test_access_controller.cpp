@@ -664,5 +664,3 @@ TEST_F(AccessControllerTest, ResourceHierarchyTest) {
         accessController_->authorize("regular_user", "/api/audio/process", AccessType::Read);
     (void)childAccess;  // Result depends on implementation
 }
-
-}  // namespace huntmaster

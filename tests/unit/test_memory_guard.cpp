@@ -619,5 +619,3 @@ TEST_F(MemoryGuardTest, ErrorConditionsTest) {
     deallocateTestBuffer(testBuffer);
     deallocateTestBuffer(unguardedBuffer);
 }
-
-}  // namespace huntmaster

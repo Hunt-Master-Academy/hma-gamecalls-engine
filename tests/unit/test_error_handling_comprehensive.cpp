@@ -130,12 +130,12 @@ TEST_F(ErrorHandlingTest, InvalidSessionOperations) {
 }
 
 TEST_F(ErrorHandlingTest, VADConfigurationErrors) {
-    UnifiedAudioEngine::VADConfig invalidConfig;
+    huntmaster::VADConfig invalidConfig;
 
     // Test with negative energy threshold
     invalidConfig.energy_threshold = -1.0f;
-    invalidConfig.window_duration = 20ms;
-    invalidConfig.min_sound_duration = 100ms;
+    invalidConfig.window_duration = 0.020f;
+    invalidConfig.min_sound_duration = 0.100f;
     invalidConfig.enabled = true;
 
     auto result1 = engine->configureVAD(validSessionId, invalidConfig);
@@ -143,13 +143,13 @@ TEST_F(ErrorHandlingTest, VADConfigurationErrors) {
 
     // Test with zero window duration
     invalidConfig.energy_threshold = 0.01f;
-    invalidConfig.window_duration = 0ms;
+    invalidConfig.window_duration = 0.0f;
     auto result2 = engine->configureVAD(validSessionId, invalidConfig);
     EXPECT_EQ(result2, UnifiedAudioEngine::Status::INVALID_PARAMS);
 
     // Test with extremely large values
-    invalidConfig.window_duration = std::chrono::milliseconds(10000);     // 10 seconds
-    invalidConfig.min_sound_duration = std::chrono::milliseconds(20000);  // 20 seconds
+    invalidConfig.window_duration = 10.0f;     // 10 seconds
+    invalidConfig.min_sound_duration = 20.0f;  // 20 seconds
     auto result3 = engine->configureVAD(validSessionId, invalidConfig);
     EXPECT_EQ(result3, UnifiedAudioEngine::Status::INVALID_PARAMS);
 }

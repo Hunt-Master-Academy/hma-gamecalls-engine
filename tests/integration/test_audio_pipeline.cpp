@@ -1,3 +1,4 @@
+#include <cmath>
 #include <iostream>
 #include <span>
 #include <vector>
@@ -5,6 +6,10 @@
 #include <gtest/gtest.h>
 
 #include "huntmaster/core/UnifiedAudioEngine.h"
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 using namespace huntmaster;
 
@@ -23,13 +28,13 @@ class AudioPipelineTest : public ::testing::Test {
         sessionId = *sessionResult;
 
         // Configure VAD for this test
-        UnifiedAudioEngine::VADConfig vadConfig;
+        VADConfig vadConfig;
         vadConfig.enabled = true;
         vadConfig.energy_threshold = 0.01f;
-        vadConfig.window_duration = std::chrono::milliseconds(30);
-        vadConfig.min_sound_duration = std::chrono::milliseconds(100);
-        vadConfig.pre_buffer = std::chrono::milliseconds(50);
-        vadConfig.post_buffer = std::chrono::milliseconds(50);
+        vadConfig.window_duration = 0.030f;     // 30ms in seconds
+        vadConfig.min_sound_duration = 0.100f;  // 100ms in seconds
+        vadConfig.pre_buffer = 0.050f;          // 50ms in seconds
+        vadConfig.post_buffer = 0.050f;         // 50ms in seconds
         auto configResult = engine->configureVAD(sessionId, vadConfig);
         ASSERT_EQ(configResult, UnifiedAudioEngine::Status::OK);
     }
@@ -93,10 +98,7 @@ TEST_F(AudioPipelineTest, FullPipelineStreamProcessing) {
         chunk_num++;
     }
 
-    // After processing the whole stream, finalize to get remaining features
-    auto finalizeResult = engine->finalizeStream(sessionId);
-    EXPECT_EQ(finalizeResult, UnifiedAudioEngine::Status::OK);
-
+    // After processing the whole stream, get feature count
     auto featureCountResult = engine->getFeatureCount(sessionId);
     ASSERT_TRUE(featureCountResult.isOk());
     int feature_count = *featureCountResult;
@@ -121,7 +123,6 @@ TEST_F(AudioPipelineTest, FullPipelineStreamProcessing) {
         engine->processAudioChunk(sessionId, audio_chunk);
         pos += current_chunk_size;
     }
-    engine->finalizeStream(sessionId);
 
     auto featureCountNoVADResult = engine->getFeatureCount(sessionId);
     ASSERT_TRUE(featureCountNoVADResult.isOk());

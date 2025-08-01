@@ -1,5 +1,23 @@
 /**
- * @file test_unified_engine_vad_config.cpp
+ * @file test_unified_engine_vaTEST_F(UnifiedEngineVADConfigTes    auto configResult =
+engine->getVADConfig(sessionId); ASSERT_TRUE(configResult.isOk()); const auto& config =
+configResult.value;
+
+    EXPECT_EQ(config.energy_threshold, 0.05f);
+    EXPECT_EQ(config.window_duration, 0.03f);  // 30ms = 0.03 seconds
+    EXPECT_EQ(config.min_sound_duration, 0.2f);  // 200ms = 0.2 seconds
+    EXPECT_EQ(config.pre_buffer, 0.1f);  // 100ms = 0.1 seconds
+    EXPECT_EQ(config.post_buffer, 0.15f);  // 150ms = 0.15 seconds
+    EXPECT_TRUE(config.enabled);ultVADConfig) {
+    auto configResult = engine->getVADConfig(sessionId);
+    ASSERT_TRUE(configResult.isOk());
+    const auto& config = configResult.value;
+
+    EXPECT_EQ(config.energy_threshold, 0.01f);
+    EXPECT_EQ(config.window_duration, 0.02f);  // 20ms = 0.02 seconds
+    EXPECT_EQ(config.min_sound_duration, 0.1f);  // 100ms = 0.1 seconds
+    EXPECT_TRUE(config.enabled);
+}pp
  * @brief Unit tests for VAD configuration in UnifiedAudioEngine
  */
 
@@ -37,21 +55,21 @@ class UnifiedEngineVADConfigTest : public ::testing::Test {
 TEST_F(UnifiedEngineVADConfigTest, GetDefaultVADConfig) {
     auto configResult = engine->getVADConfig(sessionId);
     ASSERT_TRUE(configResult.isOk());
-    const auto& config = *configResult;
+    const auto& config = configResult.value;
 
     EXPECT_EQ(config.energy_threshold, 0.01f);
-    EXPECT_EQ(config.window_duration, 20ms);
-    EXPECT_EQ(config.min_sound_duration, 100ms);
+    EXPECT_EQ(config.window_duration, 0.02f);    // 20ms = 0.02 seconds
+    EXPECT_EQ(config.min_sound_duration, 0.1f);  // 100ms = 0.1 seconds
     EXPECT_TRUE(config.enabled);
 }
 
 TEST_F(UnifiedEngineVADConfigTest, ConfigureVAD) {
-    UnifiedAudioEngine::VADConfig customConfig;
+    VADConfig customConfig;
     customConfig.energy_threshold = 0.05f;
-    customConfig.window_duration = 30ms;
-    customConfig.min_sound_duration = 200ms;
-    customConfig.pre_buffer = 100ms;
-    customConfig.post_buffer = 150ms;
+    customConfig.window_duration = 0.03f;    // 30ms = 0.03 seconds
+    customConfig.min_sound_duration = 0.2f;  // 200ms = 0.2 seconds
+    customConfig.pre_buffer = 0.1f;          // 100ms = 0.1 seconds
+    customConfig.post_buffer = 0.15f;        // 150ms = 0.15 seconds
     customConfig.enabled = true;
 
     auto setResult = engine->configureVAD(sessionId, customConfig);
@@ -59,13 +77,13 @@ TEST_F(UnifiedEngineVADConfigTest, ConfigureVAD) {
 
     auto configResult = engine->getVADConfig(sessionId);
     ASSERT_TRUE(configResult.isOk());
-    const auto& config = *configResult;
+    const auto& config = configResult.value;
 
     EXPECT_EQ(config.energy_threshold, 0.05f);
-    EXPECT_EQ(config.window_duration, 30ms);
-    EXPECT_EQ(config.min_sound_duration, 200ms);
-    EXPECT_EQ(config.pre_buffer, 100ms);
-    EXPECT_EQ(config.post_buffer, 150ms);
+    EXPECT_EQ(config.window_duration, 0.03f);    // 30ms = 0.03 seconds
+    EXPECT_EQ(config.min_sound_duration, 0.2f);  // 200ms = 0.2 seconds
+    EXPECT_EQ(config.pre_buffer, 0.1f);          // 100ms = 0.1 seconds
+    EXPECT_EQ(config.post_buffer, 0.15f);        // 150ms = 0.15 seconds
     EXPECT_TRUE(config.enabled);
 }
 
@@ -76,7 +94,7 @@ TEST_F(UnifiedEngineVADConfigTest, EnableDisableVAD) {
 
     auto configResult = engine->getVADConfig(sessionId);
     ASSERT_TRUE(configResult.isOk());
-    EXPECT_FALSE(configResult->enabled);
+    EXPECT_FALSE(configResult.value.enabled);
 
     // Enable VAD
     auto enableResult = engine->enableVAD(sessionId, true);
@@ -84,5 +102,5 @@ TEST_F(UnifiedEngineVADConfigTest, EnableDisableVAD) {
 
     configResult = engine->getVADConfig(sessionId);
     ASSERT_TRUE(configResult.isOk());
-    EXPECT_TRUE(configResult->enabled);
+    EXPECT_TRUE(configResult.value.enabled);
 }

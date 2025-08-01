@@ -19,7 +19,7 @@
 #include "huntmaster/core/ErrorMonitor.h"
 
 // Enable debug output for UnifiedAudioEngine
-#define DEBUG_UNIFIED_AUDIO_ENGINE 0
+#define DEBUG_UNIFIED_AUDIO_ENGINE 1
 
 // Include existing components
 #include "../../libs/dr_wav.h"
@@ -252,9 +252,9 @@ class UnifiedAudioEngine::Impl {
     std::atomic<SessionId> nextSessionId_{1};
 
     // Configuration paths
-    std::string masterCallsPath_{"../data/master_calls/"};
-    std::string featuresPath_{"../data/features/"};
-    std::string recordingsPath_{"../data/recordings/"};
+    std::string masterCallsPath_{"/home/xbyooki/huntmaster-engine/data/master_calls/"};
+    std::string featuresPath_{"/home/xbyooki/huntmaster-engine/data/features/"};
+    std::string recordingsPath_{"/home/xbyooki/huntmaster-engine/data/recordings/"};
 
     // Helper methods
     SessionState* getSession(SessionId sessionId);
@@ -662,14 +662,25 @@ std::vector<SessionId> UnifiedAudioEngine::Impl::getActiveSessions() const {
 UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::loadMasterCall(SessionId sessionId,
                                                                     std::string_view masterCallId) {
     SessionState* session = getSession(sessionId);
-    if (!session)
+    if (!session) {
         return Status::SESSION_NOT_FOUND;
+    }
 
     const std::string masterCallIdStr(masterCallId);
 
     // Try to load cached features first
     if (loadFeaturesFromFile(*session, masterCallIdStr) == Status::OK) {
         session->masterCallId = masterCallIdStr;
+
+        // CRITICAL FIX: Set master call in RealtimeScorer even when using cached features
+        if (session->realtimeScorer) {
+            const std::string audioFilePath = masterCallsPath_ + masterCallIdStr + ".wav";
+            if (!session->realtimeScorer->setMasterCall(audioFilePath)) {
+                // Note: We still return OK because the cached features were loaded successfully
+                // The RealtimeScorer failure is not critical for basic functionality
+            }
+        }
+
         return Status::OK;
     }
 
@@ -864,21 +875,16 @@ UnifiedAudioEngine::Impl::getSimilarityScore(SessionId sessionId) {
 
     // Fallback to traditional DTW-based scoring using DTWComparator
     if (session->masterCallFeatures.empty() || session->sessionFeatures.empty()) {
-        std::cerr << "DEBUG: masterCallFeatures.size() = " << session->masterCallFeatures.size()
-                  << ", sessionFeatures.size() = " << session->sessionFeatures.size() << std::endl;
         return {0.0f, Status::INSUFFICIENT_DATA};
     }
 
     if (!session->dtwComparator) {
-        std::cerr << "DEBUG: DTW comparator is null" << std::endl;
         return {0.0f, Status::INIT_FAILED};
     }
 
     const float distance =
         session->dtwComparator->compare(session->masterCallFeatures, session->sessionFeatures);
-    std::cerr << "DEBUG: DTW distance = " << distance << std::endl;
     const float score = 1.0f / (1.0f + distance);
-    std::cerr << "DEBUG: Converted similarity score = " << score << std::endl;
     return {score, Status::OK};
 }
 

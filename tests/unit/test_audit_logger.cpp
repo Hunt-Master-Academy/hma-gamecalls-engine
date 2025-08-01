@@ -35,7 +35,7 @@ class AuditLoggerTest : public TestFixtureBase {
         TestFixtureBase::SetUp();
 
         // Create temporary directory for audit logs
-        tempLogDir_ = getTempDirectory() + "/audit_test_logs";
+        tempLogDir_ = CrossPlatformUtils::getTempDirectory().string() + "/audit_test_logs";
         std::filesystem::create_directories(tempLogDir_);
 
         // Configure audit logger for comprehensive testing
@@ -700,5 +700,3 @@ TEST_F(AuditLoggerTest, BoundaryTimestampsTest) {
     event.timestamp = UINT64_MAX;  // Maximum timestamp
     EXPECT_NO_THROW(auditLogger_->logSecurityEvent(event));
 }
-
-}  // namespace huntmaster

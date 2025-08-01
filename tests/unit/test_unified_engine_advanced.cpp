@@ -67,9 +67,8 @@ TEST_F(UnifiedAudioEngineAdvancedTest, ResetFunctionalityTest) {
     // Get session duration before reset (as proxy for accumulated state)
     auto durationBeforeResult = engine->getSessionDuration(sessionId);
     ASSERT_TRUE(durationBeforeResult.isOk());
-    auto durationBefore = *durationBeforeResult;
-    EXPECT_GT(durationBefore.count(), 0)
-        << "Session duration should be greater than zero before reset";
+    auto durationBefore = durationBeforeResult.value;
+    EXPECT_GT(durationBefore, 0) << "Session duration should be greater than zero before reset";
 
     // Test reset session (should clear all session state)
     auto resetResult = engine->resetSession(sessionId);
@@ -78,8 +77,8 @@ TEST_F(UnifiedAudioEngineAdvancedTest, ResetFunctionalityTest) {
     // After reset, session should be cleared
     auto durationAfterResult = engine->getSessionDuration(sessionId);
     ASSERT_TRUE(durationAfterResult.isOk());
-    auto durationAfter = *durationAfterResult;
-    EXPECT_EQ(durationAfter.count(), 0) << "Session duration should be zero after reset";
+    auto durationAfter = durationAfterResult.value;
+    EXPECT_EQ(durationAfter, 0) << "Session duration should be zero after reset";
 
     // Check master call status after reset
     auto masterCallAfterReset = engine->getCurrentMasterCall(sessionId);
@@ -138,7 +137,7 @@ TEST_F(UnifiedAudioEngineAdvancedTest, ConcurrentSessionTest) {
     EXPECT_EQ(result3, UnifiedAudioEngine::Status::OK);
 
     // Test VAD configuration independence
-    UnifiedAudioEngine::VADConfig config1, config2, config3;
+    huntmaster::VADConfig config1, config2, config3;
     config1.energy_threshold = 0.01f;
     config2.energy_threshold = 0.02f;
     config3.energy_threshold = 0.03f;
@@ -153,9 +152,9 @@ TEST_F(UnifiedAudioEngineAdvancedTest, ConcurrentSessionTest) {
     auto vadConfig3 = engine->getVADConfig(session3);
 
     ASSERT_TRUE(vadConfig1.isOk() && vadConfig2.isOk() && vadConfig3.isOk());
-    EXPECT_EQ(vadConfig1->energy_threshold, 0.01f);
-    EXPECT_EQ(vadConfig2->energy_threshold, 0.02f);
-    EXPECT_EQ(vadConfig3->energy_threshold, 0.03f);
+    EXPECT_EQ(vadConfig1.value.energy_threshold, 0.01f);
+    EXPECT_EQ(vadConfig2.value.energy_threshold, 0.02f);
+    EXPECT_EQ(vadConfig3.value.energy_threshold, 0.03f);
 
     // Clean up additional sessions
     auto destroyResult2 = engine->destroySession(session2);

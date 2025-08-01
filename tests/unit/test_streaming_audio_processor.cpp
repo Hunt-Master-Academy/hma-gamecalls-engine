@@ -20,8 +20,8 @@
 #include <gtest/gtest.h>
 
 #include "TestUtils.h"
+#include "core/StreamingAudioProcessor.h"
 #include "huntmaster/core/UnifiedAudioEngine.h"
-#include "src/core/StreamingAudioProcessor.h"
 
 using namespace huntmaster;
 using namespace huntmaster::core;
@@ -34,7 +34,9 @@ class StreamingAudioProcessorTest : public TestFixtureBase {
         TestFixtureBase::SetUp();
 
         // Initialize audio engine
-        engine_ = std::make_unique<UnifiedAudioEngine>();
+        auto engineResult = UnifiedAudioEngine::create();
+        ASSERT_TRUE(engineResult.isSuccess());
+        engine_ = std::move(engineResult.value);
         ASSERT_TRUE(engine_->initialize().isSuccess());
 
         // Create session
@@ -560,5 +562,3 @@ TEST_F(StreamingAudioProcessorTest, ResourceCleanupTest) {
     auto reinitResult = processor_->initialize(config_);
     EXPECT_TRUE(reinitResult.isSuccess());
 }
-
-}  // namespace huntmaster

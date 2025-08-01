@@ -668,5 +668,3 @@ TEST_F(CryptoManagerTest, ErrorHandlingTest) {
     std::vector<uint8_t> derivedKey;
     EXPECT_FALSE(cryptoManager_->deriveKey("", salt, 1000, 32, derivedKey));
 }
-
-}  // namespace huntmaster

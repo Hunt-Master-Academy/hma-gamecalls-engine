@@ -619,5 +619,3 @@ TEST_F(CircularAudioBufferTest, MultiChannelTest) {
         EXPECT_NEAR(readData[i], stereoData[i], 1e-6f) << "Sample " << i;
     }
 }
-
-}  // namespace huntmaster

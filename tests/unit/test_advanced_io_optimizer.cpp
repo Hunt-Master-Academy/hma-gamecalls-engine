@@ -9,8 +9,10 @@
 #include <random>
 #include <thread>
 
-#include <gmock/gmock.h>
+#include <fcntl.h>  // For O_CREAT, O_RDWR, O_TRUNC, etc.
 #include <gtest/gtest.h>
+#include <unistd.h>  // For open, close, etc.
+// #include <gmock/gmock.h>  // GMock not available, using manual mocks
 
 #include "huntmaster/core/AdvancedIOOptimizer.h"
 
@@ -50,19 +52,28 @@ class AdvancedIOOptimizerTest : public ::testing::Test {
 
         // Write simple WAV header (44 bytes)
         const char wavHeader[44] = {
-            'R',  'I',  'F',  'F',  // ChunkID
-            0,    0,    0,    0,    // ChunkSize (will be filled)
-            'W',  'A',  'V',  'E',  // Format
-            'f',  'm',  't',  ' ',  // Subchunk1ID
-            16,   0,    0,    0,    // Subchunk1Size
-            1,    0,                // AudioFormat (PCM)
-            2,    0,                // NumChannels (stereo)
-            0x44, 0xAC, 0,    0,    // SampleRate (44100)
-            0x10, 0xB1, 0x02, 0,    // ByteRate
-            4,    0,                // BlockAlign
-            16,   0,                // BitsPerSample
-            'd',  'a',  't',  'a',  // Subchunk2ID
-            0,    0,    0,    0     // Subchunk2Size (will be filled)
+            'R',  'I',
+            'F',  'F',  // ChunkID
+            0,    0,
+            0,    0,  // ChunkSize (will be filled)
+            'W',  'A',
+            'V',  'E',  // Format
+            'f',  'm',
+            't',  ' ',  // Subchunk1ID
+            16,   0,
+            0,    0,  // Subchunk1Size
+            1,    0,  // AudioFormat (PCM)
+            2,    0,  // NumChannels (stereo)
+            0x44, static_cast<char>(0xAC),
+            0,    0,  // SampleRate (44100)
+            0x10, static_cast<char>(0xB1),
+            0x02, 0,  // ByteRate
+            4,    0,  // BlockAlign
+            16,   0,  // BitsPerSample
+            'd',  'a',
+            't',  'a',  // Subchunk2ID
+            0,    0,
+            0,    0  // Subchunk2Size (will be filled)
         };
 
         file.write(wavHeader, 44);

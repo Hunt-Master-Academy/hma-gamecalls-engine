@@ -478,7 +478,6 @@ class CircularAudioBuffer {
     // Core implementation
     bool initializeBuffer();
     void cleanupBuffer();
-    bool validateConfiguration(const CircularBufferConfig& config, std::string& error) const;
     void updateStatistics();
     void handleError(int code, const std::string& message, const std::string& details = "") const;
 

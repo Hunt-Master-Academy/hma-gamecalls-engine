@@ -65,14 +65,18 @@ add_library(UnifiedAudioEngine STATIC ${UNIFIED_ENGINE_CORE_SOURCES} ${PROFILING
 target_include_directories(UnifiedAudioEngine PUBLIC
     ${PROJECT_INCLUDE_DIR}
     # Add libs dir for header-only libraries like dr_wav.h and miniaudio.h
-    ${PROJECT_LIBS_DIR}/kissfft
     ${PROJECT_LIBS_DIR}/dr_wav
     ${PROJECT_LIBS_DIR}/miniaudio
     ${PROJECT_TESTS_DIR}/lib/googletest
     ${PROJECT_LIBS_DIR}
 )
 
-# Link core dependencies
+# Include KissFFT headers from FetchContent
+target_include_directories(UnifiedAudioEngine PRIVATE
+    ${kissfft_SOURCE_DIR}
+)
+
+# Link core dependencies - KissFFT is now available via FetchContent
 target_link_libraries(UnifiedAudioEngine PUBLIC kissfft)
 target_compile_definitions(UnifiedAudioEngine PUBLIC HAVE_KISSFFT)
 

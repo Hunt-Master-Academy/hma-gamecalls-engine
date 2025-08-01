@@ -230,21 +230,21 @@ TEST_F(UnifiedEngineComprehensiveTest, AudioProcessingWithDifferentSignalTypes) 
 }
 
 TEST_F(UnifiedEngineComprehensiveTest, VADConfigurationEdgeCases) {
-    UnifiedAudioEngine::VADConfig config;
+    huntmaster::VADConfig config;
 
     // Test with extreme values
-    config.energy_threshold = 0.0f;   // Very low threshold
-    config.window_duration = 1ms;     // Very short window
-    config.min_sound_duration = 1ms;  // Very short duration
+    config.energy_threshold = 0.0f;      // Very low threshold
+    config.window_duration = 0.001f;     // Very short window
+    config.min_sound_duration = 0.001f;  // Very short duration
     config.enabled = true;
 
     auto result1 = engine->configureVAD(sessionId, config);
     EXPECT_EQ(result1, UnifiedAudioEngine::Status::OK);
 
     // Test with very high threshold
-    config.energy_threshold = 1.0f;      // Very high threshold
-    config.window_duration = 500ms;      // Very long window
-    config.min_sound_duration = 1000ms;  // Very long duration
+    config.energy_threshold = 1.0f;    // Very high threshold
+    config.window_duration = 0.5f;     // Very long window
+    config.min_sound_duration = 1.0f;  // Very long duration
 
     auto result2 = engine->configureVAD(sessionId, config);
     EXPECT_EQ(result2, UnifiedAudioEngine::Status::OK);
@@ -288,8 +288,8 @@ TEST_F(UnifiedEngineComprehensiveTest, SessionDurationTracking) {
     auto elapsedMs = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed);
 
     // Duration should be reasonable (within some tolerance)
-    EXPECT_GE(duration.count(), 40);                       // At least 40ms
-    EXPECT_LE(duration.count(), elapsedMs.count() + 100);  // Not too much more than elapsed
+    EXPECT_GE(duration, 0.040f);                                // At least 40ms
+    EXPECT_LE(duration, (elapsedMs.count() / 1000.0f) + 0.1f);  // Not too much more than elapsed
 }
 
 TEST_F(UnifiedEngineComprehensiveTest, MasterCallLifecycle) {
@@ -300,7 +300,7 @@ TEST_F(UnifiedEngineComprehensiveTest, MasterCallLifecycle) {
     // Current master call should be empty
     auto currentResult1 = engine->getCurrentMasterCall(sessionId);
     EXPECT_TRUE(currentResult1.isOk());
-    EXPECT_TRUE(currentResult1->empty());
+    EXPECT_TRUE(currentResult1.value.empty());
 
     // Test unloading when no master call is loaded
     auto unloadResult1 = engine->unloadMasterCall(sessionId);

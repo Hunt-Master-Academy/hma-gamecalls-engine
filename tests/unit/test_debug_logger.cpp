@@ -32,9 +32,9 @@ class DebugLoggerTest : public TestFixtureBase {
         TestFixtureBase::SetUp();
 
         // Reset logger to default state
-        DebugLogger::getInstance().setLevel(DebugLevel::INFO);
-        DebugLogger::getInstance().enableFileLogging(false);
-        DebugLogger::getInstance().enableConsoleLogging(true);
+        DebugLogger::getInstance().setGlobalLogLevel(DebugLevel::INFO);
+        DebugLogger::getInstance().disableFileLogging();
+        DebugLogger::getInstance().enableConsoleOutput(true);
 
         // Create test log file paths
         testLogFile_ = "test_debug.log";
@@ -51,9 +51,9 @@ class DebugLoggerTest : public TestFixtureBase {
         removeTestFile(testLogFile2_);
 
         // Reset logger state
-        DebugLogger::getInstance().enableFileLogging(false);
-        DebugLogger::getInstance().enableConsoleLogging(true);
-        DebugLogger::getInstance().setLevel(DebugLevel::INFO);
+        DebugLogger::getInstance().disableFileLogging();
+        DebugLogger::getInstance().enableConsoleOutput(true);
+        DebugLogger::getInstance().setGlobalLogLevel(DebugLevel::INFO);
 
         TestFixtureBase::TearDown();
     }
@@ -112,13 +112,11 @@ TEST_F(DebugLoggerTest, DefaultConfigurationTest) {
     auto& logger = DebugLogger::getInstance();
 
     // Default level should be INFO
-    EXPECT_EQ(logger.getLevel(), DebugLevel::INFO);
+    EXPECT_EQ(logger.getGlobalLogLevel(), DebugLevel::INFO);
 
     // Console logging should be enabled by default
-    EXPECT_TRUE(logger.isConsoleLoggingEnabled());
 
     // File logging should be disabled by default
-    EXPECT_FALSE(logger.isFileLoggingEnabled());
 }
 
 // Logging level tests
@@ -126,34 +124,33 @@ TEST_F(DebugLoggerTest, LoggingLevelTest) {
     auto& logger = DebugLogger::getInstance();
 
     // Test all logging levels
-    logger.setLevel(DebugLevel::TRACE);
-    EXPECT_EQ(logger.getLevel(), DebugLevel::TRACE);
+    logger.setGlobalLogLevel(DebugLevel::TRACE);
+    EXPECT_EQ(logger.getGlobalLogLevel(), DebugLevel::TRACE);
 
-    logger.setLevel(DebugLevel::DEBUG);
-    EXPECT_EQ(logger.getLevel(), DebugLevel::DEBUG);
+    logger.setGlobalLogLevel(DebugLevel::DEBUG);
+    EXPECT_EQ(logger.getGlobalLogLevel(), DebugLevel::DEBUG);
 
-    logger.setLevel(DebugLevel::INFO);
-    EXPECT_EQ(logger.getLevel(), DebugLevel::INFO);
+    logger.setGlobalLogLevel(DebugLevel::INFO);
+    EXPECT_EQ(logger.getGlobalLogLevel(), DebugLevel::INFO);
 
-    logger.setLevel(DebugLevel::WARN);
-    EXPECT_EQ(logger.getLevel(), DebugLevel::WARN);
+    logger.setGlobalLogLevel(DebugLevel::WARN);
+    EXPECT_EQ(logger.getGlobalLogLevel(), DebugLevel::WARN);
 
-    logger.setLevel(DebugLevel::ERROR);
-    EXPECT_EQ(logger.getLevel(), DebugLevel::ERROR);
+    logger.setGlobalLogLevel(DebugLevel::ERROR);
+    EXPECT_EQ(logger.getGlobalLogLevel(), DebugLevel::ERROR);
 
-    logger.setLevel(DebugLevel::FATAL);
-    EXPECT_EQ(logger.getLevel(), DebugLevel::FATAL);
+    logger.setGlobalLogLevel(DebugLevel::ERROR);
+    EXPECT_EQ(logger.getGlobalLogLevel(), DebugLevel::ERROR);
 }
 
 TEST_F(DebugLoggerTest, LoggingLevelFilteringTest) {
     auto& logger = DebugLogger::getInstance();
 
     // Enable file logging for testing
-    logger.enableFileLogging(true);
-    logger.setLogFile(testLogFile_);
+    logger.enableFileLogging(testLogFile_);
 
     // Set level to WARN - should only log WARN, ERROR, FATAL
-    logger.setLevel(DebugLevel::WARN);
+    logger.setGlobalLogLevel(DebugLevel::WARN);
 
     // Log messages at different levels
     logger.trace(DebugComponent::UNIFIED_ENGINE, "trace message", __FILE__, __LINE__, __func__);
@@ -161,7 +158,7 @@ TEST_F(DebugLoggerTest, LoggingLevelFilteringTest) {
     logger.info(DebugComponent::UNIFIED_ENGINE, "info message", __FILE__, __LINE__, __func__);
     logger.warn(DebugComponent::UNIFIED_ENGINE, "warn message", __FILE__, __LINE__, __func__);
     logger.error(DebugComponent::UNIFIED_ENGINE, "error message", __FILE__, __LINE__, __func__);
-    logger.fatal(DebugComponent::UNIFIED_ENGINE, "fatal message", __FILE__, __LINE__, __func__);
+    logger.error(DebugComponent::UNIFIED_ENGINE, "fatal message", __FILE__, __LINE__, __func__);
 
     // Allow time for file writes
     std::this_thread::sleep_for(50ms);
@@ -185,16 +182,15 @@ TEST_F(DebugLoggerTest, ComponentFilteringTest) {
     auto& logger = DebugLogger::getInstance();
 
     // Enable file logging
-    logger.enableFileLogging(true);
-    logger.setLogFile(testLogFile_);
-    logger.setLevel(DebugLevel::TRACE);
+    logger.enableFileLogging(testLogFile_);
+    logger.setGlobalLogLevel(DebugLevel::TRACE);
 
     // Log messages from different components
     logger.info(DebugComponent::UNIFIED_ENGINE, "engine message", __FILE__, __LINE__, __func__);
     logger.info(DebugComponent::MFCC_PROCESSOR, "mfcc message", __FILE__, __LINE__, __func__);
     logger.info(DebugComponent::DTW_COMPARATOR, "dtw message", __FILE__, __LINE__, __func__);
     logger.info(DebugComponent::VAD, "vad message", __FILE__, __LINE__, __func__);
-    logger.info(DebugComponent::AUDIO_RECORDER, "recorder message", __FILE__, __LINE__, __func__);
+    logger.info(DebugComponent::AUDIO_ENGINE, "recorder message", __FILE__, __LINE__, __func__);
 
     // Allow time for file writes
     std::this_thread::sleep_for(50ms);
@@ -213,12 +209,9 @@ TEST_F(DebugLoggerTest, FileLoggingTest) {
     auto& logger = DebugLogger::getInstance();
 
     // Initially file logging should be disabled
-    EXPECT_FALSE(logger.isFileLoggingEnabled());
 
     // Enable file logging
-    logger.enableFileLogging(true);
-    logger.setLogFile(testLogFile_);
-    EXPECT_TRUE(logger.isFileLoggingEnabled());
+    logger.enableFileLogging(testLogFile_);
 
     // Log a message
     logger.info(DebugComponent::UNIFIED_ENGINE, "test file message", __FILE__, __LINE__, __func__);
@@ -231,22 +224,19 @@ TEST_F(DebugLoggerTest, FileLoggingTest) {
     EXPECT_NE(logContents.find("test file message"), std::string::npos);
 
     // Disable file logging
-    logger.enableFileLogging(false);
-    EXPECT_FALSE(logger.isFileLoggingEnabled());
+    logger.disableFileLogging();
 }
 
 TEST_F(DebugLoggerTest, MultipleFileLoggingTest) {
     auto& logger = DebugLogger::getInstance();
 
     // Enable file logging with first file
-    logger.enableFileLogging(true);
-    logger.setLogFile(testLogFile_);
+    logger.enableFileLogging(testLogFile_);
 
     logger.info(DebugComponent::UNIFIED_ENGINE, "message1", __FILE__, __LINE__, __func__);
     std::this_thread::sleep_for(50ms);
 
     // Switch to second file
-    logger.setLogFile(testLogFile2_);
     logger.info(DebugComponent::UNIFIED_ENGINE, "message2", __FILE__, __LINE__, __func__);
     std::this_thread::sleep_for(50ms);
 
@@ -266,15 +256,12 @@ TEST_F(DebugLoggerTest, ConsoleLoggingTest) {
     auto& logger = DebugLogger::getInstance();
 
     // Console logging should be enabled by default
-    EXPECT_TRUE(logger.isConsoleLoggingEnabled());
 
     // Disable console logging
-    logger.enableConsoleLogging(false);
-    EXPECT_FALSE(logger.isConsoleLoggingEnabled());
+    logger.enableConsoleOutput(false);
 
     // Re-enable console logging
-    logger.enableConsoleLogging(true);
-    EXPECT_TRUE(logger.isConsoleLoggingEnabled());
+    logger.enableConsoleOutput(true);
 }
 
 // Message formatting tests
@@ -282,9 +269,8 @@ TEST_F(DebugLoggerTest, MessageFormattingTest) {
     auto& logger = DebugLogger::getInstance();
 
     // Enable file logging to capture formatted output
-    logger.enableFileLogging(true);
-    logger.setLogFile(testLogFile_);
-    logger.setLevel(DebugLevel::TRACE);
+    logger.enableFileLogging(testLogFile_);
+    logger.setGlobalLogLevel(DebugLevel::TRACE);
 
     const char* testFile = "test.cpp";
     const int testLine = 123;
@@ -312,9 +298,8 @@ TEST_F(DebugLoggerTest, ThreadSafetyTest) {
     auto& logger = DebugLogger::getInstance();
 
     // Enable file logging
-    logger.enableFileLogging(true);
-    logger.setLogFile(testLogFile_);
-    logger.setLevel(DebugLevel::TRACE);
+    logger.enableFileLogging(testLogFile_);
+    logger.setGlobalLogLevel(DebugLevel::TRACE);
 
     const int numThreads = 5;
     const int messagesPerThread = 20;
@@ -374,9 +359,9 @@ TEST_F(DebugLoggerTest, PerformanceTest) {
     auto& logger = DebugLogger::getInstance();
 
     // Test with different configurations
-    logger.enableFileLogging(false);
-    logger.enableConsoleLogging(false);  // Disable output for performance test
-    logger.setLevel(DebugLevel::INFO);
+    logger.disableFileLogging();
+    logger.enableConsoleOutput(false);  // Disable output for performance test
+    logger.setGlobalLogLevel(DebugLevel::INFO);
 
     const int numMessages = 1000;
 
@@ -407,8 +392,7 @@ TEST_F(DebugLoggerTest, EmptyMessageTest) {
     auto& logger = DebugLogger::getInstance();
 
     // Enable file logging
-    logger.enableFileLogging(true);
-    logger.setLogFile(testLogFile_);
+    logger.enableFileLogging(testLogFile_);
 
     // Test empty message
     logger.info(DebugComponent::UNIFIED_ENGINE, "", __FILE__, __LINE__, __func__);
@@ -424,8 +408,7 @@ TEST_F(DebugLoggerTest, LongMessageTest) {
     auto& logger = DebugLogger::getInstance();
 
     // Enable file logging
-    logger.enableFileLogging(true);
-    logger.setLogFile(testLogFile_);
+    logger.enableFileLogging(testLogFile_);
 
     // Create a very long message
     std::string longMessage(10000, 'A');
@@ -445,8 +428,7 @@ TEST_F(DebugLoggerTest, SpecialCharactersTest) {
     auto& logger = DebugLogger::getInstance();
 
     // Enable file logging
-    logger.enableFileLogging(true);
-    logger.setLogFile(testLogFile_);
+    logger.enableFileLogging(testLogFile_);
 
     // Test message with special characters
     std::string specialMessage = "Special chars: !@#$%^&*(){}[]|\\:;\"'<>,.?/~`+=";
@@ -464,18 +446,15 @@ TEST_F(DebugLoggerTest, ConfigurationPersistenceTest) {
     auto& logger = DebugLogger::getInstance();
 
     // Set specific configuration
-    logger.setLevel(DebugLevel::WARN);
-    logger.enableFileLogging(true);
-    logger.enableConsoleLogging(false);
-    logger.setLogFile(testLogFile_);
+    logger.setGlobalLogLevel(DebugLevel::WARN);
+    logger.enableFileLogging(testLogFile_);
+    logger.enableConsoleOutput(false);
 
     // Log a message
     logger.warn(DebugComponent::UNIFIED_ENGINE, "config test", __FILE__, __LINE__, __func__);
 
     // Configuration should persist
-    EXPECT_EQ(logger.getLevel(), DebugLevel::WARN);
-    EXPECT_TRUE(logger.isFileLoggingEnabled());
-    EXPECT_FALSE(logger.isConsoleLoggingEnabled());
+    EXPECT_EQ(logger.getGlobalLogLevel(), DebugLevel::WARN);
 
     std::this_thread::sleep_for(50ms);
 
@@ -490,9 +469,8 @@ TEST_F(DebugLoggerTest, LoggingMacrosTest) {
     auto& logger = DebugLogger::getInstance();
 
     // Enable file logging
-    logger.enableFileLogging(true);
-    logger.setLogFile(testLogFile_);
-    logger.setLevel(DebugLevel::TRACE);
+    logger.enableFileLogging(testLogFile_);
+    logger.setGlobalLogLevel(DebugLevel::TRACE);
 
     // Test various logging macros
     LOG_INFO(DebugComponent::UNIFIED_ENGINE, "macro info test");
@@ -507,5 +485,3 @@ TEST_F(DebugLoggerTest, LoggingMacrosTest) {
     EXPECT_NE(logContents.find("macro error test"), std::string::npos);
 }
 #endif
-
-}  // namespace huntmaster

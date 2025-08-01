@@ -579,5 +579,3 @@ TEST_F(InputValidatorTest, BoundaryConditionsTest) {
     EXPECT_TRUE(validator_->validateString("A", StringType::Generic));
     EXPECT_TRUE(validator_->validateNumericInput(1.0, NumericType::Integer));
 }
-
-}  // namespace huntmaster

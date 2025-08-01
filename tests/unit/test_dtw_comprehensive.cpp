@@ -4,6 +4,7 @@
  */
 
 #include <cmath>
+#include <random>
 #include <vector>
 
 #include <gtest/gtest.h>
@@ -20,7 +21,9 @@ class DTWComprehensiveTest : public ::testing::Test {
     SessionId sessionId;
 
     void SetUp() override {
-        dtw = std::make_unique<DTWComparator>();
+        // Initialize DTW with default configuration
+        DTWComparator::Config config;
+        dtw = std::make_unique<DTWComparator>(config);
 
         auto engineResult = UnifiedAudioEngine::create();
         ASSERT_TRUE(engineResult.isOk());
@@ -200,7 +203,7 @@ TEST_F(DTWComprehensiveTest, PathRetrieval) {
     auto seq1 = createFeatureSequence(8, 13);
     auto seq2 = createFeatureSequence(10, 13);
 
-    std::vector<std::pair<int, int>> path;
+    std::vector<std::pair<size_t, size_t>> path;
     float distance = dtw->compareWithPath(seq1, seq2, path);
 
     EXPECT_GE(distance, 0.0f);
@@ -235,8 +238,14 @@ TEST_F(DTWComprehensiveTest, NormalizedDistance) {
     auto seq1 = createFeatureSequence(5, 13);
     auto seq2 = createFeatureSequence(15, 13);
 
-    float rawDistance = dtw->compare(seq1, seq2);
-    float normalizedDistance = dtw->compareNormalized(seq1, seq2);
+    // Test with normalization disabled
+    DTWComparator::Config configRaw;
+    configRaw.normalize_distance = false;
+    auto dtwRaw = std::make_unique<DTWComparator>(configRaw);
+    float rawDistance = dtwRaw->compare(seq1, seq2);
+
+    // Test with normalization enabled (default)
+    float normalizedDistance = dtw->compare(seq1, seq2);
 
     EXPECT_GE(rawDistance, 0.0f);
     EXPECT_GE(normalizedDistance, 0.0f);

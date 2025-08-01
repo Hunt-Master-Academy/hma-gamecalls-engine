@@ -16,8 +16,8 @@ class UnifiedEngineDebugTest : public ::testing::Test {
     std::string testLogFile = "debug_test_log.txt";
 
     void SetUp() override {
-        DebugLogger::getInstance().setLogFile(testLogFile);
-        DebugLogger::getInstance().setLogLevel(LogLevel::DEBUG);
+        DebugLogger::getInstance().enableFileLogging(testLogFile);
+        DebugLogger::getInstance().setGlobalLogLevel(LogLevel::DEBUG);
 
         auto engineResult = UnifiedAudioEngine::create();
         ASSERT_TRUE(engineResult.isOk());

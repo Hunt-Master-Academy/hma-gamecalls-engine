@@ -669,4 +669,83 @@ void ComponentErrorHandler::MFCCProcessorErrors::logFeatureExtractionError(
 // Additional error handler implementations for other categories would go here...
 // (ConcurrencyErrors, IOErrors, ValidationErrors, PerformanceErrors)
 
+// IOErrors Implementation
+void ComponentErrorHandler::IOErrors::logFileOpenError(const std::string& filename,
+                                                       const std::string& mode,
+                                                       const std::string& error) {
+    auto context = createSystemContext();
+    context["filename"] = filename;
+    context["mode"] = mode;
+    context["error"] = error;
+
+    LOG_ERROR_WITH_CONTEXT(Component::GENERAL,
+                           ErrorSeverity::HIGH,
+                           ErrorCategory::IO,
+                           "IO_FILE_001",
+                           "Failed to open file",
+                           context);
+}
+
+void ComponentErrorHandler::IOErrors::logFileReadError(const std::string& filename,
+                                                       size_t bytesRequested,
+                                                       const std::string& error) {
+    auto context = createSystemContext();
+    context["filename"] = filename;
+    context["bytes_requested"] = std::to_string(bytesRequested);
+    context["error"] = error;
+
+    LOG_ERROR_WITH_CONTEXT(Component::GENERAL,
+                           ErrorSeverity::MEDIUM,
+                           ErrorCategory::IO,
+                           "IO_FILE_002",
+                           "Failed to read from file",
+                           context);
+}
+
+void ComponentErrorHandler::IOErrors::logFileWriteError(const std::string& filename,
+                                                        size_t bytesAttempted,
+                                                        const std::string& error) {
+    auto context = createSystemContext();
+    context["filename"] = filename;
+    context["bytes_attempted"] = std::to_string(bytesAttempted);
+    context["error"] = error;
+
+    LOG_ERROR_WITH_CONTEXT(Component::GENERAL,
+                           ErrorSeverity::HIGH,
+                           ErrorCategory::IO,
+                           "IO_FILE_003",
+                           "Failed to write to file",
+                           context);
+}
+
+void ComponentErrorHandler::IOErrors::logDirectoryError(const std::string& path,
+                                                        const std::string& operation,
+                                                        const std::string& error) {
+    auto context = createSystemContext();
+    context["path"] = path;
+    context["operation"] = operation;
+    context["error"] = error;
+
+    LOG_ERROR_WITH_CONTEXT(Component::GENERAL,
+                           ErrorSeverity::MEDIUM,
+                           ErrorCategory::IO,
+                           "IO_DIR_001",
+                           "Directory operation failed",
+                           context);
+}
+
+void ComponentErrorHandler::IOErrors::logPermissionError(const std::string& resource,
+                                                         const std::string& operation) {
+    auto context = createSystemContext();
+    context["resource"] = resource;
+    context["operation"] = operation;
+
+    LOG_ERROR_WITH_CONTEXT(Component::GENERAL,
+                           ErrorSeverity::HIGH,
+                           ErrorCategory::VALIDATION,
+                           "IO_PERM_001",
+                           "Permission denied for operation",
+                           context);
+}
+
 }  // namespace huntmaster
