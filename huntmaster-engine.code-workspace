@@ -1,129 +1,169 @@
 {
   "folders": [
     {
-      "path": "."
+      "path": ".",
+      "name": "Huntmaster Engine"
     }
   ],
   "settings": {
+    // Terminal Configuration
     "terminal.integrated.defaultProfile.windows": "Ubuntu (WSL)",
-    "terminal.integrated.profiles.windows": {
-      "Ubuntu (WSL)": {
-        "path": "wsl.exe",
-        "args": ["-d", "Ubuntu"],
-        "icon": "terminal-ubuntu",
-        "overrideName": true
-      },
-      "Command Prompt with Conda": {
-        "path": "C:\\Windows\\System32\\cmd.exe",
-        "args": [
-          "/k",
-          "C:\\ProgramData\\miniconda3\\Scripts\\activate.bat && conda activate huntmaster_final_env"
-        ],
-        "icon": "terminal-cmd",
-        "overrideName": true
-      },
-      "PowerShell with Conda": {
-        "path": "powershell",
-        "args": [
-          "-NoExit",
-          "-Command",
-          "& 'C:\\ProgramData\\miniconda3\\shell\\condabin\\conda-hook.ps1'; conda activate huntmaster_final_env"
-        ],
-        "icon": "terminal-powershell"
-      },
-      "Git Bash": {
-        "path": "C:\\Program Files\\Git\\bin\\bash.exe",
-        "icon": "terminal-bash"
-      }
+    "terminal.integrated.defaultProfile.linux": "bash",
+    
+    // C++ Configuration
+    "C_Cpp.default.cppStandard": "c++20",
+    "C_Cpp.default.cStandard": "c17",
+    "C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
+    "C_Cpp.default.compilerPath": "/usr/bin/g++-13",
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "C_Cpp.clang_format_style": "file",
+    "C_Cpp.clang_format_fallbackStyle": "Google",
+    
+    // CMake Configuration
+    "cmake.configureOnOpen": true,
+    "cmake.generator": "Ninja",
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+    "cmake.installPrefix": "${workspaceFolder}/install",
+    "cmake.configureSettings": {
+      "CMAKE_BUILD_TYPE": "Debug",
+      "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+      "USE_CCACHE": "ON"
     },
-    "files.associations": {
-      "MLTable": "yaml",
-      "*.yml": "yaml",
-      "*.h": "cpp",
-      "*.hpp": "cpp",
-      "*.cpp": "cpp",
-      "*.cc": "cpp",
-      "*.cxx": "cpp",
-      "*.c": "c",
-      "*.tpp": "cpp",
-      "*.ipp": "cpp",
-      "array": "cpp",
-      "atomic": "cpp",
-      "cctype": "cpp",
-      "chrono": "cpp",
-      "clocale": "cpp",
-      "cmath": "cpp",
-      "complex": "cpp",
-      "condition_variable": "cpp",
-      "cstdarg": "cpp",
-      "cstddef": "cpp",
-      "cstdint": "cpp",
-      "cstdio": "cpp",
-      "cstdlib": "cpp",
-      "cstring": "cpp",
-      "ctime": "cpp",
-      "cwchar": "cpp",
-      "cwctype": "cpp",
-      "deque": "cpp",
-      "forward_list": "cpp",
-      "list": "cpp",
-      "unordered_map": "cpp",
-      "unordered_set": "cpp",
-      "vector": "cpp",
-      "exception": "cpp",
-      "algorithm": "cpp",
-      "any": "cpp",
-      "functional": "cpp",
-      "optional": "cpp",
-      "ratio": "cpp",
-      "string_view": "cpp",
-      "system_error": "cpp",
-      "tuple": "cpp",
-      "type_traits": "cpp",
-      "fstream": "cpp",
-      "initializer_list": "cpp",
-      "iomanip": "cpp",
-      "iosfwd": "cpp",
-      "iostream": "cpp",
-      "istream": "cpp",
-      "limits": "cpp",
-      "memory": "cpp",
-      "mutex": "cpp",
-      "new": "cpp",
-      "ostream": "cpp",
-      "numeric": "cpp",
-      "sstream": "cpp",
-      "stdexcept": "cpp",
-      "streambuf": "cpp",
-      "thread": "cpp",
-      "utility": "cpp",
-      "typeinfo": "cpp",
-      "shared_mutex": "cpp",
-      "string": "cpp",
-      "format": "cpp",
-      "ranges": "cpp",
-      "span": "cpp",
-      "text_encoding": "cpp",
-      "__bit_reference": "cpp",
-      "__hash_table": "cpp",
-      "__split_buffer": "cpp",
-      "__tree": "cpp",
-      "map": "cpp",
-      "set": "cpp",
-      "xstring": "cpp",
-      "filesystem": "cpp",
-      "*.inc": "cpp",
-      "expected": "cpp",
-      "__locale": "cpp",
-      "codecvt": "cpp",
-      "xlocale": "cpp",
-      "future": "cpp",
-      "xutility": "cpp"
-    },
+    "cmake.preferredGenerators": ["Ninja", "Unix Makefiles"],
+    
+    // Editor Settings
     "editor.formatOnSave": true,
-    "files.autoSave": "onFocusChange",
-    "editor.defaultFormatter": "xaver.clang-format",
+    "editor.formatOnPaste": true,
     "editor.wordWrap": "on",
-    "editor.formatOnPaste": true
+    "editor.rulers": [80, 120],
+    "editor.renderWhitespace": "trailing",
+    
+    // File Associations (keeping your existing ones)
+    "files.associations": {
+      // ... your existing associations ...
+      "CMakeLists.txt": "cmake",
+      "*.cmake": "cmake",
+      ".clang-format": "yaml",
+      ".clang-tidy": "yaml"
+    },
+    
+    // WSL-specific settings
+    "remote.WSL.fileWatcher.polling": true,
+    "remote.WSL.debug": false,
+    
+    // Git settings for WSL
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "git.enableSmartCommit": true,
+    
+    // Test Explorer
+    "testExplorer.useNativeTesting": true,
+    "C_Cpp.codeAnalysis.clangTidy.enabled": true,
+    
+    // Performance settings
+    "files.watcherExclude": {
+      "**/build/**": true,
+      "**/build-*/**": true,
+      "**/.ccache/**": true,
+      "**/node_modules/**": true,
+      "**/.git/objects/**": true,
+      "**/.git/subtree-cache/**": true
+    },
+    
+    // IntelliSense
+    "C_Cpp.intelliSenseEngine": "default",
+    "C_Cpp.intelliSenseCachePath": "${workspaceFolder}/.vscode/ipch",
+    "C_Cpp.intelliSenseCacheSize": 5120
+  },
+  
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug Engine Tests",
+        "type": "cppdbg",
+        "request": "launch",
+        "program": "${workspaceFolder}/build/bin/RunEngineTests",
+        "args": ["--gtest_break_on_failure"],
+        "stopAtEntry": false,
+        "cwd": "${workspaceFolder}",
+        "environment": [
+          {
+            "name": "PULSE_SERVER",
+            "value": "tcp:localhost"
+          }
+        ],
+        "externalConsole": false,
+        "MIMode": "gdb",
+        "miDebuggerPath": "/usr/bin/gdb",
+        "setupCommands": [
+          {
+            "description": "Enable pretty-printing for gdb",
+            "text": "-enable-pretty-printing",
+            "ignoreFailures": true
+          }
+        ],
+        "preLaunchTask": "Build Debug"
+      }
+    ]
+  },
+  
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Build Debug",
+        "type": "cmake",
+        "command": "build",
+        "targets": ["all"],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+        "problemMatcher": ["$gcc"]
+      },
+      {
+        "label": "Run Tests",
+        "type": "shell",
+        "command": "./build/bin/RunEngineTests",
+        "dependsOn": "Build Debug",
+        "group": {
+          "kind": "test",
+          "isDefault": true
+        }
+      },
+      {
+        "label": "Build WebAssembly",
+        "type": "shell",
+        "command": "docker-compose",
+        "args": [
+          "run",
+          "--rm",
+          "wasm-builder",
+          "bash",
+          "-c",
+          "./scripts/build_wasm.sh"
+        ],
+        "problemMatcher": []
+      }
+    ]
+  },
+  
+  "extensions": {
+    "recommendations": [
+      "ms-vscode.cpptools",
+      "ms-vscode.cmake-tools",
+      "ms-vscode-remote.remote-wsl",
+      "ms-vscode-remote.remote-containers",
+      "twxs.cmake",
+      "xaver.clang-format",
+      "notskm.clang-tidy",
+      "jeff-hykin.better-cpp-syntax",
+      "cschlosser.doxdocgen",
+      "eamodio.gitlens",
+      "usernamehw.errorlens",
+      "streetsidesoftware.code-spell-checker",
+      "shardulm94.trailing-spaces"
+    ]
   }
 }

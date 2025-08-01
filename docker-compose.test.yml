@@ -1,0 +1,164 @@
+version: "3.8"
+
+services:
+  # Main testing service with coverage analysis
+  huntmaster-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.testing
+      args:
+        USER_ID: 1001
+        GROUP_ID: 1001
+    container_name: huntmaster-coverage-test
+    volumes:
+      - ./coverage_reports:/huntmaster-engine/coverage_reports
+      - ./test_logs:/huntmaster-engine/test_logs
+      - ./build:/huntmaster-engine/build
+    environment:
+      - COVERAGE_TARGET=90
+      - TEST_TIMEOUT=180
+      - GCOV_PREFIX=/huntmaster-engine/coverage_reports
+      - GCOV_PREFIX_STRIP=3
+    command: ["timeout", "180", "./scripts/docker_coverage_test.sh"]
+    profiles: ["test", "coverage"]
+
+  # Unit test focused service
+  huntmaster-unit-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.testing
+      args:
+        USER_ID: 1001
+        GROUP_ID: 1001
+    container_name: huntmaster-unit-test
+    volumes:
+      - ./test_logs:/huntmaster-engine/test_logs
+    environment:
+      - TEST_TIMEOUT=60
+    command:
+      [
+        "timeout",
+        "60",
+        "./build/bin/RunEngineTests",
+        "--gtest_filter=*Unit*",
+        "--gtest_brief=yes",
+      ]
+    profiles: ["test", "unit"]
+
+  # Integration test service
+  huntmaster-integration-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.testing
+      args:
+        USER_ID: 1001
+        GROUP_ID: 1001
+    container_name: huntmaster-integration-test
+    volumes:
+      - ./test_logs:/huntmaster-engine/test_logs
+      - ./data:/huntmaster-engine/data:ro
+    environment:
+      - TEST_TIMEOUT=90
+    command:
+      [
+        "timeout",
+        "90",
+        "./build/bin/RunEngineTests",
+        "--gtest_filter=*Integration*",
+        "--gtest_brief=yes",
+      ]
+    profiles: ["test", "integration"]
+
+  # Performance test service
+  huntmaster-performance-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.testing
+      args:
+        USER_ID: 1001
+        GROUP_ID: 1001
+    container_name: huntmaster-performance-test
+    volumes:
+      - ./test_logs:/huntmaster-engine/test_logs
+      - ./data:/huntmaster-engine/data:ro
+    environment:
+      - TEST_TIMEOUT=120
+    command: ["timeout", "120", "./build/bin/performance_profiling_demo"]
+    profiles: ["test", "performance"]
+
+  # Security test service
+  huntmaster-security-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.testing
+      args:
+        USER_ID: 1001
+        GROUP_ID: 1001
+    container_name: huntmaster-security-test
+    volumes:
+      - ./test_logs:/huntmaster-engine/test_logs
+    environment:
+      - TEST_TIMEOUT=90
+    command:
+      [
+        "timeout",
+        "90",
+        "./build/bin/RunEngineTests",
+        "--gtest_filter=*Security*",
+        "--gtest_brief=yes",
+      ]
+    profiles: ["test", "security"]
+
+  # Memory analysis service
+  huntmaster-memory-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.testing
+      args:
+        USER_ID: 1001
+        GROUP_ID: 1001
+    container_name: huntmaster-memory-test
+    volumes:
+      - ./test_logs:/huntmaster-engine/test_logs
+    environment:
+      - TEST_TIMEOUT=180
+    command:
+      [
+        "timeout",
+        "180",
+        "valgrind",
+        "--tool=memcheck",
+        "--leak-check=full",
+        "--show-leak-kinds=all",
+        "./build/bin/RunEngineTests",
+        "--gtest_brief=yes",
+      ]
+    profiles: ["test", "memory"]
+
+  # Coverage visualization service
+  huntmaster-coverage-viz:
+    build:
+      context: .
+      dockerfile: Dockerfile.testing
+      args:
+        USER_ID: 1001
+        GROUP_ID: 1001
+    container_name: huntmaster-coverage-viz
+    volumes:
+      - ./coverage_reports:/huntmaster-engine/coverage_reports
+    ports:
+      - "8080:8080"
+    command:
+      [
+        "python3",
+        "-m",
+        "http.server",
+        "8080",
+        "--directory",
+        "coverage_reports/html",
+      ]
+    profiles: ["viz"]
+
+networks:
+  default:
+    name: huntmaster-test-network

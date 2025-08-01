@@ -1,46 +1,64 @@
-# File: docker-compose.dev.yml
-# Updated to include a dedicated service for compiling WebAssembly.
-
 version: "3.8"
 
 services:
-  # This is your existing development service for writing code.
+  # C++ Development Container
   cpp-dev:
     build:
       context: .
       dockerfile: Dockerfile.dev
     container_name: huntmaster-cpp-dev
+    hostname: huntmaster-dev
     ports:
-      - "8080:8080"
+      - "8080:8080" # Web server
+      - "3000:3000" # Development server
+      - "5000:5000" # API server
     volumes:
-      # This still mounts your source code for editing.
-      - .:/workspaces/huntmaster
-      # UPDATED: Separate, persistent volumes for user data and extensions.
-      - vscode-user-data:/data/user-data
-      - vscode-extensions:/data/extensions
-    # Changed to sleep infinity to be compatible with the new builder service
+      # Mount source code with consistent permissions
+      - .:/workspace:cached
+      # Persistent build cache
+      - ccache-data:/workspace/.ccache
+      # VS Code server data
+      - vscode-server:/home/developer/.vscode-server
+      # Preserve bash history
+      - bash-history:/commandhistory
+    environment:
+      # WSL Audio setup
+      - PULSE_SERVER=tcp:host.docker.internal:4713
+      - DISPLAY=host.docker.internal:0
+      # Development environment
+      - TERM=xterm-256color
+      - CMAKE_BUILD_PARALLEL_LEVEL=8
+      # Cache configuration
+      - CCACHE_DIR=/workspace/.ccache
+      - CCACHE_MAXSIZE=5G
+    # Use host network for better WSL integration
+    network_mode: "host"
+    # Keep container running
     command: sleep infinity
+    # Security options for debugging
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
 
-  # --- NEW SERVICE FOR BUILDING WASM ---
-  # This service uses the official Emscripten image and is pre-configured
-  # for compiling C++ to WebAssembly.
+  # WebAssembly Builder Service
   wasm-builder:
-    # This is the official, pre-configured image from the Emscripten team.
     image: emscripten/emsdk:latest
     container_name: huntmaster-wasm-builder
-    
-    # Mount the entire project directory into the '/src' folder inside the container.
     volumes:
-      - .:/src
-      
-    # Set the default working directory to our project code.
+      - .:/src:cached
+      - wasm-cache:/emsdk/upstream/emscripten/cache
     working_dir: /src
-    
-    # This command just keeps the container running in the background
-    # so we can connect to it with 'exec'.
+    environment:
+      - EMCC_CORES=8
     command: tail -f /dev/null
 
-# This defines the separate named volumes for your dev container.
 volumes:
-  vscode-user-data: {}
-  vscode-extensions: {}
+  ccache-data:
+    driver: local
+  vscode-server:
+    driver: local
+  bash-history:
+    driver: local
+  wasm-cache:
+    driver: local

@@ -1,0 +1,26 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "docker-debug",
+            "displayName": "Docker Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+                "CMAKE_CXX_COMPILER": "g++-13",
+                "CMAKE_C_COMPILER": "gcc-13",
+                "USE_CCACHE": "ON"
+            }
+        },
+        {
+            "name": "docker-release",
+            "inherits": "docker-debug",
+            "displayName": "Docker Release",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release"
+            }
+        }
+    ]
+}

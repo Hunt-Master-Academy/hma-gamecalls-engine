@@ -1,0 +1,12 @@
+build/
+build-*/
+.ccache/
+.vscode/ipch/
+*.o
+*.a
+*.so
+*.gcda
+*.gcno
+*.gcov
+node_modules/
+.git/

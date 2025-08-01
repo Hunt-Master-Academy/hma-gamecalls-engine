@@ -1,43 +1,162 @@
-# File: Dockerfile.dev
-# Final Version: Explicitly defines data and extension directories.
+# Huntmaster Audio Engine Development Container
+# Optimized for C++20 audio processing development with WSL Ubuntu 24.04
 
-# Start from a standard Ubuntu base image.
-FROM ubuntu:latest
+FROM mcr.microsoft.com/devcontainers/cpp:1-ubuntu-24.04
 
-# Set an argument to prevent interactive prompts during package installation.
+ARG REINSTALL_CMAKE_VERSION_FROM_SOURCE="3.22.2"
+ARG NODE_VERSION="20"
 ARG DEBIAN_FRONTEND=noninteractive
 
-# --- RUN ALL SYSTEM-LEVEL INSTALLATIONS AS ROOT ---
-
-# Update package lists and install all necessary development tools.
-RUN apt-get update && apt-get install -y \
+# Install C++ development tools and audio libraries
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # C++ Compilers and Build Tools
     build-essential \
-    g++ \
-    gdb \
+    g++-13 \
+    clang-15 \
+    clang-format-15 \
+    clang-tidy-15 \
     cmake \
+    ninja-build \
+    ccache \
+    # Audio Development Libraries
+    libasound2-dev \
+    libpulse-dev \
+    portaudio19-dev \
+    libsndfile1-dev \
+    # Debugging and Profiling
+    gdb \
+    valgrind \
+    linux-tools-generic \
+    perf-tools-unstable \
+    # Code Coverage
+    lcov \
+    gcovr \
+    # Version Control
     git \
+    git-lfs \
+    # WebAssembly Support
+    emscripten \
+    wabt \
+    # Python for Scripts
+    python3 \
+    python3-pip \
+    python3-venv \
+    # Network Tools (for WSL audio)
+    net-tools \
+    iputils-ping \
+    # Documentation
+    doxygen \
+    graphviz \
+    # Utilities
     curl \
     wget \
-    # Clean up the apt cache to reduce image size.
+    unzip \
+    pkg-config \
+    # Clean up
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Download and install VS Code Server (code-server).
-RUN wget https://github.com/coder/code-server/releases/download/v4.22.1/code-server-4.22.1-linux-amd64.tar.gz \
-    && tar -xvzf code-server-4.22.1-linux-amd64.tar.gz \
-    && mv code-server-4.22.1-linux-amd64 /usr/local/lib/code-server \
-    && ln -s /usr/local/lib/code-server/bin/code-server /usr/local/bin/code-server \
-    && rm -rf code-server-4.22.1-linux-amd64.tar.gz
+# Install Node.js for WebAssembly development
+RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install -g npm@latest \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Create the workspace and dedicated data directories.
-RUN mkdir -p /workspaces/huntmaster && \
-    mkdir -p /data/user-data && \
-    mkdir -p /data/extensions
+# Configure ccache for faster rebuilds
+ENV CCACHE_DIR=/workspace/.ccache
+ENV CCACHE_MAXSIZE=5G
+ENV PATH="/usr/lib/ccache:${PATH}"
+RUN mkdir -p /workspace/.ccache \
+    && ccache --max-size=5G
 
-# --- SET CONTAINER BEHAVIOR ---
+# Set up Git configuration for consistent line endings
+RUN git config --global core.autocrlf input \
+    && git config --global core.eol lf
 
-# Expose the port that code-server will run on.
-EXPOSE 8080
+# Configure locale for proper UTF-8 support
+RUN apt-get update && apt-get install -y locales \
+    && locale-gen en_US.UTF-8 \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
-# The command that will run when the container starts.
-# UPDATED: Explicitly set the user data and extensions directories.
-ENTRYPOINT ["code-server", "--bind-addr", "0.0.0.0:8080", "--auth", "none", "--user-data-dir", "/data/user-data", "--extensions-dir", "/data/extensions", "/workspaces/huntmaster"]
+# Create non-root user for development
+ARG USERNAME=developer
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python development packages
+RUN python3 -m pip install --upgrade pip \
+    && python3 -m pip install \
+    pytest \
+    numpy \
+    matplotlib \
+    scipy \
+    librosa \
+    jupyter \
+    black \
+    flake8 \
+    mypy
+
+# Set up CMake presets directory
+RUN mkdir -p /workspace/.cmake \
+    && chown -R $USERNAME:$USERNAME /workspace
+
+# Configure audio for WSL
+RUN echo 'export PULSE_SERVER=tcp:$(cat /etc/resolv.conf | grep nameserver | awk '\''{print $2}'\'')' >> /home/$USERNAME/.bashrc \
+    && echo 'export DISPLAY=$(cat /etc/resolv.conf | grep nameserver | awk '\''{print $2}'\''):0' >> /home/$USERNAME/.bashrc
+
+# Install VS Code extensions for C++ development (if using devcontainers)
+# Note: These will be installed when the container is used with VS Code
+COPY .devcontainer/devcontainer.json /tmp/devcontainer.json
+
+# Set up development scripts
+RUN mkdir -p /usr/local/bin
+COPY <<'EOF' /usr/local/bin/setup-audio
+#!/bin/bash
+# Setup audio for WSL
+export PULSE_SERVER=tcp:$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}')
+echo "PulseAudio server set to: $PULSE_SERVER"
+# Test audio
+pactl info 2>/dev/null || echo "Warning: Cannot connect to PulseAudio server"
+EOF
+
+COPY <<'EOF' /usr/local/bin/build-huntmaster
+#!/bin/bash
+# Quick build script for Huntmaster Engine
+cd /workspace
+cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=${1:-Debug}
+cmake --build build --parallel
+EOF
+
+RUN chmod +x /usr/local/bin/setup-audio /usr/local/bin/build-huntmaster
+
+# Switch to non-root user
+USER $USERNAME
+
+# Set working directory
+WORKDIR /workspace
+
+# Environment variables for development
+ENV CC=gcc-13
+ENV CXX=g++-13
+ENV CMAKE_GENERATOR=Ninja
+ENV GTEST_COLOR=1
+
+# Expose ports for development servers
+EXPOSE 8080 3000 5000
+
+# Default command
+CMD ["/bin/bash"]

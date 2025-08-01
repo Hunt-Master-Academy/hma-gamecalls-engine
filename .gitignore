@@ -23,6 +23,16 @@ CMakeUserPresets.json
 *.dylib
 *.exe
 
+# === Container development caches ===
+.cache/
+.ccache/
+.npm/
+node_modules/
+.vscode-server/
+__pycache__/
+.pytest_cache/
+.eslintcache
+
 # === Root Directory Build Artifacts ===
 # These should be built into build/bin/ instead
 /analyze_recording
@@ -110,6 +120,34 @@ Icon
 # Linux
 *~
 .directory
+
+# === Container Development Caches ===
+.cache/
+.ccache/
+.npm/
+.vscode-server/
+__pycache__/
+.pytest_cache/
+.eslintcache
+.cargo/
+.rustup/
+
+# === Additional Container Cache Directories ===
+.pip/
+.conda/
+.cmake/
+.conan/
+.vcpkg/
+node_modules/
+.node-gyp/
+.electron/
+.yarn/
+.pnpm-store/
+
+# === VS Code Container Issues ===
+.vscode-server-backup/
+.vscode-remote-containers/
+.devcontainer-cache/
 
 # === Transient Files ===
 # Logs, reports, and other temporary files that should not be committed.

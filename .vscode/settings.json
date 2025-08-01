@@ -1,232 +1,106 @@
 {
-  // Terminal Configuration - Auto-activate conda environment
-  "terminal.integrated.defaultProfile.windows": "Ubuntu (WSL)",
-  "terminal.integrated.profiles.windows": {
-    "Ubuntu (WSL)": {
-      "path": "wsl.exe",
-      "args": ["-d", "Ubuntu"],
-      "icon": "terminal-ubuntu",
-      "overrideName": true
+    // C++ formatting
+    "C_Cpp.clang_format_style": "file",
+    "C_Cpp.clang_format_fallbackStyle": "Google",
+    "editor.formatOnSave": true,
+    "[cpp]": {
+        "editor.defaultFormatter": "ms-vscode.cpptools"
     },
-    "Command Prompt with Conda": {
-      "path": "C:\\Windows\\System32\\cmd.exe",
-      "args": [
-        "/k",
-        "C:\\ProgramData\\miniconda3\\Scripts\\activate.bat && conda activate huntmaster_final_env"
-      ],
-      "icon": "terminal-cmd",
-      "overrideName": true
-    },
-    "PowerShell with Conda": {
-      "path": "powershell",
-      "args": [
-        "-NoExit",
-        "-Command",
-        "& 'C:\\ProgramData\\miniconda3\\shell\\condabin\\conda-hook.ps1'; conda activate huntmaster_final_env"
-      ],
-      "icon": "terminal-powershell"
-    },
-    "Git Bash": {
-      "path": "C:\\Program Files\\Git\\bin\\bash.exe",
-      "icon": "terminal-bash"
+
+    // WSL-specific settings
+    "terminal.integrated.defaultProfile.windows": "Ubuntu-24.04 (WSL)",
+    "remote.WSL.fileWatcher.polling": true,
+
+    // CMake configuration
+    "cmake.configureOnOpen": true,
+    "cmake.buildDirectory": "${workspaceFolder}/build",
+    "cmake.generator": "Ninja",
+
+    // IntelliSense
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
+    "C_Cpp.default.cppStandard": "c++20",
+
+    // Testing
+    "cmake.ctest.parallelJobs": 0, // Use all cores
+
+    // File associations
+    "files.associations": {
+        "*.wasm": "wasm",
+        "*.wat": "wat",
+        "any": "cpp",
+        "array": "cpp",
+        "atomic": "cpp",
+        "bit": "cpp",
+        "bitset": "cpp",
+        "cctype": "cpp",
+        "charconv": "cpp",
+        "chrono": "cpp",
+        "cinttypes": "cpp",
+        "clocale": "cpp",
+        "cmath": "cpp",
+        "codecvt": "cpp",
+        "compare": "cpp",
+        "complex": "cpp",
+        "concepts": "cpp",
+        "condition_variable": "cpp",
+        "cstdarg": "cpp",
+        "cstddef": "cpp",
+        "cstdint": "cpp",
+        "cstdio": "cpp",
+        "cstdlib": "cpp",
+        "cstring": "cpp",
+        "ctime": "cpp",
+        "cwchar": "cpp",
+        "cwctype": "cpp",
+        "deque": "cpp",
+        "forward_list": "cpp",
+        "list": "cpp",
+        "map": "cpp",
+        "set": "cpp",
+        "string": "cpp",
+        "unordered_map": "cpp",
+        "unordered_set": "cpp",
+        "vector": "cpp",
+        "exception": "cpp",
+        "expected": "cpp",
+        "algorithm": "cpp",
+        "functional": "cpp",
+        "iterator": "cpp",
+        "memory": "cpp",
+        "memory_resource": "cpp",
+        "numeric": "cpp",
+        "optional": "cpp",
+        "random": "cpp",
+        "ratio": "cpp",
+        "regex": "cpp",
+        "string_view": "cpp",
+        "system_error": "cpp",
+        "tuple": "cpp",
+        "type_traits": "cpp",
+        "utility": "cpp",
+        "fstream": "cpp",
+        "future": "cpp",
+        "initializer_list": "cpp",
+        "iomanip": "cpp",
+        "iosfwd": "cpp",
+        "iostream": "cpp",
+        "istream": "cpp",
+        "latch": "cpp",
+        "limits": "cpp",
+        "mutex": "cpp",
+        "new": "cpp",
+        "numbers": "cpp",
+        "ostream": "cpp",
+        "semaphore": "cpp",
+        "shared_mutex": "cpp",
+        "span": "cpp",
+        "sstream": "cpp",
+        "stdexcept": "cpp",
+        "stop_token": "cpp",
+        "streambuf": "cpp",
+        "thread": "cpp",
+        "typeinfo": "cpp",
+        "variant": "cpp",
+        "format": "cpp"
     }
-  },
-  "github.copilot.editor.enableAutoCompletions": true,
-  "github.copilot.chat.tools.autoApprove": true,
-
-  // Python Configuration
-  "python.defaultInterpreterPath": "C:\\ProgramData\\miniconda3\\envs\\huntmaster_final_env\\python.exe",
-  "python.terminal.activateEnvironment": true,
-  "python.linting.enabled": true,
-  "python.linting.pylintEnabled": true,
-  "python.formatting.provider": "black",
-
-  // CMake Configuration
-  "cmake.configureOnOpen": false,
-  "cmake.generator": "MinGW Makefiles",
-  "cmake.buildDirectory": "${workspaceFolder}/build",
-  "cmake.configureArgs": [
-    "-DCMAKE_C_COMPILER=C:/ProgramData/miniconda3/envs/huntmaster_final_env/Library/mingw-w64/bin/gcc.exe",
-    "-DCMAKE_CXX_COMPILER=C:/ProgramData/miniconda3/envs/huntmaster_final_env/Library/mingw-w64/bin/g++.exe",
-    "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
-  ],
-  "cmake.environment": {
-    "PATH": "C:\\ProgramData\\miniconda3\\envs\\huntmaster_final_env\\Library\\mingw-w64\\bin;C:\\ProgramData\\miniconda3\\envs\\huntmaster_final_env\\Library\\bin;${env:PATH}"
-  },
-
-  // C/C++ Extension Configuration
-  "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
-  "C_Cpp.default.cppStandard": "c++20",
-  "C_Cpp.default.cStandard": "c17",
-  "C_Cpp.formatting": "clangFormat",
-  "C_Cpp.clang_format_style": "file",
-  "C_Cpp.clang_format_fallbackStyle": "Google",
-
-  // Editor Configuration
-  "editor.formatOnSave": true,
-  "editor.formatOnPaste": true,
-  "editor.formatOnType": true,
-  "editor.tabSize": 4,
-  "editor.insertSpaces": true,
-  "editor.detectIndentation": false,
-  "editor.trimAutoWhitespace": true,
-
-  // Auto-save and file handling
-  "files.autoSave": "onFocusChange",
-  "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true,
-  "files.trimFinalNewlines": true,
-
-  // Language-specific Formatting
-  "[cpp]": {
-    "editor.defaultFormatter": "ms-vscode.cpptools",
-    "editor.formatOnSave": true,
-    "editor.rulers": [100]
-  },
-  "[c]": {
-    "editor.defaultFormatter": "ms-vscode.cpptools",
-    "editor.formatOnSave": true,
-    "editor.rulers": [100]
-  },
-
-  // Clang-format specific settings
-  "clang-format.executable": "clang-format",
-  "clang-format.style": "file",
-  "clang-format.fallbackStyle": "Google",
-
-  "files.associations": {
-    "*.yml": "yaml",
-    "MLTable": "yaml",
-    "*.h": "cpp",
-    "*.hpp": "cpp",
-    "*.cpp": "cpp",
-    "*.cc": "cpp",
-    "*.cxx": "cpp",
-    "*.c": "c",
-    "*.tpp": "cpp",
-    "*.ipp": "cpp",
-    "array": "cpp",
-    "atomic": "cpp",
-    "cctype": "cpp",
-    "chrono": "cpp",
-    "clocale": "cpp",
-    "cmath": "cpp",
-    "complex": "cpp",
-    "condition_variable": "cpp",
-    "cstdarg": "cpp",
-    "cstddef": "cpp",
-    "cstdint": "cpp",
-    "cstdio": "cpp",
-    "cstdlib": "cpp",
-    "cstring": "cpp",
-    "ctime": "cpp",
-    "cwchar": "cpp",
-    "cwctype": "cpp",
-    "deque": "cpp",
-    "forward_list": "cpp",
-    "list": "cpp",
-    "unordered_map": "cpp",
-    "unordered_set": "cpp",
-    "vector": "cpp",
-    "exception": "cpp",
-    "algorithm": "cpp",
-    "any": "cpp",
-    "functional": "cpp",
-    "optional": "cpp",
-    "ratio": "cpp",
-    "string_view": "cpp",
-    "system_error": "cpp",
-    "tuple": "cpp",
-    "type_traits": "cpp",
-    "fstream": "cpp",
-    "initializer_list": "cpp",
-    "iomanip": "cpp",
-    "iosfwd": "cpp",
-    "iostream": "cpp",
-    "istream": "cpp",
-    "limits": "cpp",
-    "memory": "cpp",
-    "mutex": "cpp",
-    "new": "cpp",
-    "ostream": "cpp",
-    "numeric": "cpp",
-    "sstream": "cpp",
-    "stdexcept": "cpp",
-    "streambuf": "cpp",
-    "thread": "cpp",
-    "utility": "cpp",
-    "typeinfo": "cpp",
-    "shared_mutex": "cpp",
-    "string": "cpp",
-    "format": "cpp",
-    "ranges": "cpp",
-    "span": "cpp",
-    "text_encoding": "cpp",
-    "__bit_reference": "cpp",
-    "__hash_table": "cpp",
-    "__split_buffer": "cpp",
-    "__tree": "cpp",
-    "map": "cpp",
-    "set": "cpp",
-    "xstring": "cpp",
-    "filesystem": "cpp",
-    "*.inc": "cpp",
-    "expected": "cpp",
-    "__locale": "cpp",
-    "codecvt": "cpp",
-    "xlocale": "cpp",
-    "future": "cpp",
-    "xutility": "cpp",
-    "bitset": "cpp",
-    "queue": "cpp",
-    "random": "cpp",
-    "regex": "cpp",
-    "stack": "cpp",
-    "valarray": "cpp",
-    "xhash": "cpp",
-    "xtree": "cpp",
-    "xlocmes": "cpp",
-    "locale": "cpp"
-  },
-
-  // Exclude Patterns
-  "files.exclude": {
-    "**/build": true,
-    "**/build-wasm": true,
-    "**/.git": true,
-    "**/.DS_Store": true,
-    "**/compile_commands.json": true
-  },
-  "search.exclude": {
-    "**/build": true,
-    "**/build-wasm": true,
-    "**/libs/kissfft": true,
-    "**/node_modules": true
-  },
-
-  //   "vscode_custom_css.imports": [
-  //     "file:///mnt/e/develop/huntmaster/huntmaster-engine/.vscode/auto_continue.js"
-  //   ],
-
-  // Spell Checker
-  "cSpell.words": [
-    "ALSA",
-    "AUDIOUNIT",
-    "BINDIR",
-    "Coeffs",
-    "COREAUDIO",
-    "COREFOUNDATION",
-    "drwav",
-    "Emscripten",
-    "endforeach",
-    "fftr",
-    "gbenchmark",
-    "gtest",
-    "Huntmaster",
-    "INCLUDEDIR",
-    "KISSFFT",
-    "miniaudio",
-    "unex",
-    "winmm"
-  ]
 }
