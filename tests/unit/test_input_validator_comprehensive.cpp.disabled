@@ -1,0 +1,337 @@
+/**
+ * @file test_input_validator_comprehensive.cpp
+ * @brief Comprehensive Test Suite for Input Validator Security Component
+ *
+ * Tests input validation capabilities including string validation,
+ * numeric validation, buffer validation, and pattern detection.
+ * Target: Achieve 70%+ coverage for Input Validator security component.
+ *
+ * @author Huntmaster Engine Team
+ * @version 1.0
+ * @date July 2025
+ */
+
+#include <chrono>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include <gtest/gtest.h>
+
+#include "huntmaster/security/input-validator.h"
+
+namespace huntmaster {
+namespace test {
+
+using namespace huntmaster::security;
+
+/**
+ * Comprehensive test fixture for Input Validator security component
+ */
+class InputValidatorComprehensiveTest : public ::testing::Test {
+  protected:
+    void SetUp() override {
+        // Configure input validator with all features enabled
+        config_.enableStringValidation = true;
+        config_.enableNumericValidation = true;
+        config_.enableBufferValidation = true;
+        config_.enablePatternDetection = true;
+        config_.maxStringLength = 65536;
+        config_.maxBufferSize = 1048576;
+        config_.strictMode = false;
+
+        inputValidator_ = std::make_unique<InputValidator>(config_);
+    }
+
+    void TearDown() override {
+        inputValidator_.reset();
+    }
+
+    ValidationConfig config_;
+    std::unique_ptr<InputValidator> inputValidator_;
+};
+
+// Test 1: Input Validator Initialization
+TEST_F(InputValidatorComprehensiveTest, InitializationTest) {
+    EXPECT_TRUE(inputValidator_ != nullptr);
+}
+
+// Test 2: String Validation
+TEST_F(InputValidatorComprehensiveTest, StringValidationTest) {
+    // Test valid strings
+    EXPECT_TRUE(inputValidator_->validateString("valid_string", StringType::Generic));
+    EXPECT_TRUE(inputValidator_->validateString("test.wav", StringType::FilePath));
+    EXPECT_TRUE(inputValidator_->validateString("https://example.com", StringType::URL));
+
+    // Test empty string
+    EXPECT_FALSE(inputValidator_->validateString("", StringType::Generic));
+
+    // Test oversized string
+    std::string longString(config_.maxStringLength + 1, 'a');
+    EXPECT_FALSE(inputValidator_->validateString(longString, StringType::Generic));
+}
+
+// Test 3: Numeric Validation
+TEST_F(InputValidatorComprehensiveTest, NumericValidationTest) {
+    // Test valid integers
+    EXPECT_TRUE(inputValidator_->validateInteger(42, 0, 100));
+    EXPECT_TRUE(inputValidator_->validateInteger(-10, -50, 50));
+
+    // Test out of range integers
+    EXPECT_FALSE(inputValidator_->validateInteger(150, 0, 100));
+    EXPECT_FALSE(inputValidator_->validateInteger(-100, -50, 50));
+
+    // Test valid floats
+    EXPECT_TRUE(inputValidator_->validateFloat(3.14f, 0.0f, 10.0f));
+    EXPECT_TRUE(inputValidator_->validateFloat(-2.5f, -5.0f, 5.0f));
+
+    // Test out of range floats
+    EXPECT_FALSE(inputValidator_->validateFloat(15.0f, 0.0f, 10.0f));
+    EXPECT_FALSE(inputValidator_->validateFloat(-10.0f, -5.0f, 5.0f));
+}
+
+// Test 4: Buffer Validation
+TEST_F(InputValidatorComprehensiveTest, BufferValidationTest) {
+    const size_t validSize = 1024;
+    std::vector<uint8_t> validBuffer(validSize, 0x42);
+
+    // Test valid buffer
+    EXPECT_TRUE(inputValidator_->validateBuffer(validBuffer.data(), validSize));
+
+    // Test null buffer
+    EXPECT_FALSE(inputValidator_->validateBuffer(nullptr, validSize));
+
+    // Test zero size buffer
+    EXPECT_FALSE(inputValidator_->validateBuffer(validBuffer.data(), 0));
+
+    // Test oversized buffer
+    EXPECT_FALSE(inputValidator_->validateBuffer(validBuffer.data(), config_.maxBufferSize + 1));
+}
+
+// Test 5: Audio Format Validation
+TEST_F(InputValidatorComprehensiveTest, AudioFormatValidationTest) {
+    AudioFormatParams validFormat;
+    validFormat.sampleRate = 44100;
+    validFormat.channels = 2;
+    validFormat.bitDepth = 16;
+    validFormat.encoding = "PCM";
+
+    // Test valid format
+    EXPECT_TRUE(inputValidator_->validateAudioFormat(validFormat));
+
+    // Test invalid sample rates
+    AudioFormatParams invalidFormat1 = validFormat;
+    invalidFormat1.sampleRate = 0;
+    EXPECT_FALSE(inputValidator_->validateAudioFormat(invalidFormat1));
+
+    // Test invalid channels
+    AudioFormatParams invalidFormat2 = validFormat;
+    invalidFormat2.channels = 0;
+    EXPECT_FALSE(inputValidator_->validateAudioFormat(invalidFormat2));
+
+    // Test invalid bit depth
+    AudioFormatParams invalidFormat3 = validFormat;
+    invalidFormat3.bitDepth = 0;
+    EXPECT_FALSE(inputValidator_->validateAudioFormat(invalidFormat3));
+}
+
+// Test 6: Audio Config Validation
+TEST_F(InputValidatorComprehensiveTest, AudioConfigValidationTest) {
+    AudioConfig validConfig;
+    validConfig.bufferSize = 1024;
+    validConfig.sampleRate = 44100;
+    validConfig.channels = 2;
+    validConfig.callbacks = {"onDataReady", "onError"};
+
+    // Test valid config
+    EXPECT_TRUE(inputValidator_->validateAudioConfig(validConfig));
+
+    // Test invalid buffer size
+    AudioConfig invalidConfig1 = validConfig;
+    invalidConfig1.bufferSize = 0;
+    EXPECT_FALSE(inputValidator_->validateAudioConfig(invalidConfig1));
+
+    // Test invalid sample rate
+    AudioConfig invalidConfig2 = validConfig;
+    invalidConfig2.sampleRate = 0;
+    EXPECT_FALSE(inputValidator_->validateAudioConfig(invalidConfig2));
+}
+
+// Test 7: WASM Value Validation
+TEST_F(InputValidatorComprehensiveTest, WasmValueValidationTest) {
+    // Test int32 value
+    WasmValue int32Value;
+    int32Value.type = WasmValue::Int32;
+    int32Value.value.i32 = 42;
+    EXPECT_TRUE(inputValidator_->validateWasmValue(int32Value));
+
+    // Test float value
+    WasmValue floatValue;
+    floatValue.type = WasmValue::Float32;
+    floatValue.value.f32 = 3.14f;
+    EXPECT_TRUE(inputValidator_->validateWasmValue(floatValue));
+
+    // Test pointer value
+    WasmValue ptrValue;
+    ptrValue.type = WasmValue::Pointer;
+    ptrValue.value.ptr = reinterpret_cast<void*>(0x1000);
+    EXPECT_TRUE(inputValidator_->validateWasmValue(ptrValue));
+}
+
+// Test 8: HTTP Request Validation
+TEST_F(InputValidatorComprehensiveTest, HttpRequestValidationTest) {
+    HttpRequest validRequest;
+    validRequest.method = "POST";
+    validRequest.url = "/api/audio/upload";
+    validRequest.headers = {{"Content-Type", "audio/wav"}, {"Authorization", "Bearer token"}};
+    validRequest.body = {0x52, 0x49, 0x46, 0x46};  // RIFF header
+
+    // Test valid request
+    EXPECT_TRUE(inputValidator_->validateHttpRequest(validRequest));
+
+    // Test invalid method
+    HttpRequest invalidRequest1 = validRequest;
+    invalidRequest1.method = "";
+    EXPECT_FALSE(inputValidator_->validateHttpRequest(invalidRequest1));
+
+    // Test invalid URL
+    HttpRequest invalidRequest2 = validRequest;
+    invalidRequest2.url = "";
+    EXPECT_FALSE(inputValidator_->validateHttpRequest(invalidRequest2));
+}
+
+// Test 9: Sanitization
+TEST_F(InputValidatorComprehensiveTest, SanitizationTest) {
+    // Test string sanitization
+    std::string unsafeString = "<script>alert('xss')</script>";
+    std::string sanitized = inputValidator_->sanitizeString(unsafeString, StringType::Generic);
+    EXPECT_NE(unsafeString, sanitized);
+    EXPECT_FALSE(sanitized.empty());
+
+    // Test path sanitization
+    std::string unsafePath = "../../../etc/passwd";
+    std::string sanitizedPath = inputValidator_->sanitizePath(unsafePath);
+    EXPECT_NE(unsafePath, sanitizedPath);
+
+    // Test filename sanitization
+    std::string unsafeFilename = "file<>:\"|?*.txt";
+    std::string sanitizedFilename = inputValidator_->sanitizeFilename(unsafeFilename);
+    EXPECT_NE(unsafeFilename, sanitizedFilename);
+}
+
+// Test 10: Pattern Detection
+TEST_F(InputValidatorComprehensiveTest, PatternDetectionTest) {
+    // Test XSS detection
+    EXPECT_TRUE(inputValidator_->containsXSS("<script>alert('xss')</script>"));
+    EXPECT_TRUE(inputValidator_->containsXSS("javascript:alert('xss')"));
+    EXPECT_FALSE(inputValidator_->containsXSS("normal text"));
+
+    // Test SQL injection detection
+    EXPECT_TRUE(inputValidator_->containsSQLInjection("'; DROP TABLE users; --"));
+    EXPECT_TRUE(inputValidator_->containsSQLInjection("1' OR '1'='1"));
+    EXPECT_FALSE(inputValidator_->containsSQLInjection("normal query"));
+
+    // Test path traversal detection
+    EXPECT_TRUE(inputValidator_->containsPathTraversal("../../../etc/passwd"));
+    EXPECT_TRUE(inputValidator_->containsPathTraversal("..\\..\\windows\\system32"));
+    EXPECT_FALSE(inputValidator_->containsPathTraversal("normal/path/file.txt"));
+}
+
+// Test 11: WASM Memory Access Validation
+TEST_F(InputValidatorComprehensiveTest, WasmMemoryAccessTest) {
+    void* validPtr = reinterpret_cast<void*>(0x1000);
+    size_t validSize = 1024;
+
+    // Test valid memory access
+    EXPECT_TRUE(inputValidator_->validateWasmMemoryAccess(validPtr, validSize, AccessType::Read));
+    EXPECT_TRUE(inputValidator_->validateWasmMemoryAccess(validPtr, validSize, AccessType::Write));
+
+    // Test null pointer access
+    EXPECT_FALSE(inputValidator_->validateWasmMemoryAccess(nullptr, validSize, AccessType::Read));
+
+    // Test zero size access
+    EXPECT_FALSE(inputValidator_->validateWasmMemoryAccess(validPtr, 0, AccessType::Read));
+}
+
+// Test 12: Configuration Management
+TEST_F(InputValidatorComprehensiveTest, ConfigurationTest) {
+    // Test with strict mode enabled
+    ValidationConfig strictConfig = config_;
+    strictConfig.strictMode = true;
+    strictConfig.maxStringLength = 1024;
+
+    auto strictValidator = std::make_unique<InputValidator>(strictConfig);
+
+    // Strict mode should be more restrictive
+    std::string longString(2048, 'a');
+    EXPECT_FALSE(strictValidator->validateString(longString, StringType::Generic));
+}
+
+// Test 13: Edge Cases and Error Handling
+TEST_F(InputValidatorComprehensiveTest, EdgeCasesTest) {
+    // Test with disabled validation
+    ValidationConfig disabledConfig;
+    disabledConfig.enableStringValidation = false;
+    disabledConfig.enableNumericValidation = false;
+    disabledConfig.enableBufferValidation = false;
+    disabledConfig.enablePatternDetection = false;
+
+    auto disabledValidator = std::make_unique<InputValidator>(disabledConfig);
+
+    // Should handle disabled validation gracefully
+    EXPECT_TRUE(disabledValidator->validateString("any string", StringType::Generic));
+
+    // Test extreme values
+    EXPECT_FALSE(inputValidator_->validateInteger(INT_MAX, 0, 100));
+    EXPECT_FALSE(inputValidator_->validateInteger(INT_MIN, 0, 100));
+    EXPECT_FALSE(inputValidator_->validateFloat(INFINITY, 0.0f, 100.0f));
+    EXPECT_FALSE(inputValidator_->validateFloat(-INFINITY, 0.0f, 100.0f));
+}
+
+// Test 14: Performance Test
+TEST_F(InputValidatorComprehensiveTest, PerformanceTest) {
+    const int numValidations = 1000;
+    std::string testString = "test_string_for_validation";
+
+    auto start = std::chrono::high_resolution_clock::now();
+
+    for (int i = 0; i < numValidations; i++) {
+        inputValidator_->validateString(testString, StringType::Generic);
+        inputValidator_->validateInteger(i, 0, numValidations);
+        inputValidator_->validateFloat(i * 0.1f, 0.0f, 100.0f);
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+    // Should complete within reasonable time
+    EXPECT_LT(duration.count(), 1000);  // Less than 1 second
+}
+
+// Test 15: Complex Validation Scenarios
+TEST_F(InputValidatorComprehensiveTest, ComplexValidationTest) {
+    // Test combined validation scenarios
+
+    // Valid audio file upload scenario
+    std::string filename = "recording.wav";
+    std::vector<uint8_t> fileData = {
+        0x52, 0x49, 0x46, 0x46, 0x24, 0x08, 0x00, 0x00};  // RIFF header
+
+    EXPECT_TRUE(inputValidator_->validateString(filename, StringType::FilePath));
+    EXPECT_TRUE(inputValidator_->validateBuffer(fileData.data(), fileData.size()));
+    EXPECT_FALSE(inputValidator_->containsPathTraversal(filename));
+
+    // Invalid upload scenario
+    std::string maliciousFilename = "../../../etc/passwd";
+    EXPECT_TRUE(inputValidator_->containsPathTraversal(maliciousFilename));
+
+    // XSS in metadata scenario
+    std::string metadata = "<script>alert('xss')</script>";
+    EXPECT_TRUE(inputValidator_->containsXSS(metadata));
+
+    std::string sanitizedMetadata = inputValidator_->sanitizeString(metadata, StringType::Generic);
+    EXPECT_FALSE(inputValidator_->containsXSS(sanitizedMetadata));
+}
+
+}  // namespace test
+}  // namespace huntmaster

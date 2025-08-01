@@ -447,3 +447,147 @@ TEST(WaveformUtilityTest, RmsEnvelopeGenerationTest) {
     }
 }
 */
+
+// Test cases for new utility functions
+class WaveformUtilityTest : public ::testing::Test {
+  protected:
+    std::vector<float> generateTestSignal(size_t numSamples, float amplitude = 0.5f) {
+        std::vector<float> signal(numSamples);
+        for (size_t i = 0; i < numSamples; ++i) {
+            signal[i] = amplitude * std::sin(2.0f * M_PI * 440.0f * i / 44100.0f);
+        }
+        return signal;
+    }
+};
+
+TEST_F(WaveformUtilityTest, CalculateOptimalDownsampleRatioTest) {
+    // Test basic functionality
+    EXPECT_EQ(calculateOptimalDownsampleRatio(44100, 1000, 44100.0f), 44);  // ~44 samples per pixel
+    EXPECT_EQ(calculateOptimalDownsampleRatio(1000, 100, 44100.0f), 10);    // 10 samples per pixel
+
+    // Test edge cases
+    EXPECT_EQ(calculateOptimalDownsampleRatio(0, 100, 44100.0f), 1);  // Zero samples
+    EXPECT_EQ(calculateOptimalDownsampleRatio(100, 0, 44100.0f), 1);  // Zero pixels
+    EXPECT_EQ(calculateOptimalDownsampleRatio(100, 100, 0.0f), 1);    // Zero sample rate
+    EXPECT_EQ(calculateOptimalDownsampleRatio(100, 100, -1.0f), 1);   // Negative sample rate
+
+    // Test clamping to maximum
+    EXPECT_EQ(calculateOptimalDownsampleRatio(100000, 10, 44100.0f), 1024);  // Should clamp to max
+
+    // Test minimum clamping
+    EXPECT_EQ(calculateOptimalDownsampleRatio(50, 100, 44100.0f),
+              1);  // Less than 1 sample per pixel
+}
+
+TEST_F(WaveformUtilityTest, GeneratePeakEnvelopeTest) {
+    // Test with known signal
+    std::vector<float> signal = {0.1f, -0.8f, 0.3f, -0.2f, 0.9f, -0.1f, 0.4f, -0.6f};
+    auto envelope = generatePeakEnvelope(signal, 3);
+
+    EXPECT_EQ(envelope.size(), signal.size());
+
+    // Check that peaks are captured correctly (absolute values)
+    EXPECT_GE(envelope[0], 0.1f);  // Should include the 0.1
+    EXPECT_GE(envelope[1], 0.8f);  // Should include the -0.8 (as 0.8)
+    EXPECT_GE(envelope[4], 0.9f);  // Should include the 0.9
+
+    // Test with empty input
+    std::span<const float> empty;
+    auto emptyEnvelope = generatePeakEnvelope(empty, 3);
+    EXPECT_TRUE(emptyEnvelope.empty());
+
+    // Test with zero window size
+    auto zeroWindow = generatePeakEnvelope(signal, 0);
+    EXPECT_TRUE(zeroWindow.empty());
+
+    // Test window size larger than signal
+    auto largeWindow = generatePeakEnvelope(signal, 100);
+    EXPECT_EQ(largeWindow.size(), signal.size());
+
+    // With large window, each position sees the global maximum (0.9)
+    for (size_t i = 0; i < largeWindow.size(); ++i) {
+        EXPECT_GE(largeWindow[i], 0.9f - 0.01f);  // Allow small tolerance
+    }
+}
+
+TEST_F(WaveformUtilityTest, GenerateRmsEnvelopeTest) {
+    // Test with known DC signal
+    std::vector<float> dcSignal(10, 0.5f);
+    auto rmsEnvelope = generateRmsEnvelope(dcSignal, 3);
+
+    EXPECT_EQ(rmsEnvelope.size(), dcSignal.size());
+
+    // For DC signal, RMS should equal the amplitude
+    for (float rms : rmsEnvelope) {
+        EXPECT_NEAR(rms, 0.5f, 0.0001f);
+    }
+
+    // Test with zero signal
+    std::vector<float> zeroSignal(10, 0.0f);
+    auto zeroRms = generateRmsEnvelope(zeroSignal, 3);
+
+    for (float rms : zeroRms) {
+        EXPECT_FLOAT_EQ(rms, 0.0f);
+    }
+
+    // Test with sine wave
+    auto sineWave = generateTestSignal(100, 1.0f);
+    auto sineRms = generateRmsEnvelope(sineWave, 10);
+
+    EXPECT_EQ(sineRms.size(), sineWave.size());
+
+    // RMS of sine wave should be approximately amplitude/sqrt(2)
+    // For a small window, the RMS will vary more, so we need wider tolerance
+    for (size_t i = 10; i < sineRms.size(); ++i) {  // Skip initial samples for window fill
+        EXPECT_GT(sineRms[i], 0.0f);
+        EXPECT_LT(sineRms[i], 1.0f);
+        // With small window (10 samples), RMS varies significantly
+        // Just ensure it's in a reasonable range for sine wave
+        EXPECT_GT(sineRms[i], 0.1f);  // Should be substantially above zero
+        EXPECT_LT(sineRms[i], 1.0f);  // Should not exceed amplitude
+    }
+
+    // Test edge cases
+    std::span<const float> empty;
+    auto emptyRms = generateRmsEnvelope(empty, 3);
+    EXPECT_TRUE(emptyRms.empty());
+
+    auto zeroWindowRms = generateRmsEnvelope(sineWave, 0);
+    EXPECT_TRUE(zeroWindowRms.empty());
+}
+
+TEST_F(WaveformUtilityTest, ExportForDisplayTest) {
+    WaveformGenerator generator;
+
+    // Process some test audio
+    auto testAudio = generateTestSignal(1024, 0.8f);
+    auto result = generator.processAudio(testAudio, 1);
+    ASSERT_TRUE(result.has_value());
+
+    // Test export for display with different resolutions
+    auto json100 = generator.exportForDisplay(100, true);
+    auto json50 = generator.exportForDisplay(50, false);
+
+    // Should be valid JSON strings
+    EXPECT_FALSE(json100.empty());
+    EXPECT_FALSE(json50.empty());
+
+    // Should contain expected fields
+    EXPECT_NE(json100.find("\"displayWidth\":100"), std::string::npos);
+    EXPECT_NE(json100.find("\"peaks\":["), std::string::npos);  // Should include envelopes
+    EXPECT_NE(json100.find("\"rms\":["), std::string::npos);
+
+    EXPECT_NE(json50.find("\"displayWidth\":50"), std::string::npos);
+    EXPECT_EQ(json50.find("\"peaks\":["), std::string::npos);  // Should not include envelopes
+    EXPECT_EQ(json50.find("\"rms\":["), std::string::npos);
+
+    // Test edge cases
+    auto json0 = generator.exportForDisplay(0, true);
+    EXPECT_FALSE(json0.empty());  // Should handle gracefully
+
+    // Test with empty generator (should have some data from previous processing)
+    WaveformGenerator emptyGen;
+    auto emptyJson = emptyGen.exportForDisplay(100, true);
+    EXPECT_FALSE(emptyJson.empty());
+    EXPECT_NE(emptyJson.find("\"actualWidth\":0"), std::string::npos);
+}

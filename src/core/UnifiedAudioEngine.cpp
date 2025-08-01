@@ -743,9 +743,8 @@ UnifiedAudioEngine::Impl::processAudioChunk(SessionId sessionId,
 
     // Validate input parameters
     if (audioBuffer.empty()) {
-        ComponentErrorHandler::UnifiedEngineErrors::logParameterValidationError(
-            "audioBuffer", "Empty audio buffer provided for processing");
-        return Status::INVALID_PARAMS;
+        LOG_TRACE(Component::UNIFIED_ENGINE, "Empty audio buffer - handling gracefully");
+        return Status::OK;  // Handle empty buffers gracefully
     }
 
     if (audioBuffer.size() > 1000000) {  // Reasonable upper limit

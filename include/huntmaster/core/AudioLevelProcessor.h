@@ -170,6 +170,32 @@ class AudioLevelProcessor {
      */
     [[nodiscard]] bool isInitialized() const noexcept;
 
+    /**
+     * @brief Calculate RMS (Root Mean Square) level from audio samples
+     *
+     * Calculates the RMS level of the provided audio samples. For multi-channel
+     * audio, averages the RMS across all channels.
+     *
+     * @param samples Audio samples to analyze (interleaved if multi-channel)
+     * @param numChannels Number of audio channels (1=mono, 2=stereo, etc.)
+     * @return RMS level as linear amplitude (0.0-1.0+), or 0.0 if samples are empty/invalid
+     */
+    [[nodiscard]] static float calculateRMS(std::span<const float> samples,
+                                            int numChannels = 1) noexcept;
+
+    /**
+     * @brief Calculate peak level from audio samples
+     *
+     * Finds the maximum absolute amplitude in the provided audio samples.
+     * For multi-channel audio, returns the maximum peak across all channels.
+     *
+     * @param samples Audio samples to analyze (interleaved if multi-channel)
+     * @param numChannels Number of audio channels (1=mono, 2=stereo, etc.)
+     * @return Peak level as linear amplitude (0.0-1.0+), or 0.0 if samples are empty/invalid
+     */
+    [[nodiscard]] static float calculatePeak(std::span<const float> samples,
+                                             int numChannels = 1) noexcept;
+
   private:
     /// Internal implementation details
     class Impl;

@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cmath>
 #include <deque>
+#include <iomanip>
 #include <iostream>
 #include <mutex>
 #include <sstream>
@@ -326,6 +327,182 @@ void WaveformGenerator::setZoomLevel(float zoomFactor) noexcept {
         impl_->downsampleAccumulator_.clear();
         impl_->downsampleCount_ = 0;
     }
+}
+
+std::string WaveformGenerator::exportForDisplay(size_t displayWidthPixels,
+                                                bool includeEnvelopes) const {
+    std::lock_guard<std::mutex> lock(impl_->mutex_);
+
+    // Handle edge cases
+    if (displayWidthPixels == 0) {
+        return "{\"displayWidth\":0,\"actualWidth\":0,\"maxAmplitude\":0.0,\"rmsAmplitude\":0.0,"
+               "\"sampleRate\":0,\"samplesPerPixel\":0,\"samples\":[]}";
+    }
+
+    // Downsample current buffer to match display resolution
+    const size_t totalSamples = impl_->sampleBuffer_.size();
+    std::vector<float> displaySamples;
+    std::vector<float> displayPeaks;
+    std::vector<float> displayRms;
+
+    if (totalSamples > 0) {
+        const size_t samplesPerPixel = std::max(size_t(1), totalSamples / displayWidthPixels);
+        displaySamples.reserve(displayWidthPixels);
+
+        if (includeEnvelopes) {
+            displayPeaks.reserve(displayWidthPixels);
+            displayRms.reserve(displayWidthPixels);
+        }
+
+        // Downsample the buffer
+        for (size_t pixel = 0; pixel < displayWidthPixels && pixel * samplesPerPixel < totalSamples;
+             ++pixel) {
+            float pixelSample = 0.0f;
+            float pixelPeak = 0.0f;
+            float pixelRmsSum = 0.0f;
+            size_t count = 0;
+
+            const size_t startIdx = pixel * samplesPerPixel;
+            const size_t endIdx = std::min(startIdx + samplesPerPixel, totalSamples);
+
+            auto sampleIt = impl_->sampleBuffer_.begin() + startIdx;
+            for (size_t i = startIdx; i < endIdx; ++i, ++sampleIt) {
+                const float sample = *sampleIt;
+                pixelSample += sample;
+                pixelPeak = std::max(pixelPeak, std::abs(sample));
+                pixelRmsSum += sample * sample;
+                count++;
+            }
+
+            if (count > 0) {
+                displaySamples.push_back(pixelSample / count);
+                if (includeEnvelopes) {
+                    displayPeaks.push_back(pixelPeak);
+                    displayRms.push_back(std::sqrt(pixelRmsSum / count));
+                }
+            }
+        }
+    }
+
+    // Build JSON response
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(6);
+    oss << "{";
+    oss << "\"displayWidth\":" << displayWidthPixels << ",";
+    oss << "\"actualWidth\":" << displaySamples.size() << ",";
+    oss << "\"maxAmplitude\":" << impl_->currentMaxAmplitude_.load() << ",";
+    oss << "\"rmsAmplitude\":" << impl_->currentRmsAmplitude_.load() << ",";
+    oss << "\"sampleRate\":" << impl_->config_.sampleRate << ",";
+    oss << "\"samplesPerPixel\":"
+        << (totalSamples > 0 && displayWidthPixels > 0 ? totalSamples / displayWidthPixels : 0)
+        << ",";
+
+    oss << "\"samples\":[";
+    for (size_t i = 0; i < displaySamples.size(); ++i) {
+        if (i > 0)
+            oss << ",";
+        oss << displaySamples[i];
+    }
+    oss << "]";
+
+    if (includeEnvelopes && !displayPeaks.empty()) {
+        oss << ",\"peaks\":[";
+        for (size_t i = 0; i < displayPeaks.size(); ++i) {
+            if (i > 0)
+                oss << ",";
+            oss << displayPeaks[i];
+        }
+        oss << "]";
+
+        oss << ",\"rms\":[";
+        for (size_t i = 0; i < displayRms.size(); ++i) {
+            if (i > 0)
+                oss << ",";
+            oss << displayRms[i];
+        }
+        oss << "]";
+    }
+
+    oss << "}";
+    return oss.str();
+}
+
+// Utility functions implementations
+size_t calculateOptimalDownsampleRatio(size_t totalSamples,
+                                       size_t displayWidthPixels,
+                                       float sampleRate) noexcept {
+    if (displayWidthPixels == 0 || sampleRate <= 0.0f) {
+        return 1;
+    }
+
+    // Calculate samples per pixel for optimal display
+    const size_t samplesPerPixel = std::max(size_t(1), totalSamples / displayWidthPixels);
+
+    // Clamp to reasonable bounds
+    return std::clamp(samplesPerPixel, size_t(1), size_t(1024));
+}
+
+std::vector<float> generatePeakEnvelope(std::span<const float> samples,
+                                        size_t windowSize) noexcept {
+    if (samples.empty() || windowSize == 0) {
+        return {};
+    }
+
+    std::vector<float> envelope;
+    envelope.reserve(samples.size());
+
+    // For each position, find the maximum in the surrounding window
+    for (size_t i = 0; i < samples.size(); ++i) {
+        // Calculate window bounds (centered around current position)
+        const size_t halfWindow = windowSize / 2;
+        const size_t start = (i >= halfWindow) ? i - halfWindow : 0;
+        const size_t end = std::min(i + halfWindow + 1, samples.size());
+
+        // Find maximum in window
+        float maxVal = 0.0f;
+        for (size_t j = start; j < end; ++j) {
+            maxVal = std::max(maxVal, std::abs(samples[j]));
+        }
+
+        envelope.push_back(maxVal);
+    }
+
+    return envelope;
+}
+
+std::vector<float> generateRmsEnvelope(std::span<const float> samples, size_t windowSize) noexcept {
+    if (samples.empty() || windowSize == 0) {
+        return {};
+    }
+
+    std::vector<float> envelope;
+    envelope.reserve(samples.size());
+
+    // Use sliding window RMS calculation
+    float sumSquares = 0.0f;
+    std::deque<float> window;
+
+    for (size_t i = 0; i < samples.size(); ++i) {
+        const float sample = samples[i];
+        const float sampleSquared = sample * sample;
+
+        // Add new sample to window
+        window.push_back(sample);
+        sumSquares += sampleSquared;
+
+        // Remove old samples if window is too large
+        if (window.size() > windowSize) {
+            const float oldSample = window.front();
+            window.pop_front();
+            sumSquares -= oldSample * oldSample;
+        }
+
+        // Calculate RMS for current window
+        const float rms = std::sqrt(sumSquares / window.size());
+        envelope.push_back(rms);
+    }
+
+    return envelope;
 }
 
 }  // namespace huntmaster

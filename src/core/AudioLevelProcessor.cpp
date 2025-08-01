@@ -298,6 +298,71 @@ bool AudioLevelProcessor::isInitialized() const noexcept {
     return impl_->initialized_.load();
 }
 
+// Static calculation methods
+float AudioLevelProcessor::calculateRMS(std::span<const float> samples, int numChannels) noexcept {
+    if (samples.empty() || numChannels <= 0) {
+        return 0.0f;
+    }
+
+    const size_t numSamples = samples.size();
+    const size_t framesCount = numSamples / numChannels;
+
+    if (framesCount == 0) {
+        return 0.0f;
+    }
+
+    float sumSquares = 0.0f;
+    size_t totalSamplesProcessed = 0;
+
+    // Process samples frame by frame
+    for (size_t frame = 0; frame < framesCount; ++frame) {
+        for (int ch = 0; ch < numChannels; ++ch) {
+            const size_t index = frame * numChannels + ch;
+            if (index < numSamples) {
+                const float sample = samples[index];
+                sumSquares += sample * sample;
+                totalSamplesProcessed++;
+            }
+        }
+    }
+
+    if (totalSamplesProcessed == 0) {
+        return 0.0f;
+    }
+
+    // Calculate RMS
+    const float meanSquare = sumSquares / totalSamplesProcessed;
+    return std::sqrt(meanSquare);
+}
+
+float AudioLevelProcessor::calculatePeak(std::span<const float> samples, int numChannels) noexcept {
+    if (samples.empty() || numChannels <= 0) {
+        return 0.0f;
+    }
+
+    const size_t numSamples = samples.size();
+    const size_t framesCount = numSamples / numChannels;
+
+    if (framesCount == 0) {
+        return 0.0f;
+    }
+
+    float peak = 0.0f;
+
+    // Process samples frame by frame
+    for (size_t frame = 0; frame < framesCount; ++frame) {
+        for (int ch = 0; ch < numChannels; ++ch) {
+            const size_t index = frame * numChannels + ch;
+            if (index < numSamples) {
+                const float sample = std::abs(samples[index]);
+                peak = std::max(peak, sample);
+            }
+        }
+    }
+
+    return peak;
+}
+
 // Utility functions
 float linearToDb(float linear, float floor, float ceiling) noexcept {
     if (linear <= 0.0f) {

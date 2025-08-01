@@ -15,11 +15,12 @@
 
 #include <gtest/gtest.h>
 
-#include "huntmaster/core/AudioBuffer.h"
+#include "TestAudioBuffer.h"
 #include "huntmaster/core/AudioConfig.h"
 #include "huntmaster/visualization/WaveformAnalyzer.h"
 
 using namespace huntmaster;
+using namespace huntmaster::test;
 
 /**
  * Test fixture for comprehensive WaveformAnalyzer testing
@@ -55,9 +56,9 @@ class WaveformAnalyzerComprehensiveTest : public ::testing::Test {
             audio_data[i] = amplitude * std::sin(2.0f * M_PI * frequency * t);
         }
 
-        // Create AudioBuffer with test data
+        // Create TestAudioBuffer with test data
         test_audio =
-            std::make_unique<AudioBuffer>(config.channels, num_samples, config.sample_rate);
+            std::make_unique<TestAudioBuffer>(config.channels, num_samples, config.sample_rate);
         for (size_t channel = 0; channel < config.channels; ++channel) {
             for (size_t i = 0; i < num_samples; ++i) {
                 test_audio->setSample(channel, i, audio_data[i]);
@@ -77,7 +78,7 @@ class WaveformAnalyzerComprehensiveTest : public ::testing::Test {
         std::mt19937 gen(rd());
         std::normal_distribution<float> dist(0.0f, 0.1f);
 
-        noise_audio = std::make_unique<AudioBuffer>(1, num_samples, config.sample_rate);
+        noise_audio = std::make_unique<TestAudioBuffer>(1, num_samples, config.sample_rate);
         for (size_t i = 0; i < num_samples; ++i) {
             float sample = dist(gen);
             noise_audio->setSample(0, i, sample);
@@ -87,7 +88,7 @@ class WaveformAnalyzerComprehensiveTest : public ::testing::Test {
     void generateSilenceAudio() {
         // Generate silent audio
         const size_t num_samples = 4410;  // 0.1 seconds
-        silence_audio = std::make_unique<AudioBuffer>(1, num_samples, config.sample_rate);
+        silence_audio = std::make_unique<TestAudioBuffer>(1, num_samples, config.sample_rate);
         for (size_t i = 0; i < num_samples; ++i) {
             silence_audio->setSample(0, i, 0.0f);
         }
@@ -96,7 +97,7 @@ class WaveformAnalyzerComprehensiveTest : public ::testing::Test {
     void generateComplexAudio() {
         // Generate complex multi-frequency audio
         const size_t num_samples = 88200;  // 2 seconds
-        complex_audio = std::make_unique<AudioBuffer>(2, num_samples, config.sample_rate);
+        complex_audio = std::make_unique<TestAudioBuffer>(2, num_samples, config.sample_rate);
 
         for (size_t i = 0; i < num_samples; ++i) {
             float t = static_cast<float>(i) / config.sample_rate;
@@ -117,10 +118,10 @@ class WaveformAnalyzerComprehensiveTest : public ::testing::Test {
 
     AudioConfig config;
     std::unique_ptr<WaveformAnalyzer> analyzer;
-    std::unique_ptr<AudioBuffer> test_audio;
-    std::unique_ptr<AudioBuffer> noise_audio;
-    std::unique_ptr<AudioBuffer> silence_audio;
-    std::unique_ptr<AudioBuffer> complex_audio;
+    std::unique_ptr<TestAudioBuffer> test_audio;
+    std::unique_ptr<TestAudioBuffer> noise_audio;
+    std::unique_ptr<TestAudioBuffer> silence_audio;
+    std::unique_ptr<TestAudioBuffer> complex_audio;
 };
 
 // ============================================================================

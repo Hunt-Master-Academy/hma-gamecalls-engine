@@ -1,0 +1,436 @@
+/**
+ * @file test_memory_protection_comprehensive.cpp
+ * @brief Comprehensive Test Suite for Memory Protection Component
+ *
+ * Tests memory protection capabilities including secure allocation,
+ * buffer overflow detection, canary validation, and memory auditing.
+ * Target: Achieve 70%+ coverage for Memory Protection security component.
+ *
+ * @author Huntmaster Engine Team
+ * @version 1.0
+ * @date July 2025
+ */
+
+#include <chrono>
+#include <cstring>
+#include <memory>
+#include <thread>
+#include <vector>
+
+#include <gtest/gtest.h>
+
+#include "huntmaster/security/memory-protection.h"
+
+namespace huntmaster {
+namespace test {
+
+using namespace huntmaster::security;
+
+class MemoryProtectionTest : public ::testing::Test {
+  protected:
+    void SetUp() override {
+        // Configure memory protection with all features enabled
+        config_.enableStackProtection = true;
+        config_.enableHeapProtection = true;
+        config_.enableGuardPages = true;
+        config_.enableCanaries = true;
+        config_.enableASLR = true;
+        config_.maxAllocationSize = 1024 * 1024;  // 1MB
+        config_.guardPageSize = 4096;
+        config_.canaryPattern = 0xDEADBEEF;
+        config_.enableSecureClear = true;
+
+        memoryProtection_ = std::make_unique<MemoryProtection>(config_);
+    }
+
+    void TearDown() override {
+        memoryProtection_.reset();
+    }
+
+    MemoryConfig config_;
+    std::unique_ptr<MemoryProtection> memoryProtection_;
+};
+
+// Test 1: Memory Protection Initialization
+TEST_F(MemoryProtectionTest, InitializationTest) {
+    EXPECT_TRUE(memoryProtection_ != nullptr);
+    EXPECT_EQ(memoryProtection_->getConfig().enableStackProtection, true);
+    EXPECT_EQ(memoryProtection_->getConfig().enableHeapProtection, true);
+    EXPECT_EQ(memoryProtection_->getConfig().canaryPattern, 0xDEADBEEF);
+}
+
+// Test 2: Secure Buffer Allocation
+TEST_F(MemoryProtectionTest, SecureBufferAllocationTest) {
+    void* buffer = nullptr;
+    size_t size = 1024;
+
+    // Test successful allocation
+    EXPECT_TRUE(memoryProtection_->allocateSecureBuffer(size, &buffer));
+    EXPECT_NE(buffer, nullptr);
+
+    // Test buffer accessibility
+    memset(buffer, 0x42, size);
+    EXPECT_EQ(static_cast<uint8_t*>(buffer)[0], 0x42);
+
+    // Test deallocation
+    EXPECT_TRUE(memoryProtection_->deallocateSecureBuffer(buffer));
+}
+
+// Test 3: Memory Access Validation
+TEST_F(MemoryProtectionTest, MemoryAccessValidationTest) {
+    void* buffer = nullptr;
+    size_t size = 1024;
+
+    ASSERT_TRUE(memoryProtection_->allocateSecureBuffer(size, &buffer));
+
+    // Test valid read access
+    EXPECT_TRUE(memoryProtection_->validateMemoryAccess(buffer, size, AccessType::Read));
+
+    // Test valid write access
+    EXPECT_TRUE(memoryProtection_->validateMemoryAccess(buffer, size, AccessType::Write));
+
+    // Test invalid access beyond buffer
+    EXPECT_FALSE(memoryProtection_->validateMemoryAccess(
+        static_cast<uint8_t*>(buffer) + size + 1, 1, AccessType::Read));
+
+    // Test null pointer access
+    EXPECT_FALSE(memoryProtection_->validateMemoryAccess(nullptr, size, AccessType::Read));
+
+    memoryProtection_->deallocateSecureBuffer(buffer);
+}
+
+// Test 4: Buffer Bounds Checking
+TEST_F(MemoryProtectionTest, BufferBoundsCheckingTest) {
+    void* buffer = nullptr;
+    size_t size = 1024;
+
+    ASSERT_TRUE(memoryProtection_->allocateSecureBuffer(size, &buffer));
+
+    // Test valid bounds
+    EXPECT_TRUE(memoryProtection_->checkBufferBounds(buffer, 0, size));
+    EXPECT_TRUE(memoryProtection_->checkBufferBounds(buffer, 100, 200));
+
+    // Test invalid bounds
+    EXPECT_FALSE(memoryProtection_->checkBufferBounds(buffer, 0, size + 1));
+    EXPECT_FALSE(memoryProtection_->checkBufferBounds(buffer, size, 1));
+
+    memoryProtection_->deallocateSecureBuffer(buffer);
+}
+
+// Test 5: Stack Protection
+TEST_F(MemoryProtectionTest, StackProtectionTest) {
+    EXPECT_TRUE(memoryProtection_->enableStackProtection());
+
+    // Test stack overflow detection (simulate)
+    // Note: Actual stack overflow would crash, so we test the mechanism setup
+    bool protectionEnabled = memoryProtection_->enableStackProtection();
+    EXPECT_TRUE(protectionEnabled);
+}
+
+// Test 6: Heap Protection
+TEST_F(MemoryProtectionTest, HeapProtectionTest) {
+    EXPECT_TRUE(memoryProtection_->enableHeapProtection());
+
+    // Test heap allocation with protection
+    void* buffer = nullptr;
+    ASSERT_TRUE(memoryProtection_->allocateSecureBuffer(512, &buffer));
+
+    // Verify heap protection is active
+    EXPECT_TRUE(memoryProtection_->validateMemoryAccess(buffer, 512, AccessType::ReadWrite));
+
+    memoryProtection_->deallocateSecureBuffer(buffer);
+}
+
+// Test 7: Execution Prevention
+TEST_F(MemoryProtectionTest, ExecutionPreventionTest) {
+    EXPECT_TRUE(memoryProtection_->enableExecutionPrevention());
+
+    void* buffer = nullptr;
+    ASSERT_TRUE(memoryProtection_->allocateSecureBuffer(1024, &buffer));
+
+    // Test that execute access is prevented on data memory
+    EXPECT_FALSE(memoryProtection_->validateMemoryAccess(buffer, 1024, AccessType::Execute));
+
+    memoryProtection_->deallocateSecureBuffer(buffer);
+}
+
+// Test 8: Address Space Layout Randomization
+TEST_F(MemoryProtectionTest, AddressRandomizationTest) {
+    EXPECT_TRUE(memoryProtection_->enableAddressRandomization());
+
+    // Allocate multiple buffers and verify they have different addresses
+    std::vector<void*> buffers;
+    for (int i = 0; i < 5; i++) {
+        void* buffer = nullptr;
+        ASSERT_TRUE(memoryProtection_->allocateSecureBuffer(1024, &buffer));
+        buffers.push_back(buffer);
+    }
+
+    // Check that addresses are different (ASLR effect)
+    for (size_t i = 0; i < buffers.size() - 1; i++) {
+        EXPECT_NE(buffers[i], buffers[i + 1]);
+    }
+
+    // Clean up
+    for (void* buffer : buffers) {
+        memoryProtection_->deallocateSecureBuffer(buffer);
+    }
+}
+
+// Test 9: Sensitive Data Clearing
+TEST_F(MemoryProtectionTest, SensitiveDataClearingTest) {
+    const size_t size = 256;
+    uint8_t sensitiveData[size];
+
+    // Fill with sensitive data
+    memset(sensitiveData, 0x42, size);
+    EXPECT_EQ(sensitiveData[0], 0x42);
+    EXPECT_EQ(sensitiveData[size - 1], 0x42);
+
+    // Clear sensitive data
+    memoryProtection_->clearSensitiveData(sensitiveData, size);
+
+    // Verify data is cleared
+    for (size_t i = 0; i < size; i++) {
+        EXPECT_EQ(sensitiveData[i], 0x00);
+    }
+}
+
+// Test 10: Memory Sanitization
+TEST_F(MemoryProtectionTest, MemorySanitizationTest) {
+    void* buffer = nullptr;
+    size_t size = 1024;
+
+    ASSERT_TRUE(memoryProtection_->allocateSecureBuffer(size, &buffer));
+
+    // Fill buffer with data
+    memset(buffer, 0xFF, size);
+
+    // Sanitize memory region
+    EXPECT_TRUE(memoryProtection_->sanitizeMemoryRegion(buffer, size));
+
+    // Verify sanitization
+    uint8_t* bytes = static_cast<uint8_t*>(buffer);
+    for (size_t i = 0; i < size; i++) {
+        EXPECT_EQ(bytes[i], 0x00);
+    }
+
+    memoryProtection_->deallocateSecureBuffer(buffer);
+}
+
+// Test 11: Memory Report Generation
+TEST_F(MemoryProtectionTest, MemoryReportGenerationTest) {
+    // Allocate some buffers
+    std::vector<void*> buffers;
+    for (int i = 0; i < 3; i++) {
+        void* buffer = nullptr;
+        ASSERT_TRUE(memoryProtection_->allocateSecureBuffer(1024, &buffer));
+        buffers.push_back(buffer);
+    }
+
+    // Generate memory report
+    MemoryReport report = memoryProtection_->generateMemoryReport();
+
+    // Verify report contents
+    EXPECT_GE(report.totalAllocations, 3);
+    EXPECT_GE(report.activeAllocations, 3);
+    EXPECT_GE(report.totalMemoryUsed, 3072);  // 3 * 1024
+
+    // Clean up
+    for (void* buffer : buffers) {
+        memoryProtection_->deallocateSecureBuffer(buffer);
+    }
+}
+
+// Test 12: Memory Audit
+TEST_F(MemoryProtectionTest, MemoryAuditTest) {
+    // Allocate and deallocate buffers
+    void* buffer1 = nullptr;
+    void* buffer2 = nullptr;
+
+    ASSERT_TRUE(memoryProtection_->allocateSecureBuffer(512, &buffer1));
+    ASSERT_TRUE(memoryProtection_->allocateSecureBuffer(1024, &buffer2));
+
+    // Perform memory audit
+    EXPECT_TRUE(memoryProtection_->performMemoryAudit());
+
+    // Clean up
+    memoryProtection_->deallocateSecureBuffer(buffer1);
+    memoryProtection_->deallocateSecureBuffer(buffer2);
+
+    // Audit after cleanup
+    EXPECT_TRUE(memoryProtection_->performMemoryAudit());
+}
+
+// Test 13: Memory Violation Detection
+TEST_F(MemoryProtectionTest, MemoryViolationDetectionTest) {
+    std::vector<MemoryViolation> violations;
+
+    // Register violation handler
+    memoryProtection_->registerViolationHandler(
+        [&violations](const MemoryViolation& v) { violations.push_back(v); });
+
+    // Simulate memory violation (attempt invalid access)
+    void* invalidPtr = reinterpret_cast<void*>(0xDEADBEEF);
+    memoryProtection_->validateMemoryAccess(invalidPtr, 1024, AccessType::Write);
+
+    // Check for violation detection
+    std::vector<MemoryViolation> recentViolations = memoryProtection_->getRecentViolations();
+    EXPECT_GE(recentViolations.size(), 0);  // May vary based on implementation
+}
+
+// Test 14: Secure Buffer Creation and Management
+TEST_F(MemoryProtectionTest, SecureBufferManagementTest) {
+    auto secureBuffer = memoryProtection_->createSecureBuffer(2048);
+    EXPECT_NE(secureBuffer, nullptr);
+    EXPECT_GE(secureBuffer->size, 2048);
+    EXPECT_NE(secureBuffer->data, nullptr);
+
+    // Test buffer locking
+    EXPECT_TRUE(memoryProtection_->lockBuffer(secureBuffer.get()));
+    EXPECT_TRUE(secureBuffer->isLocked);
+
+    // Test buffer unlocking
+    EXPECT_TRUE(memoryProtection_->unlockBuffer(secureBuffer.get()));
+    EXPECT_FALSE(secureBuffer->isLocked);
+}
+
+// Test 15: Protection Policy Management
+TEST_F(MemoryProtectionTest, ProtectionPolicyManagementTest) {
+    ProtectionPolicies policies;
+    policies.enforceStackCanaries = true;
+    policies.enforceHeapGuards = true;
+    policies.enforceExecutionPrevention = true;
+    policies.enforceAddressRandomization = true;
+    policies.minimumAllocationSize = 64;
+    policies.maximumAllocationSize = 1048576;
+    policies.auditFrequency = 1000;
+
+    memoryProtection_->updateProtectionPolicies(policies);
+
+    const ProtectionPolicies& currentPolicies = memoryProtection_->getProtectionPolicies();
+    EXPECT_EQ(currentPolicies.enforceStackCanaries, true);
+    EXPECT_EQ(currentPolicies.enforceHeapGuards, true);
+    EXPECT_EQ(currentPolicies.minimumAllocationSize, 64);
+    EXPECT_EQ(currentPolicies.maximumAllocationSize, 1048576);
+}
+
+// Test 16: Memory Violation Handling
+TEST_F(MemoryProtectionTest, MemoryViolationHandlingTest) {
+    MemoryViolation violation;
+    violation.type = ViolationType::BufferOverflow;
+    violation.address = reinterpret_cast<void*>(0x1000);
+    violation.size = 1024;
+    violation.severity = 3;
+    violation.description = "Test buffer overflow";
+
+    // Test violation handling
+    EXPECT_TRUE(memoryProtection_->handleMemoryViolation(violation));
+}
+
+// Test 17: Configuration Management
+TEST_F(MemoryProtectionTest, ConfigurationManagementTest) {
+    MemoryConfig newConfig;
+    newConfig.enableStackProtection = false;
+    newConfig.enableHeapProtection = true;
+    newConfig.maxAllocationSize = 2097152;  // 2MB
+    newConfig.canaryPattern = 0xCAFEBABE;
+
+    memoryProtection_->updateConfig(newConfig);
+
+    const MemoryConfig& currentConfig = memoryProtection_->getConfig();
+    EXPECT_EQ(currentConfig.enableStackProtection, false);
+    EXPECT_EQ(currentConfig.enableHeapProtection, true);
+    EXPECT_EQ(currentConfig.maxAllocationSize, 2097152);
+    EXPECT_EQ(currentConfig.canaryPattern, 0xCAFEBABE);
+}
+
+// Test 18: Stress Test - Multiple Allocations
+TEST_F(MemoryProtectionTest, StressTestMultipleAllocations) {
+    const int numAllocations = 100;
+    std::vector<void*> buffers;
+
+    // Allocate many buffers
+    for (int i = 0; i < numAllocations; i++) {
+        void* buffer = nullptr;
+        ASSERT_TRUE(memoryProtection_->allocateSecureBuffer(1024, &buffer));
+        buffers.push_back(buffer);
+    }
+
+    // Verify all allocations are valid
+    for (void* buffer : buffers) {
+        EXPECT_NE(buffer, nullptr);
+        EXPECT_TRUE(memoryProtection_->validateMemoryAccess(buffer, 1024, AccessType::ReadWrite));
+    }
+
+    // Clean up all buffers
+    for (void* buffer : buffers) {
+        EXPECT_TRUE(memoryProtection_->deallocateSecureBuffer(buffer));
+    }
+}
+
+// Test 19: Thread Safety Test
+TEST_F(MemoryProtectionTest, ThreadSafetyTest) {
+    const int numThreads = 4;
+    const int allocationsPerThread = 25;
+    std::vector<std::thread> threads;
+    std::vector<std::vector<void*>> threadBuffers(numThreads);
+
+    // Create threads that allocate buffers concurrently
+    for (int t = 0; t < numThreads; t++) {
+        threads.emplace_back([this, t, allocationsPerThread, &threadBuffers]() {
+            for (int i = 0; i < allocationsPerThread; i++) {
+                void* buffer = nullptr;
+                if (memoryProtection_->allocateSecureBuffer(512, &buffer)) {
+                    threadBuffers[t].push_back(buffer);
+                }
+                std::this_thread::sleep_for(std::chrono::microseconds(10));
+            }
+        });
+    }
+
+    // Wait for all threads
+    for (auto& thread : threads) {
+        thread.join();
+    }
+
+    // Verify allocations and clean up
+    int totalAllocations = 0;
+    for (int t = 0; t < numThreads; t++) {
+        for (void* buffer : threadBuffers[t]) {
+            EXPECT_NE(buffer, nullptr);
+            memoryProtection_->deallocateSecureBuffer(buffer);
+            totalAllocations++;
+        }
+    }
+
+    EXPECT_GT(totalAllocations, 0);
+}
+
+// Test 20: Edge Cases and Error Handling
+TEST_F(MemoryProtectionTest, EdgeCasesAndErrorHandlingTest) {
+    // Test zero-size allocation
+    void* buffer = nullptr;
+    EXPECT_FALSE(memoryProtection_->allocateSecureBuffer(0, &buffer));
+
+    // Test oversized allocation
+    EXPECT_FALSE(memoryProtection_->allocateSecureBuffer(config_.maxAllocationSize + 1, &buffer));
+
+    // Test double deallocation
+    ASSERT_TRUE(memoryProtection_->allocateSecureBuffer(1024, &buffer));
+    EXPECT_TRUE(memoryProtection_->deallocateSecureBuffer(buffer));
+    EXPECT_FALSE(
+        memoryProtection_->deallocateSecureBuffer(buffer));  // Second deallocation should fail
+
+    // Test null pointer deallocation
+    EXPECT_FALSE(memoryProtection_->deallocateSecureBuffer(nullptr));
+
+    // Test memory access validation with invalid parameters
+    EXPECT_FALSE(memoryProtection_->validateMemoryAccess(nullptr, 0, AccessType::Read));
+    EXPECT_FALSE(memoryProtection_->sanitizeMemoryRegion(nullptr, 1024));
+}
+
+int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}

@@ -1,0 +1,324 @@
+/**
+ * @file test_crypto_manager_comprehensive.cpp
+ * @brief Comprehensive Test Suite for Crypto Manager Security Component
+ *
+ * Tests cryptographic capabilities including encryption/decryption,
+ * key management, hashing, and secure random generation.
+ * Target: Achieve 70%+ coverage for Crypto Manager security component.
+ *
+ * @author Huntmaster Engine Team
+ * @version 1.0
+ * @date July 2025
+ */
+
+#include <chrono>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include <gtest/gtest.h>
+
+#include "huntmaster/security/crypto-manager.h"
+
+namespace huntmaster {
+namespace test {
+
+using namespace huntmaster::security;
+
+/**
+ * Comprehensive test fixture for Crypto Manager security component
+ */
+class CryptoManagerComprehensiveTest : public ::testing::Test {
+  protected:
+    void SetUp() override {
+        // Configure crypto manager with default settings
+        config_.defaultEncryption = EncryptionAlgorithm::AES_256_GCM;
+        config_.defaultHash = HashAlgorithm::SHA256;
+        config_.enableHardwareAcceleration = true;
+        config_.requireSecureRandom = true;
+        config_.keyDerivationIterations = 100000;
+        config_.enableKeyRotation = true;
+        config_.keyRotationInterval = 86400;  // 24 hours
+
+        cryptoManager_ = std::make_unique<CryptoManager>(config_);
+    }
+
+    void TearDown() override {
+        cryptoManager_.reset();
+    }
+
+    CryptoConfig config_;
+    std::unique_ptr<CryptoManager> cryptoManager_;
+};
+
+// Test 1: Crypto Manager Initialization
+TEST_F(CryptoManagerComprehensiveTest, InitializationTest) {
+    EXPECT_TRUE(cryptoManager_ != nullptr);
+}
+
+// Test 2: Encryption and Decryption
+TEST_F(CryptoManagerComprehensiveTest, EncryptionDecryptionTest) {
+    std::vector<uint8_t> plaintext = {0x48, 0x65, 0x6C, 0x6C, 0x6F};  // "Hello"
+    std::vector<uint8_t> ciphertext;
+    std::vector<uint8_t> decrypted;
+
+    // Generate a key for testing
+    std::string keyId = cryptoManager_->generateKey(KeyType::Symmetric, 32);
+    EXPECT_FALSE(keyId.empty());
+
+    // Test encryption
+    EXPECT_TRUE(cryptoManager_->encrypt(plaintext, keyId, ciphertext));
+    EXPECT_FALSE(ciphertext.empty());
+    EXPECT_NE(plaintext, ciphertext);  // Encrypted data should be different
+
+    // Test decryption
+    EXPECT_TRUE(cryptoManager_->decrypt(ciphertext, keyId, decrypted));
+    EXPECT_EQ(plaintext, decrypted);  // Decrypted should match original
+}
+
+// Test 3: Hash Generation and Verification
+TEST_F(CryptoManagerComprehensiveTest, HashGenerationTest) {
+    std::vector<uint8_t> data = {0x48, 0x65, 0x6C, 0x6C, 0x6F};  // "Hello"
+    std::vector<uint8_t> hash1;
+    std::vector<uint8_t> hash2;
+
+    // Test SHA256 hashing
+    EXPECT_TRUE(cryptoManager_->hash(data, HashAlgorithm::SHA256, hash1));
+    EXPECT_FALSE(hash1.empty());
+    EXPECT_EQ(hash1.size(), 32);  // SHA256 produces 32-byte hash
+
+    // Test consistency - same input should produce same hash
+    EXPECT_TRUE(cryptoManager_->hash(data, HashAlgorithm::SHA256, hash2));
+    EXPECT_EQ(hash1, hash2);
+
+    // Test different algorithms produce different hashes
+    std::vector<uint8_t> sha512Hash;
+    EXPECT_TRUE(cryptoManager_->hash(data, HashAlgorithm::SHA512, sha512Hash));
+    EXPECT_FALSE(sha512Hash.empty());
+    EXPECT_EQ(sha512Hash.size(), 64);  // SHA512 produces 64-byte hash
+    EXPECT_NE(hash1, sha512Hash);
+}
+
+// Test 4: Key Generation and Management
+TEST_F(CryptoManagerComprehensiveTest, KeyGenerationTest) {
+    // Test symmetric key generation
+    std::string symKeyId = cryptoManager_->generateKey(KeyType::Symmetric, 32);
+    EXPECT_FALSE(symKeyId.empty());
+
+    // Test different key sizes
+    std::string key128Id = cryptoManager_->generateKey(KeyType::Symmetric, 16);
+    std::string key256Id = cryptoManager_->generateKey(KeyType::Symmetric, 32);
+    EXPECT_FALSE(key128Id.empty());
+    EXPECT_FALSE(key256Id.empty());
+    EXPECT_NE(key128Id, key256Id);
+
+    // Test public/private key generation
+    std::string privKeyId = cryptoManager_->generateKey(KeyType::PrivateKey, 32);
+    std::string pubKeyId = cryptoManager_->generateKey(KeyType::PublicKey, 32);
+    EXPECT_FALSE(privKeyId.empty());
+    EXPECT_FALSE(pubKeyId.empty());
+}
+
+// Test 5: Secure Random Generation
+TEST_F(CryptoManagerComprehensiveTest, SecureRandomGenerationTest) {
+    std::vector<uint8_t> random1;
+    std::vector<uint8_t> random2;
+
+    // Test random generation
+    EXPECT_TRUE(cryptoManager_->generateSecureRandom(random1, 32));
+    EXPECT_EQ(random1.size(), 32);
+
+    // Test randomness - two calls should produce different results
+    EXPECT_TRUE(cryptoManager_->generateSecureRandom(random2, 32));
+    EXPECT_EQ(random2.size(), 32);
+    EXPECT_NE(random1, random2);
+
+    // Test different sizes
+    std::vector<uint8_t> random16;
+    EXPECT_TRUE(cryptoManager_->generateSecureRandom(random16, 16));
+    EXPECT_EQ(random16.size(), 16);
+}
+
+// Test 6: Digital Signatures
+TEST_F(CryptoManagerComprehensiveTest, DigitalSignatureTest) {
+    std::vector<uint8_t> data = {0x48, 0x65, 0x6C, 0x6C, 0x6F};  // "Hello"
+    std::vector<uint8_t> signature;
+
+    // Generate keys for signing
+    std::string privateKeyId = cryptoManager_->generateKey(KeyType::PrivateKey, 32);
+    std::string publicKeyId = cryptoManager_->generateKey(KeyType::PublicKey, 32);
+
+    // Test signing
+    EXPECT_TRUE(cryptoManager_->sign(data, privateKeyId, signature));
+    EXPECT_FALSE(signature.empty());
+
+    // Test verification
+    EXPECT_TRUE(cryptoManager_->verify(data, signature, publicKeyId));
+
+    // Test verification with wrong data should fail
+    std::vector<uint8_t> wrongData = {0x57, 0x6F, 0x72, 0x6C, 0x64};  // "World"
+    EXPECT_FALSE(cryptoManager_->verify(wrongData, signature, publicKeyId));
+}
+
+// Test 7: Key Derivation
+TEST_F(CryptoManagerComprehensiveTest, KeyDerivationTest) {
+    std::string password = "test_password";
+    std::vector<uint8_t> salt = {0x01, 0x02, 0x03, 0x04};
+    std::vector<uint8_t> derivedKey;
+
+    // Test key derivation
+    EXPECT_TRUE(cryptoManager_->deriveKey(password, salt, 32, derivedKey));
+    EXPECT_EQ(derivedKey.size(), 32);
+
+    // Test consistency - same inputs should produce same key
+    std::vector<uint8_t> derivedKey2;
+    EXPECT_TRUE(cryptoManager_->deriveKey(password, salt, 32, derivedKey2));
+    EXPECT_EQ(derivedKey, derivedKey2);
+
+    // Test different password produces different key
+    std::vector<uint8_t> derivedKey3;
+    EXPECT_TRUE(cryptoManager_->deriveKey("different_password", salt, 32, derivedKey3));
+    EXPECT_NE(derivedKey, derivedKey3);
+}
+
+// Test 8: MAC (Message Authentication Code)
+TEST_F(CryptoManagerComprehensiveTest, MACGenerationTest) {
+    std::vector<uint8_t> data = {0x48, 0x65, 0x6C, 0x6C, 0x6F};  // "Hello"
+    std::string keyId = cryptoManager_->generateKey(KeyType::Symmetric, 32);
+    std::vector<uint8_t> mac;
+
+    // Test MAC generation
+    EXPECT_TRUE(cryptoManager_->generateMAC(data, keyId, mac));
+    EXPECT_FALSE(mac.empty());
+
+    // Test MAC verification
+    EXPECT_TRUE(cryptoManager_->verifyMAC(data, keyId, mac));
+
+    // Test MAC verification with wrong data should fail
+    std::vector<uint8_t> wrongData = {0x57, 0x6F, 0x72, 0x6C, 0x64};  // "World"
+    EXPECT_FALSE(cryptoManager_->verifyMAC(wrongData, keyId, mac));
+}
+
+// Test 9: Key Storage and Retrieval
+TEST_F(CryptoManagerComprehensiveTest, KeyStorageTest) {
+    std::string keyId = cryptoManager_->generateKey(KeyType::Symmetric, 32);
+
+    // Test key existence
+    EXPECT_TRUE(cryptoManager_->keyExists(keyId));
+
+    // Test key deletion
+    EXPECT_TRUE(cryptoManager_->deleteKey(keyId));
+    EXPECT_FALSE(cryptoManager_->keyExists(keyId));
+
+    // Test deletion of non-existent key
+    EXPECT_FALSE(cryptoManager_->deleteKey("non_existent_key"));
+}
+
+// Test 10: Crypto Audit
+TEST_F(CryptoManagerComprehensiveTest, CryptoAuditTest) {
+    // Perform basic operations to have something to audit
+    std::string keyId = cryptoManager_->generateKey(KeyType::Symmetric, 32);
+    std::vector<uint8_t> data = {0x48, 0x65, 0x6C, 0x6C, 0x6F};
+    std::vector<uint8_t> encrypted;
+    cryptoManager_->encrypt(data, keyId, encrypted);
+
+    // Perform audit
+    EXPECT_TRUE(cryptoManager_->performCryptoAudit());
+}
+
+// Test 11: Algorithm Support
+TEST_F(CryptoManagerComprehensiveTest, AlgorithmSupportTest) {
+    std::vector<uint8_t> data = {0x48, 0x65, 0x6C, 0x6C, 0x6F};
+
+    // Test all supported hash algorithms
+    std::vector<uint8_t> sha256Hash, sha512Hash, blake2bHash;
+    EXPECT_TRUE(cryptoManager_->hash(data, HashAlgorithm::SHA256, sha256Hash));
+    EXPECT_TRUE(cryptoManager_->hash(data, HashAlgorithm::SHA512, sha512Hash));
+    EXPECT_TRUE(cryptoManager_->hash(data, HashAlgorithm::Blake2b, blake2bHash));
+
+    // Verify different algorithms produce different results
+    EXPECT_NE(sha256Hash, sha512Hash);
+    EXPECT_NE(sha256Hash, blake2bHash);
+    EXPECT_NE(sha512Hash, blake2bHash);
+}
+
+// Test 12: Performance and Stress Testing
+TEST_F(CryptoManagerComprehensiveTest, PerformanceTest) {
+    const int numOperations = 100;
+    std::vector<std::string> keyIds;
+
+    // Generate multiple keys
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < numOperations; i++) {
+        std::string keyId = cryptoManager_->generateKey(KeyType::Symmetric, 32);
+        EXPECT_FALSE(keyId.empty());
+        keyIds.push_back(keyId);
+    }
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    EXPECT_LT(duration.count(), 5000);  // Should complete within 5 seconds
+
+    // Clean up keys
+    for (const std::string& keyId : keyIds) {
+        cryptoManager_->deleteKey(keyId);
+    }
+}
+
+// Test 13: Error Handling and Edge Cases
+TEST_F(CryptoManagerComprehensiveTest, ErrorHandlingTest) {
+    std::vector<uint8_t> data = {0x48, 0x65, 0x6C, 0x6C, 0x6F};
+    std::vector<uint8_t> result;
+
+    // Test operations with invalid key ID
+    EXPECT_FALSE(cryptoManager_->encrypt(data, "invalid_key", result));
+    EXPECT_FALSE(cryptoManager_->decrypt(data, "invalid_key", result));
+
+    // Test empty data encryption
+    std::vector<uint8_t> emptyData;
+    std::string validKeyId = cryptoManager_->generateKey(KeyType::Symmetric, 32);
+    EXPECT_FALSE(cryptoManager_->encrypt(emptyData, validKeyId, result));
+
+    // Test invalid key size
+    std::string invalidKey = cryptoManager_->generateKey(KeyType::Symmetric, 0);
+    EXPECT_TRUE(invalidKey.empty());
+
+    // Test zero-length random generation
+    EXPECT_FALSE(cryptoManager_->generateSecureRandom(result, 0));
+}
+
+// Test 14: Configuration Management
+TEST_F(CryptoManagerComprehensiveTest, ConfigurationTest) {
+    // Test with different configurations
+    CryptoConfig altConfig;
+    altConfig.defaultEncryption = EncryptionAlgorithm::ChaCha20_Poly1305;
+    altConfig.defaultHash = HashAlgorithm::Blake2b;
+    altConfig.enableHardwareAcceleration = false;
+
+    auto altCrypto = std::make_unique<CryptoManager>(altConfig);
+    EXPECT_TRUE(altCrypto != nullptr);
+
+    // Test basic operations with alternative config
+    std::string keyId = altCrypto->generateKey(KeyType::Symmetric, 32);
+    EXPECT_FALSE(keyId.empty());
+
+    std::vector<uint8_t> data = {0x48, 0x65, 0x6C, 0x6C, 0x6F};
+    std::vector<uint8_t> hash;
+    EXPECT_TRUE(altCrypto->hash(data, HashAlgorithm::Blake2b, hash));
+}
+
+// Test 15: Key Rotation and Lifecycle
+TEST_F(CryptoManagerComprehensiveTest, KeyRotationTest) {
+    // Generate a key
+    std::string keyId = cryptoManager_->generateKey(KeyType::Symmetric, 32);
+    EXPECT_TRUE(cryptoManager_->keyExists(keyId));
+
+    // Test key rotation (if implemented)
+    cryptoManager_->rotateKeys();
+
+    // Key should still exist after rotation
+    EXPECT_TRUE(cryptoManager_->keyExists(keyId));
+}
+
+}  // namespace test
+}  // namespace huntmaster

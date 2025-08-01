@@ -15,6 +15,7 @@ class AudioPlayer::Impl {
     ma_device device;
     ma_decoder decoder;
     bool isDeviceInitialized = false;
+    bool isDecoderInitialized = false;  // Track decoder state
     std::atomic<bool> playing{false};
 
     // This callback is called by miniaudio when it needs more audio data to play.
@@ -41,8 +42,12 @@ class AudioPlayer::Impl {
     ~Impl() {
         if (isDeviceInitialized) {
             ma_device_uninit(&device);
+            isDeviceInitialized = false;
         }
-        ma_decoder_uninit(&decoder);
+        if (isDecoderInitialized) {
+            ma_decoder_uninit(&decoder);
+            isDecoderInitialized = false;
+        }
     }
 };
 
@@ -57,18 +62,28 @@ bool AudioPlayer::loadFile(const std::string& filename) {
     }
 
     // Uninitialize previous decoder if it exists.
-    ma_decoder_uninit(&pImpl->decoder);
+    if (pImpl->isDecoderInitialized) {
+        ma_decoder_uninit(&pImpl->decoder);
+        pImpl->isDecoderInitialized = false;
+    }
 
     if (ma_decoder_init_file(filename.c_str(), NULL, &pImpl->decoder) != MA_SUCCESS) {
         std::cerr << "AudioPlayer Error: Failed to load file " << filename << std::endl;
         return false;
     }
+
+    pImpl->isDecoderInitialized = true;
     return true;
 }
 
 bool AudioPlayer::play() {
     if (pImpl->playing.load())
         return true;  // Already playing
+
+    if (!pImpl->isDecoderInitialized) {
+        std::cerr << "AudioPlayer Error: No file loaded." << std::endl;
+        return false;
+    }
 
     ma_device_config deviceConfig = ma_device_config_init(ma_device_type_playback);
     deviceConfig.playback.format = pImpl->decoder.outputFormat;
@@ -79,14 +94,12 @@ bool AudioPlayer::play() {
 
     if (ma_device_init(NULL, &deviceConfig, &pImpl->device) != MA_SUCCESS) {
         std::cerr << "AudioPlayer Error: Failed to initialize playback device." << std::endl;
-        ma_decoder_uninit(&pImpl->decoder);
         return false;
     }
 
     if (ma_device_start(&pImpl->device) != MA_SUCCESS) {
         std::cerr << "AudioPlayer Error: Failed to start playback device." << std::endl;
         ma_device_uninit(&pImpl->device);
-        ma_decoder_uninit(&pImpl->decoder);
         return false;
     }
 
@@ -116,6 +129,10 @@ double AudioPlayer::getDuration() const {
 }
 
 double AudioPlayer::getCurrentPosition() const {
+    if (!pImpl->isDecoderInitialized) {
+        return 0.0;
+    }
+
     ma_uint64 cursorInPCMFrames;
     if (ma_decoder_get_cursor_in_pcm_frames(&pImpl->decoder, &cursorInPCMFrames) != MA_SUCCESS) {
         return 0.0;

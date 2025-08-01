@@ -1,0 +1,260 @@
+/**
+ * @file test_wasm_integration.cpp
+ * @brief WASM Integration Test Suite for Huntmaster Audio Engine
+ *
+ * This test suite focuses on testing WASM-compatible functionality and interfaces.
+ * It tests core engine functionality that can compile and run in a WASM environment
+ * without relying on C++20 features that are not yet fully supported in Emscripten.
+ *
+ * @author Huntmaster Engine Team
+ * @version 1.0
+ * @date July 24, 2025
+ */
+
+#include <memory>
+#include <string>
+#include <vector>
+
+#include <gtest/gtest.h>
+
+#include "TestUtils.h"
+
+// Basic WASM compatibility includes - avoid C++20 features for now
+#include "huntmaster/core/DTWComparator.h"
+#include "huntmaster/core/DebugLogger.h"
+#include "huntmaster/core/UnifiedAudioEngine.h"
+
+using namespace huntmaster;
+using namespace huntmaster::test;
+
+/**
+ * @class WASMIntegrationTest
+ * @brief Test fixture for WASM Integration testing
+ *
+ * Tests core engine functionality that should work in WASM environment.
+ * Focuses on basic initialization, audio processing, and DTW comparison
+ * without relying on advanced C++20 features.
+ */
+class WASMIntegrationTest : public ::testing::Test {
+  protected:
+    void SetUp() override {
+        TestPaths::initialize();
+
+        // Initialize with minimal configuration that should work in WASM
+        config_.sample_rate = 22050;  // Lower sample rate for WASM efficiency
+        config_.mfcc_coeffs = 12;     // Standard MFCC count
+        config_.frame_size = 512;     // Power of 2 frame size
+
+        engine_ = std::make_unique<UnifiedAudioEngine>();
+        comparator_ = std::make_unique<DTWComparator>();
+    }
+
+    void TearDown() override {
+        if (engine_) {
+            engine_.reset();
+        }
+        if (comparator_) {
+            comparator_.reset();
+        }
+    }
+
+    // Helper to create simple test audio data
+    std::vector<float> createTestAudio(size_t samples, float frequency = 440.0f) {
+        std::vector<float> audio(samples);
+        for (size_t i = 0; i < samples; ++i) {
+            audio[i] = 0.5f * std::sin(2.0f * M_PI * frequency * i / config_.sample_rate);
+        }
+        return audio;
+    }
+
+  protected:
+    UnifiedAudioEngineConfig config_;
+    std::unique_ptr<UnifiedAudioEngine> engine_;
+    std::unique_ptr<DTWComparator> comparator_;
+};
+
+// Test 1: Basic Engine Initialization for WASM
+TEST_F(WASMIntegrationTest, EngineInitializationTest) {
+    // Test that engine can initialize with WASM-compatible settings
+    ASSERT_TRUE(engine_->initialize(config_));
+    EXPECT_TRUE(engine_->isInitialized());
+
+    // Verify basic configuration
+    EXPECT_EQ(config_.sample_rate, 22050);
+    EXPECT_EQ(config_.mfcc_coeffs, 12);
+    EXPECT_EQ(config_.frame_size, 512);
+}
+
+// Test 2: Basic Audio Processing Pipeline
+TEST_F(WASMIntegrationTest, BasicAudioProcessingTest) {
+    ASSERT_TRUE(engine_->initialize(config_));
+
+    // Create simple test audio
+    auto testAudio = createTestAudio(2048);  // ~93ms at 22050 Hz
+
+    // Test basic processing without advanced features
+    AudioProcessingResult result = engine_->processAudio(testAudio.data(), testAudio.size());
+
+    // Verify processing completed without error
+    EXPECT_EQ(result.status, ProcessingStatus::Success);
+    EXPECT_GT(result.frames_processed, 0);
+}
+
+// Test 3: DTW Comparison for WASM
+TEST_F(WASMIntegrationTest, DTWComparisonTest) {
+    // Create two similar audio sequences
+    auto audio1 = createTestAudio(1024, 440.0f);  // A4 note
+    auto audio2 = createTestAudio(1024, 440.0f);  // Same A4 note
+    auto audio3 = createTestAudio(1024, 880.0f);  // A5 note (different)
+
+    // Test DTW comparison initialization
+    DTWConfig dtw_config;
+    dtw_config.frame_size = 256;
+    dtw_config.hop_size = 128;
+
+    ASSERT_TRUE(comparator_->initialize(dtw_config));
+
+    // Compare identical sequences - should have high similarity
+    float similarity1 =
+        comparator_->compareSequences(audio1.data(), audio1.size(), audio2.data(), audio2.size());
+    EXPECT_GT(similarity1, 0.8f);  // High similarity expected
+
+    // Compare different sequences - should have lower similarity
+    float similarity2 =
+        comparator_->compareSequences(audio1.data(), audio1.size(), audio3.data(), audio3.size());
+    EXPECT_LT(similarity2, similarity1);  // Lower similarity expected
+}
+
+// Test 4: Memory Management for WASM
+TEST_F(WASMIntegrationTest, MemoryManagementTest) {
+    ASSERT_TRUE(engine_->initialize(config_));
+
+    // Process multiple audio chunks to test memory management
+    for (int i = 0; i < 10; ++i) {
+        auto testAudio = createTestAudio(1024);
+        AudioProcessingResult result = engine_->processAudio(testAudio.data(), testAudio.size());
+        EXPECT_EQ(result.status, ProcessingStatus::Success);
+    }
+
+    // Verify engine is still functional after multiple operations
+    EXPECT_TRUE(engine_->isInitialized());
+}
+
+// Test 5: Configuration Validation for WASM
+TEST_F(WASMIntegrationTest, ConfigurationValidationTest) {
+    // Test invalid configurations that should fail gracefully
+    UnifiedAudioEngineConfig invalid_config;
+
+    // Invalid sample rate
+    invalid_config.sample_rate = 0;
+    invalid_config.mfcc_coeffs = 12;
+    invalid_config.frame_size = 512;
+    EXPECT_FALSE(engine_->initialize(invalid_config));
+
+    // Invalid MFCC coefficients
+    invalid_config.sample_rate = 22050;
+    invalid_config.mfcc_coeffs = 0;
+    invalid_config.frame_size = 512;
+    EXPECT_FALSE(engine_->initialize(invalid_config));
+
+    // Invalid frame size
+    invalid_config.sample_rate = 22050;
+    invalid_config.mfcc_coeffs = 12;
+    invalid_config.frame_size = 0;
+    EXPECT_FALSE(engine_->initialize(invalid_config));
+}
+
+// Test 6: Error Handling for WASM
+TEST_F(WASMIntegrationTest, ErrorHandlingTest) {
+    ASSERT_TRUE(engine_->initialize(config_));
+
+    // Test null pointer handling
+    AudioProcessingResult result1 = engine_->processAudio(nullptr, 1024);
+    EXPECT_EQ(result1.status, ProcessingStatus::Error);
+
+    // Test zero-length audio handling
+    auto testAudio = createTestAudio(1024);
+    AudioProcessingResult result2 = engine_->processAudio(testAudio.data(), 0);
+    EXPECT_EQ(result2.status, ProcessingStatus::Error);
+}
+
+// Test 7: Basic Debug Logging for WASM
+TEST_F(WASMIntegrationTest, DebugLoggingTest) {
+    // Test basic debug logger functionality
+    DebugLogger& logger = DebugLogger::getInstance();
+
+    // Test logging without crashing
+    logger.log(LogLevel::Info, "WASM Integration Test Started");
+    logger.log(LogLevel::Debug, "Testing basic functionality");
+    logger.log(LogLevel::Warning, "This is a test warning");
+
+    // Verify logger is functional (no exceptions thrown)
+    SUCCEED();
+}
+
+// Test 8: Performance Baseline for WASM
+TEST_F(WASMIntegrationTest, PerformanceBaselineTest) {
+    ASSERT_TRUE(engine_->initialize(config_));
+
+    auto testAudio = createTestAudio(4096);  // ~186ms at 22050 Hz
+
+    auto start_time = std::chrono::high_resolution_clock::now();
+    AudioProcessingResult result = engine_->processAudio(testAudio.data(), testAudio.size());
+    auto end_time = std::chrono::high_resolution_clock::now();
+
+    EXPECT_EQ(result.status, ProcessingStatus::Success);
+
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+
+    // Log performance for WASM baseline (should be reasonable for web environment)
+    DebugLogger::getInstance().log(LogLevel::Info,
+                                   "WASM Processing time: " + std::to_string(duration.count())
+                                       + "ms for " + std::to_string(testAudio.size()) + " samples");
+
+    // Processing should complete in reasonable time (less than 1 second for small audio)
+    EXPECT_LT(duration.count(), 1000);
+}
+
+// Test 9: Multiple Engine Instances for WASM
+TEST_F(WASMIntegrationTest, MultipleInstancesTest) {
+    // Test creating multiple engine instances (important for WASM workers)
+    auto engine2 = std::make_unique<UnifiedAudioEngine>();
+    auto engine3 = std::make_unique<UnifiedAudioEngine>();
+
+    // All engines should initialize independently
+    EXPECT_TRUE(engine_->initialize(config_));
+    EXPECT_TRUE(engine2->initialize(config_));
+    EXPECT_TRUE(engine3->initialize(config_));
+
+    // All engines should process independently
+    auto testAudio = createTestAudio(1024);
+
+    AudioProcessingResult result1 = engine_->processAudio(testAudio.data(), testAudio.size());
+    AudioProcessingResult result2 = engine2->processAudio(testAudio.data(), testAudio.size());
+    AudioProcessingResult result3 = engine3->processAudio(testAudio.data(), testAudio.size());
+
+    EXPECT_EQ(result1.status, ProcessingStatus::Success);
+    EXPECT_EQ(result2.status, ProcessingStatus::Success);
+    EXPECT_EQ(result3.status, ProcessingStatus::Success);
+}
+
+// Test 10: Resource Cleanup for WASM
+TEST_F(WASMIntegrationTest, ResourceCleanupTest) {
+    ASSERT_TRUE(engine_->initialize(config_));
+
+    // Process some audio to allocate resources
+    auto testAudio = createTestAudio(2048);
+    AudioProcessingResult result = engine_->processAudio(testAudio.data(), testAudio.size());
+    EXPECT_EQ(result.status, ProcessingStatus::Success);
+
+    // Explicit cleanup should not crash
+    engine_.reset();
+
+    // Create new engine to verify no lingering state
+    engine_ = std::make_unique<UnifiedAudioEngine>();
+    EXPECT_TRUE(engine_->initialize(config_));
+
+    // Should still work after cleanup and recreation
+    AudioProcessingResult result2 = engine_->processAudio(testAudio.data(), testAudio.size());
+    EXPECT_EQ(result2.status, ProcessingStatus::Success);
+}

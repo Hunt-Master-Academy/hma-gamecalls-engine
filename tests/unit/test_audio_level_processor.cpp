@@ -239,6 +239,91 @@ TEST(AudioLevelUtilityTest, LinearToDbConversionTest) {
     EXPECT_FLOAT_EQ(linearToDb(-1.0f, -60.0f, 6.0f), -60.0f);  // Negative = floor
 }
 
+// Test cases for static calculation methods
+class AudioLevelCalculationTest : public ::testing::Test {
+  protected:
+    std::vector<float> generateSineWave(float amplitude, size_t numSamples) {
+        std::vector<float> wave(numSamples);
+        for (size_t i = 0; i < numSamples; ++i) {
+            wave[i] = amplitude * std::sin(2.0f * M_PI * 440.0f * i / 44100.0f);
+        }
+        return wave;
+    }
+};
+
+TEST_F(AudioLevelCalculationTest, CalculateRMSTest) {
+    // Test with silence
+    std::vector<float> silence(1024, 0.0f);
+    EXPECT_FLOAT_EQ(AudioLevelProcessor::calculateRMS(silence, 1), 0.0f);
+
+    // Test with known amplitude sine wave
+    auto sineWave = generateSineWave(0.5f, 1024);
+    float rms = AudioLevelProcessor::calculateRMS(sineWave, 1);
+    EXPECT_NEAR(rms, 0.5f / std::sqrt(2), 0.01f);  // RMS of sine wave = amplitude / sqrt(2)
+
+    // Test with DC signal
+    std::vector<float> dcSignal(1024, 0.8f);
+    EXPECT_NEAR(AudioLevelProcessor::calculateRMS(dcSignal, 1), 0.8f, 0.0001f);
+
+    // Test with empty span
+    std::span<const float> empty;
+    EXPECT_FLOAT_EQ(AudioLevelProcessor::calculateRMS(empty, 1), 0.0f);
+
+    // Test with invalid channel count
+    EXPECT_FLOAT_EQ(AudioLevelProcessor::calculateRMS(silence, 0), 0.0f);
+    EXPECT_FLOAT_EQ(AudioLevelProcessor::calculateRMS(silence, -1), 0.0f);
+}
+
+TEST_F(AudioLevelCalculationTest, CalculatePeakTest) {
+    // Test with silence
+    std::vector<float> silence(1024, 0.0f);
+    EXPECT_FLOAT_EQ(AudioLevelProcessor::calculatePeak(silence, 1), 0.0f);
+
+    // Test with known peak value
+    std::vector<float> signal = {0.1f, -0.8f, 0.3f, -0.2f, 0.9f, -0.1f};
+    EXPECT_FLOAT_EQ(AudioLevelProcessor::calculatePeak(signal, 1), 0.9f);
+
+    // Test with negative peak
+    std::vector<float> negSignal = {0.1f, -0.95f, 0.3f, -0.2f};
+    EXPECT_FLOAT_EQ(AudioLevelProcessor::calculatePeak(negSignal, 1), 0.95f);
+
+    // Test with empty span
+    std::span<const float> empty;
+    EXPECT_FLOAT_EQ(AudioLevelProcessor::calculatePeak(empty, 1), 0.0f);
+
+    // Test with invalid channel count
+    EXPECT_FLOAT_EQ(AudioLevelProcessor::calculatePeak(silence, 0), 0.0f);
+    EXPECT_FLOAT_EQ(AudioLevelProcessor::calculatePeak(silence, -1), 0.0f);
+}
+
+TEST_F(AudioLevelCalculationTest, MultiChannelCalculationTest) {
+    // Test stereo RMS calculation
+    std::vector<float> stereoData = {
+        0.5f,
+        -0.3f,  // Left: 0.5, Right: -0.3
+        0.0f,
+        0.8f,  // Left: 0.0, Right: 0.8
+        -0.4f,
+        0.2f,  // Left: -0.4, Right: 0.2
+        0.6f,
+        -0.7f  // Left: 0.6, Right: -0.7
+    };
+
+    float rms = AudioLevelProcessor::calculateRMS(stereoData, 2);
+    // Expected: sqrt((0.5² + 0.3² + 0² + 0.8² + 0.4² + 0.2² + 0.6² + 0.7²) / 8)
+    float expected = std::sqrt((0.25f + 0.09f + 0.0f + 0.64f + 0.16f + 0.04f + 0.36f + 0.49f) / 8);
+    EXPECT_NEAR(rms, expected, 0.001f);
+
+    // Test stereo peak calculation
+    float peak = AudioLevelProcessor::calculatePeak(stereoData, 2);
+    EXPECT_FLOAT_EQ(peak, 0.8f);  // Maximum absolute value
+
+    // Test with mismatched data size (odd number for stereo)
+    std::vector<float> oddStereo = {0.5f, -0.3f, 0.1f};  // 3 samples for 2 channels
+    float oddRms = AudioLevelProcessor::calculateRMS(oddStereo, 2);
+    EXPECT_GT(oddRms, 0.0f);  // Should still work, just processes complete frames
+}
+
 TEST(AudioLevelUtilityTest, DbToLinearConversionTest) {
     // Test known conversions
     EXPECT_FLOAT_EQ(dbToLinear(0.0f), 1.0f);      // 0 dB = full scale

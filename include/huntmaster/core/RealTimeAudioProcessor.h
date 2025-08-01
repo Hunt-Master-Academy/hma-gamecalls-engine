@@ -5,7 +5,6 @@
 #include <atomic>
 #include <chrono>
 #include <condition_variable>
-#include <expected>
 #include <memory>
 #include <optional>
 #include <queue>

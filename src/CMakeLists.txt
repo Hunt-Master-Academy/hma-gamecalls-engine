@@ -26,6 +26,7 @@ set(UNIFIED_ENGINE_CORE_SOURCES
     "${PROJECT_SOURCE_DIR}/core/DTWProcessor.cpp"
     "${PROJECT_SOURCE_DIR}/core/ThirdPartyLibs.cpp"
     "${PROJECT_SOURCE_DIR}/core/AudioLevelProcessor.cpp"
+    "${PROJECT_SOURCE_DIR}/core/SpectrogramProcessor.cpp"
     "${PROJECT_SOURCE_DIR}/core/DebugLogger.cpp"
     "${PROJECT_SOURCE_DIR}/core/RealtimeScorer.cpp"
     "${PROJECT_SOURCE_DIR}/core/ErrorLogger.cpp"

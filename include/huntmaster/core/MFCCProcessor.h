@@ -16,7 +16,6 @@
 #pragma once
 
 #include <array>
-#include <expected>
 #include <memory>
 #include <optional>
 #include <span>

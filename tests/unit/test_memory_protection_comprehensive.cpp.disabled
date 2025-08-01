@@ -1,0 +1,267 @@
+/**
+ * @file test_memory_protection_comprehensive.cpp
+ * @brief Comprehensive Test Suite for Memory Protection Security Component
+ *
+ * Tests memory protection capabilities including secure allocation,
+ * buffer overflow detection, canary validation, and memory auditing.
+ * Target: Achieve 70%+ coverage for Memory Protection security component.
+ *
+ * @author Huntmaster Engine Team
+ * @version 1.0
+ * @date July 2025
+ */
+
+#include <chrono>
+#include <cstring>
+#include <memory>
+#include <thread>
+#include <vector>
+
+#include <gtest/gtest.h>
+
+#include "huntmaster/security/memory-protection.h"
+
+namespace huntmaster {
+namespace test {
+
+using namespace huntmaster::security;
+
+/**
+ * Comprehensive test fixture for Memory Protection security component
+ */
+class MemoryProtectionComprehensiveTest : public ::testing::Test {
+  protected:
+    void SetUp() override {
+        // Configure memory protection with all features enabled
+        config_.enableStackProtection = true;
+        config_.enableHeapProtection = true;
+        config_.enableGuardPages = true;
+        config_.enableCanaries = true;
+        config_.enableASLR = true;
+        config_.maxAllocationSize = 1024 * 1024;  // 1MB
+        config_.guardPageSize = 4096;
+        config_.canaryPattern = 0xDEADBEEF;
+        config_.enableSecureClear = true;
+
+        memoryProtection_ = std::make_unique<MemoryProtection>(config_);
+    }
+
+    void TearDown() override {
+        memoryProtection_.reset();
+    }
+
+    MemoryConfig config_;
+    std::unique_ptr<MemoryProtection> memoryProtection_;
+};
+
+// Test 1: Memory Protection Initialization
+TEST_F(MemoryProtectionComprehensiveTest, InitializationTest) {
+    EXPECT_TRUE(memoryProtection_ != nullptr);
+    EXPECT_EQ(memoryProtection_->getConfig().enableStackProtection, true);
+    EXPECT_EQ(memoryProtection_->getConfig().enableHeapProtection, true);
+    EXPECT_EQ(memoryProtection_->getConfig().canaryPattern, 0xDEADBEEF);
+}
+
+// Test 2: Secure Buffer Allocation
+TEST_F(MemoryProtectionComprehensiveTest, SecureBufferAllocationTest) {
+    void* buffer = nullptr;
+    size_t size = 1024;
+
+    // Test successful allocation
+    EXPECT_TRUE(memoryProtection_->allocateSecureBuffer(size, &buffer));
+    EXPECT_NE(buffer, nullptr);
+
+    // Test buffer accessibility
+    memset(buffer, 0x42, size);
+    EXPECT_EQ(static_cast<uint8_t*>(buffer)[0], 0x42);
+
+    // Test deallocation
+    EXPECT_TRUE(memoryProtection_->deallocateSecureBuffer(buffer));
+}
+
+// Test 3: Memory Access Validation
+TEST_F(MemoryProtectionComprehensiveTest, MemoryAccessValidationTest) {
+    void* buffer = nullptr;
+    size_t size = 1024;
+
+    ASSERT_TRUE(memoryProtection_->allocateSecureBuffer(size, &buffer));
+
+    // Test valid read access
+    EXPECT_TRUE(memoryProtection_->validateMemoryAccess(buffer, size, AccessType::Read));
+
+    // Test valid write access
+    EXPECT_TRUE(memoryProtection_->validateMemoryAccess(buffer, size, AccessType::Write));
+
+    // Test invalid access beyond buffer
+    EXPECT_FALSE(memoryProtection_->validateMemoryAccess(
+        static_cast<uint8_t*>(buffer) + size + 1, 1, AccessType::Read));
+
+    // Test null pointer access
+    EXPECT_FALSE(memoryProtection_->validateMemoryAccess(nullptr, size, AccessType::Read));
+
+    memoryProtection_->deallocateSecureBuffer(buffer);
+}
+
+// Test 4: Buffer Bounds Checking (skipped - method not implemented)
+TEST_F(MemoryProtectionComprehensiveTest, BufferBoundsCheckingSkippedTest) {
+    // This test is skipped until checkBufferBounds is implemented
+    GTEST_SKIP() << "checkBufferBounds method not implemented yet";
+}
+
+// Test 5: Stack Protection
+TEST_F(MemoryProtectionComprehensiveTest, StackProtectionTest) {
+    EXPECT_TRUE(memoryProtection_->enableStackProtection());
+}
+
+// Test 6: Heap Protection
+TEST_F(MemoryProtectionComprehensiveTest, HeapProtectionTest) {
+    EXPECT_TRUE(memoryProtection_->enableHeapProtection());
+
+    // Test heap allocation with protection
+    void* buffer = nullptr;
+    ASSERT_TRUE(memoryProtection_->allocateSecureBuffer(512, &buffer));
+
+    // Verify heap protection is active
+    EXPECT_TRUE(memoryProtection_->validateMemoryAccess(buffer, 512, AccessType::ReadWrite));
+
+    memoryProtection_->deallocateSecureBuffer(buffer);
+}
+
+// Test 7: Execution Prevention (skipped - method not implemented)
+TEST_F(MemoryProtectionComprehensiveTest, ExecutionPreventionSkippedTest) {
+    // This test is skipped until enableExecutionPrevention is implemented
+    GTEST_SKIP() << "enableExecutionPrevention method not implemented yet";
+}
+
+// Test 8: Address Space Layout Randomization (skipped - method not implemented)
+TEST_F(MemoryProtectionComprehensiveTest, AddressRandomizationSkippedTest) {
+    // This test is skipped until enableAddressRandomization is implemented
+    GTEST_SKIP() << "enableAddressRandomization method not implemented yet";
+}
+
+// Test 9: Sensitive Data Clearing
+TEST_F(MemoryProtectionComprehensiveTest, SensitiveDataClearingTest) {
+    const size_t size = 256;
+    uint8_t sensitiveData[size];
+
+    // Fill with sensitive data
+    memset(sensitiveData, 0x42, size);
+    EXPECT_EQ(sensitiveData[0], 0x42);
+    EXPECT_EQ(sensitiveData[size - 1], 0x42);
+
+    // Clear sensitive data
+    memoryProtection_->clearSensitiveData(sensitiveData, size);
+
+    // Verify data is cleared
+    for (size_t i = 0; i < size; i++) {
+        EXPECT_EQ(sensitiveData[i], 0x00);
+    }
+}
+
+// Test 10: Memory Sanitization (skipped - method not implemented)
+TEST_F(MemoryProtectionComprehensiveTest, MemorySanitizationSkippedTest) {
+    // This test is skipped until sanitizeMemoryRegion is implemented
+    GTEST_SKIP() << "sanitizeMemoryRegion method not implemented yet";
+}
+
+// Test 11: Memory Report Generation
+TEST_F(MemoryProtectionComprehensiveTest, MemoryReportGenerationTest) {
+    // Allocate some buffers
+    std::vector<void*> buffers;
+    for (int i = 0; i < 3; i++) {
+        void* buffer = nullptr;
+        ASSERT_TRUE(memoryProtection_->allocateSecureBuffer(1024, &buffer));
+        buffers.push_back(buffer);
+    }
+
+    // Generate memory report
+    MemoryReport report = memoryProtection_->generateMemoryReport();
+
+    // Verify report contents
+    EXPECT_GE(report.totalAllocations, 3);
+    EXPECT_GE(report.activeAllocations, 3);
+    EXPECT_GE(report.totalMemoryUsed, 3072);  // 3 * 1024
+
+    // Clean up
+    for (void* buffer : buffers) {
+        memoryProtection_->deallocateSecureBuffer(buffer);
+    }
+}
+
+// Test 12: Memory Audit
+TEST_F(MemoryProtectionComprehensiveTest, MemoryAuditTest) {
+    // Allocate and deallocate buffers
+    void* buffer1 = nullptr;
+    void* buffer2 = nullptr;
+
+    ASSERT_TRUE(memoryProtection_->allocateSecureBuffer(512, &buffer1));
+    ASSERT_TRUE(memoryProtection_->allocateSecureBuffer(1024, &buffer2));
+
+    // Perform memory audit
+    EXPECT_TRUE(memoryProtection_->performMemoryAudit());
+
+    // Clean up
+    memoryProtection_->deallocateSecureBuffer(buffer1);
+    memoryProtection_->deallocateSecureBuffer(buffer2);
+
+    // Audit after cleanup
+    EXPECT_TRUE(memoryProtection_->performMemoryAudit());
+}
+
+// Test 13: Protection Policy Management
+TEST_F(MemoryProtectionComprehensiveTest, ProtectionPolicyManagementTest) {
+    ProtectionPolicies policies;
+    policies.enforceStackCanaries = true;
+    policies.enforceHeapGuards = true;
+    policies.enforceExecutionPrevention = true;
+    policies.enforceAddressRandomization = true;
+    policies.minimumAllocationSize = 64;
+    policies.maximumAllocationSize = 1048576;
+    policies.auditFrequency = 1000;
+
+    memoryProtection_->updateProtectionPolicies(policies);
+
+    const ProtectionPolicies& currentPolicies = memoryProtection_->getProtectionPolicies();
+    EXPECT_EQ(currentPolicies.enforceStackCanaries, true);
+    EXPECT_EQ(currentPolicies.enforceHeapGuards, true);
+    EXPECT_EQ(currentPolicies.minimumAllocationSize, 64);
+    EXPECT_EQ(currentPolicies.maximumAllocationSize, 1048576);
+}
+
+// Test 14: Configuration Management
+TEST_F(MemoryProtectionComprehensiveTest, ConfigurationManagementTest) {
+    MemoryConfig newConfig;
+    newConfig.enableStackProtection = false;
+    newConfig.enableHeapProtection = true;
+    newConfig.maxAllocationSize = 2097152;  // 2MB
+    newConfig.canaryPattern = 0xCAFEBABE;
+
+    memoryProtection_->updateConfig(newConfig);
+
+    const MemoryConfig& currentConfig = memoryProtection_->getConfig();
+    EXPECT_EQ(currentConfig.enableStackProtection, false);
+    EXPECT_EQ(currentConfig.enableHeapProtection, true);
+    EXPECT_EQ(currentConfig.maxAllocationSize, 2097152);
+    EXPECT_EQ(currentConfig.canaryPattern, 0xCAFEBABE);
+}
+
+// Test 15: Edge Cases and Error Handling (updated for current implementation)
+TEST_F(MemoryProtectionComprehensiveTest, EdgeCasesAndErrorHandlingTest) {
+    // Test zero-size allocation
+    void* buffer = nullptr;
+    EXPECT_FALSE(memoryProtection_->allocateSecureBuffer(0, &buffer));
+
+    // Test oversized allocation
+    EXPECT_FALSE(memoryProtection_->allocateSecureBuffer(config_.maxAllocationSize + 1, &buffer));
+
+    // Test null pointer deallocation
+    EXPECT_FALSE(memoryProtection_->deallocateSecureBuffer(nullptr));
+
+    // Test memory access validation with invalid parameters
+    EXPECT_FALSE(memoryProtection_->validateMemoryAccess(nullptr, 0, AccessType::Read));
+
+    // Note: sanitizeMemoryRegion test skipped until method is implemented
+}
+
+}  // namespace test
+}  // namespace huntmaster

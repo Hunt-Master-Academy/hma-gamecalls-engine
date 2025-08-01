@@ -16,7 +16,6 @@
 #pragma once
 
 #include <chrono>
-#include <expected>
 #include <memory>
 #include <span>
 #include <variant>

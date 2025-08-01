@@ -4,7 +4,6 @@
 #include <array>
 #include <atomic>
 #include <chrono>
-#include <expected>
 #include <memory>
 #include <memory_resource>
 #include <semaphore>
