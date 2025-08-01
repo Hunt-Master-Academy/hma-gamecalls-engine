@@ -48,6 +48,18 @@ CMakeUserPresets.json
 /TestHarness
 /test_mfcc_debugging
 /UnifiedEngineTest
+
+# === Temporary Debug Files ===
+debug_*
+test_*.wav
+*.debug
+
+# === Coverage Reports ===
+*.gcov
+*.gcda
+*.gcno
+coverage.info
+coverage_html/
 /ValidationUnifiedTest
 
 # Build system generated files in root
