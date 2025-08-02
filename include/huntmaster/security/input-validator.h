@@ -155,6 +155,9 @@ class InputValidator {
   private:
     ValidationConfig config_;
     uint64_t errorCount_;
+    uint64_t warningCount_;
+    std::vector<std::string> customMaliciousPatterns_;
+    std::vector<std::string> criticalErrors_;
 
     // TODO: Add private validation helper methods
     // TODO: Add pattern matching engine

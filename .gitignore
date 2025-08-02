@@ -221,3 +221,26 @@ yarn-error.log*
 # Ignore markdown files in the root, but not README.md
 /*.md
 !/README.md
+
+# Build artifacts
+build/
+build-*/
+*.gcda
+*.gcno
+
+# Coverage data
+coverage_data/
+coverage_reports/
+
+# Temporary files
+*.tmp
+*.bak
+*~
+
+# IDE backups
+.vscode.backup.*
+
+# Test outputs
+test_logs/*.log
+!test_logs/README.md
+

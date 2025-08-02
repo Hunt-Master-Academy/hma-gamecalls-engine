@@ -19,24 +19,7 @@
 #include <numeric>
 #include <thread>
 
-#ifndef FFTW_DISABLE
-#include <fftw3.h>
-#else
-// FFTW stub definitions for compilation without FFTW
-struct fftw_plan_s;
-typedef struct fftw_plan_s* fftw_plan;
-typedef double fftw_complex[2];
-#define FFTW_ESTIMATE 0
-#define fftw_malloc(x) malloc(x)
-#define fftw_free(x) free(x)
-#define fftw_plan_dft_r2c_1d(n, in, out, flags) nullptr
-#define fftw_execute(plan) \
-    do {                   \
-    } while (0)
-#define fftw_destroy_plan(plan) \
-    do {                        \
-    } while (0)
-#endif
+#include <kiss_fft.h>
 
 #include "../../include/huntmaster/core/AudioBuffer.h"
 #include "../../include/huntmaster/core/AudioConfig.h"
@@ -155,17 +138,18 @@ bool WaveformAnalyzer::initialize() {
 
 bool WaveformAnalyzer::initializeFFT() {
     try {
-        // Allocate FFT buffers
-        fft_input_ = (double*)fftw_malloc(sizeof(double) * spectrum_size_);
-        fft_output_ = (fftw_complex*)fftw_malloc(sizeof(fftw_complex) * (spectrum_size_ / 2 + 1));
+        // Allocate FFT buffers for KissFFT
+        fft_input_ = (float*)malloc(sizeof(float) * spectrum_size_);
+        fft_output_ = (kiss_fft_cpx*)malloc(sizeof(kiss_fft_cpx) * (spectrum_size_ / 2 + 1));
 
         if (!fft_input_ || !fft_output_) {
             console_error("FFT buffer allocation failed");
             return false;
         }
 
-        // Create FFT plan
-        fft_plan_ = fftw_plan_dft_r2c_1d(spectrum_size_, fft_input_, fft_output_, FFTW_ESTIMATE);
+        // Create KissFFT plan (for real-to-complex transform)
+        // Note: KissFFT uses N for the number of input samples
+        fft_plan_ = kiss_fft_alloc(spectrum_size_, 0, nullptr, nullptr);
 
         if (!fft_plan_) {
             console_error("FFT plan creation failed");
@@ -455,16 +439,24 @@ SpectrumData WaveformAnalyzer::analyzeSpectrum(const AudioBuffer& audio_buffer,
                 sample_value *= window[i];
             }
 
-            fft_input_[i] = static_cast<double>(sample_value);
+            fft_input_[i] = sample_value;
         }
 
         // Zero-pad if necessary
         for (size_t i = analysis_size; i < spectrum_size_; ++i) {
-            fft_input_[i] = 0.0;
+            fft_input_[i] = 0.0f;
         }
 
-        // Perform FFT
-        fftw_execute(fft_plan_);
+        // Perform FFT using KissFFT
+        // Note: KissFFT expects input as kiss_fft_cpx for complex FFT
+        // For real-to-complex transform, we need to create complex input
+        std::vector<kiss_fft_cpx> fft_complex_input(spectrum_size_);
+        for (size_t i = 0; i < spectrum_size_; ++i) {
+            fft_complex_input[i].r = fft_input_[i];
+            fft_complex_input[i].i = 0.0f;
+        }
+
+        kiss_fft(fft_plan_, fft_complex_input.data(), fft_output_);
 
         // Process FFT output
         const size_t output_size = spectrum_size_ / 2 + 1;
@@ -473,8 +465,8 @@ SpectrumData WaveformAnalyzer::analyzeSpectrum(const AudioBuffer& audio_buffer,
         result.phases.resize(output_size);
 
         for (size_t i = 0; i < output_size; ++i) {
-            const double real = fft_output_[i][0];
-            const double imag = fft_output_[i][1];
+            const float real = fft_output_[i].r;
+            const float imag = fft_output_[i].i;
 
             result.frequencies[i] = static_cast<float>(i * sample_rate_) / spectrum_size_;
             result.magnitudes[i] = static_cast<float>(std::sqrt(real * real + imag * imag));
@@ -1019,17 +1011,17 @@ void WaveformAnalyzer::console_error(const std::string& msg) const {
 void WaveformAnalyzer::cleanup() {
     // Clean up FFT resources
     if (fft_plan_) {
-        fftw_destroy_plan(fft_plan_);
+        kiss_fft_free(fft_plan_);
         fft_plan_ = nullptr;
     }
 
     if (fft_input_) {
-        fftw_free(fft_input_);
+        free(fft_input_);
         fft_input_ = nullptr;
     }
 
     if (fft_output_) {
-        fftw_free(fft_output_);
+        free(fft_output_);
         fft_output_ = nullptr;
     }
 

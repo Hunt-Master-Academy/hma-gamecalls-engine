@@ -129,6 +129,10 @@ RealtimeScorer::RealtimeScorer(const Config& config) : impl_(std::make_unique<Im
 
 RealtimeScorer::~RealtimeScorer() = default;
 
+RealtimeScorer::RealtimeScorer(RealtimeScorer&&) noexcept = default;
+
+RealtimeScorer& RealtimeScorer::operator=(RealtimeScorer&&) noexcept = default;
+
 RealtimeScorer::Impl::Impl(const Config& config) : config_(config) {
     if (config_.isValid()) {
         initializeComponents();

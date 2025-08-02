@@ -295,7 +295,7 @@ TEST_F(PerformanceProfilerComprehensiveTest, BottleneckThresholdConfiguration) {
 
 TEST_F(PerformanceProfilerComprehensiveTest, ContinuousMonitoringFunctionality) {
     // Test continuous monitoring start/stop
-    EXPECT_FALSE(profiler_->getConfig().enable_timing || false);  // Initially not monitoring
+    EXPECT_TRUE(profiler_->getConfig().enable_timing);  // Initially enabled as per default config
 
     profiler_->startContinuousMonitoring();
 

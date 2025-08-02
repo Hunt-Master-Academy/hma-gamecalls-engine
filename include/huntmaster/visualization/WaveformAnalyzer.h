@@ -20,10 +20,7 @@
 #include <unordered_map>
 #include <vector>
 
-// Forward declaration for FFTW types
-struct fftw_plan_s;
-typedef struct fftw_plan_s* fftw_plan;
-typedef double fftw_complex[2];
+#include <kiss_fft.h>
 
 // Forward declarations
 namespace huntmaster {
@@ -311,10 +308,10 @@ class WaveformAnalyzer {
     float sample_rate_;
     bool is_initialized_;
 
-    // FFT resources
-    fftw_plan fft_plan_;
-    double* fft_input_;
-    fftw_complex* fft_output_;
+    // FFT resources (using KissFFT)
+    kiss_fft_cfg fft_plan_;
+    float* fft_input_;
+    kiss_fft_cpx* fft_output_;
 
     // Analysis parameters
     WindowFunction window_function_;

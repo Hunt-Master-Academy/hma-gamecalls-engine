@@ -59,7 +59,7 @@ set(STANDALONE_TESTS
     "${PROJECT_TESTS_DIR}/unit/test_coverage_optimizer.cpp"  # Temporarily excluded - standalone diagnostic tool
     "${PROJECT_TESTS_DIR}/unit/test_circular_audio_buffer.cpp"  # Temporarily excluded - missing CircularAudioBuffer implementation
     "${PROJECT_TESTS_DIR}/unit/test_audit_logger.cpp"  # Temporarily excluded - missing AuditLogger implementation
-    "${PROJECT_TESTS_DIR}/unit/test_waveform_analyzer_comprehensive.cpp"  # BLOCKED: AudioBuffer interface compatibility issues
+    "${PROJECT_TESTS_DIR}/unit/test_waveform_analyzer_comprehensive.cpp"  # TESTING: Attempting to enable after AudioBuffer interface fixes
     "${PROJECT_TESTS_DIR}/integration/LoadandExtractTest.cpp"
 )
 
@@ -161,7 +161,7 @@ add_gtest_executable(MFCCEdgeCasesTest "${PROJECT_TESTS_DIR}/unit/test_mfcc_edge
 add_gtest_executable(MasterCallComprehensiveTest "${PROJECT_TESTS_DIR}/unit/test_master_call_comprehensive.cpp")
 
 # High-impact coverage test - WaveformAnalyzer (541 lines, 0% coverage)
-# add_gtest_executable(WaveformAnalyzerComprehensiveTest "${PROJECT_TESTS_DIR}/unit/test_waveform_analyzer_comprehensive.cpp")  # BLOCKED: AudioBuffer interface compatibility issues
+add_gtest_executable(WaveformAnalyzerComprehensiveTest "${PROJECT_TESTS_DIR}/unit/test_waveform_analyzer_comprehensive.cpp")  # TESTING: Attempting to enable after AudioBuffer interface fixes
 
 # Week 3 Security Component Testing - Working with existing implementations
 # Note: Comprehensive tests reveal interface mismatches - using existing working tests instead

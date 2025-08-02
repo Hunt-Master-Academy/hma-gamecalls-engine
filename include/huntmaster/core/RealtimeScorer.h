@@ -128,8 +128,8 @@ class RealtimeScorer {
     // Non-copyable, movable
     RealtimeScorer(const RealtimeScorer&) = delete;
     RealtimeScorer& operator=(const RealtimeScorer&) = delete;
-    RealtimeScorer(RealtimeScorer&&) = default;
-    RealtimeScorer& operator=(RealtimeScorer&&) = default;
+    RealtimeScorer(RealtimeScorer&&) noexcept;
+    RealtimeScorer& operator=(RealtimeScorer&&) noexcept;
 
     /**
      * @brief Set master call for comparison

@@ -1,5 +1,13 @@
 #include "huntmaster/security/memory-guard.h"
 
+#include <chrono>
+#include <cstdlib>  // for malloc, free
+#include <cstring>  // for memset
+#include <map>
+#include <mutex>  // for thread safety
+#include <random>
+#include <vector>
+
 namespace huntmaster {
 namespace security {
 
@@ -7,13 +15,23 @@ namespace security {
 struct MemoryGuard::MemoryGuardImpl {
     GuardConfig config;
     MemoryStats stats;
+    std::vector<MemoryViolation> violationHistory;
+    std::map<void*, size_t> guardedBuffers;  // Track buffer guards
+    bool monitoringActive = false;
+
+    // Thread safety
+    std::mutex guardMutex;      // Protects guardedBuffers and stats
+    std::mutex violationMutex;  // Protects violationHistory
 
     MemoryGuardImpl(const GuardConfig& cfg) : config(cfg) {
         // Initialize implementation
+        monitoringActive = true;
     }
 
     ~MemoryGuardImpl() {
         // Cleanup implementation
+        guardedBuffers.clear();
+        violationHistory.clear();
     }
 };
 
@@ -95,9 +113,23 @@ bool MemoryGuard::detectStackOverflow() {
 }
 
 bool MemoryGuard::validatePointer(void* ptr) {
-    // TODO: Verify pointer validity and range checking
-    // TODO: Check pointer alignment and structure
-    // TODO: Detect null pointer dereference attempts
+    // Basic pointer validation
+    if (!ptr) {
+        return false;  // Null pointer is invalid
+    }
+
+    uintptr_t address = reinterpret_cast<uintptr_t>(ptr);
+
+    // Reject very low addresses (< 4KB, typical guard page)
+    if (address < 4096) {
+        return false;
+    }
+
+    // Reject addresses in kernel space (> 0x7FFFFFFFFFFF on x64)
+    if (address > 0x7FFFFFFFFFFFF) {
+        return false;
+    }
+
     // TODO: Verify pointer ownership and permissions
     // TODO: Check for pointer arithmetic vulnerabilities
     // TODO: Detect wild pointer and dangling pointer access
@@ -111,11 +143,39 @@ bool MemoryGuard::validatePointer(void* ptr) {
     // TODO: Generate pointer validation audit logs
     // TODO: Monitor pointer security effectiveness
 
-    return true;  // Placeholder
+    return true;  // Valid pointer in reasonable address space
 }
 
 void MemoryGuard::secureAlloc(size_t size, void** ptr) {
-    // TODO: Implement secure memory allocation with protection
+    if (!ptr || size == 0) {
+        if (ptr)
+            *ptr = nullptr;
+        return;  // Invalid parameters
+    }
+
+    // For now, implement basic secure allocation using malloc
+    // In a production system, this would use secure memory pools
+    void* allocatedPtr = std::malloc(size);
+
+    if (allocatedPtr) {
+        // Clear the allocated memory
+        std::memset(allocatedPtr, 0, size);
+
+        {
+            std::lock_guard<std::mutex> lock(impl_->guardMutex);
+
+            // Track this allocation for security monitoring
+            impl_->guardedBuffers[allocatedPtr] = size;
+            impl_->stats.currentAllocations++;
+            impl_->stats.totalAllocations++;
+        }
+
+        *ptr = allocatedPtr;
+    } else {
+        *ptr = nullptr;
+    }
+
+    // TODO: Implement advanced secure memory allocation with protection
     // TODO: Add allocation tracking and monitoring
     // TODO: Implement memory allocation canaries and guards
     // TODO: Set up allocation size validation and limits
@@ -130,11 +190,46 @@ void MemoryGuard::secureAlloc(size_t size, void** ptr) {
     // TODO: Set up allocation garbage collection security
     // TODO: Configure allocation leak detection and prevention
     // TODO: Generate allocation security audit reports
-
-    *ptr = nullptr;  // Placeholder
 }
 
 void MemoryGuard::secureFree(void* ptr) {
+    if (!ptr) {
+        return;  // Nothing to free
+    }
+
+    size_t size = 0;
+    bool found = false;
+
+    {
+        std::lock_guard<std::mutex> lock(impl_->guardMutex);
+
+        // Find the allocation in our tracking map
+        auto it = impl_->guardedBuffers.find(ptr);
+        if (it != impl_->guardedBuffers.end()) {
+            size = it->second;
+            found = true;
+
+            // Remove from tracking
+            impl_->guardedBuffers.erase(it);
+            if (impl_->stats.currentAllocations > 0) {
+                impl_->stats.currentAllocations--;
+            }
+            impl_->stats.totalDeallocations++;
+        }
+    }
+
+    if (found) {
+        // Securely clear the memory before freeing
+        std::memset(ptr, 0, size);
+
+        // Free the memory
+        std::free(ptr);
+    } else {
+        // This is memory not allocated by secureAlloc
+        // Still try to free it, but we can't securely clear it
+        std::free(ptr);
+    }
+
     // TODO: Implement secure memory deallocation and zeroing
     // TODO: Verify pointer validity before deallocation
     // TODO: Check for double-free vulnerabilities and prevention
@@ -150,8 +245,6 @@ void MemoryGuard::secureFree(void* ptr) {
     // TODO: Add deallocation garbage collection integration
     // TODO: Set up deallocation leak prevention
     // TODO: Generate deallocation security reports
-
-    // Placeholder - actual implementation needed
 }
 
 bool MemoryGuard::checkMemoryLeak() {
@@ -257,6 +350,9 @@ bool MemoryGuard::performMemoryAudit() {
 
 // Missing method implementations required by tests
 bool MemoryGuard::startRuntimeMonitoring() {
+    // Start runtime monitoring
+    impl_->monitoringActive = true;
+
     // TODO: Initialize runtime memory monitoring systems
     // TODO: Set up memory allocation tracking threads
     // TODO: Configure real-time memory violation detection
@@ -268,10 +364,13 @@ bool MemoryGuard::startRuntimeMonitoring() {
     // TODO: Configure memory audit trail collection
     // TODO: Initialize memory forensics systems
 
-    return true;  // Placeholder implementation
+    return true;  // Successfully started
 }
 
 bool MemoryGuard::stopRuntimeMonitoring() {
+    // Stop runtime monitoring
+    impl_->monitoringActive = false;
+
     // TODO: Gracefully shutdown memory monitoring systems
     // TODO: Stop memory allocation tracking threads
     // TODO: Finalize memory violation detection logs
@@ -283,13 +382,26 @@ bool MemoryGuard::stopRuntimeMonitoring() {
     // TODO: Generate final memory audit reports
     // TODO: Cleanup memory forensics systems
 
-    return true;  // Placeholder implementation
+    return true;  // Successfully stopped
 }
 
 bool MemoryGuard::installBufferGuard(void* buffer, size_t size) {
     if (!buffer || size == 0) {
         return false;  // Invalid parameters
     }
+
+    std::lock_guard<std::mutex> lock(impl_->guardMutex);
+
+    // Check if this buffer is already guarded (prevent double installation)
+    auto it = impl_->guardedBuffers.find(buffer);
+    if (it != impl_->guardedBuffers.end()) {
+        return false;  // Buffer already has a guard installed
+    }
+
+    // Install the buffer guard by recording it in our tracking map
+    impl_->guardedBuffers[buffer] = size;
+    impl_->stats.currentAllocations++;
+    impl_->stats.totalAllocations++;
 
     // TODO: Install buffer overflow protection guards
     // TODO: Set up buffer boundary checking
@@ -302,12 +414,25 @@ bool MemoryGuard::installBufferGuard(void* buffer, size_t size) {
     // TODO: Configure buffer protection policies
     // TODO: Initialize buffer forensics systems
 
-    return true;  // Placeholder implementation
+    return true;  // Successful installation
 }
 
 bool MemoryGuard::removeBufferGuard(void* buffer) {
     if (!buffer) {
         return false;  // Invalid parameter
+    }
+
+    std::lock_guard<std::mutex> lock(impl_->guardMutex);
+
+    // Find and remove the buffer guard
+    auto it = impl_->guardedBuffers.find(buffer);
+    if (it != impl_->guardedBuffers.end()) {
+        impl_->guardedBuffers.erase(it);
+        if (impl_->stats.currentAllocations > 0) {
+            impl_->stats.currentAllocations--;
+        }
+        impl_->stats.totalDeallocations++;
+        return true;  // Successfully removed
     }
 
     // TODO: Remove buffer overflow protection guards
@@ -321,7 +446,7 @@ bool MemoryGuard::removeBufferGuard(void* buffer) {
     // TODO: Cleanup buffer protection policies
     // TODO: Finalize buffer forensics systems
 
-    return true;  // Placeholder implementation
+    return false;  // Buffer not found in guards
 }
 
 bool MemoryGuard::validateMemoryAccess(const void* ptr, size_t size) {
@@ -329,18 +454,55 @@ bool MemoryGuard::validateMemoryAccess(const void* ptr, size_t size) {
         return false;  // Invalid parameters
     }
 
-    // TODO: Validate memory address range
-    // TODO: Check memory access permissions
-    // TODO: Verify memory buffer boundaries
-    // TODO: Check for memory protection violations
-    // TODO: Validate memory alignment requirements
-    // TODO: Check memory allocation status
-    // TODO: Verify memory ownership
-    // TODO: Check for use-after-free conditions
-    // TODO: Validate memory region integrity
-    // TODO: Check memory access patterns
+    // Basic pointer validation - reject obviously invalid pointers
+    uintptr_t address = reinterpret_cast<uintptr_t>(ptr);
 
-    return true;  // Placeholder implementation for valid pointers
+    // Reject null and very low addresses (< 4KB, typical guard page)
+    if (address < 4096) {
+        return false;
+    }
+
+    // Reject addresses in kernel space (> 0x7FFFFFFFFFFF on x64)
+    if (address > 0x7FFFFFFFFFFFF) {
+        return false;
+    }
+
+    std::lock_guard<std::mutex> lock(impl_->guardMutex);
+
+    // Check against installed buffer guards
+    for (const auto& guard : impl_->guardedBuffers) {
+        void* bufferStart = guard.first;
+        size_t bufferSize = guard.second;
+
+        uintptr_t bufferStartAddr = reinterpret_cast<uintptr_t>(bufferStart);
+        uintptr_t bufferEndAddr = bufferStartAddr + bufferSize;
+
+        // Check if the access start address is within this guarded buffer
+        if (address >= bufferStartAddr && address < bufferEndAddr) {
+            // Check if the entire access range fits within the buffer
+            uintptr_t accessEndAddr = address + size;
+            if (accessEndAddr <= bufferEndAddr) {
+                return true;  // Valid access within guarded buffer
+            } else {
+                return false;  // Access extends beyond buffer bounds
+            }
+        }
+
+        // Also check if the access overlaps with this buffer (starts before buffer but extends into
+        // it)
+        uintptr_t accessEndAddr = address + size;
+        if (address < bufferStartAddr && accessEndAddr > bufferStartAddr) {
+            return false;  // Access starts outside buffer but extends into it
+        }
+    }
+
+    // If we have guarded buffers and this access doesn't match any of them,
+    // we should be more restrictive for security
+    if (!impl_->guardedBuffers.empty()) {
+        return false;  // Access to unguarded memory when guards are active
+    }
+
+    return true;  // Valid pointer in reasonable address space (no specific guards)
 }
 
 bool MemoryGuard::installStackGuard() {
@@ -408,12 +570,24 @@ bool MemoryGuard::validateBufferIntegrity(const void* buffer) {
 }
 
 uint32_t MemoryGuard::generateCanary() {
-    // TODO: Generate cryptographically secure canary value
-    // TODO: Use hardware random number generator if available
-    // TODO: Apply entropy mixing for canary generation
-    // TODO: Ensure canary uniqueness and unpredictability
+    // Generate a random canary value using system entropy
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    static std::uniform_int_distribution<uint32_t> dis(0x10000000, 0xFFFFFFFF);
 
-    return 0xDEADBEEF;  // Placeholder implementation
+    uint32_t canary = dis(gen);
+
+    // Ensure we don't generate common/predictable values
+    while (canary == 0x00000000 || canary == 0xFFFFFFFF || canary == 0xDEADBEEF
+           || canary == 0xCAFEBABE || canary == 0x12345678) {
+        canary = dis(gen);
+    }
+
+    // TODO: Use hardware random number generator if available
+    // TODO: Apply additional entropy mixing for canary generation
+    // TODO: Implement cryptographically secure canary generation
+
+    return canary;
 }
 
 bool MemoryGuard::validateCanary(uint32_t canary, void* location) {
@@ -448,40 +622,40 @@ bool MemoryGuard::updateCanary(void* location) {
 }
 
 void MemoryGuard::reportViolation(const MemoryViolation& violation) {
+    std::lock_guard<std::mutex> lock(impl_->violationMutex);
+
+    // Store violation in history
+    impl_->violationHistory.push_back(violation);
+
+    // Update violation statistics
+    impl_->stats.violationCount++;
+
     // TODO: Log memory violation event
     // TODO: Trigger violation response actions
-    // TODO: Update violation statistics
     // TODO: Generate violation alerts
-    // TODO: Store violation in history
     // TODO: Apply violation response policies
-
-    // Placeholder implementation - just update stats
-    impl_->stats.violationCount++;
 }
 
 std::vector<MemoryViolation> MemoryGuard::getViolationHistory() {
-    // TODO: Retrieve violation history from storage
-    // TODO: Apply filtering and sorting
-    // TODO: Return violation records
+    std::lock_guard<std::mutex> lock(impl_->violationMutex);
 
-    return std::vector<MemoryViolation>{};  // Placeholder implementation
+    // Return copy of violation history
+    return impl_->violationHistory;
 }
 
 void MemoryGuard::clearViolationHistory() {
-    // TODO: Clear violation history records
-    // TODO: Reset violation statistics
-    // TODO: Log history clearing event
+    // Clear violation history records
+    impl_->violationHistory.clear();
 
-    // Placeholder implementation
+    // Reset violation statistics
     impl_->stats.violationCount = 0;
+
+    // TODO: Log history clearing event
 }
 
 bool MemoryGuard::isMonitoringActive() {
-    // TODO: Check runtime monitoring status
-    // TODO: Verify monitoring thread health
-    // TODO: Return monitoring state
-
-    return true;  // Placeholder implementation
+    // Return monitoring status from implementation
+    return impl_->monitoringActive;
 }
 
 size_t MemoryGuard::getGuardedAllocationsCount() {
