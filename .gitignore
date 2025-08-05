@@ -244,3 +244,4 @@ coverage_reports/
 test_logs/*.log
 !test_logs/README.md
 
+nul

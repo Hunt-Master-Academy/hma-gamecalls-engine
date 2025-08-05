@@ -50,7 +50,7 @@ TEST_F(UnifiedEngineDebugTest, SessionCreationAndDestructionLogging) {
     TearDown();  // Manually call TearDown to trigger destruction logging before the test ends.
 
     std::string logContents = readLogFile();
-    EXPECT_NE(logContents.find("Session created with ID"), std::string::npos);
+    EXPECT_NE(logContents.find("Session created successfully"), std::string::npos);
     EXPECT_NE(logContents.find("Destroying session"), std::string::npos);
 }
 
@@ -59,7 +59,8 @@ TEST_F(UnifiedEngineDebugTest, AudioProcessingLogging) {
     engine->processAudioChunk(sessionId, audio);
 
     std::string logContents = readLogFile();
-    EXPECT_NE(logContents.find("Processing audio chunk for session"), std::string::npos);
+    // Look for the actual log message from UnifiedAudioEngine
+    EXPECT_NE(logContents.find("Processing audio chunk"), std::string::npos);
 }
 
 TEST_F(UnifiedEngineDebugTest, MasterCallLogging) {

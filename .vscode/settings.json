@@ -27,7 +27,10 @@
     "*.hpp": "cpp",
     "chrono": "cpp",
     "expected": "cpp",
-    "functional": "cpp"
+    "functional": "cpp",
+    "any": "cpp",
+    "format": "cpp",
+    "optional": "cpp"
   },
   "C_Cpp.intelliSenseEngine": "Default",
   "C_Cpp.maxCachedProcesses": 2,

@@ -1,0 +1,20 @@
+{
+  "sessionId": 1,
+  "realTimeRatio": 5.12317,
+  "avgChunkProcessingTime": 56.597,
+  "peakMemoryUsage": 147317760,
+  "totalChunksProcessed": 431,
+  "avgSimilarityScore": 0.195373,
+  "components": {
+    "mfcc": {
+      "totalTime": 12442387,
+      "avgTime": 28868,
+      "callCount": 431
+    },
+    "dtw": {
+      "totalTime": 0,
+      "avgTime": 0,
+      "callCount": 0
+    }
+  }
+}

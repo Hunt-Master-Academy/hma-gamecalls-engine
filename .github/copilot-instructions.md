@@ -2,9 +2,26 @@
 
 You are an AI programming assistant helping with the Huntmaster Audio Engine, a production-ready C++20 wildlife call analysis system.
 
+## 🎯 Primary Development Guide
+
+**ALWAYS FOLLOW**: The development plan is documented in `docs/mvp_todo.md` - this is the authoritative source for:
+- Current project status and phase
+- Implementation priorities and roadmap
+- Enhanced platform features roadmap
+- Success criteria and completion status
+
+**DOCUMENTATION APPROACH**:
+- Reference and update `docs/mvp_todo.md` for all major development decisions
+- Only create supplementary documentation when it adds value beyond the MVP todo
+- All status updates should be reflected in the MVP todo document first
+
 ## Project Context
 
 This is a cross-platform audio processing engine that analyzes and compares animal calls using MFCC feature extraction and DTW pattern matching. The engine targets desktop, web (WebAssembly), and mobile platforms with a unified build system.
+
+**Current Status**: MVP COMPLETED - Production Deployment Ready (August 3, 2025)
+- Phase: Enhanced Platform Implementation (Advanced Features)
+- Next: PitchTracker, HarmonicAnalyzer, CadenceAnalyzer implementation
 
 ### Core Architecture Principles
 
@@ -65,12 +82,21 @@ engine->destroySession(session);  // Always cleanup
 
 ### Core Components Location
 
-- `src/core/UnifiedAudioEngine.cpp` - Main orchestrator
-- `src/core/MFCCProcessor.cpp` - Feature extraction
-- `src/core/DTWComparator.cpp` - Pattern matching
-- `src/core/VoiceActivityDetector.cpp` - Voice detection
-- `src/core/AudioLevelProcessor.cpp` - Level monitoring
-- `src/core/RealtimeScorer.cpp` - Multi-dimensional scoring
+- `src/core/UnifiedAudioEngine.cpp` - Main orchestrator (95%+ complete)
+- `src/core/MFCCProcessor.cpp` - Feature extraction (production-ready)
+- `src/core/DTWComparator.cpp` - Pattern matching (production-ready)
+- `src/core/VoiceActivityDetector.cpp` - Voice detection (operational)
+- `src/core/AudioLevelProcessor.cpp` - Level monitoring (complete)
+- `src/core/RealtimeScorer.cpp` - Multi-dimensional scoring (operational)
+
+### Enhanced Platform Components (Next Implementation Phase)
+
+**From Enhanced Roadmap in `docs/mvp_todo.md`**:
+- `src/core/PitchTracker.cpp` - YIN algorithm pitch detection (planned)
+- `src/core/HarmonicAnalyzer.cpp` - Tonal quality analysis (planned)
+- `src/core/CadenceAnalyzer.cpp` - Rhythm pattern analysis (planned)
+- `src/core/VolumeEnvelopeTracker.cpp` - Dynamic analysis (planned)
+- `src/core/MasterCallAnalyzer.cpp` - Automated analysis (planned)
 
 ### Audio Processing Pipeline
 
@@ -80,6 +106,39 @@ engine->loadMasterCall(session, "deer_grunt");
 engine->processAudioChunk(session, audioBuffer);
 auto score = engine->getSimilarityScore(session);
 ```
+
+## Development Phase Guidance
+
+### Current Phase: Enhanced Platform Implementation
+
+**Follow the enhanced roadmap in `docs/mvp_todo.md` for:**
+
+1. **Advanced Analysis Components (Phase 2)**:
+   - PitchTracker implementation with YIN algorithm
+   - HarmonicAnalyzer for tonal quality assessment
+   - CadenceAnalyzer for rhythm patterns
+   - Multi-dimensional analysis features
+
+2. **Learning & Gamification System (Phase 3)**:
+   - Progress tracking and analytics
+   - Achievement and gamification system
+   - Interactive scenario engine
+   - Personalized learning recommendations
+
+3. **Cloud Integration & CMS (Phase 4)**:
+   - Backend API and database design
+   - User authentication and data sync
+   - CMS integration for content management
+   - Cross-platform synchronization
+
+**Implementation Timeline**: Follow the 32-week development strategy outlined in MVP todo
+
+## Alpha Testing Status
+
+**Current State**: 97.5% Complete - Ready for Testing
+- **Access**: `http://localhost:8080/alpha_test_refactored.html`
+- **Features**: Real-time recording, similarity scoring, waveform visualization
+- **Performance**: <50ms latency, 44.1kHz sampling, 30-90% similarity range
 
 ## Testing Patterns
 
@@ -355,11 +414,30 @@ export PULSE_SERVER=tcp:$(cat /etc/resolv.conf | grep nameserver | awk '{print $
 
 ## Important Notes
 
+### Current Project Status (August 3, 2025)
+
+**From `docs/mvp_todo.md`**:
+- ✅ **MVP Phase**: COMPLETED - Production deployment ready
+- ✅ **Core Audio Engine**: 93.0% Complete → PRODUCTION READY
+- ✅ **Security Framework**: 99.3% Complete → PRODUCTION DEPLOYMENT READY
+- ✅ **Performance Framework**: Sub-real-time processing (0.275x ratio)
+- ✅ **Alpha Testing**: 97.5% Complete with operational interface
+- 🔄 **Enhanced Features**: Next implementation phase ready
+
+### Development Priorities
+
+**Current Focus**: Enhanced platform features implementation
+1. **PitchTracker**: YIN algorithm for fundamental frequency detection
+2. **HarmonicAnalyzer**: Spectral analysis for tonal quality assessment
+3. **CadenceAnalyzer**: Temporal pattern analysis for rhythm detection
+4. **Learning Platform**: Progress tracking and personalized feedback
+
 ### Current Limitations
 
-- `MemoryGuard` methods not fully implemented (causes linker errors)
-- `StreamingAudioProcessor` API not yet available
-- Some tests excluded in CMakeLists.txt due to incomplete APIs
+- Enhanced analysis components (PitchTracker, HarmonicAnalyzer) not yet implemented
+- Learning platform and gamification features in planning phase
+- Cloud integration and CMS features planned for Phase 4
+- Advanced UI components for configuration panel (5% remaining)
 
 ### Performance Targets
 
@@ -392,3 +470,23 @@ export PULSE_SERVER=tcp:$(cat /etc/resolv.conf | grep nameserver | awk '{print $
 - `web/` - WebAssembly interface
 
 Remember: This is a production audio engine where correctness and real-time performance are critical. Always follow the established patterns for session management, error handling, and memory efficiency.
+
+## 📋 Development Workflow
+
+### Before Starting Any Work
+1. **Check `docs/mvp_todo.md`** for current phase and priorities
+2. **Update MVP todo** with progress and decisions
+3. **Follow established roadmap** rather than creating new plans
+4. **Reference Alpha Testing status** for integration requirements
+
+### When Adding Features
+1. **Validate against enhanced roadmap** in MVP todo
+2. **Follow 32-week development timeline** priorities
+3. **Update status in MVP todo** upon completion
+4. **Integrate with Alpha Testing interface** when applicable
+
+### Documentation Guidelines
+- **Primary**: Update `docs/mvp_todo.md` for all major changes
+- **Secondary**: Create supplementary docs only when they add unique value
+- **Testing**: Reference Alpha Testing execution chain for validation
+- **Status**: All project status updates go in MVP todo first

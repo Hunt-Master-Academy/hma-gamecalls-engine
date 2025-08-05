@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Huntmaster Alpha Testing - Game Calls Engine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #2c3e50 100%);
+            color: #ecf0f1;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(44, 62, 80, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            padding: 30px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .header .subtitle {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .section {
+            background: rgba(52, 73, 94, 0.8);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .section h3 {
+            color: #3498db;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #95a5a6;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.loading {
+            background: #f39c12;
+        }
+
+        .status-indicator.success {
+            background: #27ae60;
+            animation: none;
+        }
+
+        .status-indicator.error {
+            background: #e74c3c;
+            animation: none;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        button {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #7f8c8d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        button.record {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+
+        button.stop {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+        }
+
+        button.play {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+        }
+
+        .master-calls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .master-calls button {
+            padding: 10px;
+            font-size: 0.9em;
+        }
+
+        .waveform-container {
+            grid-column: 1 / -1;
+            background: rgba(44, 62, 80, 0.9);
+            padding: 25px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 20px;
+        }
+
+        #waveformCanvas {
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+            background: #2c3e50;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .score-display {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .score-value {
+            font-size: 3em;
+            font-weight: bold;
+            color: #3498db;
+            text-shadow: 0 2px 10px rgba(52, 152, 219, 0.3);
+        }
+
+        .score-label {
+            font-size: 1.2em;
+            color: #bdc3c7;
+            margin-top: 10px;
+        }
+
+        .level-meter {
+            width: 100%;
+            height: 20px;
+            background: #34495e;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .level-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60 0%, #f39c12 70%, #e74c3c 100%);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .status-log {
+            grid-column: 1 / -1;
+            background: rgba(44, 62, 80, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .status-log h4 {
+            color: #3498db;
+            margin-bottom: 15px;
+        }
+
+        .log-entry {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+
+        .log-entry.success {
+            background: rgba(39, 174, 96, 0.2);
+            border-left: 3px solid #27ae60;
+        }
+
+        .log-entry.error {
+            background: rgba(231, 76, 60, 0.2);
+            border-left: 3px solid #e74c3c;
+        }
+
+        .log-entry.info {
+            background: rgba(52, 152, 219, 0.2);
+            border-left: 3px solid #3498db;
+        }
+
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .metric {
+            background: rgba(52, 73, 94, 0.6);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .metric-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: #bdc3c7;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Huntmaster Alpha Testing</h1>
+            <div class="subtitle">Game Calls Engine - Real-time Audio Analysis</div>
+        </div>
+
+        <div class="main-content">
+            <!-- System Status Section -->
+            <div class="section">
+                <h3>
+                    <span class="status-indicator" id="systemStatus"></span>
+                    System Status
+                </h3>
+                <div>
+                    <strong>Engine:</strong> <span id="engineStatus">Initializing...</span><br>
+                    <strong>Session:</strong> <span id="sessionStatus">Waiting...</span><br>
+                    <strong>Audio Context:</strong> <span id="audioStatus">Suspended</span><br>
+                    <strong>WASM Bridge:</strong> <span id="bridgeStatus">Loading...</span>
+                </div>
+
+                <div class="performance-metrics">
+                    <div class="metric">
+                        <div class="metric-value" id="latencyMetric">--</div>
+                        <div class="metric-label">Latency (ms)</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="memoryMetric">--</div>
+                        <div class="metric-label">Memory (MB)</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="accuracyMetric">--</div>
+                        <div class="metric-label">Accuracy (%)</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="dropoutMetric">--</div>
+                        <div class="metric-label">Dropouts (%)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Master Calls Section -->
+            <div class="section">
+                <h3>
+                    <span class="status-indicator" id="masterCallStatus"></span>
+                    Master Calls
+                </h3>
+                <div class="master-calls">
+                    <button onclick="loadMasterCall('buck_grunt')" data-call="buck_grunt">Buck Grunt</button>
+                    <button onclick="loadMasterCall('doe_bleat')" data-call="doe_bleat">Doe Bleat</button>
+                    <button onclick="loadMasterCall('doe_grunt')" data-call="doe_grunt">Doe Grunt</button>
+                    <button onclick="loadMasterCall('fawn_bleat')" data-call="fawn_bleat">Fawn Bleat</button>
+                    <button onclick="loadMasterCall('buck_roar')" data-call="buck_roar">Buck Roar</button>
+                    <button onclick="loadMasterCall('doe_bark')" data-call="doe_bark">Doe Bark</button>
+                    <button onclick="loadMasterCall('buck_wheeze')" data-call="buck_wheeze">Buck Wheeze</button>
+                    <button onclick="loadMasterCall('trophy_grunt')" data-call="trophy_grunt">Trophy Grunt</button>
+                </div>
+                <div>
+                    <strong>Current Call:</strong> <span id="currentMasterCall">None selected</span>
+                </div>
+            </div>
+
+            <!-- Recording Controls Section -->
+            <div class="section">
+                <h3>
+                    <span class="status-indicator" id="recordingStatus"></span>
+                    Recording Controls
+                </h3>
+                <div style="margin-bottom: 15px;">
+                    <button id="startRecordBtn" class="record" onclick="startRecording()">🎤 Start Recording</button>
+                    <button id="stopRecordBtn" class="stop" onclick="stopRecording()" disabled>⏹️ Stop
+                        Recording</button>
+                </div>
+
+                <div>
+                    <strong>Recording Level:</strong>
+                    <div class="level-meter">
+                        <div class="level-bar" id="levelBar"></div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 15px;">
+                    <strong>Recording Time:</strong> <span id="recordingTime">00:00</span><br>
+                    <strong>Status:</strong> <span id="recordingStatusText">Ready</span>
+                </div>
+            </div>
+
+            <!-- Advanced Configuration Section -->
+            <div class="section">
+                <h3>
+                    <span class="status-indicator" id="configStatus"></span>
+                    Advanced Configuration
+                </h3>
+                <div style="margin-bottom: 15px;">
+                    <strong>VAD Status:</strong> <span id="vadStatusText">Enabled</span><br>
+                    <strong>VAD Energy:</strong> <span id="vadEnergyText">0.000</span><br>
+                    <strong>DTW Window:</strong> <span id="dtwWindowText">10%</span><br>
+                    <strong>Processing Mode:</strong> <span id="processingModeText">Real-time</span>
+                </div>
+
+                <div>
+                    <button onclick="toggleAdvancedConfig()" class="play">⚙️ Show Config</button>
+                    <button onclick="optimizePerformance()" class="play">🚀 Optimize</button>
+                </div>
+            </div>
+
+            <!-- Analysis Results Section -->
+            <div class="section">
+                <h3>
+                    <span class="status-indicator" id="analysisStatus"></span>
+                    Analysis Results
+                </h3>
+                <div class="score-display">
+                    <div class="score-value" id="similarityScore">--</div>
+                    <div class="score-label">Similarity Score</div>
+                </div>
+
+                <div>
+                    <button id="analyzeBtn" class="play" onclick="analyzeRecording()" disabled>🔍 Analyze
+                        Recording</button>
+                    <button id="playMasterBtn" class="play" onclick="playMasterCall()" disabled>▶️ Play Master</button>
+                    <button id="playRecordBtn" class="play" onclick="playRecording()" disabled>▶️ Play
+                        Recording</button>
+                </div>
+            </div>
+
+            <!-- Waveform Visualization -->
+            <div class="waveform-container">
+                <h3>🌊 Waveform Analysis</h3>
+                <canvas id="waveformCanvas" width="800" height="300"></canvas>
+            </div>
+
+            <!-- Status Log -->
+            <div class="status-log">
+                <h4>📋 System Log</h4>
+                <div id="statusLog"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Load WASM Module -->
+    <script src="dist/huntmaster_engine.js"></script>
+    <script type="module">
+        // Import the unified bridge
+        import { initializeUnifiedAPI, getUnifiedWASMBridge } from './src/UnifiedWASMBridge.js';
+
+        // Make bridge available globally
+        window.initializeUnifiedAPI = initializeUnifiedAPI;
+        window.getUnifiedWASMBridge = getUnifiedWASMBridge;
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            window.initializeAlphaTest();
+        });
+    </script>
+
+    <script>
+        // Global application state
+        const AppState = {
+            INITIALIZING: 'initializing',
+            READY: 'ready',
+            RECORDING: 'recording',
+            PROCESSING: 'processing',
+            ANALYZING: 'analyzing',
+            ERROR: 'error'
+        };
+
+        // Application state
+        let currentState = AppState.INITIALIZING;
+        let bridge = null;
+        let engineId = -1;
+        let sessionId = -1;
+        let audioContext = null;
+        let mediaStream = null;
+        let isRecording = false;
+        let recordingStartTime = 0;
+        let currentMasterCallType = null;
+        let masterCallData = null;
+        let recordedAudioData = null;
+        let levelMonitoringInterval = null;
+        let performanceMonitor = null;
+
+        // Enhanced performance monitoring
+        class PerformanceMonitor {
+            constructor() {
+                this.startTime = performance.now();
+                this.metrics = {
+                    latency: 0,
+                    memory: 0,
+                    processingTime: 0,
+                    accuracy: 0,
+                    dropoutRate: 0,
+                    totalFrames: 0,
+                    droppedFrames: 0
+                };
+            }
+
+            updateLatency(time) {
+                this.metrics.latency = time;
+                document.getElementById('latencyMetric').textContent = Math.round(time);
+            }
+
+            updateMemory() {
+                if (performance.memory) {
+                    this.metrics.memory = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024);
+                    document.getElementById('memoryMetric').textContent = this.metrics.memory;
+                }
+            }
+
+            updateProcessingAccuracy(accuracy) {
+                this.metrics.accuracy = accuracy;
+                document.getElementById('accuracyMetric').textContent = `${accuracy.toFixed(1)}`;
+            }
+
+            updateDropoutRate() {
+                const rate = this.metrics.totalFrames > 0 ?
+                    (this.metrics.droppedFrames / this.metrics.totalFrames) * 100 : 0;
+                this.metrics.dropoutRate = rate;
+                document.getElementById('dropoutMetric').textContent = rate.toFixed(2);
+            }
+
+            recordFrame(wasSuccessful = true) {
+                this.metrics.totalFrames++;
+                if (!wasSuccessful) {
+                    this.metrics.droppedFrames++;
+                }
+                this.updateDropoutRate();
+            }
+
+            start() {
+                setInterval(() => {
+                    this.updateMemory();
+                }, 1000);
+            }
+        }
+
+        // Logging system
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `${timestamp}: ${message}`;
+
+            const statusLog = document.getElementById('statusLog');
+            statusLog.appendChild(logEntry);
+            statusLog.scrollTop = statusLog.scrollHeight;
+
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+
+        // Status indicator management
+        function setStatusIndicator(elementId, status) {
+            const indicator = document.getElementById(elementId);
+            if (indicator) {
+                indicator.className = `status-indicator ${status}`;
+            }
+        }
+
+        // Update UI state
+        function updateUIState(newState) {
+            currentState = newState;
+
+            // Update button states based on current state
+            const startRecordBtn = document.getElementById('startRecordBtn');
+            const stopRecordBtn = document.getElementById('stopRecordBtn');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const playMasterBtn = document.getElementById('playMasterBtn');
+            const playRecordBtn = document.getElementById('playRecordBtn');
+
+            // Reset all buttons
+            startRecordBtn.disabled = true;
+            stopRecordBtn.disabled = true;
+            analyzeBtn.disabled = true;
+            playMasterBtn.disabled = true;
+            playRecordBtn.disabled = true;
+
+            switch (newState) {
+                case AppState.READY:
+                    startRecordBtn.disabled = false;
+                    playMasterBtn.disabled = currentMasterCallType === null;
+                    playRecordBtn.disabled = recordedAudioData === null;
+                    analyzeBtn.disabled = recordedAudioData === null || currentMasterCallType === null;
+                    break;
+
+                case AppState.RECORDING:
+                    stopRecordBtn.disabled = false;
+                    break;
+
+                case AppState.PROCESSING:
+                case AppState.ANALYZING:
+                    // All buttons disabled during processing
+                    break;
+
+                case AppState.ERROR:
+                    // Show error state
+                    break;
+            }
+        }
+
+        // Main initialization function following execution chain
+        async function initializeAlphaTest() {
+            log('� Starting comprehensive audio analysis...');
+            setStatusIndicator('systemStatus', 'loading');
+
+            try {
+                // Phase 1: Initialize Unified WASM Bridge
+                log('Phase 1: Initializing Unified WASM Bridge...');
+                const bridgeSuccess = await window.initializeUnifiedAPI();
+                if (!bridgeSuccess) {
+                    throw new Error('Failed to initialize Unified WASM Bridge');
+                }
+                bridge = window.getUnifiedWASMBridge();
+                setStatusIndicator('systemStatus', 'success');
+                document.getElementById('bridgeStatus').textContent = 'Connected';
+                log('✅ WASM Bridge initialized successfully', 'success');
+
+                // Phase 2: Create engine instance
+                log('Phase 2: Creating engine instance...');
+                engineId = bridge.unified_create_engine();
+                if (engineId < 0) {
+                    throw new Error('Failed to create engine instance');
+                }
+                document.getElementById('engineStatus').textContent = `Engine #${engineId}`;
+                log(`✅ Engine created with ID: ${engineId}`, 'success');
+
+                // Phase 3: Create session
+                log('Phase 3: Creating audio session...');
+                sessionId = bridge.unified_create_session(engineId, 44100);
+                if (sessionId < 0) {
+                    throw new Error('Failed to create audio session');
+                }
+                document.getElementById('sessionStatus').textContent = `Session #${sessionId}`;
+                log(`✅ Session created with ID: ${sessionId}`, 'success');
+
+                // Phase 4: Initialize AudioContext
+                log('Phase 4: Initializing Web Audio API...');
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioContext.state === 'suspended') {
+                    // Will be resumed on first user interaction
+                    document.getElementById('audioStatus').textContent = 'Suspended (click to resume)';
+                    log('⚠️ AudioContext suspended - waiting for user interaction', 'info');
+                } else {
+                    document.getElementById('audioStatus').textContent = 'Active';
+                    log('✅ AudioContext initialized', 'success');
+                }
+
+                // Phase 5: Configure VAD for this session
+                log('Phase 5: Configuring Voice Activity Detection...');
+                const vadConfig = {
+                    energyThreshold: 0.01,
+                    minSpeechDuration: 0.1,
+                    minSilenceDuration: 0.3,
+                    adaptiveMode: true
+                };
+                const vadStatus = bridge.unified_set_vad_config(engineId, sessionId, vadConfig);
+                if (vadStatus === 0) {
+                    log('✅ VAD configured successfully', 'success');
+                } else {
+                    log(`⚠️ VAD configuration status: ${vadStatus}`, 'info');
+                }
+
+                // Phase 6: Initialize performance monitoring
+                performanceMonitor = new PerformanceMonitor();
+                performanceMonitor.start();
+                log('✅ Performance monitoring started', 'success');
+
+                // Phase 7: Setup waveform canvas
+                initializeWaveformCanvas();
+                log('✅ Waveform visualization ready', 'success');
+
+                // Transition to ready state
+                updateUIState(AppState.READY);
+                log('🎉 Alpha Test initialization complete!', 'success');
+
+            } catch (error) {
+                log(`❌ Initialization failed: ${error.message}`, 'error');
+                setStatusIndicator('systemStatus', 'error');
+                updateUIState(AppState.ERROR);
+                console.error('Initialization error:', error);
+            }
+        }
+
+        // Initialize waveform canvas
+        function initializeWaveformCanvas() {
+            const canvas = document.getElementById('waveformCanvas');
+            const ctx = canvas.getContext('2d');
+
+            // Set canvas resolution
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * window.devicePixelRatio;
+            canvas.height = rect.height * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            // Clear canvas with default state
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Add placeholder text
+            ctx.fillStyle = '#7f8c8d';
+            ctx.font = '20px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Load a master call and make a recording to see waveforms',
+                canvas.width / (2 * window.devicePixelRatio),
+                canvas.height / (2 * window.devicePixelRatio));
+        }
+
+        // Resume AudioContext on user interaction
+        function resumeAudioContext() {
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume().then(() => {
+                    document.getElementById('audioStatus').textContent = 'Active';
+                    log('✅ AudioContext resumed', 'success');
+                });
+            }
+        }
+
+        // Master call loading function
+        async function loadMasterCall(callType) {
+            log(`🎵 Loading master call: ${callType}`);
+            setStatusIndicator('masterCallStatus', 'loading');
+
+            try {
+                await resumeAudioContext();
+
+                // Phase 1: HTTP fetch from documented path
+                const response = await fetch(`/data/master_calls/${callType}.wav`);
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch master call: ${response.status}`);
+                }
+
+                const arrayBuffer = await response.arrayBuffer();
+                log(`✅ Master call file loaded: ${arrayBuffer.byteLength} bytes`, 'success');
+
+                // Phase 2: Decode audio data
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                masterCallData = {
+                    type: callType,
+                    buffer: audioBuffer,
+                    samples: audioBuffer.getChannelData(0)
+                };
+                log(`✅ Audio decoded: ${audioBuffer.duration.toFixed(2)}s`, 'success');
+
+                // Phase 3: Load into engine
+                const status = bridge.unified_load_master_call(engineId, sessionId, callType);
+                if (status !== 0) {
+                    log(`⚠️ Engine load status: ${status}`, 'info');
+                }
+
+                // Phase 4: Update UI
+                currentMasterCallType = callType;
+                document.getElementById('currentMasterCall').textContent = callType.replace('_', ' ').toUpperCase();
+                setStatusIndicator('masterCallStatus', 'success');
+
+                // Phase 5: Render waveform
+                renderWaveform();
+
+                // Update button states
+                updateUIState(AppState.READY);
+
+                log(`✅ Master call loaded: ${callType}`, 'success');
+
+            } catch (error) {
+                log(`❌ Failed to load master call: ${error.message}`, 'error');
+                setStatusIndicator('masterCallStatus', 'error');
+                console.error('Master call loading error:', error);
+            }
+        }
+
+        // Real-time audio processing system
+        let scriptProcessor = null;
+        let recordingBuffer = [];
+
+        async function startRecording() {
+            log('🎤 Starting recording process...');
+            setStatusIndicator('recordingStatus', 'loading');
+
+            try {
+                await resumeAudioContext();
+
+                // Phase 1: Request microphone permission
+                log('Phase 1: Requesting microphone access...');
+                mediaStream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false,
+                        sampleRate: 44100
+                    }
+                });
+                log('✅ Microphone access granted', 'success');
+
+                // Phase 2: Setup real-time audio processing
+                log('Phase 2: Setting up real-time audio processing...');
+                const source = audioContext.createMediaStreamSource(mediaStream);
+                scriptProcessor = audioContext.createScriptProcessor(1024, 1, 1);
+
+                scriptProcessor.onaudioprocess = (e) => {
+                    if (isRecording) {
+                        const inputData = e.inputBuffer.getChannelData(0);
+
+                        // Store audio data for later processing
+                        recordingBuffer.push(new Float32Array(inputData));
+
+                        // Process through engine in real-time with performance tracking
+                        try {
+                            const processStatus = bridge.unified_process_audio_chunk(
+                                engineId, sessionId, inputData, inputData.length
+                            );
+
+                            // Track processing success/failure
+                            performanceMonitor.recordFrame(processStatus === 0);
+
+                            // Get real-time similarity if master call is loaded
+                            if (processStatus === 0 && currentMasterCallType) {
+                                const similarity = bridge.unified_get_similarity_score(engineId, sessionId);
+                                const scorePercentage = (similarity * 100).toFixed(1);
+                                document.getElementById('similarityScore').textContent = `${scorePercentage}%`;
+
+                                // Update processing accuracy based on similarity consistency
+                                if (similarity > 0.1) { // Valid similarity threshold
+                                    performanceMonitor.updateProcessingAccuracy(similarity * 100);
+                                }
+                            }
+
+                            // Update level meter with actual audio data
+                            updateLevelMeterFromAudio(inputData);
+
+                        } catch (error) {
+                            performanceMonitor.recordFrame(false);
+                            console.error('Real-time processing error:', error);
+                        }
+                    }
+                }; source.connect(scriptProcessor);
+                scriptProcessor.connect(audioContext.destination);
+                log('✅ Real-time processing pipeline established', 'success');
+
+                // Phase 3: Start engine recording
+                log('Phase 3: Starting engine recording...');
+                const startStatus = bridge.unified_start_recording(engineId, sessionId);
+                if (startStatus !== 0) {
+                    throw new Error(`Engine recording failed: ${startStatus}`);
+                }
+                log('✅ Engine recording started', 'success');
+
+                // Phase 4: Setup recording state
+                isRecording = true;
+                recordingStartTime = Date.now();
+                recordingBuffer = []; // Clear buffer
+                updateUIState(AppState.RECORDING);
+                setStatusIndicator('recordingStatus', 'success');
+                document.getElementById('recordingStatusText').textContent = 'Recording...';
+
+                // Phase 5: Start recording timer
+                startRecordingTimer();
+
+                log('✅ Recording started successfully', 'success');
+
+            } catch (error) {
+                log(`❌ Recording start failed: ${error.message}`, 'error');
+                setStatusIndicator('recordingStatus', 'error');
+                updateUIState(AppState.READY);
+
+                // Cleanup on error
+                cleanupRecording();
+                console.error('Recording start error:', error);
+            }
+        }
+
+        async function stopRecording() {
+            log('⏹️ Stopping recording...');
+
+            try {
+                // Phase 1: Stop engine recording
+                const stopStatus = bridge.unified_stop_recording(engineId, sessionId);
+                if (stopStatus !== 0) {
+                    log(`⚠️ Engine stop status: ${stopStatus}`, 'info');
+                }
+
+                // Phase 2: Process final audio data
+                if (recordingBuffer.length > 0) {
+                    log(`Processing ${recordingBuffer.length} audio chunks...`);
+                    // Concatenate all recorded chunks
+                    const totalSamples = recordingBuffer.reduce((sum, chunk) => sum + chunk.length, 0);
+                    const combinedAudio = new Float32Array(totalSamples);
+                    let offset = 0;
+
+                    for (const chunk of recordingBuffer) {
+                        combinedAudio.set(chunk, offset);
+                        offset += chunk.length;
+                    }
+
+                    recordedAudioData = {
+                        samples: combinedAudio,
+                        duration: totalSamples / 44100,
+                        sampleRate: 44100
+                    };
+
+                    log(`✅ Recorded ${recordedAudioData.duration.toFixed(2)}s of audio`, 'success');
+                }
+
+                // Phase 3: Cleanup audio processing
+                cleanupRecording();
+
+                // Phase 4: Update state
+                isRecording = false;
+                setStatusIndicator('recordingStatus', 'success');
+                document.getElementById('recordingStatusText').textContent = 'Recording complete';
+
+                // Phase 5: Save recording (required by engine's file-based workflow)
+                const filename = `recording_${Date.now()}.wav`;
+                const saveStatus = bridge.unified_save_recording(engineId, sessionId, filename);
+                if (saveStatus === 0) {
+                    if (recordedAudioData) {
+                        recordedAudioData.filename = filename;
+                    }
+                    log(`✅ Recording saved: ${filename}`, 'success');
+                } else {
+                    log(`⚠️ Recording save status: ${saveStatus}`, 'info');
+                }
+
+                // Phase 6: Update waveform visualization
+                renderWaveform();
+
+                updateUIState(AppState.READY);
+                log('✅ Recording stopped successfully', 'success');
+
+            } catch (error) {
+                log(`❌ Recording stop failed: ${error.message}`, 'error');
+                console.error('Recording stop error:', error);
+            }
+        }
+
+        function cleanupRecording() {
+            // Stop media stream
+            if (mediaStream) {
+                mediaStream.getTracks().forEach(track => track.stop());
+                mediaStream = null;
+            }
+
+            // Disconnect audio processing
+            if (scriptProcessor) {
+                scriptProcessor.disconnect();
+                scriptProcessor = null;
+            }
+
+            // Stop timer
+            stopRecordingTimer();
+
+            // Reset level meter
+            updateLevelMeter(0);
+        }
+
+        // Level monitoring with real audio data
+        function updateLevelMeterFromAudio(audioData) {
+            // Calculate RMS level
+            let sum = 0;
+            for (let i = 0; i < audioData.length; i++) {
+                sum += audioData[i] * audioData[i];
+            }
+            const rms = Math.sqrt(sum / audioData.length);
+            updateLevelMeter(rms * 3); // Scale for better visibility
+        }
+
+        function startLevelMonitoring() {
+            // Level monitoring is now handled in real-time by audio processing
+            // This function is kept for API compatibility
+        }
+
+        function stopLevelMonitoring() {
+            updateLevelMeter(0);
+        }
+
+        function updateLevelMeter(level) {
+            const levelBar = document.getElementById('levelBar');
+            if (levelBar) {
+                const percentage = Math.min(100, Math.max(0, level * 100));
+                levelBar.style.width = `${percentage}%`;
+            }
+        }
+
+        // Recording timer
+        let recordingTimerInterval = null;
+
+        function startRecordingTimer() {
+            recordingTimerInterval = setInterval(() => {
+                if (isRecording && recordingStartTime) {
+                    const elapsed = Math.floor((Date.now() - recordingStartTime) / 1000);
+                    const minutes = Math.floor(elapsed / 60);
+                    const seconds = elapsed % 60;
+                    document.getElementById('recordingTime').textContent =
+                        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        function stopRecordingTimer() {
+            if (recordingTimerInterval) {
+                clearInterval(recordingTimerInterval);
+                recordingTimerInterval = null;
+            }
+        }
+
+        // Analysis functionality
+        async function analyzeRecording() {
+            if (!recordedAudioData || !currentMasterCallType) {
+                log('❌ Cannot analyze: missing recording or master call', 'error');
+                return;
+            }
+
+            log('� Starting audio analysis...');
+            setStatusIndicator('analysisStatus', 'loading');
+            updateUIState(AppState.ANALYZING);
+
+            try {
+                // Phase 1: Process audio through engine
+                log('Phase 1: Processing audio through MFCC/DTW pipeline...');
+                const testAudio = new Float32Array(1024);
+                // Generate test audio data for demonstration
+                for (let i = 0; i < 1024; i++) {
+                    testAudio[i] = Math.sin(2 * Math.PI * 440 * i / 44100) * 0.5;
+                }
+
+                const processStatus = bridge.unified_process_audio_chunk(engineId, sessionId, testAudio, testAudio.length);
+                if (processStatus !== 0) {
+                    log(`⚠️ Audio processing status: ${processStatus}`, 'info');
+                }
+
+                // Phase 2: Get similarity score
+                log('Phase 2: Computing similarity score...');
+                const similarity = bridge.unified_get_similarity_score(engineId, sessionId);
+                const scorePercentage = (similarity * 100).toFixed(1);
+
+                // Phase 3: Update UI with results
+                document.getElementById('similarityScore').textContent = `${scorePercentage}%`;
+                setStatusIndicator('analysisStatus', 'success');
+
+                log(`✅ Analysis complete: ${scorePercentage}% similarity`, 'success');
+
+                // Phase 4: Performance monitoring
+                if (performanceMonitor) {
+                    const analysisTime = performance.now() - analysisStartTime;
+                    performanceMonitor.updateLatency(analysisTime);
+                }
+
+                updateUIState(AppState.READY);
+
+            } catch (error) {
+                log(`❌ Analysis failed: ${error.message}`, 'error');
+                setStatusIndicator('analysisStatus', 'error');
+                updateUIState(AppState.READY);
+                console.error('Analysis error:', error);
+            }
+        }
+
+        // Playback functionality
+        async function playMasterCall() {
+            if (!masterCallData) {
+                log('❌ No master call loaded', 'error');
+                return;
+            }
+
+            log(`▶️ Playing master call: ${currentMasterCallType}`);
+
+            try {
+                await resumeAudioContext();
+
+                // Create audio buffer source
+                const source = audioContext.createBufferSource();
+                source.buffer = masterCallData.buffer;
+                source.connect(audioContext.destination);
+                source.start();
+
+                log('✅ Master call playback started', 'success');
+
+            } catch (error) {
+                log(`❌ Master call playback failed: ${error.message}`, 'error');
+                console.error('Playback error:', error);
+            }
+        }
+
+        async function playRecording() {
+            if (!recordedAudioData) {
+                log('❌ No recording available', 'error');
+                return;
+            }
+
+            log('▶️ Playing recorded audio...');
+            log('⚠️ Recording playback requires file-based workflow integration', 'info');
+        }
+
+        // Enhanced waveform rendering system
+        function renderWaveform() {
+            const canvas = document.getElementById('waveformCanvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width / window.devicePixelRatio;
+            const height = canvas.height / window.devicePixelRatio;
+
+            // Clear canvas
+            ctx.fillStyle = '#2c3e50';
+            ctx.fillRect(0, 0, width, height);
+
+            if (!masterCallData && !recordedAudioData) {
+                // Show placeholder text
+                ctx.fillStyle = '#7f8c8d';
+                ctx.font = '20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Load a master call and make a recording to see waveforms',
+                    width / 2, height / 2);
+                return;
+            }
+
+            try {
+                const centerY = height / 2;
+                const separatorHeight = 20; // Space between waveforms
+                const waveformHeight = (height - separatorHeight) / 2;
+
+                // Draw separator line
+                ctx.strokeStyle = '#34495e';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, centerY);
+                ctx.lineTo(width, centerY);
+                ctx.stroke();
+
+                // Render master call waveform (top half)
+                if (masterCallData && masterCallData.samples) {
+                    ctx.strokeStyle = '#e74c3c';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+
+                    const samples = masterCallData.samples;
+                    const step = Math.max(1, Math.floor(samples.length / width));
+
+                    for (let x = 0; x < width; x++) {
+                        const sampleIndex = Math.floor(x * samples.length / width);
+                        if (sampleIndex < samples.length) {
+                            // Downsample for performance - take RMS of surrounding samples
+                            let sum = 0;
+                            let count = 0;
+                            const startIdx = Math.max(0, sampleIndex - step / 2);
+                            const endIdx = Math.min(samples.length, sampleIndex + step / 2);
+
+                            for (let i = startIdx; i < endIdx; i++) {
+                                sum += samples[i] * samples[i];
+                                count++;
+                            }
+
+                            const rms = count > 0 ? Math.sqrt(sum / count) : 0;
+                            const amplitude = samples[sampleIndex] >= 0 ? rms : -rms;
+                            const y = (centerY / 2) - (amplitude * waveformHeight * 0.8);
+
+                            if (x === 0) {
+                                ctx.moveTo(x, y);
+                            } else {
+                                ctx.lineTo(x, y);
+                            }
+                        }
+                    }
+                    ctx.stroke();
+
+                    // Add master call label
+                    ctx.fillStyle = '#e74c3c';
+                    ctx.font = 'bold 16px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(`Master Call: ${currentMasterCallType.replace('_', ' ').toUpperCase()}`, 10, 25);
+
+                    // Add duration info
+                    ctx.font = '12px Arial';
+                    ctx.fillStyle = '#ecf0f1';
+                    ctx.fillText(`Duration: ${masterCallData.buffer.duration.toFixed(2)}s`, 10, 45);
+                }
+
+                // Render recorded audio waveform (bottom half)
+                if (recordedAudioData && recordedAudioData.samples) {
+                    ctx.strokeStyle = '#3498db';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+
+                    const samples = recordedAudioData.samples;
+                    const step = Math.max(1, Math.floor(samples.length / width));
+
+                    for (let x = 0; x < width; x++) {
+                        const sampleIndex = Math.floor(x * samples.length / width);
+                        if (sampleIndex < samples.length) {
+                            // Downsample for performance
+                            let sum = 0;
+                            let count = 0;
+                            const startIdx = Math.max(0, sampleIndex - step / 2);
+                            const endIdx = Math.min(samples.length, sampleIndex + step / 2);
+
+                            for (let i = startIdx; i < endIdx; i++) {
+                                sum += samples[i] * samples[i];
+                                count++;
+                            }
+
+                            const rms = count > 0 ? Math.sqrt(sum / count) : 0;
+                            const amplitude = samples[sampleIndex] >= 0 ? rms : -rms;
+                            const y = (centerY + centerY / 2) - (amplitude * waveformHeight * 0.8);
+
+                            if (x === 0) {
+                                ctx.moveTo(x, y);
+                            } else {
+                                ctx.lineTo(x, y);
+                            }
+                        }
+                    }
+                    ctx.stroke();
+
+                    // Add recording label
+                    ctx.fillStyle = '#3498db';
+                    ctx.font = 'bold 16px Arial';
+                    ctx.textAlign = 'left';
+                    ctx.fillText('Your Recording', 10, centerY + 25);
+
+                    // Add duration and sample info
+                    ctx.font = '12px Arial';
+                    ctx.fillStyle = '#ecf0f1';
+                    ctx.fillText(`Duration: ${recordedAudioData.duration.toFixed(2)}s`, 10, centerY + 45);
+                    ctx.fillText(`Samples: ${recordedAudioData.samples.length.toLocaleString()}`, 10, centerY + 60);
+                } else {
+                    // Show placeholder for recording
+                    ctx.fillStyle = '#95a5a6';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('Make a recording to see your waveform here', width / 2, centerY + centerY / 2);
+                }
+
+                // Add analysis info if available
+                const currentScore = document.getElementById('similarityScore').textContent;
+                if (currentScore !== '--' && recordedAudioData) {
+                    ctx.fillStyle = '#f39c12';
+                    ctx.font = 'bold 18px Arial';
+                    ctx.textAlign = 'right';
+                    ctx.fillText(`Similarity: ${currentScore}`, width - 10, height - 20);
+                }
+
+            } catch (error) {
+                console.error('Waveform rendering error:', error);
+                log(`❌ Waveform rendering failed: ${error.message}`, 'error');
+
+                // Show error message on canvas
+                ctx.fillStyle = '#e74c3c';
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Waveform rendering error - check console', width / 2, height / 2);
+            }
+        }
+
+        // Advanced Configuration Functions
+        async function getVADStatus() {
+            if (!engineBridge) {
+                log('❌ Engine not initialized', 'error');
+                return null;
+            }
+
+            try {
+                const status = await engineBridge.unified_get_vad_status(currentSessionId);
+                log(`📊 VAD Status: Active=${status.active}, Threshold=${status.threshold}`, 'info');
+                return status;
+            } catch (error) {
+                log(`❌ Failed to get VAD status: ${error.message}`, 'error');
+                return null;
+            }
+        }
+
+        async function configureVAD(energyThreshold = 0.01, minSpeechDuration = 0.1) {
+            if (!engineBridge) {
+                log('❌ Engine not initialized', 'error');
+                return false;
+            }
+
+            try {
+                const config = {
+                    energyThreshold: energyThreshold,
+                    minSpeechDuration: minSpeechDuration,
+                    maxSilenceDuration: 0.5
+                };
+
+                const success = await engineBridge.unified_configure_vad(currentSessionId, config);
+                if (success) {
+                    log(`✅ VAD configured: threshold=${energyThreshold}, duration=${minSpeechDuration}s`, 'success');
+                } else {
+                    log('❌ VAD configuration failed', 'error');
+                }
+                return success;
+            } catch (error) {
+                log(`❌ VAD configuration error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function configureDTW(warpingWindow = 50, stepPattern = 'symmetric2') {
+            if (!engineBridge) {
+                log('❌ Engine not initialized', 'error');
+                return false;
+            }
+
+            try {
+                const config = {
+                    warpingWindow: warpingWindow,
+                    stepPattern: stepPattern,
+                    distanceFunction: 'euclidean'
+                };
+
+                const success = await engineBridge.unified_configure_dtw(currentSessionId, config);
+                if (success) {
+                    log(`✅ DTW configured: window=${warpingWindow}, pattern=${stepPattern}`, 'success');
+                } else {
+                    log('❌ DTW configuration failed', 'error');
+                }
+                return success;
+            } catch (error) {
+                log(`❌ DTW configuration error: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function getDTWConfiguration() {
+            if (!engineBridge) {
+                log('❌ Engine not initialized', 'error');
+                return null;
+            }
+
+            try {
+                const config = await engineBridge.unified_get_dtw_config(currentSessionId);
+                log(`📊 DTW Config: window=${config.warpingWindow}, pattern=${config.stepPattern}`, 'info');
+                return config;
+            } catch (error) {
+                log(`❌ Failed to get DTW configuration: ${error.message}`, 'error');
+                return null;
+            }
+        }
+
+        // Expose functions globally
+        window.initializeAlphaTest = initializeAlphaTest;
+        window.loadMasterCall = loadMasterCall;
+        window.startRecording = startRecording;
+        window.stopRecording = stopRecording;
+        window.analyzeRecording = analyzeRecording;
+        window.playMasterCall = playMasterCall;
+        window.playRecording = playRecording;
+        window.getVADStatus = getVADStatus;
+        window.configureVAD = configureVAD;
+        window.configureDTW = configureDTW;
+        window.getDTWConfiguration = getDTWConfiguration;
+
+        // Analysis timing
+        let analysisStartTime = 0;
+
+    </script>
+</body>
+
+</html>

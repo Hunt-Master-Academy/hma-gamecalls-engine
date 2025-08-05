@@ -5,6 +5,7 @@
 #include <complex>
 #include <fstream>
 #include <numeric>
+#include <set>
 #include <sstream>
 
 #include "huntmaster/core/DebugLogger.h"
@@ -132,7 +133,7 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
                       "Analysis complete - Tempo: " + std::to_string(profile.estimatedTempo)
                           + "BPM, Rhythm Score: " + std::to_string(profile.overallRhythmScore));
 
-            return expected(std::move(profile));
+                      return expected(std::move(profile));
 
         } catch (const std::exception& e) {
             // DEBUG_LOG removed for compilation
@@ -474,8 +475,7 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
             tempo = std::clamp(tempo, config_.minTempo, config_.maxTempo);
         }
 
-        return expected(
-            std::make_pair(tempo, bestConfidence));
+        return expected(std::make_pair(tempo, bestConfidence));
     }
 
     void analyzeCallSequence(CadenceProfile& profile, const std::vector<float>& onsets) {
@@ -616,7 +616,7 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
         CadenceProfile::RhythmicFeatures features;
 
         if (onsets.size() < 3) {
-            return expected(features);
+            return expected<CadenceProfile::RhythmicFeatures, Error>(features);
         }
 
         // Calculate intervals
@@ -736,13 +736,11 @@ CadenceAnalyzer::Result<std::unique_ptr<CadenceAnalyzer>, CadenceAnalyzer::Error
 CadenceAnalyzer::create(const Config& config) {
     try {
         if (config.sampleRate <= 0) {
-            return unexpected(
-                Error::INVALID_SAMPLE_RATE);
+            return unexpected(Error::INVALID_SAMPLE_RATE);
         }
 
         if (config.frameSize <= 0 || config.hopSize <= 0) {
-            return unexpected(
-                Error::INVALID_FRAME_SIZE);
+            return unexpected(Error::INVALID_FRAME_SIZE);
         }
 
         auto analyzer = std::make_unique<CadenceAnalyzerImpl>(config);
@@ -750,8 +748,7 @@ CadenceAnalyzer::create(const Config& config) {
 
     } catch (const std::exception& e) {
         // DEBUG_LOG removed for compilation
-        return unexpected(
-            Error::INITIALIZATION_FAILED);
+        return unexpected(Error::INITIALIZATION_FAILED);
     }
 }
 

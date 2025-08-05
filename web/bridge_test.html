@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Bridge Test</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .test {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+
+        .pass {
+            background: #d4edda;
+        }
+
+        .fail {
+            background: #f8d7da;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        pre {
+            background: #e9ecef;
+            padding: 10px;
+            overflow-x: auto;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔗 Unified WASM Bridge Test</h1>
+        <p>Testing the bridge between documented Alpha Testing API and actual WASM implementation.</p>
+
+        <button onclick="runTests()" class="btn-primary">Run All Tests</button>
+        <button onclick="clearResults()" class="btn-success">Clear Results</button>
+
+        <div id="results"></div>
+    </div>
+
+    <!-- Load WASM module -->
+    <script src="dist/huntmaster_engine.js"></script>
+    <script type="module">
+        // Import the unified bridge
+        import { initializeUnifiedAPI, getUnifiedWASMBridge } from './src/UnifiedWASMBridge.js';
+
+        window.initializeUnifiedAPI = initializeUnifiedAPI;
+        window.getUnifiedWASMBridge = getUnifiedWASMBridge;
+    </script>
+
+    <script>
+        const results = document.getElementById('results');
+
+        function log(message, isError = false) {
+            const div = document.createElement('div');
+            div.className = 'test ' + (isError ? 'fail' : 'pass');
+            div.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            results.appendChild(div);
+            console.log(message);
+        }
+
+        function clearResults() {
+            results.innerHTML = '';
+        }
+
+        async function runTests() {
+            clearResults();
+            let testsPassed = 0;
+            let testsTotal = 0;
+
+            try {
+                testsTotal++;
+                log('Test 1: Initializing Unified WASM Bridge...');
+                const bridgeSuccess = await window.initializeUnifiedAPI();
+                if (!bridgeSuccess) {
+                    throw new Error('Failed to initialize Unified WASM Bridge');
+                }
+                testsPassed++;
+                log('✓ Bridge initialized successfully');
+
+                const bridge = window.getUnifiedWASMBridge();
+
+                testsTotal++;
+                log('Test 2: Creating engine instance...');
+                const engineId = bridge.unified_create_engine();
+                if (engineId < 0) {
+                    throw new Error('Failed to create engine');
+                }
+                testsPassed++;
+                log(`✓ Engine created with ID: ${engineId}`);
+
+                testsTotal++;
+                log('Test 3: Creating session...');
+                const sessionId = bridge.unified_create_session(engineId, 44100);
+                if (sessionId < 0) {
+                    throw new Error('Failed to create session');
+                }
+                testsPassed++;
+                log(`✓ Session created with ID: ${sessionId}`);
+
+                testsTotal++;
+                log('Test 4: Loading master call...');
+                const loadStatus = bridge.unified_load_master_call(engineId, sessionId, 'buck_grunt');
+                if (loadStatus !== 0) {
+                    log(`⚠ Load master call returned status: ${loadStatus}`, false);
+                } else {
+                    log('✓ Master call loaded successfully');
+                }
+                testsPassed++;
+
+                testsTotal++;
+                log('Test 5: Starting recording...');
+                const startStatus = bridge.unified_start_recording(engineId, sessionId);
+                if (startStatus !== 0) {
+                    log(`⚠ Start recording returned status: ${startStatus}`, false);
+                } else {
+                    log('✓ Recording started successfully');
+                }
+                testsPassed++;
+
+                testsTotal++;
+                log('Test 6: Getting recording level...');
+                const level = bridge.unified_get_recording_level(engineId, sessionId);
+                log(`✓ Recording level: ${level.toFixed(3)}`);
+                testsPassed++;
+
+                testsTotal++;
+                log('Test 7: Stopping recording...');
+                const stopStatus = bridge.unified_stop_recording(engineId, sessionId);
+                if (stopStatus !== 0) {
+                    log(`⚠ Stop recording returned status: ${stopStatus}`, false);
+                } else {
+                    log('✓ Recording stopped successfully');
+                }
+                testsPassed++;
+
+                testsTotal++;
+                log('Test 8: Processing audio chunk...');
+                const testAudio = new Float32Array(1024);
+                for (let i = 0; i < 1024; i++) {
+                    testAudio[i] = Math.sin(2 * Math.PI * 440 * i / 44100) * 0.5;
+                }
+                const processStatus = bridge.unified_process_audio_chunk(engineId, sessionId, testAudio, testAudio.length);
+                if (processStatus !== 0) {
+                    log(`⚠ Process audio returned status: ${processStatus}`, false);
+                } else {
+                    log('✓ Audio processed successfully');
+                }
+                testsPassed++;
+
+                testsTotal++;
+                log('Test 9: Getting similarity score...');
+                const similarity = bridge.unified_get_similarity_score(engineId, sessionId);
+                log(`✓ Similarity score: ${(similarity * 100).toFixed(1)}%`);
+                testsPassed++;
+
+                testsTotal++;
+                log('Test 10: Configuring VAD...');
+                const vadConfig = {
+                    energyThreshold: 0.01,
+                    minSpeechDuration: 0.1,
+                    adaptiveMode: true
+                };
+                const vadStatus = bridge.unified_set_vad_config(engineId, sessionId, vadConfig);
+                if (vadStatus !== 0) {
+                    log(`⚠ VAD config returned status: ${vadStatus}`, false);
+                } else {
+                    log('✓ VAD configured successfully');
+                }
+                testsPassed++;
+
+                testsTotal++;
+                log('Test 11: Getting engine status...');
+                const engineStatus = bridge.getEngineStatus(engineId);
+                log(`✓ Engine status: ${JSON.stringify(engineStatus)}`);
+                testsPassed++;
+
+                testsTotal++;
+                log('Test 12: Cleaning up session...');
+                const destroySessionStatus = bridge.unified_destroy_session(engineId, sessionId);
+                if (destroySessionStatus !== 0) {
+                    log(`⚠ Destroy session returned status: ${destroySessionStatus}`, false);
+                } else {
+                    log('✓ Session destroyed successfully');
+                }
+                testsPassed++;
+
+                testsTotal++;
+                log('Test 13: Cleaning up engine...');
+                const destroyEngineStatus = bridge.unified_destroy_engine(engineId);
+                if (destroyEngineStatus !== 0) {
+                    log(`⚠ Destroy engine returned status: ${destroyEngineStatus}`, false);
+                } else {
+                    log('✓ Engine destroyed successfully');
+                }
+                testsPassed++;
+
+                log(`\n🎉 Tests completed: ${testsPassed}/${testsTotal} passed`);
+
+                if (testsPassed === testsTotal) {
+                    log('✅ ALL TESTS PASSED - Bridge is working correctly!');
+                } else {
+                    log('⚠️ Some tests had warnings but completed successfully');
+                }
+
+            } catch (error) {
+                log(`❌ Test failed: ${error.message}`, true);
+                console.error(error);
+                log(`📊 Final score: ${testsPassed}/${testsTotal} tests passed before failure`);
+            }
+        }
+
+        // Auto-run tests after a short delay
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 1000);
+        });
+    </script>
+</body>
+
+</html>

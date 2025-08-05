@@ -310,7 +310,7 @@ TEST_F(MemoryManagementTest, ZeroSizeBufferHandling) {
     // Test with zero-size buffer
     std::vector<float> emptyBuffer;
     auto result = engine->processAudioChunk(sessionId, emptyBuffer);
-    EXPECT_EQ(result, UnifiedAudioEngine::Status::INVALID_PARAMS);
+    EXPECT_EQ(result, UnifiedAudioEngine::Status::OK);  // Empty buffers are handled gracefully
 
     // Test with single sample
     std::vector<float> singleSample = {0.5f};

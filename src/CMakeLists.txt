@@ -33,6 +33,10 @@ set(UNIFIED_ENGINE_CORE_SOURCES
     "${PROJECT_SOURCE_DIR}/core/ComponentErrorHandler.cpp"
     "${PROJECT_SOURCE_DIR}/core/ErrorMonitor.cpp"
     "${PROJECT_SOURCE_DIR}/core/PerformanceProfiler.cpp"
+    # Phase 1: Enhanced Analysis Features (template compatibility fixes needed)
+    # "${PROJECT_SOURCE_DIR}/core/PitchTracker.cpp"
+    # "${PROJECT_SOURCE_DIR}/core/HarmonicAnalyzer.cpp"
+    # "${PROJECT_SOURCE_DIR}/core/CadenceAnalyzer.cpp"
 )
 
 # Add performance profiling sources

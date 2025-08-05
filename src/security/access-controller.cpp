@@ -2,7 +2,9 @@
 
 #include <chrono>
 #include <iomanip>
+#include <mutex>
 #include <random>
+#include <shared_mutex>
 #include <sstream>
 #include <unordered_map>
 #include <unordered_set>
@@ -27,6 +29,9 @@ struct AccessController::AccessControllerImpl {
     // Random number generator for session IDs
     std::random_device rd_;
     std::mt19937 gen_;
+
+    // Thread safety for concurrent access
+    mutable std::shared_mutex sessionsMutex_;
 
     AccessControllerImpl() : gen_(rd_()) {
         initializeDefaultUsers();
@@ -216,6 +221,8 @@ void AccessController::createSession(const std::string& userId, SessionInfo& ses
     session.clientIP = "127.0.0.1";  // Default for testing
     session.userAgent = "Test Agent";
 
+    // Thread-safe session creation
+    std::unique_lock<std::shared_mutex> lock(impl_->sessionsMutex_);
     impl_->activeSessions_[session.sessionId] = session;
 }
 
@@ -224,6 +231,8 @@ void AccessController::destroySession(const std::string& sessionId) {
         return;
     }
 
+    // Thread-safe session destruction
+    std::unique_lock<std::shared_mutex> lock(impl_->sessionsMutex_);
     auto it = impl_->activeSessions_.find(sessionId);
     if (it != impl_->activeSessions_.end()) {
         it->second.isActive = false;
@@ -236,6 +245,8 @@ bool AccessController::validateSession(const std::string& sessionId) {
         return false;
     }
 
+    // Thread-safe session validation with upgrade from shared to unique lock if needed
+    std::shared_lock<std::shared_mutex> shared_lock(impl_->sessionsMutex_);
     auto it = impl_->activeSessions_.find(sessionId);
     if (it == impl_->activeSessions_.end()) {
         return false;
@@ -246,13 +257,27 @@ bool AccessController::validateSession(const std::string& sessionId) {
 
     // Check if session has expired
     if (currentTime > session.expirationTime || !session.isActive) {
-        impl_->activeSessions_.erase(it);
+        // Need to modify, upgrade to unique lock
+        shared_lock.unlock();
+        std::unique_lock<std::shared_mutex> unique_lock(impl_->sessionsMutex_);
+        // Re-find iterator after lock upgrade
+        it = impl_->activeSessions_.find(sessionId);
+        if (it != impl_->activeSessions_.end()) {
+            impl_->activeSessions_.erase(it);
+        }
         return false;
     }
 
-    // Update last access time
-    session.lastAccessTime = currentTime;
-    return true;
+    // Update last access time - need unique lock
+    shared_lock.unlock();
+    std::unique_lock<std::shared_mutex> unique_lock(impl_->sessionsMutex_);
+    // Re-find iterator after lock upgrade
+    it = impl_->activeSessions_.find(sessionId);
+    if (it != impl_->activeSessions_.end()) {
+        it->second.lastAccessTime = currentTime;
+        return true;
+    }
+    return false;
 }
 
 void AccessController::addRole(const std::string& userId, const std::string& role) {

@@ -235,6 +235,10 @@ class UnifiedAudioEngine::Impl {
             scorerConfig.scoringHistorySize = 50;
             realtimeScorer = std::make_unique<RealtimeScorer>(scorerConfig);
 
+            // RealtimeScorer is initialized through constructor
+            // No additional initialization needed
+            LOG_INFO(Component::UNIFIED_ENGINE, "RealtimeScorer created successfully for session");
+
             // Initialize DTWComparator with optimized configuration
             DTWComparator::Config dtwConfig;
             dtwConfig.window_ratio = 0.1f;        // 10% window for efficiency
@@ -661,8 +665,13 @@ std::vector<SessionId> UnifiedAudioEngine::Impl::getActiveSessions() const {
 
 UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::loadMasterCall(SessionId sessionId,
                                                                     std::string_view masterCallId) {
+    LOG_DEBUG(Component::UNIFIED_ENGINE,
+              "Attempting to load master call: " + std::string(masterCallId)
+                  + " for session: " + std::to_string(sessionId));
+
     SessionState* session = getSession(sessionId);
     if (!session) {
+        LOG_ERROR(Component::UNIFIED_ENGINE, "Failed to load master call: session not found");
         return Status::SESSION_NOT_FOUND;
     }
 
@@ -692,6 +701,9 @@ UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::loadMasterCall(SessionId se
         audioFilePath.c_str(), &channels, &sampleRate, &totalPCMFrameCount, nullptr);
 
     if (!rawData) {
+        LOG_ERROR(Component::UNIFIED_ENGINE,
+                  "Failed to load master call: " + std::string(masterCallId)
+                      + " - audio file not found or invalid");
         return Status::FILE_NOT_FOUND;
     }
     DrWavRAII audioData(rawData);
@@ -743,8 +755,8 @@ UnifiedAudioEngine::Impl::processAudioChunk(SessionId sessionId,
 
     // Validate input parameters
     if (audioBuffer.empty()) {
-        LOG_TRACE(Component::UNIFIED_ENGINE, "Empty audio buffer - handling gracefully");
-        return Status::OK;  // Handle empty buffers gracefully
+        LOG_TRACE(Component::UNIFIED_ENGINE, "Empty audio buffer provided - handling gracefully");
+        return Status::OK;  // Empty buffers are handled gracefully (no processing needed)
     }
 
     if (audioBuffer.size() > 1000000) {  // Reasonable upper limit
@@ -773,6 +785,11 @@ UnifiedAudioEngine::Impl::processAudioChunk(SessionId sessionId,
     }
 
     try {
+        // Add debug logging for audio processing
+        LOG_DEBUG(Component::UNIFIED_ENGINE,
+                  "Processing audio chunk - Session: " + std::to_string(sessionId)
+                      + ", Samples: " + std::to_string(audioBuffer.size()));
+
         // Process audio with RealtimeScorer for comprehensive scoring
         if (session->realtimeScorer) {
             auto result =

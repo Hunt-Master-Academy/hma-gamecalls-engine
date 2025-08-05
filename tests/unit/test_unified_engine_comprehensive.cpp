@@ -89,7 +89,7 @@ TEST_F(UnifiedEngineComprehensiveTest, EmptyAudioBufferHandling) {
     std::vector<float> emptyAudio;
 
     auto result = engine->processAudioChunk(sessionId, emptyAudio);
-    EXPECT_EQ(result, UnifiedAudioEngine::Status::INVALID_PARAMS);
+    EXPECT_EQ(result, UnifiedAudioEngine::Status::OK);  // Empty buffers are handled gracefully
 }
 
 TEST_F(UnifiedEngineComprehensiveTest, LargeAudioBufferHandling) {

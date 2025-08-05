@@ -456,7 +456,18 @@ SpectrumData WaveformAnalyzer::analyzeSpectrum(const AudioBuffer& audio_buffer,
             fft_complex_input[i].i = 0.0f;
         }
 
-        kiss_fft(fft_plan_, fft_complex_input.data(), fft_output_);
+        // Safety check: Ensure buffers are properly allocated and sized
+        if (!fft_plan_ || !fft_output_ || fft_complex_input.size() != spectrum_size_) {
+            console_error("FFT buffers not properly initialized for size: "
+                          + std::to_string(spectrum_size_));
+            result.is_valid = false;
+            return result;
+        }
+
+        // Ensure output buffer has enough space
+        std::vector<kiss_fft_cpx> fft_complex_output(spectrum_size_);
+
+        kiss_fft(fft_plan_, fft_complex_input.data(), fft_complex_output.data());
 
         // Process FFT output
         const size_t output_size = spectrum_size_ / 2 + 1;
@@ -465,8 +476,8 @@ SpectrumData WaveformAnalyzer::analyzeSpectrum(const AudioBuffer& audio_buffer,
         result.phases.resize(output_size);
 
         for (size_t i = 0; i < output_size; ++i) {
-            const float real = fft_output_[i].r;
-            const float imag = fft_output_[i].i;
+            const float real = fft_complex_output[i].r;
+            const float imag = fft_complex_output[i].i;
 
             result.frequencies[i] = static_cast<float>(i * sample_rate_) / spectrum_size_;
             result.magnitudes[i] = static_cast<float>(std::sqrt(real * real + imag * imag));
