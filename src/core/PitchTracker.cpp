@@ -1,6 +1,7 @@
 #include "huntmaster/core/PitchTracker.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <complex>
 #include <numeric>
@@ -49,11 +50,11 @@ class PitchTrackerImpl : public PitchTracker {
 
     Result<PitchResult, Error> detectPitch(std::span<const float> audio) override {
         if (audio.empty()) {
-            return unexpected(Error::INVALID_AUDIO_DATA);
+            return Result<PitchResult, Error>(unexpected<Error>(Error::INVALID_AUDIO_DATA));
         }
 
         if (audio.size() < config_.windowSize) {
-            return unexpected(Error::INSUFFICIENT_DATA);
+            return Result<PitchResult, Error>(unexpected<Error>(Error::INSUFFICIENT_DATA));
         }
 
         try {
@@ -62,10 +63,12 @@ class PitchTrackerImpl : public PitchTracker {
             // Apply YIN algorithm
             auto yinResult = performYinAnalysis(audio);
             if (!yinResult.has_value()) {
-                return unexpected(yinResult.error());
+                return Result<PitchResult, Error>(unexpected<Error>(yinResult.error()));
             }
 
-            auto [pitch, confidence] = yinResult.value;
+            auto pitchConfidence = yinResult.value();
+            float pitch = pitchConfidence.first;
+            float confidence = pitchConfidence.second;
 
             result.frequency = pitch;
             result.confidence = confidence;
@@ -95,28 +98,28 @@ class PitchTrackerImpl : public PitchTracker {
             currentConfidence_ = result.confidence;
             hasValidPitch_ = result.isVoiced;
 
-            return expected(std::move(result));
+            return Result<PitchResult, Error>(std::move(result));
 
         } catch (const std::exception& e) {
             DebugLogger::getInstance().log(Component::GENERAL,
                                            DebugLevel::ERROR,
                                            "PitchTracker::detectPitch failed: "
                                                + std::string(e.what()));
-            return unexpected(Error::PROCESSING_ERROR);
+            return Result<PitchResult, Error>(unexpected<Error>(Error::PROCESSING_ERROR));
         }
     }
 
     Result<float, Error> getRealtimePitch() override {
         if (!isInitialized_) {
-            return unexpected(Error::INITIALIZATION_FAILED);
+            return Result<float, Error>(unexpected<Error>(Error::INITIALIZATION_FAILED));
         }
 
-        return expected(currentPitch_);
+        return Result<float, Error>(currentPitch_);
     }
 
     Result<void, Error> processAudioChunk(std::span<const float> audio) override {
         if (audio.empty()) {
-            return unexpected(Error::INVALID_AUDIO_DATA);
+            return Result<void, Error>(unexpected<Error>(Error::INVALID_AUDIO_DATA));
         }
 
         try {
@@ -134,7 +137,9 @@ class PitchTrackerImpl : public PitchTracker {
 
                     auto pitchResult = performYinAnalysis(window);
                     if (pitchResult.has_value()) {
-                        auto [pitch, confidence] = pitchResult.value;
+                        auto pitchConfidence = pitchResult.value();
+                        float pitch = pitchConfidence.first;
+                        float confidence = pitchConfidence.second;
 
                         if (config_.enableSmoothing && hasValidPitch_) {
                             pitch = applySmoothingFilter(pitch);
@@ -155,20 +160,21 @@ class PitchTrackerImpl : public PitchTracker {
                 }
             }
 
-            return expected();
+            return Result<void, Error>();
 
         } catch (const std::exception& e) {
             DebugLogger::getInstance().log(Component::GENERAL,
                                            DebugLevel::ERROR,
                                            "PitchTracker::processAudioChunk failed: "
                                                + std::string(e.what()));
-            return unexpected(Error::PROCESSING_ERROR);
+            return Result<void, Error>(unexpected<Error>(Error::PROCESSING_ERROR));
         }
     }
 
     Result<std::vector<float>, Error> getPitchContour(float durationMs) override {
         if (!isInitialized_) {
-            return unexpected(Error::INITIALIZATION_FAILED);
+            return Result<std::vector<float>, Error>(
+                unexpected<Error>(Error::INITIALIZATION_FAILED));
         }
 
         try {
@@ -181,14 +187,14 @@ class PitchTrackerImpl : public PitchTracker {
                 contour.assign(pitchHistory_.end() - numSamples, pitchHistory_.end());
             }
 
-            return expected(std::move(contour));
+            return Result<std::vector<float>, Error>(std::move(contour));
 
         } catch (const std::exception& e) {
             DebugLogger::getInstance().log(Component::GENERAL,
                                            DebugLevel::ERROR,
                                            "PitchTracker::getPitchContour failed: "
                                                + std::string(e.what()));
-            return unexpected(Error::PROCESSING_ERROR);
+            return Result<std::vector<float>, Error>(unexpected<Error>(Error::PROCESSING_ERROR));
         }
     }
 
@@ -205,12 +211,12 @@ class PitchTrackerImpl : public PitchTracker {
 
     Result<void, Error> updateConfig(const Config& config) override {
         if (config.sampleRate <= 0 || config.windowSize == 0) {
-            return unexpected(Error::INVALID_SAMPLE_RATE);
+            return Result<void, Error>(unexpected<Error>(Error::INVALID_SAMPLE_RATE));
         }
 
         config_ = config;
-        return initialize() ? expected()
-                            : unexpected(Error::INITIALIZATION_FAILED);
+        return initialize() ? Result<void, Error>()
+                            : Result<void, Error>(unexpected<Error>(Error::INITIALIZATION_FAILED));
     }
 
     const Config& getConfig() const override {
@@ -256,7 +262,8 @@ class PitchTrackerImpl : public PitchTracker {
 
     Result<std::pair<float, float>, Error> performYinAnalysis(std::span<const float> audio) {
         if (audio.size() < config_.windowSize) {
-            return unexpected(Error::INSUFFICIENT_DATA);
+            return Result<std::pair<float, float>, Error>(
+                unexpected<Error>(Error::INSUFFICIENT_DATA));
         }
 
         try {
@@ -271,7 +278,7 @@ class PitchTrackerImpl : public PitchTracker {
 
             if (tau == -1) {
                 // No pitch found
-                return expected(std::make_pair(0.0f, 0.0f));
+                return Result<std::pair<float, float>, Error>(std::make_pair(0.0f, 0.0f));
             }
 
             // Step 4: Parabolic interpolation
@@ -282,18 +289,18 @@ class PitchTrackerImpl : public PitchTracker {
 
             // Validate frequency range
             if (frequency < config_.minFrequency || frequency > config_.maxFrequency) {
-                return expected(std::make_pair(0.0f, 0.0f));
+                return Result<std::pair<float, float>, Error>(std::make_pair(0.0f, 0.0f));
             }
 
             // Calculate confidence (inverse of minimum YIN value)
             float confidence = 1.0f - yinBuffer_[tau];
             confidence = std::clamp(confidence, 0.0f, 1.0f);
 
-            return expected(
-                std::make_pair(frequency, confidence));
+            return Result<std::pair<float, float>, Error>(std::make_pair(frequency, confidence));
 
         } catch (const std::exception& e) {
-            return unexpected(Error::PROCESSING_ERROR);
+            return Result<std::pair<float, float>, Error>(
+                unexpected<Error>(Error::PROCESSING_ERROR));
         }
     }
 
@@ -477,12 +484,13 @@ PitchTracker::Result<std::unique_ptr<PitchTracker>, PitchTracker::Error>
 PitchTracker::create(const Config& config) {
     try {
         auto tracker = std::unique_ptr<PitchTracker>(new PitchTrackerImpl(config));
-        return expected(std::move(tracker));
+        return Result<std::unique_ptr<PitchTracker>, Error>(std::move(tracker));
     } catch (const std::exception& e) {
         DebugLogger::getInstance().log(Component::GENERAL,
                                        DebugLevel::ERROR,
                                        "PitchTracker::create failed: " + std::string(e.what()));
-        return unexpected(Error::INITIALIZATION_FAILED);
+        return Result<std::unique_ptr<PitchTracker>, Error>(
+            unexpected<Error>(Error::INITIALIZATION_FAILED));
     }
 }
 
@@ -521,40 +529,6 @@ std::string PitchTracker::exportToJson(const PitchResult& result) {
 
     json << "}";
     return json.str();
-}
-
-}  // namespace huntmaster
-
-// Factory method implementation
-namespace huntmaster {
-
-PitchTracker::Result<std::unique_ptr<PitchTracker>, PitchTracker::Error>
-PitchTracker::create(const Config& config) {
-    try {
-        // Validate configuration
-        if (config.sampleRate <= 0) {
-            return unexpected(Error::INVALID_SAMPLE_RATE);
-        }
-
-        if (config.windowSize == 0 || config.windowSize > 16384) {
-            return unexpected(Error::INVALID_WINDOW_SIZE);
-        }
-
-        if (config.minFrequency >= config.maxFrequency) {
-            return unexpected(Error::INVALID_SAMPLE_RATE);
-        }
-
-        // Create the implementation
-        auto impl = std::make_unique<PitchTrackerImpl>(config);
-
-        return expected(std::move(impl));
-
-    } catch (const std::exception& e) {
-        DebugLogger::getInstance().log(Component::GENERAL,
-                                       DebugLevel::ERROR,
-                                       "PitchTracker::create failed: " + std::string(e.what()));
-        return unexpected(Error::INITIALIZATION_FAILED);
-    }
 }
 
 }  // namespace huntmaster

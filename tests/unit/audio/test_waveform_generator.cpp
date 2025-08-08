@@ -1,0 +1,593 @@
+#include <chrono>
+#include <cmath>
+#include <memory>
+#include <thread>
+#include <vector>
+
+#include <gtest/gtest.h>
+
+#include "TestUtils.h"
+#include "huntmaster/core/DebugLogger.h"
+#include "huntmaster/core/WaveformGenerator.h"
+
+using namespace huntmaster;
+using namespace huntmaster::test;
+
+class WaveformGeneratorTest : public TestFixtureBase {
+  protected:
+    void SetUp() override {
+        TestFixtureBase::SetUp();
+
+        config_.sampleRate = 44100.0f;
+        config_.maxSamples = 4096;
+        config_.downsampleRatio = 16;
+        config_.updateRateMs = 50.0f;
+        config_.enablePeakHold = true;
+        config_.enableRmsOverlay = true;
+        generator_ = std::make_unique<WaveformGenerator>(config_);
+    }
+
+    void TearDown() override {
+        generator_.reset();
+        TestFixtureBase::TearDown();
+    }
+
+    WaveformGenerator::Config config_;
+    std::unique_ptr<WaveformGenerator> generator_;
+};
+
+TEST_F(WaveformGeneratorTest, InitializationTest) {
+    // Test basic functionality - WaveformGenerator doesn't have isInitialized()
+    // Instead, test that it processes audio correctly
+    std::vector<float> testAudio(512, 0.1f);
+    auto result = generator_->processAudio(testAudio, 1);
+    EXPECT_TRUE(result.has_value());
+
+    // Test that the config is valid
+    EXPECT_TRUE(config_.isValid());
+    EXPECT_EQ(config_.sampleRate, 44100.0f);
+    EXPECT_EQ(config_.downsampleRatio, 16);
+    EXPECT_TRUE(config_.enablePeakHold);
+    EXPECT_TRUE(config_.enableRmsOverlay);
+
+    // Test invalid configuration
+    WaveformGenerator::Config invalidConfig;
+    invalidConfig.sampleRate = -1.0f;       // Invalid
+    EXPECT_FALSE(invalidConfig.isValid());  // Test that config validation works
+}
+
+TEST_F(WaveformGeneratorTest, SilenceProcessingTest) {
+    // Create silent audio (all zeros)
+    std::vector<float> silentAudio(1024, 0.0f);
+
+    auto result = generator_->processAudio(silentAudio, 1);
+
+    ASSERT_TRUE(result.has_value());
+
+    auto waveformData = generator_->getCompleteWaveform();
+    EXPECT_GE(waveformData.samples.size(), 0);  // Should have some samples (downsampled)
+    EXPECT_EQ(waveformData.maxAmplitude, 0.0f);
+    EXPECT_EQ(waveformData.rmsAmplitude, 0.0f);
+
+    // All downsampled samples should be zero
+    for (float sample : waveformData.samples) {
+        EXPECT_EQ(sample, 0.0f);
+    }
+
+    // Peak envelope should be zero
+    if (waveformData.peaks.size() > 0) {
+        for (float peak : waveformData.peaks) {
+            EXPECT_EQ(peak, 0.0f);
+        }
+    }
+}
+
+TEST_F(WaveformGeneratorTest, SineWaveProcessingTest) {
+    const float frequency = 440.0f;  // A4 note
+    const float amplitude = 0.5f;    // Half amplitude
+    const size_t numSamples = 2048;  // Enough samples for multiple downsample windows
+
+    // Generate sine wave
+    std::vector<float> sineWave(numSamples);
+    for (size_t i = 0; i < numSamples; ++i) {
+        const float t = static_cast<float>(i) / config_.sampleRate;
+        sineWave[i] = amplitude * std::sin(2.0f * M_PI * frequency * t);
+    }
+
+    auto result = generator_->processAudio(sineWave, 1);
+
+    ASSERT_TRUE(result.has_value());
+
+    auto waveformData = *result;
+
+    // Should have downsampled data
+    const size_t expectedDownsampledSize = numSamples / config_.downsampleRatio;
+    EXPECT_GT(waveformData.samples.size(), 0);
+    EXPECT_LE(waveformData.samples.size(), expectedDownsampledSize + 1);  // Allow for rounding
+
+    // Max amplitude should be close to input amplitude
+    const float tolerance = 0.1f;
+    EXPECT_NEAR(waveformData.maxAmplitude, amplitude, tolerance);
+
+    // RMS amplitude should be reasonable (for sine wave: amplitude / sqrt(2))
+    const float expectedRms = amplitude / std::sqrt(2.0f);
+    EXPECT_NEAR(waveformData.rmsAmplitude, expectedRms, tolerance);
+
+    // Peak envelope should have reasonable values
+    if (!waveformData.peaks.empty()) {
+        for (float peak : waveformData.peaks) {
+            EXPECT_GE(peak, 0.0f);
+            EXPECT_LE(peak, amplitude + tolerance);
+        }
+    }
+
+    // RMS envelope should have reasonable values
+    if (!waveformData.rmsEnvelope.empty()) {
+        for (float rms : waveformData.rmsEnvelope) {
+            EXPECT_GE(rms, 0.0f);
+            EXPECT_LE(rms, amplitude + tolerance);
+        }
+    }
+}
+
+TEST_F(WaveformGeneratorTest, MultiChannelProcessingTest) {
+    const size_t numSamples = 1024;
+    const int numChannels = 2;
+
+    // Create stereo audio (interleaved)
+    std::vector<float> stereoAudio(numSamples * numChannels);
+    for (size_t i = 0; i < numSamples; ++i) {
+        // Left channel: 0.5 amplitude
+        stereoAudio[i * 2] = 0.5f;
+        // Right channel: 0.3 amplitude
+        stereoAudio[i * 2 + 1] = 0.3f;
+    }
+
+    auto result = generator_->processAudio(stereoAudio, numChannels);
+
+    ASSERT_TRUE(result.has_value());
+
+    auto waveformData = generator_->getCompleteWaveform();
+
+    // The generator averages the channels. (0.5 + 0.3) / 2 = 0.4
+    const float expectedMax = 0.4f;
+    const float tolerance = 0.05f;
+
+    EXPECT_NEAR(waveformData.maxAmplitude, expectedMax, tolerance);
+
+    // Should have downsampled data
+    EXPECT_GT(waveformData.samples.size(), 0);
+}
+
+TEST_F(WaveformGeneratorTest, BufferManagementTest) {
+    const size_t chunkSize = 512;
+    const size_t numChunks = 20;  // More chunks than buffer can hold
+
+    // Process multiple chunks to test circular buffer behavior
+    for (size_t chunk = 0; chunk < numChunks; ++chunk) {
+        std::vector<float> audio(chunkSize, static_cast<float>(chunk) * 0.1f);
+        auto result = generator_->processAudio(audio, 1);
+        ASSERT_TRUE(result.has_value());
+    }
+
+    // Check buffer stats
+    auto [used, capacity] = generator_->getBufferStats();
+    EXPECT_LE(used, capacity);  // Should not exceed capacity
+
+    // Get complete waveform
+    auto completeWaveform = generator_->getCompleteWaveform();
+    EXPECT_GT(completeWaveform.samples.size(), 0);
+    EXPECT_LE(completeWaveform.samples.size(), capacity);
+}
+
+TEST_F(WaveformGeneratorTest, JsonExportTest) {
+    // Enable debug logging for this test
+    huntmaster::DebugLogger::getInstance().setComponentLogLevel(
+        huntmaster::Component::WAVEFORM_GENERATOR, huntmaster::LogLevel::DEBUG);
+
+    // Process some audio
+    std::vector<float> audio(1024, 0.5f);
+
+    auto result = generator_->processAudio(audio, 1);
+    ASSERT_TRUE(result.has_value());
+
+    // Test JSON export with raw samples
+    std::string json;
+    try {
+        json = generator_->exportToJson(true);
+        if (json.length() > 100) {
+            huntmaster::DebugLogger::getInstance().info(huntmaster::Component::WAVEFORM_GENERATOR,
+                                                        "JSON preview: " + json.substr(0, 100)
+                                                            + "...");
+        } else {
+            huntmaster::DebugLogger::getInstance().info(huntmaster::Component::WAVEFORM_GENERATOR,
+                                                        "Full JSON: " + json);
+        }
+    } catch (const std::exception& e) {
+        FAIL() << "exportToJson(true) threw exception: " << e.what();
+    }
+
+    // Should contain expected fields
+    EXPECT_NE(json.find("\"maxAmplitude\""), std::string::npos);
+    EXPECT_NE(json.find("\"rmsAmplitude\""), std::string::npos);
+    EXPECT_NE(json.find("\"sampleCount\""), std::string::npos);
+    EXPECT_NE(json.find("\"sampleRate\""), std::string::npos);
+    EXPECT_NE(json.find("\"downsampleRatio\""), std::string::npos);
+    EXPECT_NE(json.find("\"timestamp\""), std::string::npos);
+    EXPECT_NE(json.find("\"samples\""), std::string::npos);
+
+    // Should be valid JSON format
+    if (!json.empty()) {
+        EXPECT_EQ(json.front(), '{');
+        EXPECT_EQ(json.back(), '}');
+    } else {
+        FAIL() << "JSON string is empty";
+    }
+
+    // Test export without raw samples
+    std::string jsonNoSamples;
+    try {
+        jsonNoSamples = generator_->exportToJson(false);
+    } catch (const std::exception& e) {
+        FAIL() << "exportToJson(false) threw exception: " << e.what();
+    }
+
+    EXPECT_EQ(jsonNoSamples.find("\"samples\""), std::string::npos);
+
+    // Reset debug logging to default
+    huntmaster::DebugLogger::getInstance().setComponentLogLevel(
+        huntmaster::Component::WAVEFORM_GENERATOR, huntmaster::LogLevel::NONE);
+}
+
+/*
+TEST_F(WaveformGeneratorTest, DisplayExportTest) {
+    // Process some audio
+    const size_t audioSize = 2048;
+    std::vector<float> audio(audioSize);
+
+    // Generate varying amplitude audio
+    for (size_t i = 0; i < audioSize; ++i) {
+        audio[i] = std::sin(2.0f * M_PI * i / 100.0f) * 0.5f;
+    }
+
+    auto result = generator_->processAudio(audio, 1);
+    ASSERT_TRUE(result.has_value());
+
+    // Test display export for different display widths
+    const std::vector<size_t> displayWidths = {100, 256, 512, 800};
+
+    for (size_t width : displayWidths) {
+        std::string displayJson = generator_->exportForDisplay(width, true);
+
+        // Should contain display-specific fields
+        EXPECT_NE(displayJson.find("\"displayWidth\":" + std::to_string(width)), std::string::npos);
+        EXPECT_NE(displayJson.find("\"samplesPerPixel\""), std::string::npos);
+        EXPECT_NE(displayJson.find("\"samples\""), std::string::npos);
+
+        // Should be valid JSON format
+        EXPECT_EQ(displayJson.front(), '{');
+        EXPECT_EQ(displayJson.back(), '}');
+    }
+}
+*/
+
+TEST_F(WaveformGeneratorTest, ZoomLevelTest) {
+    // Process some initial audio
+    std::vector<float> audio(1024, 0.5f);
+    generator_->processAudio(audio, 1);
+
+    // Test different zoom levels
+    const std::vector<float> zoomLevels = {0.5f, 1.0f, 2.0f, 4.0f};
+
+    for (float zoom : zoomLevels) {
+        generator_->setZoomLevel(zoom);
+
+        // Process more audio with new zoom level
+        auto result = generator_->processAudio(audio, 1);
+        ASSERT_TRUE(result.has_value());
+
+        // Higher zoom should generally produce more detailed data
+        // (though this depends on the specific implementation)
+        auto waveformData = *result;
+        EXPECT_GT(waveformData.samples.size(), 0);
+    }
+}
+
+TEST_F(WaveformGeneratorTest, WaveformRangeTest) {
+    // Process some audio with time-varying content
+    const size_t totalSamples = 4096;
+    std::vector<float> audio(totalSamples);
+
+    for (size_t i = 0; i < totalSamples; ++i) {
+        // Varying amplitude over time
+        const float timeRatio = static_cast<float>(i) / totalSamples;
+        audio[i] = timeRatio * 0.5f;  // Linearly increasing amplitude
+    }
+
+    auto result = generator_->processAudio(audio, 1);
+    ASSERT_TRUE(result.has_value());
+
+    // Test getting specific time ranges
+    const float totalTimeMs = totalSamples * 1000.0f / config_.sampleRate;
+    const float halfTimeMs = totalTimeMs / 2.0f;
+
+    auto firstHalf = generator_->getWaveformRange(0.0f, halfTimeMs);
+    auto secondHalf = generator_->getWaveformRange(halfTimeMs, halfTimeMs);
+
+    EXPECT_GT(firstHalf.samples.size(), 0);
+    EXPECT_GT(secondHalf.samples.size(), 0);
+
+    // Second half should generally have higher amplitude (due to our test signal)
+    if (!firstHalf.samples.empty() && !secondHalf.samples.empty()) {
+        float firstHalfAvg = 0.0f;
+        float secondHalfAvg = 0.0f;
+
+        for (float sample : firstHalf.samples) {
+            firstHalfAvg += std::abs(sample);
+        }
+        firstHalfAvg /= firstHalf.samples.size();
+
+        for (float sample : secondHalf.samples) {
+            secondHalfAvg += std::abs(sample);
+        }
+        secondHalfAvg /= secondHalf.samples.size();
+
+        EXPECT_GT(secondHalfAvg, firstHalfAvg);
+    }
+}
+
+TEST_F(WaveformGeneratorTest, ResetTest) {
+    // Process some audio first
+    std::vector<float> audio(1024, 0.5f);
+    generator_->processAudio(audio, 1);
+
+    // Verify we have data
+    auto waveformBefore = generator_->getCompleteWaveform();
+    EXPECT_GT(waveformBefore.samples.size(), 0);
+
+    // Reset generator
+    generator_->reset();
+
+    // Verify data is cleared
+    auto waveformAfter = generator_->getCompleteWaveform();
+    EXPECT_EQ(waveformAfter.samples.size(), 0);
+    EXPECT_EQ(waveformAfter.maxAmplitude, 0.0f);
+    EXPECT_EQ(waveformAfter.rmsAmplitude, 0.0f);
+
+    // Verify buffer stats are reset
+    auto [used, capacity] = generator_->getBufferStats();
+    EXPECT_EQ(used, 0);
+}
+
+TEST_F(WaveformGeneratorTest, ConfigUpdateTest) {
+    // Update configuration
+    WaveformGenerator::Config newConfig = config_;
+    newConfig.downsampleRatio = 32;  // Different ratio
+    newConfig.enablePeakHold = false;
+
+    bool success = generator_->updateConfig(newConfig);
+    EXPECT_TRUE(success);
+
+    // Test invalid config update
+    WaveformGenerator::Config invalidConfig = config_;
+    invalidConfig.sampleRate = -1.0f;
+
+    success = generator_->updateConfig(invalidConfig);
+    EXPECT_FALSE(success);
+}
+
+TEST_F(WaveformGeneratorTest, ErrorHandlingTest) {
+    // Test empty audio data
+    std::vector<float> emptyAudio;
+    auto result = generator_->processAudio(emptyAudio, 1);
+    EXPECT_FALSE(result.has_value());
+    EXPECT_EQ(result.error(), WaveformGenerator::Error::INVALID_AUDIO_DATA);
+
+    // Test invalid number of channels
+    std::vector<float> audio(512, 0.5f);
+    result = generator_->processAudio(audio, 0);
+    EXPECT_FALSE(result.has_value());
+    EXPECT_EQ(result.error(), WaveformGenerator::Error::INVALID_AUDIO_DATA);
+
+    result = generator_->processAudio(audio, 10);  // Too many channels
+    EXPECT_FALSE(result.has_value());
+    EXPECT_EQ(result.error(), WaveformGenerator::Error::INVALID_AUDIO_DATA);
+}
+
+/*
+// Test utility functions
+TEST(WaveformUtilityTest, DownsampleRatioCalculationTest) {
+    // Test optimal downsampling calculation
+    const float sampleRate = 44100.0f;
+
+    // Test case 1: More samples than pixels
+    size_t ratio1 = calculateOptimalDownsampleRatio(44100, 800, sampleRate);
+    EXPECT_GT(ratio1, 1);
+    EXPECT_EQ(ratio1, 44100 / 800);
+
+    // Test case 2: Fewer samples than pixels
+    size_t ratio2 = calculateOptimalDownsampleRatio(400, 800, sampleRate);
+    EXPECT_EQ(ratio2, 1);  // Should be minimum
+
+    // Test case 3: Edge cases
+    size_t ratio3 = calculateOptimalDownsampleRatio(0, 800, sampleRate);
+    EXPECT_EQ(ratio3, 1);
+
+    size_t ratio4 = calculateOptimalDownsampleRatio(1000, 0, sampleRate);
+    EXPECT_EQ(ratio4, 1);
+}
+
+TEST(WaveformUtilityTest, PeakEnvelopeGenerationTest) {
+    // Create test signal with known peaks
+    std::vector<float> signal = {0.1f, 0.8f, 0.2f, -0.9f, 0.3f, 0.7f, -0.5f};
+
+    auto envelope = generatePeakEnvelope(signal, 3);
+
+    EXPECT_EQ(envelope.size(), signal.size());
+
+    // Check that peak values are reasonable
+    for (size_t i = 0; i < envelope.size(); ++i) {
+        EXPECT_GE(envelope[i], 0.0f);
+        EXPECT_GE(envelope[i], std::abs(signal[i]));  // Peak should be >= sample amplitude
+    }
+}
+
+TEST(WaveformUtilityTest, RmsEnvelopeGenerationTest) {
+    // Create test signal
+    std::vector<float> signal = {0.5f, -0.5f, 0.8f, -0.8f, 0.3f, -0.3f};
+
+    auto envelope = generateRmsEnvelope(signal, 3);
+
+    EXPECT_EQ(envelope.size(), signal.size());
+
+    // Check that RMS values are reasonable
+    for (size_t i = 0; i < envelope.size(); ++i) {
+        EXPECT_GE(envelope[i], 0.0f);  // RMS is always non-negative
+        EXPECT_LE(envelope[i], 1.0f);  // Should be reasonable for our test signal
+    }
+}
+*/
+
+// Test cases for new utility functions
+class WaveformUtilityTest : public ::testing::Test {
+  protected:
+    std::vector<float> generateTestSignal(size_t numSamples, float amplitude = 0.5f) {
+        std::vector<float> signal(numSamples);
+        for (size_t i = 0; i < numSamples; ++i) {
+            signal[i] = amplitude * std::sin(2.0f * M_PI * 440.0f * i / 44100.0f);
+        }
+        return signal;
+    }
+};
+
+TEST_F(WaveformUtilityTest, CalculateOptimalDownsampleRatioTest) {
+    // Test basic functionality
+    EXPECT_EQ(calculateOptimalDownsampleRatio(44100, 1000, 44100.0f), 44);  // ~44 samples per pixel
+    EXPECT_EQ(calculateOptimalDownsampleRatio(1000, 100, 44100.0f), 10);    // 10 samples per pixel
+
+    // Test edge cases
+    EXPECT_EQ(calculateOptimalDownsampleRatio(0, 100, 44100.0f), 1);  // Zero samples
+    EXPECT_EQ(calculateOptimalDownsampleRatio(100, 0, 44100.0f), 1);  // Zero pixels
+    EXPECT_EQ(calculateOptimalDownsampleRatio(100, 100, 0.0f), 1);    // Zero sample rate
+    EXPECT_EQ(calculateOptimalDownsampleRatio(100, 100, -1.0f), 1);   // Negative sample rate
+
+    // Test clamping to maximum
+    EXPECT_EQ(calculateOptimalDownsampleRatio(100000, 10, 44100.0f), 1024);  // Should clamp to max
+
+    // Test minimum clamping
+    EXPECT_EQ(calculateOptimalDownsampleRatio(50, 100, 44100.0f),
+              1);  // Less than 1 sample per pixel
+}
+
+TEST_F(WaveformUtilityTest, GeneratePeakEnvelopeTest) {
+    // Test with known signal
+    std::vector<float> signal = {0.1f, -0.8f, 0.3f, -0.2f, 0.9f, -0.1f, 0.4f, -0.6f};
+    auto envelope = generatePeakEnvelope(signal, 3);
+
+    EXPECT_EQ(envelope.size(), signal.size());
+
+    // Check that peaks are captured correctly (absolute values)
+    EXPECT_GE(envelope[0], 0.1f);  // Should include the 0.1
+    EXPECT_GE(envelope[1], 0.8f);  // Should include the -0.8 (as 0.8)
+    EXPECT_GE(envelope[4], 0.9f);  // Should include the 0.9
+
+    // Test with empty input
+    std::span<const float> empty;
+    auto emptyEnvelope = generatePeakEnvelope(empty, 3);
+    EXPECT_TRUE(emptyEnvelope.empty());
+
+    // Test with zero window size
+    auto zeroWindow = generatePeakEnvelope(signal, 0);
+    EXPECT_TRUE(zeroWindow.empty());
+
+    // Test window size larger than signal
+    auto largeWindow = generatePeakEnvelope(signal, 100);
+    EXPECT_EQ(largeWindow.size(), signal.size());
+
+    // With large window, each position sees the global maximum (0.9)
+    for (size_t i = 0; i < largeWindow.size(); ++i) {
+        EXPECT_GE(largeWindow[i], 0.9f - 0.01f);  // Allow small tolerance
+    }
+}
+
+TEST_F(WaveformUtilityTest, GenerateRmsEnvelopeTest) {
+    // Test with known DC signal
+    std::vector<float> dcSignal(10, 0.5f);
+    auto rmsEnvelope = generateRmsEnvelope(dcSignal, 3);
+
+    EXPECT_EQ(rmsEnvelope.size(), dcSignal.size());
+
+    // For DC signal, RMS should equal the amplitude
+    for (float rms : rmsEnvelope) {
+        EXPECT_NEAR(rms, 0.5f, 0.0001f);
+    }
+
+    // Test with zero signal
+    std::vector<float> zeroSignal(10, 0.0f);
+    auto zeroRms = generateRmsEnvelope(zeroSignal, 3);
+
+    for (float rms : zeroRms) {
+        EXPECT_FLOAT_EQ(rms, 0.0f);
+    }
+
+    // Test with sine wave
+    auto sineWave = generateTestSignal(100, 1.0f);
+    auto sineRms = generateRmsEnvelope(sineWave, 10);
+
+    EXPECT_EQ(sineRms.size(), sineWave.size());
+
+    // RMS of sine wave should be approximately amplitude/sqrt(2)
+    // For a small window, the RMS will vary more, so we need wider tolerance
+    for (size_t i = 10; i < sineRms.size(); ++i) {  // Skip initial samples for window fill
+        EXPECT_GT(sineRms[i], 0.0f);
+        EXPECT_LT(sineRms[i], 1.0f);
+        // With small window (10 samples), RMS varies significantly
+        // Just ensure it's in a reasonable range for sine wave
+        EXPECT_GT(sineRms[i], 0.1f);  // Should be substantially above zero
+        EXPECT_LT(sineRms[i], 1.0f);  // Should not exceed amplitude
+    }
+
+    // Test edge cases
+    std::span<const float> empty;
+    auto emptyRms = generateRmsEnvelope(empty, 3);
+    EXPECT_TRUE(emptyRms.empty());
+
+    auto zeroWindowRms = generateRmsEnvelope(sineWave, 0);
+    EXPECT_TRUE(zeroWindowRms.empty());
+}
+
+TEST_F(WaveformUtilityTest, ExportForDisplayTest) {
+    WaveformGenerator generator;
+
+    // Process some test audio
+    auto testAudio = generateTestSignal(1024, 0.8f);
+    auto result = generator.processAudio(testAudio, 1);
+    ASSERT_TRUE(result.has_value());
+
+    // Test export for display with different resolutions
+    auto json100 = generator.exportForDisplay(100, true);
+    auto json50 = generator.exportForDisplay(50, false);
+
+    // Should be valid JSON strings
+    EXPECT_FALSE(json100.empty());
+    EXPECT_FALSE(json50.empty());
+
+    // Should contain expected fields
+    EXPECT_NE(json100.find("\"displayWidth\":100"), std::string::npos);
+    EXPECT_NE(json100.find("\"peaks\":["), std::string::npos);  // Should include envelopes
+    EXPECT_NE(json100.find("\"rms\":["), std::string::npos);
+
+    EXPECT_NE(json50.find("\"displayWidth\":50"), std::string::npos);
+    EXPECT_EQ(json50.find("\"peaks\":["), std::string::npos);  // Should not include envelopes
+    EXPECT_EQ(json50.find("\"rms\":["), std::string::npos);
+
+    // Test edge cases
+    auto json0 = generator.exportForDisplay(0, true);
+    EXPECT_FALSE(json0.empty());  // Should handle gracefully
+
+    // Test with empty generator (should have some data from previous processing)
+    WaveformGenerator emptyGen;
+    auto emptyJson = emptyGen.exportForDisplay(100, true);
+    EXPECT_FALSE(emptyJson.empty());
+    EXPECT_NE(emptyJson.find("\"actualWidth\":0"), std::string::npos);
+}

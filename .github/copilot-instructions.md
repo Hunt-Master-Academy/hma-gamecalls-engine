@@ -14,6 +14,8 @@ You are an AI programming assistant helping with the Huntmaster Audio Engine, a 
 - Reference and update `docs/mvp_todo.md` for all major development decisions
 - Only create supplementary documentation when it adds value beyond the MVP todo
 - All status updates should be reflected in the MVP todo document first
+- **DO NOT CREATE NEW DOCUMENTS** unless specifically directed by the user
+- **DO NOT DELETE `docs/mvp_todo.md`** unless specifically directed by the user - this is the authoritative project roadmap
 
 ## Project Context
 
@@ -490,3 +492,5 @@ Remember: This is a production audio engine where correctness and real-time perf
 - **Secondary**: Create supplementary docs only when they add unique value
 - **Testing**: Reference Alpha Testing execution chain for validation
 - **Status**: All project status updates go in MVP todo first
+- **CRITICAL**: Never create new documents unless specifically requested by user
+- **CRITICAL**: Never delete `docs/mvp_todo.md` unless specifically requested by user

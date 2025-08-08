@@ -1,5 +1,0 @@
-if(EXISTS "/mnt/e/develop/Huntmaster/huntmaster-engine/tests/RunEngineTests[1]_tests.cmake")
-  include("/mnt/e/develop/Huntmaster/huntmaster-engine/tests/RunEngineTests[1]_tests.cmake")
-else()
-  add_test(RunEngineTests_NOT_BUILT RunEngineTests_NOT_BUILT)
-endif()

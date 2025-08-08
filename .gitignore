@@ -1,247 +1,72 @@
-# === CMake Build System ===
-CMakeLists.txt.user
-CMakeCache.txt
-CMakeFiles/
-CMakeScripts/
-Testing/
-Makefile
-cmake_install.cmake
-install_manifest.cmake
-compile_commands.json
-CTestTestfile.cmake
-_deps/
-CMakeUserPresets.json
+# Build directories
+build/
+build-*/
+bin/
+lib/
 
-# === Build Outputs ===
-/build/
-/build-*/
-/out/
-*.lib
-*.a
-*.so
-*.dll
-*.dylib
-*.exe
-
-# === Container development caches ===
-.cache/
-.ccache/
-.npm/
-node_modules/
-.vscode-server/
-__pycache__/
-.pytest_cache/
-.eslintcache
-
-# === Root Directory Build Artifacts ===
-# These should be built into build/bin/ instead
-/analyze_recording
-/audio_trimmer
-/audio_visualization
-/CrossPlatformTest
-/debug_dtw_similarity
-/detailed_analysis
-/DTWUnifiedTest
-/EndToEndTest
-/engine_integration_test
-/generate_features
-/interactive_recorder
-/MFCCConsistencyUnifiedTest
-/MFCCDirectUnifiedTest
-/PerformanceTest
-/RealWildlifeCallAnalysisTest
-/real_time_recording_monitor
-/RecorderTest
-/RecordingTest
-/RunEngineTests
-/simple_unified_test
-/TestHarness
-/test_mfcc_debugging
-/UnifiedEngineTest
-
-# === Temporary Debug Files ===
-debug_*
-test_*.wav
-*.debug
-
-# === Coverage Reports ===
-*.gcov
-*.gcda
-*.gcno
-coverage.info
-coverage_html/
-/ValidationUnifiedTest
-
-# Build system generated files in root
-/build.log
-/waveform_range_debug.txt
-/test_*.xml
-/test_debug_macros*
-/debug_scorer*
-/RunEngineTests*.cmake
-
-# === IDE Files ===
-.vscode/
-.vscode-data/
+# IDE and editor files
+.vscode/settings.json
+.vscode/launch.json
 .idea/
 *.swp
 *.swo
 *~
 
-# === Audio Project Specific ===
-# Test audio files (keep sample files, ignore generated ones)
-/data/recordings/*.wav
-/data/recordings/*.mp3
-/data/recordings/*.flac
-/data/test_audio/output_*
-/data/test_audio/temp_*
-*.tmp.wav
-test_recording*.wav
+# Compiled Object files
+*.o
+*.obj
+*.so
+*.dylib
+*.dll
 
-# Generated feature files
-*.mfc.tmp
-*.features.tmp
+# Executables
+*.exe
+*.out
+*.app
 
-# === Platform Specific ===
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-*.stackdump
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-Icon
-._*
-
-# Linux
-*~
-.directory
-
-# === Container Development Caches ===
-.cache/
-.ccache/
-.npm/
-.vscode-server/
-__pycache__/
-.pytest_cache/
-.eslintcache
-.cargo/
-.rustup/
-
-# === Additional Container Cache Directories ===
-.pip/
-.conda/
-.cmake/
-.conan/
-.vcpkg/
-node_modules/
-.node-gyp/
-.electron/
-.yarn/
-.pnpm-store/
-
-# === VS Code Container Issues ===
-.vscode-server-backup/
-.vscode-remote-containers/
-.devcontainer-cache/
-
-# === Transient Files ===
-# Logs, reports, and other temporary files that should not be committed.
-*.log
-*.txt
-*_REPORT.md
-*_COMPLETE.md
-*_SUMMARY.md
-Dev_Progress.md
-MVP_Feature_Gap_Analysis.md
-VAD_ITERATION_COMPLETE.md
-
-# === Development Artifacts ===
-OLD-*
-*.orig
-*.rej
-*.patch
-*.backup
-
-# === Security ===
-*.key
-*.pem
-*.p12
-*.pfx
-config/secrets*
-.env.local
-.env.*.local
-
-# === Documentation Build ===
-/docs/_build/
-/docs/html/
-/docs/latex/
-
-# === Emscripten/WebAssembly ===
-*.wasm
-*.js.map
-/web/dist/
-
-# === Testing ===
-test_results/
-test_logs/
-coverage/
+# Coverage files
 *.gcov
 *.gcda
 *.gcno
-
-# === Submodule Build Artifacts ===
-# Don't ignore the submodules themselves, but ignore their build artifacts
-libs/*/build/
-tools/*/build/
-tests/lib/*/build/
-
-# === WASM Test Artifacts ===
-# Ignore generated files from WASM tests, but not the source files.
-/tests/automation/wasm/*.js
-/tests/automation/wasm/*.mjs
-/tests/automation/wasm/*.html
-/tests/automation/wasm/*.wat
-/tests/automation/wasm/*.o
-
-# === Node.js ===
-**/node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-**/package-lock.json
-*.tgz
-*.tar.gz
-
-# === Root-level Reports ===
-# Ignore markdown files in the root, but not README.md
-/*.md
-!/README.md
-
-# Build artifacts
-build/
-build-*/
-*.gcda
-*.gcno
-
-# Coverage data
-coverage_data/
+coverage.info
 coverage_reports/
+coverage_analysis/
+lcov.info
+
+# Test output files
+test_logs/
+*.log
 
 # Temporary files
 *.tmp
-*.bak
-*~
-
-# IDE backups
-.vscode.backup.*
-
-# Test outputs
-test_logs/*.log
-!test_logs/README.md
-
+*.temp
 nul
+
+# Performance reports
+performance_report.json
+
+# Archive and backup directories
+archive/
+data_backup/
+
+# Node modules (if any)
+node_modules/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Audio files (for development testing only)
+*.wav
+*.mp3
+*.mp4
+*.mfc
+data/recordings/
+data/processed_calls/
+data/master_calls/*.wav

@@ -257,8 +257,8 @@ class UnifiedAudioEngine::Impl {
 
     // Configuration paths
     std::string masterCallsPath_{"/workspaces/huntmaster-engine/data/master_calls/"};
-    std::string featuresPath_{"/home/xbyooki/huntmaster-engine/data/features/"};
-    std::string recordingsPath_{"/home/xbyooki/huntmaster-engine/data/recordings/"};
+    std::string featuresPath_{"/workspaces/huntmaster-engine/data/processed_calls/mfc/"};
+    std::string recordingsPath_{"/workspaces/huntmaster-engine/data/recordings/"};
 
     // Helper methods
     SessionState* getSession(SessionId sessionId);
@@ -1240,7 +1240,7 @@ UnifiedAudioEngine::Impl::getRecordingMode(SessionId sessionId) const {
 }
 
 UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::setRecordingMode(SessionId sessionId,
-                                                                      RecordingMode mode) {
+                                                                      RecordingMode /*mode*/) {
     SessionState* session = getSession(sessionId);
     if (!session)
         return Status::SESSION_NOT_FOUND;
@@ -1670,8 +1670,9 @@ UnifiedAudioEngine::Impl::exportScoringHistoryToJson(SessionId sessionId, size_t
 }
 
 // DTW Configuration methods
-UnifiedAudioEngine::Status
-UnifiedAudioEngine::Impl::configureDTW(SessionId sessionId, float windowRatio, bool enableSIMD) {
+UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::configureDTW(SessionId sessionId,
+                                                                  float windowRatio,
+                                                                  bool /*enableSIMD*/) {
     SessionState* session = getSession(sessionId);
     if (!session)
         return Status::SESSION_NOT_FOUND;

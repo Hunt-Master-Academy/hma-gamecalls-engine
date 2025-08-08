@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Game Calls Trainer - Mobile Alpha</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a3332 0%, #2d5a4f 50%, #1a3332 100%);
+            color: #e8f5e8;
+            min-height: 100vh;
+            padding: 0;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+
+        .app-container {
+            max-width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: rgba(26, 51, 50, 0.95);
+        }
+
+        /* Header - Optimized for mobile */
+        .header {
+            background: linear-gradient(45deg, #2d7d32, #388e3c);
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .connection-status {
+            font-size: 0.9em;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #e74c3c;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.online {
+            background: #27ae60;
+            animation: none;
+        }
+
+        .status-dot.offline {
+            background: #f39c12;
+        }
+
+        /* Main content area */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Master call selection - Mobile optimized */
+        .call-selection {
+            background: rgba(52, 73, 94, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .call-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .call-card {
+            background: rgba(45, 125, 50, 0.3);
+            border: 2px solid rgba(45, 125, 50, 0.5);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            user-select: none;
+        }
+
+        .call-card:hover,
+        .call-card:active {
+            background: rgba(45, 125, 50, 0.6);
+            border-color: #4caf50;
+            transform: scale(1.02);
+        }
+
+        .call-card.selected {
+            background: rgba(76, 175, 80, 0.4);
+            border-color: #4caf50;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .call-name {
+            font-weight: bold;
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+
+        .call-meta {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        /* Recording section - Mobile optimized */
+        .recording-section {
+            background: rgba(52, 73, 94, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .record-button {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+            color: white;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+        }
+
+        .record-button:active {
+            transform: scale(0.95);
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.4);
+        }
+
+        .record-button.recording {
+            background: linear-gradient(45deg, #f39c12, #e67e22);
+            animation: recordingPulse 1s infinite;
+        }
+
+        /* Audio level meter */
+        .audio-level {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .audio-level-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60, #f39c12, #e74c3c);
+            width: 0%;
+            transition: width 0.1s ease;
+            border-radius: 4px;
+        }
+
+        /* Real-time feedback */
+        .realtime-feedback {
+            background: rgba(52, 73, 94, 0.9);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .similarity-meter {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .similarity-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #e74c3c 0deg, #f39c12 120deg, #27ae60 240deg, #2ecc71 360deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            position: relative;
+        }
+
+        .similarity-circle::before {
+            content: '';
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(52, 73, 94, 0.95);
+            position: absolute;
+        }
+
+        .similarity-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            z-index: 1;
+        }
+
+        /* Quick actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: rgba(52, 152, 219, 0.8);
+            color: white;
+            font-size: 1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-height: 50px;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+            background: rgba(52, 152, 219, 1);
+        }
+
+        .action-btn.secondary {
+            background: rgba(149, 165, 166, 0.8);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Status log - Mobile optimized */
+        .status-log {
+            background: rgba(44, 62, 80, 0.9);
+            border-radius: 10px;
+            padding: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            line-height: 1.4;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .log-entry.info {
+            color: #3498db;
+        }
+
+        .log-entry.success {
+            color: #27ae60;
+        }
+
+        .log-entry.warning {
+            color: #f39c12;
+        }
+
+        .log-entry.error {
+            color: #e74c3c;
+        }
+
+        /* Animations */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes recordingPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        /* Touch feedback */
+        .touch-feedback {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .touch-feedback::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+
+        .touch-feedback:active::after {
+            width: 200px;
+            height: 200px;
+        }
+
+        /* Offline indicator */
+        .offline-banner {
+            background: #f39c12;
+            color: #2c3e50;
+            padding: 10px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+
+        .offline-banner.show {
+            display: block;
+        }
+
+        /* Responsive design */
+        @media (max-width: 480px) {
+            .main-content {
+                padding: 15px;
+                gap: 15px;
+            }
+
+            .call-grid {
+                grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+                gap: 10px;
+            }
+
+            .record-button {
+                width: 100px;
+                height: 100px;
+                font-size: 1em;
+            }
+
+            .similarity-circle {
+                width: 80px;
+                height: 80px;
+            }
+
+            .similarity-circle::before {
+                width: 64px;
+                height: 64px;
+            }
+        }
+
+        /* Safe area for notched devices */
+        @supports (padding: max(0px)) {
+            .header {
+                padding-top: max(15px, env(safe-area-inset-top));
+            }
+
+            .main-content {
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="offline-banner" id="offlineBanner">
+        📱 Offline Mode - Using cached calls and engine
+    </div>
+
+    <div class="app-container">
+        <header class="header">
+            <h1>🦌 Game Calls Trainer</h1>
+            <div class="connection-status">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="connectionStatus">Initializing...</span>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Master Call Selection -->
+            <section class="call-selection">
+                <h3>🎯 Select Master Call</h3>
+                <div class="call-grid" id="callGrid">
+                    <div class="call-card touch-feedback" data-call="buck_grunt">
+                        <div class="call-name">Buck Grunt</div>
+                        <div class="call-meta">Early Season • Medium</div>
+                    </div>
+                    <div class="call-card touch-feedback" data-call="doe_bleat">
+                        <div class="call-name">Doe Bleat</div>
+                        <div class="call-meta">All Season • Easy</div>
+                    </div>
+                    <div class="call-card touch-feedback" data-call="buck_snort">
+                        <div class="call-name">Buck Snort</div>
+                        <div class="call-meta">Rutting • Hard</div>
+                    </div>
+                    <div class="call-card touch-feedback" data-call="fawn_call">
+                        <div class="call-name">Fawn Call</div>
+                        <div class="call-meta">Spring • Easy</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recording Section -->
+            <section class="recording-section">
+                <h3>🎤 Practice Your Call</h3>
+                <button class="record-button touch-feedback" id="recordButton">
+                    START
+                </button>
+                <div class="audio-level">
+                    <div class="audio-level-fill" id="audioLevelFill"></div>
+                </div>
+                <div id="recordingStatus">Tap to start recording</div>
+            </section>
+
+            <!-- Real-time Feedback -->
+            <section class="realtime-feedback">
+                <h3>📊 Real-time Feedback</h3>
+                <div class="similarity-meter">
+                    <div class="similarity-circle">
+                        <div class="similarity-value" id="similarityValue">0%</div>
+                    </div>
+                    <div>Similarity Score</div>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="action-btn touch-feedback" id="playMasterBtn" disabled>
+                        🔊 Play Master
+                    </button>
+                    <button class="action-btn touch-feedback" id="playRecordingBtn" disabled>
+                        ▶️ Play Mine
+                    </button>
+                    <button class="action-btn secondary touch-feedback" id="saveSessionBtn" disabled>
+                        💾 Save Session
+                    </button>
+                    <button class="action-btn secondary touch-feedback" id="resetBtn">
+                        🔄 Reset
+                    </button>
+                </div>
+            </section>
+
+            <!-- Status Log -->
+            <section class="status-log" id="statusLog">
+                <div class="log-entry info">Welcome to Game Calls Trainer</div>
+                <div class="log-entry info">Select a master call to begin</div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Mobile-optimized Game Calls Trainer
+        class GameCallsTrainer {
+            constructor() {
+                this.isOnline = navigator.onLine;
+                this.selectedCall = null;
+                this.isRecording = false;
+                this.audioContext = null;
+                this.mediaStream = null;
+                this.recordedChunks = [];
+                this.similarity = 0;
+
+                this.init();
+            }
+
+            async init() {
+                this.updateConnectionStatus();
+                this.setupEventListeners();
+                this.setupServiceWorker();
+                await this.initializeAudio();
+                this.log('System initialized', 'success');
+            }
+
+            updateConnectionStatus() {
+                const statusDot = document.getElementById('statusDot');
+                const statusText = document.getElementById('connectionStatus');
+                const offlineBanner = document.getElementById('offlineBanner');
+
+                if (this.isOnline) {
+                    statusDot.className = 'status-dot online';
+                    statusText.textContent = 'Online - Full functionality';
+                    offlineBanner.classList.remove('show');
+                } else {
+                    statusDot.className = 'status-dot offline';
+                    statusText.textContent = 'Offline - Cached mode';
+                    offlineBanner.classList.add('show');
+                }
+            }
+
+            setupEventListeners() {
+                // Call selection
+                document.querySelectorAll('.call-card').forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        this.selectCall(e.currentTarget.dataset.call);
+                        this.addTouchFeedback(e.currentTarget);
+                    });
+                });
+
+                // Recording button
+                document.getElementById('recordButton').addEventListener('click', (e) => {
+                    this.toggleRecording();
+                    this.addTouchFeedback(e.currentTarget);
+                });
+
+                // Action buttons
+                document.getElementById('playMasterBtn').addEventListener('click', () => this.playMaster());
+                document.getElementById('playRecordingBtn').addEventListener('click', () => this.playRecording());
+                document.getElementById('saveSessionBtn').addEventListener('click', () => this.saveSession());
+                document.getElementById('resetBtn').addEventListener('click', () => this.reset());
+
+                // Network status
+                window.addEventListener('online', () => {
+                    this.isOnline = true;
+                    this.updateConnectionStatus();
+                    this.log('Connection restored', 'success');
+                });
+
+                window.addEventListener('offline', () => {
+                    this.isOnline = false;
+                    this.updateConnectionStatus();
+                    this.log('Working offline', 'warning');
+                });
+
+                // Prevent default touch behaviors
+                document.addEventListener('touchstart', (e) => {
+                    if (e.target.closest('.touch-feedback')) {
+                        e.preventDefault();
+                    }
+                }, { passive: false });
+            }
+
+            addTouchFeedback(element) {
+                // Add visual feedback for touch interactions
+                element.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    element.style.transform = '';
+                }, 150);
+
+                // Haptic feedback if available
+                if (navigator.vibrate) {
+                    navigator.vibrate(10);
+                }
+            }
+
+            async setupServiceWorker() {
+                if ('serviceWorker' in navigator) {
+                    try {
+                        // Register service worker for offline capability
+                        // Note: This would need an actual service worker file
+                        this.log('Service worker ready for offline mode', 'info');
+                    } catch (error) {
+                        this.log('Service worker registration failed', 'warning');
+                    }
+                }
+            }
+
+            async initializeAudio() {
+                try {
+                    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    this.log('Audio system initialized', 'success');
+                } catch (error) {
+                    this.log('Audio initialization failed: ' + error.message, 'error');
+                }
+            }
+
+            selectCall(callType) {
+                // Remove previous selection
+                document.querySelectorAll('.call-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+
+                // Select new call
+                document.querySelector(`[data-call="${callType}"]`).classList.add('selected');
+                this.selectedCall = callType;
+
+                // Enable play master button
+                document.getElementById('playMasterBtn').disabled = false;
+
+                this.log(`Selected: ${callType.replace('_', ' ').toUpperCase()}`, 'info');
+            }
+
+            async toggleRecording() {
+                if (!this.isRecording) {
+                    await this.startRecording();
+                } else {
+                    this.stopRecording();
+                }
+            }
+
+            async startRecording() {
+                if (!this.selectedCall) {
+                    this.log('Please select a master call first', 'warning');
+                    return;
+                }
+
+                try {
+                    this.mediaStream = await navigator.mediaDevices.getUserMedia({
+                        audio: {
+                            echoCancellation: false,
+                            noiseSuppression: false,
+                            autoGainControl: false
+                        }
+                    });
+
+                    this.isRecording = true;
+                    this.recordedChunks = [];
+
+                    // Update UI
+                    const recordBtn = document.getElementById('recordButton');
+                    recordBtn.textContent = 'STOP';
+                    recordBtn.classList.add('recording');
+                    document.getElementById('recordingStatus').textContent = 'Recording...';
+
+                    // Start audio level monitoring
+                    this.startAudioLevelMonitoring();
+
+                    // Simulate real-time similarity feedback
+                    this.startRealtimeFeedback();
+
+                    this.log('Recording started', 'success');
+
+                } catch (error) {
+                    this.log('Microphone access denied: ' + error.message, 'error');
+                }
+            }
+
+            stopRecording() {
+                this.isRecording = false;
+
+                // Stop media stream
+                if (this.mediaStream) {
+                    this.mediaStream.getTracks().forEach(track => track.stop());
+                }
+
+                // Update UI
+                const recordBtn = document.getElementById('recordButton');
+                recordBtn.textContent = 'START';
+                recordBtn.classList.remove('recording');
+                document.getElementById('recordingStatus').textContent = 'Processing...';
+
+                // Stop monitoring
+                this.stopAudioLevelMonitoring();
+                this.stopRealtimeFeedback();
+
+                // Enable playback button
+                document.getElementById('playRecordingBtn').disabled = false;
+                document.getElementById('saveSessionBtn').disabled = false;
+
+                // Simulate processing
+                setTimeout(() => {
+                    this.similarity = Math.floor(Math.random() * 40) + 50; // 50-90%
+                    this.updateSimilarityDisplay();
+                    document.getElementById('recordingStatus').textContent = `Score: ${this.similarity}%`;
+                    this.log(`Analysis complete: ${this.similarity}% similarity`, 'success');
+                }, 1500);
+
+                this.log('Recording stopped', 'info');
+            }
+
+            startAudioLevelMonitoring() {
+                // Simulate audio level monitoring
+                this.audioLevelInterval = setInterval(() => {
+                    const level = Math.random() * 100;
+                    document.getElementById('audioLevelFill').style.width = level + '%';
+                }, 100);
+            }
+
+            stopAudioLevelMonitoring() {
+                if (this.audioLevelInterval) {
+                    clearInterval(this.audioLevelInterval);
+                    document.getElementById('audioLevelFill').style.width = '0%';
+                }
+            }
+
+            startRealtimeFeedback() {
+                // Simulate real-time similarity feedback
+                this.feedbackInterval = setInterval(() => {
+                    const currentSimilarity = Math.floor(Math.random() * 30) + 20; // 20-50% during recording
+                    this.updateSimilarityDisplay(currentSimilarity);
+                }, 500);
+            }
+
+            stopRealtimeFeedback() {
+                if (this.feedbackInterval) {
+                    clearInterval(this.feedbackInterval);
+                }
+            }
+
+            updateSimilarityDisplay(value = this.similarity) {
+                document.getElementById('similarityValue').textContent = value + '%';
+
+                // Update circle color based on similarity
+                const circle = document.querySelector('.similarity-circle');
+                if (value >= 80) {
+                    circle.style.background = 'conic-gradient(from 0deg, #27ae60 0deg, #2ecc71 360deg)';
+                } else if (value >= 60) {
+                    circle.style.background = 'conic-gradient(from 0deg, #f39c12 0deg, #27ae60 240deg, #2ecc71 360deg)';
+                } else {
+                    circle.style.background = 'conic-gradient(from 0deg, #e74c3c 0deg, #f39c12 120deg, #27ae60 240deg)';
+                }
+            }
+
+            playMaster() {
+                this.log(`Playing master call: ${this.selectedCall}`, 'info');
+                // Implement master call playback
+            }
+
+            playRecording() {
+                this.log('Playing your recording', 'info');
+                // Implement recording playback
+            }
+
+            saveSession() {
+                const sessionData = {
+                    call: this.selectedCall,
+                    similarity: this.similarity,
+                    timestamp: new Date().toISOString()
+                };
+
+                // Save to local storage
+                const sessions = JSON.parse(localStorage.getItem('gameCallsSessions') || '[]');
+                sessions.push(sessionData);
+                localStorage.setItem('gameCallsSessions', JSON.stringify(sessions));
+
+                this.log('Session saved locally', 'success');
+            }
+
+            reset() {
+                this.selectedCall = null;
+                this.similarity = 0;
+
+                // Reset UI
+                document.querySelectorAll('.call-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+
+                document.getElementById('playMasterBtn').disabled = true;
+                document.getElementById('playRecordingBtn').disabled = true;
+                document.getElementById('saveSessionBtn').disabled = true;
+                document.getElementById('recordingStatus').textContent = 'Tap to start recording';
+
+                this.updateSimilarityDisplay(0);
+
+                this.log('Session reset', 'info');
+            }
+
+            log(message, type = 'info') {
+                const logContainer = document.getElementById('statusLog');
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${type}`;
+                entry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+
+                logContainer.appendChild(entry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+
+                // Keep only last 50 entries
+                while (logContainer.children.length > 50) {
+                    logContainer.removeChild(logContainer.firstChild);
+                }
+            }
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new GameCallsTrainer();
+        });
+    </script>
+</body>
+
+</html>

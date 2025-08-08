@@ -17,8 +17,9 @@ echo "📦 Building with coverage instrumentation..."
 export CXXFLAGS="--coverage -g -O0"
 export LDFLAGS="--coverage"
 
-# Clean and rebuild with coverage
-if ! cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage -g -O0" -DCMAKE_EXE_LINKER_FLAGS="--coverage"; then
+# Clean and rebuild with coverage, suppressing problematic warnings for coverage builds
+COVERAGE_FLAGS="--coverage -g -O0 -Wno-unused-parameter -Wno-unused-result"
+if ! cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="$COVERAGE_FLAGS" -DCMAKE_EXE_LINKER_FLAGS="--coverage"; then
     echo "❌ Failed to configure build with coverage"
     exit 1
 fi

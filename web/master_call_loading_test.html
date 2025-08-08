@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alpha Test 01: Master Call Loading</title>
+    <link rel="stylesheet" href="../feature/shared/feature_test_styles.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Alpha Test 01: Master Call Loading</h1>
+            <div class="test-phase">Phase 1 - Data Pipeline</div>
+        </header>
+
+        <section class="test-section">
+            <h2>Test Objectives</h2>
+            <ul class="objectives">
+                <li>✓ Load processed master call index</li>
+                <li>✓ Verify all file paths exist</li>
+                <li>✓ Load MFC features correctly</li>
+                <li>✓ Load waveform data for visualization</li>
+                <li>✓ Validate metadata completeness</li>
+            </ul>
+        </section>
+
+        <section class="test-section">
+            <h2>Master Call Index</h2>
+            <button id="loadIndex" class="btn-primary">Load Master Call Index</button>
+            <div id="indexStatus" class="status-message"></div>
+
+            <div id="callGrid" class="call-grid hidden">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+        <section class="test-section">
+            <h2>Call Details</h2>
+            <div id="callDetails" class="hidden">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>Species:</label>
+                        <span id="detailSpecies">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Call Type:</label>
+                        <span id="detailCallType">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Season:</label>
+                        <span id="detailSeason">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Difficulty:</label>
+                        <span id="detailDifficulty">-</span>
+                    </div>
+                </div>
+
+                <div class="waveform-container">
+                    <canvas id="waveformCanvas" width="800" height="200"></canvas>
+                </div>
+
+                <div class="feature-viewer">
+                    <h3>MFC Features</h3>
+                    <canvas id="mfcCanvas" width="800" height="300"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section class="test-section">
+            <h2>Test Results</h2>
+            <div id="testResults" class="test-results">
+                <div class="metric">
+                    <label>Files Loaded:</label>
+                    <span id="filesLoaded">0</span>
+                </div>
+                <div class="metric">
+                    <label>MFC Valid:</label>
+                    <span id="mfcValid">0</span>
+                </div>
+                <div class="metric">
+                    <label>Waveforms Valid:</label>
+                    <span id="waveformsValid">0</span>
+                </div>
+                <div class="metric">
+                    <label>Metadata Valid:</label>
+                    <span id="metadataValid">0</span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        class MasterCallLoadingTest {
+            constructor() {
+                this.index = null;
+                this.currentCall = null;
+                this.stats = {
+                    filesLoaded: 0,
+                    mfcValid: 0,
+                    waveformsValid: 0,
+                    metadataValid: 0
+                };
+
+                this.initializeUI();
+            }
+
+            initializeUI() {
+                document.getElementById('loadIndex').addEventListener('click', () => {
+                    this.loadMasterCallIndex();
+                });
+            }
+
+            async loadMasterCallIndex() {
+                const statusEl = document.getElementById('indexStatus');
+                statusEl.textContent = 'Loading master call index...';
+                statusEl.className = 'status-message loading';
+
+                try {
+                    const response = await fetch('/data/processed_calls/index.json');
+                    if (!response.ok) {
+                        throw new Error('Index file not found. Run process_all_master_calls.sh first.');
+                    }
+
+                    this.index = await response.json();
+                    statusEl.textContent = `Loaded ${this.index.calls.length} master calls`;
+                    statusEl.className = 'status-message success';
+
+                    this.displayCallGrid();
+
+                } catch (error) {
+                    statusEl.textContent = `Error: ${error.message}`;
+                    statusEl.className = 'status-message error';
+                }
+            }
+
+            displayCallGrid() {
+                const grid = document.getElementById('callGrid');
+                grid.innerHTML = '';
+                grid.classList.remove('hidden');
+
+                this.index.calls.forEach(call => {
+                    const card = document.createElement('div');
+                    card.className = 'call-card';
+                    card.innerHTML = `
+                    <div class="call-species">${call.species}</div>
+                    <div class="call-type">${call.callType}</div>
+                    <div class="call-meta">
+                        <span>Season: ${call.season}</span>
+                        <span>Difficulty: ${'⭐'.repeat(call.difficulty)}</span>
+                    </div>
+                    <button class="btn-secondary" data-call-id="${call.id}">
+                        Load Call
+                    </button>
+                `;
+
+                    card.querySelector('button').addEventListener('click', (e) => {
+                        this.loadCallDetails(call);
+                    });
+
+                    grid.appendChild(card);
+                });
+            }
+
+            async loadCallDetails(call) {
+                this.currentCall = call;
+                const details = document.getElementById('callDetails');
+                details.classList.remove('hidden');
+
+                // Update details
+                document.getElementById('detailSpecies').textContent = call.species;
+                document.getElementById('detailCallType').textContent = call.callType;
+                document.getElementById('detailSeason').textContent = call.season;
+                document.getElementById('detailDifficulty').textContent = '⭐'.repeat(call.difficulty);
+
+                // Load and validate all files
+                await this.loadMFCFeatures(call);
+                await this.loadWaveformData(call);
+                await this.validateMetadata(call);
+
+                this.updateStats();
+            }
+
+            async loadMFCFeatures(call) {
+                try {
+                    const response = await fetch(`/data/processed_calls/${call.files.mfc}`);
+                    const buffer = await response.arrayBuffer();
+
+                    // Parse MFC file format
+                    const view = new DataView(buffer);
+                    const numFrames = view.getInt32(0, true);
+                    const numCoeffs = view.getInt32(4, true);
+
+                    console.log(`MFC: ${numFrames} frames, ${numCoeffs} coefficients`);
+
+                    // Visualize MFC features
+                    this.visualizeMFC(buffer, numFrames, numCoeffs);
+
+                    this.stats.mfcValid++;
+                    this.stats.filesLoaded++;
+
+                } catch (error) {
+                    console.error('Failed to load MFC:', error);
+                }
+            }
+
+            async loadWaveformData(call) {
+                try {
+                    const response = await fetch(`/data/processed_calls/${call.files.waveform}`);
+                    const waveform = await response.json();
+
+                    this.visualizeWaveform(waveform);
+
+                    this.stats.waveformsValid++;
+                    this.stats.filesLoaded++;
+
+                } catch (error) {
+                    console.error('Failed to load waveform:', error);
+                }
+            }
+
+            async validateMetadata(call) {
+                try {
+                    const response = await fetch(`/data/processed_calls/${call.files.metadata}`);
+                    const metadata = await response.json();
+
+                    // Validate required fields
+                    const required = ['species', 'callType', 'season', 'difficulty', 'duration'];
+                    const valid = required.every(field => field in metadata);
+
+                    if (valid) {
+                        this.stats.metadataValid++;
+                    }
+                    this.stats.filesLoaded++;
+
+                } catch (error) {
+                    console.error('Failed to validate metadata:', error);
+                }
+            }
+
+            visualizeMFC(buffer, numFrames, numCoeffs) {
+                const canvas = document.getElementById('mfcCanvas');
+                const ctx = canvas.getContext('2d');
+
+                // Clear canvas
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Draw MFC heatmap
+                const view = new DataView(buffer);
+                let offset = 8; // Skip header
+
+                const frameWidth = canvas.width / numFrames;
+                const coeffHeight = canvas.height / numCoeffs;
+
+                for (let frame = 0; frame < Math.min(numFrames, 200); frame++) {
+                    for (let coeff = 0; coeff < numCoeffs; coeff++) {
+                        const value = view.getFloat32(offset, true);
+                        offset += 4;
+
+                        // Map value to color
+                        const intensity = Math.min(255, Math.abs(value * 50));
+                        ctx.fillStyle = `rgb(${intensity}, ${intensity / 2}, ${intensity / 4})`;
+                        ctx.fillRect(
+                            frame * frameWidth,
+                            coeff * coeffHeight,
+                            frameWidth,
+                            coeffHeight
+                        );
+                    }
+                }
+            }
+
+            visualizeWaveform(waveformData) {
+                const canvas = document.getElementById('waveformCanvas');
+                const ctx = canvas.getContext('2d');
+
+                // Clear canvas
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Get appropriate resolution
+                const resolution = waveformData.resolutions['1000'] ||
+                    waveformData.resolutions['500'] ||
+                    Object.values(waveformData.resolutions)[0];
+
+                if (!resolution) return;
+
+                const { min, max, rms } = resolution;
+                const centerY = canvas.height / 2;
+                const scaleY = canvas.height / 2;
+
+                // Draw waveform
+                ctx.strokeStyle = '#4ade80';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+
+                for (let i = 0; i < min.length; i++) {
+                    const x = (i / min.length) * canvas.width;
+                    const yMin = centerY + min[i] * scaleY;
+                    const yMax = centerY + max[i] * scaleY;
+
+                    ctx.moveTo(x, yMin);
+                    ctx.lineTo(x, yMax);
+                }
+
+                ctx.stroke();
+
+                // Draw RMS envelope
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+
+                for (let i = 0; i < rms.length; i++) {
+                    const x = (i / rms.length) * canvas.width;
+                    const y = centerY - rms[i] * scaleY;
+
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+
+                ctx.stroke();
+            }
+
+            updateStats() {
+                document.getElementById('filesLoaded').textContent = this.stats.filesLoaded;
+                document.getElementById('mfcValid').textContent = this.stats.mfcValid;
+                document.getElementById('waveformsValid').textContent = this.stats.waveformsValid;
+                document.getElementById('metadataValid').textContent = this.stats.metadataValid;
+            }
+        }
+
+        // Initialize test
+        const test = new MasterCallLoadingTest();
+    </script>
+</body>
+
+</html>

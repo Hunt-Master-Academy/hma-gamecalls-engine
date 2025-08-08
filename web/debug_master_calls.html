@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Master Call Debug Test</title>
+</head>
+
+<body>
+    <h1>Master Call Loading Debug</h1>
+    <div id="output"></div>
+    <button onclick="testMasterCallLoading()">Test Master Call Loading</button>
+
+    <script>
+        function log(message) {
+            const output = document.getElementById('output');
+            output.innerHTML += `<p>${new Date().toLocaleTimeString()}: ${message}</p>`;
+            console.log(message);
+        }
+
+        async function testMasterCallLoading() {
+            const callTypes = ['buck_grunt', 'doe_grunt', 'fawn_bleat'];
+
+            for (const callType of callTypes) {
+                try {
+                    log(`🔍 Testing: ${callType}`);
+
+                    // Test the exact path used in alpha_test.html
+                    const audioPath = `data/master_calls/${callType}.wav`;
+                    log(`📍 Full URL: ${window.location.origin}/${audioPath}`);
+
+                    const response = await fetch(audioPath);
+                    log(`📡 Response status: ${response.status} ${response.statusText}`);
+                    log(`📦 Content-Type: ${response.headers.get('content-type')}`);
+                    log(`📏 Content-Length: ${response.headers.get('content-length')}`);
+
+                    if (response.ok) {
+                        const arrayBuffer = await response.arrayBuffer();
+                        log(`✅ ${callType}: Successfully loaded ${arrayBuffer.byteLength} bytes`);
+
+                        // Test audio decoding
+                        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        try {
+                            const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                            log(`🎵 ${callType}: Decoded successfully - ${audioBuffer.duration.toFixed(2)}s, ${audioBuffer.sampleRate}Hz`);
+                        } catch (decodeError) {
+                            log(`❌ ${callType}: Decode failed - ${decodeError.message}`);
+                        }
+                    } else {
+                        log(`❌ ${callType}: HTTP error ${response.status}`);
+                    }
+
+                } catch (error) {
+                    log(`💥 ${callType}: Exception - ${error.message}`);
+                }
+
+                log(`---`);
+            }
+
+            // Test directory listing
+            try {
+                log(`📂 Testing directory access...`);
+                const dirResponse = await fetch('data/master_calls/');
+                log(`📂 Directory response: ${dirResponse.status}`);
+            } catch (error) {
+                log(`📂 Directory test failed: ${error.message}`);
+            }
+        }
+    </script>
+</body>
+
+</html>

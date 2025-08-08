@@ -41,7 +41,8 @@
                 }
             ],
             "externalConsole": false,
-            "MIMode": "gdb"
+            "MIMode": "gdb",
+            "configurationProvider": "ms-vscode.cmake-tools"
         }
     ]
 }

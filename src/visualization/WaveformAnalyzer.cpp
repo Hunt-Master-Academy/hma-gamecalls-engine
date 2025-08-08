@@ -342,7 +342,7 @@ WaveformAnalyzer::getWaveformData(float start_time, float end_time, int target_w
         const WaveformLevel& level = waveform_levels_[best_level];
 
         // Calculate sample range
-        const float duration = end_time - start_time;
+        [[maybe_unused]] const float duration = end_time - start_time;
         const size_t start_sample = static_cast<size_t>(start_time * sample_rate_);
         const size_t end_sample = static_cast<size_t>(end_time * sample_rate_);
 

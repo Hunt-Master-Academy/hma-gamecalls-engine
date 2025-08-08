@@ -1,6 +1,7 @@
 #include "huntmaster/core/HarmonicAnalyzer.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <complex>
 #include <fstream>
@@ -56,8 +57,8 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
         isInitialized_ = true;
 
         // DEBUG_LOG removed for compilation
-                  "Initialized with FFT size: " + std::to_string(config_.fftSize)
-                      + ", sample rate: " + std::to_string(config_.sampleRate));
+        // "Initialized with FFT size: " + std::to_string(config_.fftSize)
+        //      + ", sample rate: " + std::to_string(config_.sampleRate));
     }
 
     ~HarmonicAnalyzerImpl() {
@@ -68,11 +69,11 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
         security::MemoryGuard guard(security::GuardConfig{});
 
         if (!isInitialized_) {
-            return unexpected(Error::INITIALIZATION_FAILED);
+            return Result<HarmonicProfile, Error>(unexpected<Error>(Error::INITIALIZATION_FAILED));
         }
 
         if (audio.size() < config_.fftSize) {
-            return unexpected(Error::INSUFFICIENT_DATA);
+            return Result<HarmonicProfile, Error>(unexpected<Error>(Error::INSUFFICIENT_DATA));
         }
 
         try {
@@ -81,7 +82,7 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
             // Compute spectrum
             auto spectrumResult = computeSpectrum(audio);
             if (!spectrumResult.has_value()) {
-                return unexpected(spectrumResult.error());
+                return Result<HarmonicProfile, Error>(unexpected<Error>(spectrumResult.error()));
             }
 
             HarmonicProfile profile;
@@ -123,21 +124,20 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
             updatePerformanceStats(duration);
 
             // DEBUG_LOG removed for compilation
-                      "Analysis complete - Fundamental: " + std::to_string(profile.fundamentalFreq)
-                          + "Hz, Confidence: " + std::to_string(profile.confidence));
+            // "Analysis complete - Fundamental: " + std::to_string(profile.fundamentalFreq)
+            //     + "Hz, Confidence: " + std::to_string(profile.confidence));
 
-            return expected(std::move(profile));
-
+            return Result<HarmonicProfile, Error>(std::move(profile));
         } catch (const std::exception& e) {
             // DEBUG_LOG removed for compilation
-                      "Exception in analyzeHarmonics: " + std::string(e.what()));
-            return unexpected(Error::PROCESSING_ERROR);
+            // "Exception in analyzeHarmonics: " + std::string(e.what()));
+            return Result<HarmonicProfile, Error>(unexpected<Error>(Error::PROCESSING_ERROR));
         }
     }
 
     Result<void, Error> processAudioChunk(std::span<const float> audio) override {
         if (!isInitialized_) {
-            return unexpected(Error::INITIALIZATION_FAILED);
+            return Result<void, Error>(unexpected<Error>(Error::INITIALIZATION_FAILED));
         }
 
         // Add to buffer for continuous processing
@@ -149,7 +149,7 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
             auto result = analyzeHarmonics(chunk);
 
             if (!result.has_value()) {
-                return unexpected(result.error());
+                return Result<void, Error>(unexpected<Error>(result.error()));
             }
 
             // Advance by hop size
@@ -157,52 +157,54 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
             processedFrames_++;
         }
 
-        return expected();
+        return Result<void, Error>();
     }
 
     Result<HarmonicProfile, Error> getCurrentAnalysis() override {
         if (!isActive_) {
-            return unexpected(Error::INSUFFICIENT_DATA);
+            return Result<HarmonicProfile, Error>(unexpected<Error>(Error::INSUFFICIENT_DATA));
         }
-        return expected(currentProfile_);
+        return Result<HarmonicProfile, Error>(currentProfile_);
     }
 
     Result<std::pair<float, float>, Error>
     getSpectralFeatures(std::span<const float> audio) override {
         auto spectrumResult = computeSpectrum(audio);
         if (!spectrumResult.has_value()) {
-            return unexpected(spectrumResult.error());
+            return Result<std::pair<float, float>, Error>(
+                unexpected<Error>(spectrumResult.error()));
         }
 
         float centroid = computeSpectralCentroid();
         float spread = computeSpectralSpread(centroid);
 
-        return expected(std::make_pair(centroid, spread));
+        return Result<std::pair<float, float>, Error>(std::make_pair(centroid, spread));
     }
 
     Result<std::vector<float>, Error> extractFormants(std::span<const float> audio) override {
         auto spectrumResult = computeSpectrum(audio);
         if (!spectrumResult.has_value()) {
-            return unexpected(spectrumResult.error());
+            return Result<std::vector<float>, Error>(unexpected<Error>(spectrumResult.error()));
         }
 
         std::vector<float> formants;
         extractFormantsFromSpectrum(formants);
 
-        return expected(std::move(formants));
+        return Result<std::vector<float>, Error>(std::move(formants));
     }
 
     Result<HarmonicProfile::TonalQualities, Error>
     assessTonalQualities(std::span<const float> audio) override {
         auto spectrumResult = computeSpectrum(audio);
         if (!spectrumResult.has_value()) {
-            return unexpected(spectrumResult.error());
+            return Result<HarmonicProfile::TonalQualities, Error>(
+                unexpected<Error>(spectrumResult.error()));
         }
 
         HarmonicProfile::TonalQualities qualities;
         assessTonalQualitiesFromSpectrum(qualities);
 
-        return expected(qualities);
+        return Result<HarmonicProfile::TonalQualities, Error>(qualities);
     }
 
     void reset() override {
@@ -219,7 +221,7 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
 
     Result<void, Error> updateConfig(const Config& config) override {
         if (config.sampleRate <= 0 || config.fftSize == 0) {
-            return unexpected(Error::INVALID_SAMPLE_RATE);
+            return Result<void, Error>(unexpected<Error>(Error::INVALID_SAMPLE_RATE));
         }
 
         config_ = config;
@@ -230,7 +232,7 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
         generateFrequencyBins();
 
         // DEBUG_LOG removed for compilation
-        return expected();
+        return Result<void, Error>();
     }
 
     const Config& getConfig() const override {
@@ -262,9 +264,9 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
 
     Result<std::vector<float>, Error> getCurrentSpectrum() override {
         if (spectrum_.empty()) {
-            return unexpected(Error::INSUFFICIENT_DATA);
+            return Result<std::vector<float>, Error>(unexpected<Error>(Error::INSUFFICIENT_DATA));
         }
-        return expected(spectrum_);
+        return Result<std::vector<float>, Error>(spectrum_);
     }
 
   private:
@@ -307,7 +309,7 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
 
     Result<void, Error> computeSpectrum(std::span<const float> audio) {
         if (audio.size() < config_.fftSize) {
-            return unexpected(Error::INSUFFICIENT_DATA);
+            return Result<void, Error>(unexpected<Error>(Error::INSUFFICIENT_DATA));
         }
 
 #ifdef USE_FFTW3
@@ -339,7 +341,7 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
         }
 #endif
 
-        return expected();
+        return Result<void, Error>();
     }
 
     void computeSpectralFeatures(HarmonicProfile& profile) {
@@ -662,22 +664,22 @@ HarmonicAnalyzer::Result<std::unique_ptr<HarmonicAnalyzer>, HarmonicAnalyzer::Er
 HarmonicAnalyzer::create(const Config& config) {
     try {
         if (config.sampleRate <= 0) {
-            return unexpected(
-                Error::INVALID_SAMPLE_RATE);
+            return Result<std::unique_ptr<HarmonicAnalyzer>, Error>(
+                unexpected<Error>(Error::INVALID_SAMPLE_RATE));
         }
 
         if (config.fftSize == 0 || (config.fftSize & (config.fftSize - 1)) != 0) {
-            return unexpected(
-                Error::INVALID_FFT_SIZE);
+            return Result<std::unique_ptr<HarmonicAnalyzer>, Error>(
+                unexpected<Error>(Error::INVALID_FFT_SIZE));
         }
 
         auto analyzer = std::make_unique<HarmonicAnalyzerImpl>(config);
-        return expected(std::move(analyzer));
+        return Result<std::unique_ptr<HarmonicAnalyzer>, Error>(std::move(analyzer));
 
     } catch (const std::exception& e) {
         // DEBUG_LOG removed for compilation
-        return unexpected(
-            Error::INITIALIZATION_FAILED);
+        return Result<std::unique_ptr<HarmonicAnalyzer>, Error>(
+            unexpected<Error>(Error::INITIALIZATION_FAILED));
     }
 }
 
@@ -730,43 +732,6 @@ std::string HarmonicAnalyzer::exportToJson(const HarmonicProfile& profile) {
     json << "}";
 
     return json.str();
-}
-
-}  // namespace huntmaster
-
-// Factory method implementation
-namespace huntmaster {
-
-HarmonicAnalyzer::Result<std::unique_ptr<HarmonicAnalyzer>, HarmonicAnalyzer::Error>
-HarmonicAnalyzer::create(const Config& config) {
-    try {
-        // Validate configuration
-        if (config.sampleRate <= 0) {
-            return Result<std::unique_ptr<HarmonicAnalyzer>, Error>::error(
-                Error::INVALID_SAMPLE_RATE);
-        }
-
-        if (config.fftSize == 0 || config.fftSize > 32768) {
-            return Result<std::unique_ptr<HarmonicAnalyzer>, Error>::error(Error::INVALID_FFT_SIZE);
-        }
-
-        if (config.minFrequency >= config.maxFrequency) {
-            return Result<std::unique_ptr<HarmonicAnalyzer>, Error>::error(
-                Error::INVALID_SAMPLE_RATE);
-        }
-
-        // Create the implementation
-        auto impl = std::make_unique<HarmonicAnalyzerImpl>(config);
-
-        return Result<std::unique_ptr<HarmonicAnalyzer>, Error>::ok(std::move(impl));
-
-    } catch (const std::exception& e) {
-        DebugLogger::getInstance().log(DebugComponent::CORE,
-                                       DebugLevel::ERROR,
-                                       "HarmonicAnalyzer::create failed: " + std::string(e.what()));
-        return Result<std::unique_ptr<HarmonicAnalyzer>, Error>::error(
-            Error::INITIALIZATION_FAILED);
-    }
 }
 
 }  // namespace huntmaster

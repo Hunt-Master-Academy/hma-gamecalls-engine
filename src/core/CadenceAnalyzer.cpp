@@ -1,6 +1,7 @@
 #include "huntmaster/core/CadenceAnalyzer.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <complex>
 #include <fstream>
@@ -52,9 +53,9 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
         isInitialized_ = true;
 
         // DEBUG_LOG removed for compilation
-                  "Initialized with frame size: " + std::to_string(frameSize_)
-                      + ", hop size: " + std::to_string(hopSize_)
-                      + ", sample rate: " + std::to_string(config_.sampleRate));
+        // "Initialized with frame size: " + std::to_string(frameSize_)
+        //     + ", hop size: " + std::to_string(hopSize_)
+        //     + ", sample rate: " + std::to_string(config_.sampleRate));
     }
 
     ~CadenceAnalyzerImpl() = default;
@@ -63,11 +64,11 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
         security::MemoryGuard guard(security::GuardConfig{});
 
         if (!isInitialized_) {
-            return unexpected(Error::INITIALIZATION_FAILED);
+            return Result<CadenceProfile, Error>(unexpected<Error>(Error::INITIALIZATION_FAILED));
         }
 
         if (audio.size() < frameSize_) {
-            return unexpected(Error::INSUFFICIENT_DATA);
+            return Result<CadenceProfile, Error>(unexpected<Error>(Error::INSUFFICIENT_DATA));
         }
 
         try {
@@ -83,7 +84,7 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
                 return unexpected(onsetsResult.error());
             }
 
-            std::vector<float> onsets = onsetsResult.value;
+            std::vector<float> onsets = onsetsResult.value();
 
             // Analyze call sequence
             analyzeCallSequence(profile, onsets);
@@ -92,7 +93,9 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
             if (config_.enableBeatTracking) {
                 auto tempoResult = estimateTempoInternal(audio, onsets);
                 if (tempoResult.has_value()) {
-                    auto [tempo, confidence] = tempoResult.value;
+                    auto tempoConf = tempoResult.value();
+                    float tempo = tempoConf.first;
+                    float confidence = tempoConf.second;
                     profile.estimatedTempo = tempo;
                     profile.tempoConfidence = confidence;
 
@@ -108,7 +111,7 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
             if (!onsets.empty()) {
                 auto rhythmResult = extractRhythmicFeaturesInternal(onsets);
                 if (rhythmResult.has_value()) {
-                    profile.rhythm = rhythmResult.value;
+                    profile.rhythm = rhythmResult.value();
                 }
             }
 
@@ -130,14 +133,14 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
             updatePerformanceStats(duration);
 
             // DEBUG_LOG removed for compilation
-                      "Analysis complete - Tempo: " + std::to_string(profile.estimatedTempo)
-                          + "BPM, Rhythm Score: " + std::to_string(profile.overallRhythmScore));
+            // "Analysis complete - Tempo: " + std::to_string(profile.estimatedTempo)
+            //     + "BPM, Rhythm Score: " + std::to_string(profile.overallRhythmScore));
 
-                      return expected(std::move(profile));
+            return Result<CadenceProfile, Error>(std::move(profile));
 
         } catch (const std::exception& e) {
             // DEBUG_LOG removed for compilation
-            return unexpected(Error::PROCESSING_ERROR);
+            return Result<CadenceProfile, Error>(unexpected<Error>(Error::PROCESSING_ERROR));
         }
     }
 
@@ -163,14 +166,14 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
             processedFrames_++;
         }
 
-        return expected();
+        return Result<void, Error>();
     }
 
     Result<CadenceProfile, Error> getCurrentAnalysis() override {
         if (!isActive_) {
-            return unexpected(Error::INSUFFICIENT_DATA);
+            return Result<CadenceProfile, Error>(unexpected<Error>(Error::INSUFFICIENT_DATA));
         }
-        return expected(currentProfile_);
+        return Result<CadenceProfile, Error>(currentProfile_);
     }
 
     Result<std::vector<float>, Error> detectOnsets(std::span<const float> audio) override {
@@ -180,17 +183,17 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
     Result<std::pair<float, float>, Error> estimateTempo(std::span<const float> audio) override {
         auto onsetsResult = detectOnsetsInternal(audio);
         if (!onsetsResult.has_value()) {
-            return unexpected(onsetsResult.error());
+            return Result<std::pair<float, float>, Error>(unexpected<Error>(onsetsResult.error()));
         }
 
-        return estimateTempoInternal(audio, onsetsResult.value);
+        return estimateTempoInternal(audio, onsetsResult.value());
     }
 
     Result<CadenceProfile::PeriodicityMeasures, Error>
     analyzePerodicity(std::span<const float> audio) override {
         CadenceProfile::PeriodicityMeasures measures;
         analyzePeriodicityInternal(measures, audio);
-        return expected(measures);
+        return Result<CadenceProfile::PeriodicityMeasures, Error>(measures);
     }
 
     Result<CadenceProfile::RhythmicFeatures, Error>
@@ -226,7 +229,7 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
         initializeBuffers();
 
         // DEBUG_LOG removed for compilation
-        return expected();
+        return Result<void, Error>();
     }
 
     const Config& getConfig() const override {
@@ -255,16 +258,16 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
 
     Result<std::vector<float>, Error> getOnsetDetectionFunction() override {
         if (onsetDetectionFunction_.empty()) {
-            return unexpected(Error::INSUFFICIENT_DATA);
+            return Result<std::vector<float>, Error>(unexpected<Error>(Error::INSUFFICIENT_DATA));
         }
-        return expected(onsetDetectionFunction_);
+        return Result<std::vector<float>, Error>(onsetDetectionFunction_);
     }
 
     Result<std::vector<float>, Error> getBeatTrackingState() override {
         if (beatTrackingState_.empty()) {
-            return unexpected(Error::INSUFFICIENT_DATA);
+            return Result<std::vector<float>, Error>(unexpected<Error>(Error::INSUFFICIENT_DATA));
         }
-        return expected(beatTrackingState_);
+        return Result<std::vector<float>, Error>(beatTrackingState_);
     }
 
   private:
@@ -296,7 +299,7 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
 
     Result<std::vector<float>, Error> detectOnsetsInternal(std::span<const float> audio) {
         if (!config_.enableOnsetDetection) {
-            return expected(std::vector<float>{});
+            return Result<std::vector<float>, Error>(std::vector<float>{});
         }
 
         std::vector<float> onsets;
@@ -311,11 +314,12 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
             // Update onset detection function for visualization
             onsetDetectionFunction_ = spectralFlux_;
 
-            return expected(std::move(onsets));
+            return Result<std::vector<float>, Error>(std::move(onsets));
 
         } catch (const std::exception& e) {
             // DEBUG_LOG removed for compilation
-            return unexpected(Error::ONSET_DETECTION_ERROR);
+            return Result<std::vector<float>, Error>(
+                unexpected<Error>(Error::ONSET_DETECTION_ERROR));
         }
     }
 
@@ -420,7 +424,7 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
     Result<std::pair<float, float>, Error> estimateTempoInternal(std::span<const float> audio,
                                                                  const std::vector<float>& onsets) {
         if (onsets.size() < 3) {
-            return expected(std::make_pair(0.0f, 0.0f));
+            return Result<std::pair<float, float>, Error>(std::make_pair(0.0f, 0.0f));
         }
 
         // Calculate inter-onset intervals
@@ -433,7 +437,7 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
         }
 
         if (intervals.empty()) {
-            return expected(std::make_pair(0.0f, 0.0f));
+            return Result<std::pair<float, float>, Error>(std::make_pair(0.0f, 0.0f));
         }
 
         // Find most common interval (simple mode estimation)
@@ -475,7 +479,7 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
             tempo = std::clamp(tempo, config_.minTempo, config_.maxTempo);
         }
 
-        return expected(std::make_pair(tempo, bestConfidence));
+        return Result<std::pair<float, float>, Error>(std::make_pair(tempo, bestConfidence));
     }
 
     void analyzeCallSequence(CadenceProfile& profile, const std::vector<float>& onsets) {
@@ -616,7 +620,7 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
         CadenceProfile::RhythmicFeatures features;
 
         if (onsets.size() < 3) {
-            return expected<CadenceProfile::RhythmicFeatures, Error>(features);
+            return Result<CadenceProfile::RhythmicFeatures, Error>(features);
         }
 
         // Calculate intervals
@@ -653,7 +657,7 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
         // Groove factor (balance between regularity and complexity)
         features.groove = features.rhythmRegularity * features.rhythmComplexity;
 
-        return expected(features);
+        return Result<CadenceProfile::RhythmicFeatures, Error>(features);
     }
 
     void analyzeSyllables(CadenceProfile& profile,
@@ -736,19 +740,22 @@ CadenceAnalyzer::Result<std::unique_ptr<CadenceAnalyzer>, CadenceAnalyzer::Error
 CadenceAnalyzer::create(const Config& config) {
     try {
         if (config.sampleRate <= 0) {
-            return unexpected(Error::INVALID_SAMPLE_RATE);
+            return Result<std::unique_ptr<CadenceAnalyzer>, Error>(
+                unexpected<Error>(Error::INVALID_SAMPLE_RATE));
         }
 
         if (config.frameSize <= 0 || config.hopSize <= 0) {
-            return unexpected(Error::INVALID_FRAME_SIZE);
+            return Result<std::unique_ptr<CadenceAnalyzer>, Error>(
+                unexpected<Error>(Error::INVALID_FRAME_SIZE));
         }
 
         auto analyzer = std::make_unique<CadenceAnalyzerImpl>(config);
-        return expected(std::move(analyzer));
+        return Result<std::unique_ptr<CadenceAnalyzer>, Error>(std::move(analyzer));
 
     } catch (const std::exception& e) {
         // DEBUG_LOG removed for compilation
-        return unexpected(Error::INITIALIZATION_FAILED);
+        return Result<std::unique_ptr<CadenceAnalyzer>, Error>(
+            unexpected<Error>(Error::INITIALIZATION_FAILED));
     }
 }
 
@@ -792,43 +799,6 @@ std::string CadenceAnalyzer::exportToJson(const CadenceProfile& profile) {
     json << "}";
 
     return json.str();
-}
-
-}  // namespace huntmaster
-
-// Factory method implementation
-namespace huntmaster {
-
-CadenceAnalyzer::Result<std::unique_ptr<CadenceAnalyzer>, CadenceAnalyzer::Error>
-CadenceAnalyzer::create(const Config& config) {
-    try {
-        // Validate configuration
-        if (config.sampleRate <= 0) {
-            return Result<std::unique_ptr<CadenceAnalyzer>, Error>::error(
-                Error::INVALID_SAMPLE_RATE);
-        }
-
-        if (config.frameSize <= 0 || config.frameSize > 1.0f) {
-            return Result<std::unique_ptr<CadenceAnalyzer>, Error>::error(
-                Error::INVALID_FRAME_SIZE);
-        }
-
-        if (config.minTempo >= config.maxTempo) {
-            return Result<std::unique_ptr<CadenceAnalyzer>, Error>::error(
-                Error::INVALID_SAMPLE_RATE);
-        }
-
-        // Create the implementation
-        auto impl = std::make_unique<CadenceAnalyzerImpl>(config);
-
-        return Result<std::unique_ptr<CadenceAnalyzer>, Error>::ok(std::move(impl));
-
-    } catch (const std::exception& e) {
-        DebugLogger::getInstance().log(DebugComponent::CORE,
-                                       DebugLevel::ERROR,
-                                       "CadenceAnalyzer::create failed: " + std::string(e.what()));
-        return Result<std::unique_ptr<CadenceAnalyzer>, Error>::error(Error::INITIALIZATION_FAILED);
-    }
 }
 
 }  // namespace huntmaster
