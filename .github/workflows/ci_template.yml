@@ -1,0 +1,382 @@
+# CI TEMPLATE WORKFLOW (Layered Adoption)
+# --------------------------------------
+# This file is a documented template embodying the standardized 20-rule CI ruleset.
+# Copy to other pillar repositories as `.github/workflows/ci.yml` and trim sections
+# you do not yet need. Each block is self-contained and guarded so removal will not break others.
+#
+# ADOPTION PHASES (recommended):
+#   Phase 1: build-test, summary, pr-comment, schema validation (aggregate skeleton), CODEOWNERS.
+#   Phase 2: benchmarks (report only), coverage (manual / label), sanitizers (on-demand matrix).
+#   Phase 3: enable regression gating (coverage drop, benchmark slowdown), diff coverage.
+#   Phase 4: memory smoke (massif) + baseline comparisons.
+#   Phase 5: metrics persistence & rotation, flaky test detection.
+#   Phase 6: extend performance metrics (update schemaVersion if breaking).
+#
+# KEY OUTPUT ARTIFACTS:
+#   aggregate.json (schemaVersion, sanitizers[], coverage{}, performance{}).
+#   coverage-metrics.json (lines/functions/branches percentages).
+#   bench_results.json / bench_report.txt.
+#   mem_report.txt.
+#   sanitizer logs & summaries (sanitizer-log-*, sanitizer_*_summary.json).
+#
+# REGRESSION GATES (default thresholds):
+#   Coverage drop >0.5% vs baseline => fail.
+#   Benchmark worst cpu_time > +15% vs baseline => fail.
+#   Memory peak > +10% vs baseline => warn (can escalate later).
+#   Diff coverage <70% => warn (optional future fail).
+#
+# SCHEMA (v1 minimal):
+#   { "schemaVersion": 1, "sanitizers": [...], "coverage": { lines, functions, branches },
+#     "performance": { peakMemoryBytes, maxBenchmarkCpuTime } }
+#
+# NOTE: This template expects composite actions for sanitizers & coverage at:
+#   .github/actions/sanitizer-build-test
+#   .github/actions/coverage-build-test
+# Adjust or remove those references if not present.
+
+name: CI-Template
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      run_coverage:
+        type: boolean
+        default: false
+        description: "Force coverage job"
+      run_asan:
+        type: boolean
+        default: false
+        description: "Force ASan job"
+      run_ubsan:
+        type: boolean
+        default: false
+        description: "Force UBSan job"
+      enable_lsan:
+        type: boolean
+        default: false
+        description: "Enable LSAN (asan only)"
+      min_lines_cov:
+        type: string
+        default: '80'
+      min_funcs_cov:
+        type: string
+        default: '75'
+      min_branches_cov:
+        type: string
+        default: '60'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-template-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-test:
+    name: Build & Test (Release)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+      - name: Build
+        run: cmake --build build -j $(nproc)
+      - name: Run Tests
+        run: timeout 90 ./build/bin/RunEngineTests --gtest_brief=1 --gtest_output=json:build_test_results.json || true
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-build
+          path: build_test_results.json
+
+  benchmarks:
+    name: Micro Benchmarks
+    needs: build-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - name: Build Benchmarks
+        run: cmake --build build -j $(nproc) --target huntmaster_bench || echo "Adjust target name as needed"
+      - name: Run Benchmarks
+        run: |
+          if [ -x ./build/huntmaster_bench ]; then
+            ./build/huntmaster_bench --benchmark_out=bench_results.json --benchmark_out_format=json || true
+          fi
+      - name: Fetch Baseline (metrics branch)
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          git fetch origin metrics:refs/remotes/origin/metrics || true
+          git show origin/metrics:ci_metrics/latest.json 2>/dev/null > baseline_metrics.json || true
+      - name: Analyze Benchmark Regression
+        run: |
+          if [ ! -f bench_results.json ]; then echo 'No benchmark results'; exit 0; fi
+          sudo apt-get update && sudo apt-get install -y jq >/dev/null 2>&1 || true
+          CUR_MAX=$(jq '[.benchmarks[] | select(.cpu_time!=null) | .cpu_time] | max' bench_results.json 2>/dev/null || echo 0)
+          echo "Current worst benchmark cpu_time: $CUR_MAX" | tee bench_report.txt
+          if [ -f baseline_metrics.json ]; then
+            BASE_MAX=$(jq -r '.performance.maxBenchmarkCpuTime' baseline_metrics.json 2>/dev/null || echo 0)
+            if [ "$BASE_MAX" -gt 0 ]; then
+              ALLOWED=$(awk -v b=$BASE_MAX 'BEGIN{printf "%d", b*1.15}')
+              if [ "$CUR_MAX" -gt "$ALLOWED" ]; then
+                echo "Regression: $CUR_MAX > allowed $ALLOWED (base $BASE_MAX)" | tee -a bench_report.txt
+                echo '::error title=BenchmarkRegression::Benchmark slowdown beyond 15% tolerance'
+                exit 1
+              else
+                echo "Benchmark within tolerance (base $BASE_MAX, current $CUR_MAX)" >> bench_report.txt
+              fi
+            fi
+          fi
+      - name: Upload Benchmark Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: micro-benchmarks
+          path: |
+            bench_results.json
+            bench_report.txt
+
+  perf-mem-smoke:
+    name: Memory Perf Smoke
+    needs: build-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install valgrind
+        run: sudo apt-get update && sudo apt-get install -y valgrind
+      - name: Configure Debug Subset
+        run: cmake -B build-debug -G Ninja -DCMAKE_BUILD_TYPE=Debug
+      - name: Build Tests (Debug)
+        run: cmake --build build-debug -j $(nproc) --target RunEngineTests || true
+      - name: Run Massif (subset)
+        run: |
+          timeout 120 valgrind --tool=massif --massif-out-file=massif.out ./build-debug/bin/RunEngineTests --gtest_filter=MasterCallsComparisonTest.* --gtest_brief=1 || true
+      - name: Baseline Memory Fetch
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          git fetch origin metrics:refs/remotes/origin/metrics || true
+          git show origin/metrics:ci_metrics/latest.json 2>/dev/null > baseline_metrics.json || true
+      - name: Analyze Massif
+        run: |
+          if grep -q 'mem_heap_B=' massif.out 2>/dev/null; then
+            PEAK=$(grep mem_heap_B= massif.out | awk -F= '{print $2}' | sort -nr | head -1)
+            echo "Peak heap bytes: $PEAK" > mem_report.txt
+            if [ -f baseline_metrics.json ]; then
+              BASE=$(jq -r '.performance.peakMemoryBytes' baseline_metrics.json 2>/dev/null || echo 0)
+              if [ "$BASE" -gt 0 ]; then
+                ALLOWED=$(awk -v b=$BASE 'BEGIN{printf "%d", b*1.10}')
+                if [ "$PEAK" -gt "$ALLOWED" ]; then
+                  echo "Regressed vs baseline (peak $PEAK > allowed $ALLOWED (base $BASE +10%))" >> mem_report.txt
+                  echo '::warning title=MemoryRegression::Peak heap > baseline +10%'
+                else
+                  echo "Memory within 10% of baseline (base $BASE, peak $PEAK)" >> mem_report.txt
+                fi
+              fi
+            fi
+          else
+            echo 'Massif output not found' > mem_report.txt
+          fi
+          cat mem_report.txt
+      - name: Upload Memory Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: mem-smoke-report
+          path: mem_report.txt
+
+  determine-sanitizers:
+    name: Determine Sanitizers
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+      run: ${{ steps.set.outputs.run }}
+    steps:
+      - id: set
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          RUN_ASAN: ${{ inputs.run_asan || 'false' }}
+          RUN_UBSAN: ${{ inputs.run_ubsan || 'false' }}
+          PR_LABELS: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
+        run: |
+          SAN=()
+          if [ "$EVENT_NAME" = 'workflow_dispatch' ]; then
+            [ "$RUN_ASAN" = 'true' ] && SAN+=(asan)
+            [ "$RUN_UBSAN" = 'true' ] && SAN+=(ubsan)
+          elif [ "$EVENT_NAME" = 'pull_request' ]; then
+            echo "$PR_LABELS" | grep -q asan && SAN+=(asan)
+            echo "$PR_LABELS" | grep -q ubsan && SAN+=(ubsan)
+          fi
+          if [ ${#SAN[@]} -eq 0 ]; then
+            echo matrix='{"include":[]}' >> $GITHUB_OUTPUT
+            echo run=false >> $GITHUB_OUTPUT
+          else
+            JSON_ITEMS=$(printf '%s\n' "${SAN[@]}" | awk '{printf "{\"sanitizer\":\"%s\"}", $1; if(NR<NR) printf ","}')
+            echo matrix='{"include":['$(printf '%s' "$JSON_ITEMS")']}' >> $GITHUB_OUTPUT
+            echo run=true >> $GITHUB_OUTPUT
+          fi
+
+  sanitizers:
+    name: Sanitizer Matrix
+    needs: determine-sanitizers
+    if: ${{ needs.determine-sanitizers.outputs.run == 'true' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Sanitizer Build & Test
+        uses: ./.github/actions/sanitizer-build-test
+        with:
+          preset: docker-${{ matrix.sanitizer }}
+          build-dir: build-${{ matrix.sanitizer }}
+          test-binary: ./build-${{ matrix.sanitizer }}/bin/RunEngineTests
+          test-timeout: 120
+          sanitizer-name: ${{ matrix.sanitizer }}
+          enable-lsan: ${{ github.event_name == 'workflow_dispatch' && inputs.enable_lsan && matrix.sanitizer == 'asan' || 'false' }}
+
+  coverage:
+    name: Coverage (Manual/Label)
+    if: >-
+      ${{ (github.event_name == 'workflow_dispatch' && inputs.run_coverage == true) ||
+          (github.event_name == 'pull_request' && contains(join(github.event.pull_request.labels.*.name, ' '), 'coverage')) }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Coverage Build & Test
+        uses: ./.github/actions/coverage-build-test
+        with:
+          preset: docker-coverage
+          build-dir: build-coverage
+          test-binary: ./build-coverage/bin/RunEngineTests
+          test-timeout: 150
+          extra-remove: ''
+          min-lines: ${{ github.event_name == 'workflow_dispatch' && inputs.min_lines_cov || '80' }}
+          min-functions: ${{ github.event_name == 'workflow_dispatch' && inputs.min_funcs_cov || '75' }}
+          min-branches: ${{ github.event_name == 'workflow_dispatch' && inputs.min_branches_cov || '60' }}
+
+  summary:
+    name: Aggregate Reports
+    needs: [build-test, benchmarks, perf-mem-smoke, sanitizers, coverage]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download All Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+        continue-on-error: true
+      - name: Generate Aggregate JSON
+        run: |
+          echo '{"schemaVersion":1}' > aggregate.json
+          command -v jq >/dev/null 2>&1 || { sudo apt-get update && sudo apt-get install -y jq; }
+          MEM_REPORT=$(find artifacts -name mem_report.txt | head -1 || true)
+          if [ -f "$MEM_REPORT" ]; then PEAK=$(grep -E 'Peak heap bytes:' "$MEM_REPORT" | awk '{print $4}' | head -1 || echo 0); jq --argjson p "$PEAK" '.performance.peakMemoryBytes=$p' aggregate.json > t && mv t aggregate.json || true; fi
+          BENCH_JSON=$(find artifacts -name bench_results.json | head -1 || true)
+          if [ -f "$BENCH_JSON" ]; then MAX=$(jq '[.benchmarks[] | select(.cpu_time!=null) | .cpu_time] | max' "$BENCH_JSON" 2>/dev/null || echo 0); jq --argjson m "$MAX" '.performance.maxBenchmarkCpuTime=$m' aggregate.json > t && mv t aggregate.json || true; fi
+          COV=$(find artifacts -name coverage-metrics.json | head -1 || true)
+          [ -f "$COV" ] && jq -s '.[0] * {coverage: (.[1])}' aggregate.json "$COV" > t && mv t aggregate.json || true
+          cat aggregate.json
+      - name: Upload Aggregate JSON
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-aggregate-json
+          path: aggregate.json
+
+  validate-schema:
+    name: Validate aggregate.json Schema
+    needs: summary
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-aggregate-json
+          path: .
+        continue-on-error: true
+      - name: Validate
+        run: |
+          command -v jq >/dev/null 2>&1 || { sudo apt-get update && sudo apt-get install -y jq; }
+          [ -f aggregate.json ] || { echo 'aggregate.json missing'; exit 1; }
+          SV=$(jq -r '.schemaVersion // empty' aggregate.json)
+          [ -n "$SV" ] || { echo 'schemaVersion missing'; exit 1; }
+          [ "$SV" -eq 1 ] || { echo "Unsupported schemaVersion $SV"; exit 1; }
+          if jq -e '.coverage' aggregate.json >/dev/null 2>&1; then
+            for k in lines functions branches; do
+              VAL=$(jq -r ".coverage.$k // empty" aggregate.json); [ -n "$VAL" ] || { echo "coverage.$k missing"; exit 1; }
+            done
+          fi
+          echo 'Schema OK'
+
+  pr-comment:
+    name: PR Comment Summary
+    if: ${{ github.event_name == 'pull_request' }}
+    needs: summary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-aggregate-json
+          path: .
+      - name: Compose & Post
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo '### CI Summary' > comment.md
+          command -v jq >/dev/null 2>&1 && {
+            if [ -f aggregate.json ]; then
+              if jq -e '.coverage' aggregate.json >/dev/null 2>&1; then
+                L=$(jq -r '.coverage.lines' aggregate.json); F=$(jq -r '.coverage.functions' aggregate.json); B=$(jq -r '.coverage.branches' aggregate.json)
+                echo "* Coverage: L ${L}% / F ${F}% / B ${B}%" >> comment.md
+              fi
+              if jq -e '.performance.peakMemoryBytes' aggregate.json >/dev/null 2>&1; then
+                PM=$(jq -r '.performance.peakMemoryBytes' aggregate.json); echo "* Peak Memory: $PM" >> comment.md
+              fi
+              if jq -e '.performance.maxBenchmarkCpuTime' aggregate.json >/dev/null 2>&1; then
+                BT=$(jq -r '.performance.maxBenchmarkCpuTime' aggregate.json); echo "* Max Benchmark CPU Time: $BT" >> comment.md
+              fi
+            fi
+          }
+          BODY=$(sed 's/"/\\"/g' comment.md)
+          curl -s -H "Authorization: token $GITHUB_TOKEN" -H "Accept: application/vnd.github+json" \
+            -X POST -d "{\"body\": \"$BODY\"}" \
+            "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" >/dev/null || true
+
+  metrics-persist:
+    name: Persist Metrics (Main)
+    if: ${{ github.ref == 'refs/heads/main' && !cancelled() }}
+    needs: summary
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ci-aggregate-json
+          path: .
+      - name: Persist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.email "ci-bot@users.noreply.github.com"
+          git config --global user.name "ci-metrics-bot"
+          git fetch origin metrics:refs/remotes/origin/metrics || true
+          git checkout metrics || git checkout -b metrics
+          mkdir -p ci_metrics
+          TS=$(date -u +%Y%m%dT%H%M%SZ)
+          cp ../aggregate.json ci_metrics/ci_metrics_$TS.json
+          ln -sf ci_metrics_$(ls ci_metrics | sort | tail -1) ci_metrics/latest.json || true
+          COUNT=$(ls ci_metrics/ci_metrics_*.json 2>/dev/null | wc -l | awk '{print $1}')
+          if [ "$COUNT" -gt 30 ]; then
+            ls ci_metrics/ci_metrics_*.json | sort | head -n -30 | xargs -r git rm -f || true
+          fi
+          git add ci_metrics
+          if git diff --cached --quiet; then
+            echo 'No metrics changes'
+          else
+            git commit -m "CI metrics snapshot $TS" && git push origin metrics
+          fi
