@@ -809,3 +809,56 @@ jobs:
             -X POST \
             -d "{\"body\": \"$BODY\"}" \
             "https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.pull_request.number }}/comments" >/dev/null || true
+
+  validate-schema:
+    name: Validate aggregate.json Schema
+    needs: summary
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download aggregate json
+        uses: actions/download-artifact@v4
+        with:
+          name: ci-aggregate-json
+          path: .
+        continue-on-error: true
+      - name: Install jq
+        run: |
+          if ! command -v jq >/dev/null 2>&1; then sudo apt-get update && sudo apt-get install -y jq; fi
+      - name: Validate Schema
+        shell: bash
+        run: |
+          if [ ! -f aggregate.json ]; then
+            echo 'aggregate.json artifact missing' >&2
+            exit 1
+          fi
+          set -e
+          SCHEMA_VERSION=$(jq -r '.schemaVersion // empty' aggregate.json)
+          if [ -z "$SCHEMA_VERSION" ]; then
+            echo 'schemaVersion missing' >&2; exit 1; fi
+          if [ "$SCHEMA_VERSION" -ne 1 ]; then
+            echo "Unsupported schemaVersion: $SCHEMA_VERSION" >&2; exit 1; fi
+          # Ensure sanitizers (if present) is an array
+          if jq -e '.sanitizers' aggregate.json >/dev/null 2>&1; then
+            jq -e '.sanitizers | type=="array"' aggregate.json >/dev/null || { echo 'sanitizers must be array'; exit 1; }
+          fi
+          # Validate coverage numbers
+            if jq -e '.coverage' aggregate.json >/dev/null 2>&1; then
+              for k in lines functions branches; do
+                VAL=$(jq -r ".coverage.$k // empty" aggregate.json)
+                if [ -z "$VAL" ]; then echo "coverage.$k missing" >&2; exit 1; fi
+                awk -v v="$VAL" 'BEGIN{ if(v!~/^[0-9]+(\.[0-9]+)?$/) exit 1 }' || { echo "coverage.$k non-numeric" >&2; exit 1; }
+              done
+            fi
+          # Validate performance fields if present
+          if jq -e '.performance' aggregate.json >/dev/null 2>&1; then
+            if jq -e '.performance.peakMemoryBytes' aggregate.json >/dev/null 2>&1; then
+              PM=$(jq -r '.performance.peakMemoryBytes' aggregate.json)
+              awk -v v="$PM" 'BEGIN{ if(v!~/^[0-9]+$/) exit 1 }' || { echo 'peakMemoryBytes non-integer' >&2; exit 1; }
+            fi
+            if jq -e '.performance.maxBenchmarkCpuTime' aggregate.json >/dev/null 2>&1; then
+              BT=$(jq -r '.performance.maxBenchmarkCpuTime' aggregate.json)
+              awk -v v="$BT" 'BEGIN{ if(v!~/^[0-9]+$/) exit 1 }' || { echo 'maxBenchmarkCpuTime non-integer' >&2; exit 1; }
+            fi
+          fi
+          echo 'Schema validation passed.'
