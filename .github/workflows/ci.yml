@@ -139,7 +139,9 @@ jobs:
               ALLOWED=$(awk -v b=$BASE_MAX 'BEGIN{printf "%d", b*1.15}')
               if [ "$CUR_MAX" -gt "$ALLOWED" ]; then
                 echo "Regression: $CUR_MAX > allowed $ALLOWED (base $BASE_MAX)" | tee -a bench_report.txt
-                echo '::warning title=BenchmarkRegression::Benchmark slowdown beyond 15% tolerance'
+                echo '::error title=BenchmarkRegression::Benchmark slowdown beyond 15% tolerance'
+                # Fail the job to enforce regression gate
+                exit 1
               else
                 echo "Benchmark within tolerance (base $BASE_MAX, current $CUR_MAX)" >> bench_report.txt
               fi
@@ -658,6 +660,22 @@ jobs:
               mv tmp_agg.json aggregate.json
             else
               sed -i 's/}$/,"performance":{"peakMemoryBytes":'$PEAK'}}/' aggregate.json || true
+            fi
+          fi
+          # Insert benchmark max cpu time if present
+          BENCH_JSON=$(find artifacts -maxdepth 1 -name 'bench_results.json' | head -1 || true)
+          if [ -f "$BENCH_JSON" ]; then
+            MAX_BENCH=$(jq '[.benchmarks[] | select(.cpu_time!=null) | .cpu_time] | max' "$BENCH_JSON" 2>/dev/null || echo 0)
+            if command -v jq >/dev/null 2>&1; then
+              jq --argjson maxcpu "$MAX_BENCH" '.performance.maxBenchmarkCpuTime=$maxcpu' aggregate.json > tmp_agg.json || cp aggregate.json tmp_agg.json
+              mv tmp_agg.json aggregate.json
+            else
+              # If performance object already inserted (memory), append field crudely
+              if grep -q 'performance' aggregate.json; then
+                sed -i 's/"performance":{/&"maxBenchmarkCpuTime":'$MAX_BENCH',/' aggregate.json || true
+              else
+                sed -i 's/}$/,"performance":{"maxBenchmarkCpuTime":'$MAX_BENCH'}}/' aggregate.json || true
+              fi
             fi
           fi
           cat aggregate.json
