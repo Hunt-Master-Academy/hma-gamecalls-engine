@@ -699,6 +699,12 @@ jobs:
           TS=$(date -u +%Y%m%dT%H%M%SZ)
           cp ../aggregate.json ci_metrics/ci_metrics_$TS.json
           ln -sf ci_metrics_$(ls ci_metrics | sort | tail -1) ci_metrics/latest.json || true
+          # Retain only the most recent 30 snapshots to prevent unbounded growth
+          COUNT=$(ls ci_metrics/ci_metrics_*.json 2>/dev/null | wc -l | awk '{print $1}')
+          if [ "$COUNT" -gt 30 ]; then
+            echo "Pruning old metrics snapshots (total=$COUNT, keeping last 30)";
+            ls ci_metrics/ci_metrics_*.json | sort | head -n -30 | xargs -r git rm -f || true
+          fi
           git add ci_metrics
           if git diff --cached --quiet; then
             echo "No metrics changes to commit"
