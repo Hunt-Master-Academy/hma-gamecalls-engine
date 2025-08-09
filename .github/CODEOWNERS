@@ -1,0 +1,19 @@
+# CODEOWNERS establishes default reviewers / escalation recipients for critical areas.
+# Patterns are evaluated top-to-bottom; keep most specific first.
+
+# Core audio engine components
+src/core/** @tescolopio
+include/huntmaster/** @tescolopio
+
+# CI & workflows
+.github/workflows/** @tescolopio
+.github/actions/** @tescolopio
+
+# Scripts & tooling
+scripts/** @tescolopio
+
+# Documentation (primary maintainer)
+docs/** @tescolopio
+
+# Fallback owner for everything else
+* @tescolopio

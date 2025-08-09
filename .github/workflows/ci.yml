@@ -742,6 +742,7 @@ jobs:
         run: |
           SUMMARY_FILE=pr_comment.md
           echo "### Huntmaster CI Summary" > $SUMMARY_FILE
+          OWNERS_TAG='@tescolopio'
           if [ -f aggregate.json ]; then
             if command -v jq >/dev/null 2>&1; then
               SAN_COUNT=$(jq '.sanitizers|length' aggregate.json 2>/dev/null || echo 0)
@@ -761,6 +762,24 @@ jobs:
                 echo "* Max Benchmark CPU Time: ${BT}" >> $SUMMARY_FILE
               fi
             fi
+          fi
+          # Regression flags from artifacts (warnings/errors) detection
+          REG_FLAGS=()
+          # Benchmark regression error marker
+          if [ -f bench/bench_report.txt ] && grep -qi 'Regression:' bench/bench_report.txt; then
+            REG_FLAGS+=("Benchmark regression detected")
+          fi
+          if [ -f mem/mem_report.txt ] && grep -qi 'Regressed vs baseline' mem/mem_report.txt; then
+            REG_FLAGS+=("Memory regression detected")
+          fi
+          if [ -f diffcov/diff_cov_summary.txt ] && grep -qi 'Changed-file coverage below' diffcov/diff_cov_summary.txt; then
+            REG_FLAGS+=("Diff coverage below threshold")
+          fi
+          if [ ${#REG_FLAGS[@]} -gt 0 ]; then
+            echo "\n**Regression Alerts:**" >> $SUMMARY_FILE
+            for r in "${REG_FLAGS[@]}"; do
+              echo "- $r $OWNERS_TAG" >> $SUMMARY_FILE
+            done
           fi
           if [ -f diffcov/diff_cov_summary.txt ]; then
             echo "\n<details><summary>Diff Coverage</summary>" >> $SUMMARY_FILE
