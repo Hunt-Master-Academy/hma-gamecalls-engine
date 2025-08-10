@@ -16,6 +16,7 @@ ErrorMonitor::ErrorMonitor(const Config& config) : config_(config) {
             // Update real-time metrics here if needed
             // The monitoring loop will periodically check overall stats
         }
+        (void)error;  // suppress unused parameter warning until metrics implemented
     });
 
     metrics_.lastResetTime = std::chrono::system_clock::now();

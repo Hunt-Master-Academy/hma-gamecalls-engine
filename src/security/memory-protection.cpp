@@ -29,7 +29,8 @@ MemoryProtection::MemoryProtection(const MemoryConfig& config) : config_(config)
     // TODO: Configure memory alignment checks
 }
 
-bool MemoryProtection::allocateSecureBuffer(size_t size, void** buffer) {
+bool MemoryProtection::allocateSecureBuffer([[maybe_unused]] size_t size,
+                                            [[maybe_unused]] void** buffer) {
     // TODO: Validate allocation size limits
     // TODO: Check available secure memory
     // TODO: Implement overflow protection zones
@@ -48,7 +49,7 @@ bool MemoryProtection::allocateSecureBuffer(size_t size, void** buffer) {
     return false;  // Placeholder
 }
 
-bool MemoryProtection::deallocateSecureBuffer(void* buffer) {
+bool MemoryProtection::deallocateSecureBuffer([[maybe_unused]] void* buffer) {
     // TODO: Validate buffer is tracked allocation
     // TODO: Check for double-free attempts
     // TODO: Verify buffer integrity before free
@@ -67,7 +68,9 @@ bool MemoryProtection::deallocateSecureBuffer(void* buffer) {
     return false;  // Placeholder
 }
 
-bool MemoryProtection::validateMemoryAccess(const void* ptr, size_t size, AccessType type) {
+bool MemoryProtection::validateMemoryAccess([[maybe_unused]] const void* ptr,
+                                            [[maybe_unused]] size_t size,
+                                            [[maybe_unused]] AccessType type) {
     // TODO: Check if pointer is in valid memory range
     // TODO: Verify access permissions for operation type
     // TODO: Check for buffer overflow conditions
@@ -124,7 +127,8 @@ bool MemoryProtection::enableHeapProtection() {
     return false;  // Placeholder
 }
 
-void MemoryProtection::clearSensitiveData(void* data, size_t size) {
+void MemoryProtection::clearSensitiveData([[maybe_unused]] void* data,
+                                          [[maybe_unused]] size_t size) {
     // TODO: Verify data pointer validity
     // TODO: Implement secure memory clearing algorithm
     // TODO: Use multiple overwrite passes
@@ -204,7 +208,7 @@ void MemoryProtection::updateProtectionPolicies(const ProtectionPolicies& polici
     // TODO: Log policy update event
 }
 
-bool MemoryProtection::handleMemoryViolation(const MemoryViolation& violation) {
+bool MemoryProtection::handleMemoryViolation([[maybe_unused]] const MemoryViolation& violation) {
     // TODO: Log violation details
     // TODO: Classify violation severity
     // TODO: Implement violation response

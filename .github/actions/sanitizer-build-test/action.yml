@@ -1,0 +1,103 @@
+name: 'Sanitizer Build & Test'
+description: 'Configure, build, and test with a sanitizer preset'
+inputs:
+  preset:
+    description: 'CMake preset name'
+    required: true
+  build-dir:
+    description: 'Build directory path'
+    required: true
+  test-binary:
+    description: 'Path to test executable'
+    required: true
+  test-timeout:
+    description: 'Timeout (seconds) for test execution'
+    required: false
+    default: '120'
+  sanitizer-name:
+    description: 'Sanitizer identifier (asan/ubsan)'
+    required: true
+  asan-options:
+    description: 'ASAN_OPTIONS environment value'
+    required: false
+    default: ''
+  ubsan-options:
+    description: 'UBSAN_OPTIONS environment value'
+    required: false
+    default: ''
+  enable-lsan:
+    description: 'Enable LeakSanitizer (asan only)'
+    required: false
+    default: 'false'
+runs:
+  using: 'composite'
+  steps:
+    - name: Configure (${{ inputs.sanitizer-name }})
+      shell: bash
+      run: |
+        set -e
+        if cmake --preset "${{ inputs.preset }}"; then
+          echo "Configured with preset ${{ inputs.preset }}"
+        else
+          echo "Preset ${{ inputs.preset }} not found, falling back to manual configure"
+          cmake -B "${{ inputs.build-dir }}" -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        fi
+    - name: Build (${{ inputs.sanitizer-name }})
+      shell: bash
+      run: cmake --build "${{ inputs.build-dir }}" -j $(nproc)
+    - name: Run Tests (${{ inputs.sanitizer-name }})
+      shell: bash
+      env:
+        ASAN_OPTIONS: ${{ inputs.asan-options }}
+        UBSAN_OPTIONS: ${{ inputs.ubsan-options }}
+  LSAN_OPTIONS: ${{ inputs.enable-lsan == 'true' && inputs.sanitizer-name == 'asan' && 'verbosity=1:log_threads=1' || '' }}
+      run: |
+        set -e
+        LOG_FILE="sanitizer_${{ inputs.sanitizer-name }}.log"
+  if timeout "${{ inputs.test-timeout }}" "${{ inputs.test-binary }}" --gtest_brief=1 --gtest_output=json:sanitizer_${{ inputs.sanitizer-name }}_results.json 2>&1 | tee "$LOG_FILE"; then
+          echo "Test run completed" >> "$LOG_FILE"
+        else
+          echo "Test run failed" >> "$LOG_FILE"
+        fi
+        echo "LOG_FILE=$LOG_FILE" >> $GITHUB_ENV
+    - name: Analyze Sanitizer Output (${{ inputs.sanitizer-name }})
+      shell: bash
+      run: |
+        LOG_FILE="sanitizer_${{ inputs.sanitizer-name }}.log"
+        echo "### Sanitizer Report: ${{ inputs.sanitizer-name }}" >> $GITHUB_STEP_SUMMARY
+        if grep -i -E 'runtime error:' "$LOG_FILE" > findings.txt; then
+          echo "Found potential issues:" >> $GITHUB_STEP_SUMMARY
+          echo '\n\n```text' >> $GITHUB_STEP_SUMMARY
+          head -100 findings.txt >> $GITHUB_STEP_SUMMARY
+          echo '\n```' >> $GITHUB_STEP_SUMMARY
+          COUNT=$(wc -l < findings.txt | tr -d ' ')
+          # Produce machine-readable JSON summary
+          jq -n --arg sanitizer "${{ inputs.sanitizer-name }}" --arg count "$COUNT" '{sanitizer:$sanitizer, runtime_error_count: ($count|tonumber)}' > "sanitizer_${{ inputs.sanitizer-name }}_summary.json" || echo '{"sanitizer":"${{ inputs.sanitizer-name }}","runtime_error_count":'$COUNT'}' > "sanitizer_${{ inputs.sanitizer-name }}_summary.json"
+          echo "Generating GitHub Annotations for sanitizer findings";
+          # Extract file:line patterns from stack traces and emit ::error annotations
+          grep -E '(/[^ :]+\.(cpp|cc|cxx|c|hpp|h):[0-9]+)' -o "$LOG_FILE" | head -200 | while read -r loc; do
+            FILE=$(echo "$loc" | cut -d: -f1)
+            LINE=$(echo "$loc" | cut -d: -f2)
+            echo "::error file=$FILE,line=$LINE,title=Sanitizer:${{ inputs.sanitizer-name }}::runtime error detected"
+          done
+        else
+          echo "No sanitizer runtime errors detected." >> $GITHUB_STEP_SUMMARY
+          echo '{"sanitizer":"'"${{ inputs.sanitizer-name }}"'","runtime_error_count":0}' > "sanitizer_${{ inputs.sanitizer-name }}_summary.json"
+        fi
+    - name: Upload Sanitizer Log (${{ inputs.sanitizer-name }})
+      uses: actions/upload-artifact@v4
+      with:
+        name: sanitizer-log-${{ inputs.sanitizer-name }}
+        path: sanitizer_${{ inputs.sanitizer-name }}.log
+    - name: Upload Sanitizer Test JSON (${{ inputs.sanitizer-name }})
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: sanitizer-test-results-${{ inputs.sanitizer-name }}
+        path: sanitizer_${{ inputs.sanitizer-name }}_results.json
+    - name: Upload Sanitizer JSON Summary (${{ inputs.sanitizer-name }})
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: sanitizer-summary-${{ inputs.sanitizer-name }}
+        path: sanitizer_${{ inputs.sanitizer-name }}_summary.json

@@ -201,7 +201,9 @@ bool InputValidator::validateWasmFunctionCall(const std::string& functionName,
     return true;
 }
 
-bool InputValidator::validateWasmMemoryAccess(void* ptr, size_t size, AccessType type) {
+bool InputValidator::validateWasmMemoryAccess(void* ptr,
+                                              size_t size,
+                                              [[maybe_unused]] AccessType type) {
     // Check for null pointer
     if (ptr == nullptr) {
         reportValidationError("Null pointer access attempt", ValidationSeverity::Critical);
@@ -234,7 +236,7 @@ bool InputValidator::validateWasmMemoryAccess(void* ptr, size_t size, AccessType
 /**
  * String and Data Validation
  */
-bool InputValidator::validateString(const std::string& input, StringType type) {
+bool InputValidator::validateString(const std::string& input, [[maybe_unused]] StringType type) {
     // Check for empty strings (empty not allowed for Generic type)
     if (input.empty()) {
         reportValidationError("Empty string not allowed", ValidationSeverity::Error);

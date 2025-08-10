@@ -17,6 +17,8 @@ services:
       - .:/workspace:cached
       # Persistent build cache
       - ccache-data:/workspace/.ccache
+      # Persistent general tooling cache (clang-tidy, etc.)
+      - tooling-cache:/workspace/.cache
       # VS Code server data
       - vscode-server:/home/developer/.vscode-server
       # Preserve bash history
@@ -61,4 +63,6 @@ volumes:
   bash-history:
     driver: local
   wasm-cache:
+    driver: local
+  tooling-cache:
     driver: local

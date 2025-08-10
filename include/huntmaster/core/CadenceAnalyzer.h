@@ -101,6 +101,8 @@ class CadenceAnalyzer {
         bool enableOnsetDetection = true;    ///< Enable onset detection
         bool enableSyllableAnalysis = true;  ///< Enable syllable analysis
         float adaptiveThreshold = 0.1f;      ///< Adaptive threshold factor
+        bool fastPathOptimization = false;   ///< Enable simplified fast-path (reduced feature cost)
+        bool forceFullAutocorr = false;      ///< Force full autocorrelation (disable adaptive caps)
     };
 
     /**

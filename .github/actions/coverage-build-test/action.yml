@@ -1,0 +1,143 @@
+name: 'Coverage Build & Test'
+description: 'Configure, build with coverage flags, run tests, and gather lcov summary'
+inputs:
+  preset:
+    description: 'CMake preset name (coverage)'
+    required: true
+  build-dir:
+    description: 'Coverage build directory'
+    required: true
+  test-binary:
+    description: 'Path to test executable'
+    required: true
+  test-timeout:
+    description: 'Timeout (seconds) for test execution'
+    required: false
+    default: '150'
+  lcov-output:
+    description: 'Coverage info output file'
+    required: false
+    default: 'coverage.info'
+  extra-remove:
+    description: 'Extra lcov --remove patterns (space separated)'
+    required: false
+    default: ''
+  min-lines:
+    description: 'Minimum acceptable line coverage percent (float)'
+    required: false
+    default: '80'
+  min-functions:
+    description: 'Minimum acceptable function coverage percent (float)'
+    required: false
+    default: '75'
+  min-branches:
+    description: 'Minimum acceptable branch coverage percent (float)'
+    required: false
+    default: '60'
+runs:
+  using: 'composite'
+  steps:
+    - name: Install lcov
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y lcov
+    - name: Configure (Coverage)
+      shell: bash
+      run: |
+        set -e
+        if cmake --preset "${{ inputs.preset }}"; then
+          echo "Configured with preset ${{ inputs.preset }}"
+        else
+          echo "Preset ${{ inputs.preset }} not found, manual configure"
+          cmake -B "${{ inputs.build-dir }}" -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS='--coverage' -DCMAKE_EXE_LINKER_FLAGS='--coverage'
+        fi
+    - name: Build (Coverage)
+      shell: bash
+      run: cmake --build "${{ inputs.build-dir }}" -j $(nproc)
+    - name: Run Tests (Coverage)
+      shell: bash
+  run: timeout "${{ inputs.test-timeout }}" "${{ inputs.test-binary }}" --gtest_brief=1 --gtest_output=json:coverage_test_results.json
+    - name: Gather Coverage
+      shell: bash
+      run: |
+        set -e
+        lcov --capture --directory "${{ inputs.build-dir }}" -o "${{ inputs.lcov-output }}"
+        REMOVE_PATTERNS="/usr/* */tests/* ${{ inputs.extra-remove }}"
+        lcov --remove "${{ inputs.lcov-output }}" $REMOVE_PATTERNS -o "${{ inputs.lcov-output }}"
+        lcov --list "${{ inputs.lcov-output }}" | tee coverage_list.txt
+        # Extract summary lines
+        LINES_RAW=$(grep -E 'lines\.*:' coverage_list.txt | tail -1)
+        FUNCS_RAW=$(grep -E 'functions\.*:' coverage_list.txt | tail -1)
+        BRANCHES_RAW=$(grep -E 'branches\.*:' coverage_list.txt | tail -1)
+        # Percent values (strip %)
+        LINES_PCT=$(echo "$LINES_RAW" | awk '{print $2}' | tr -d '%' || echo 0)
+        FUNCS_PCT=$(echo "$FUNCS_RAW" | awk '{print $2}' | tr -d '%' || echo 0)
+        BRANCHES_PCT=$(echo "$BRANCHES_RAW" | awk '{print $2}' | tr -d '%' || echo 0)
+        echo "Detected coverage: lines=$LINES_PCT functions=$FUNCS_PCT branches=$BRANCHES_PCT"
+        PASS=1
+        FAIL_REASONS=()
+        awk_field_subset () { echo "$1" | awk '{print $2" "$3" "$4" "$5" "$6}'; }
+        LINES_EXT=$(awk_field_subset "$LINES_RAW")
+        FUNCS_EXT=$(awk_field_subset "$FUNCS_RAW")
+        BRANCHES_EXT=$(awk_field_subset "$BRANCHES_RAW")
+        # Threshold comparisons
+        awk "BEGIN { exit !($LINES_PCT+0 < ${{ inputs.min-lines }}+0) }" && FAIL_REASONS+=("Lines $LINES_PCT < ${{ inputs.min-lines }}") || true
+        awk "BEGIN { exit !($FUNCS_PCT+0 < ${{ inputs.min-functions }}+0) }" && FAIL_REASONS+=("Functions $FUNCS_PCT < ${{ inputs.min-functions }}") || true
+        awk "BEGIN { exit !($BRANCHES_PCT+0 < ${{ inputs.min-branches }}+0) }" && FAIL_REASONS+=("Branches $BRANCHES_PCT < ${{ inputs.min-branches }}") || true
+        if [ ${#FAIL_REASONS[@]} -gt 0 ]; then
+          PASS=0
+        fi
+        {
+          echo "### Coverage Summary";
+          echo "Lines: $LINES_EXT";
+          echo "Functions: $FUNCS_EXT";
+          echo "Branches: $BRANCHES_EXT";
+          echo "Thresholds -> Lines: ${{ inputs.min-lines }} Functions: ${{ inputs.min-functions }} Branches: ${{ inputs.min-branches }}";
+          if [ $PASS -eq 1 ]; then
+            echo "Result: PASS (thresholds met)";
+          else
+            echo "Result: FAIL (thresholds not met)";
+            printf 'Failures: %s\n' "${FAIL_REASONS[*]}";
+          fi
+        } >> $GITHUB_STEP_SUMMARY
+        # Write machine-readable JSON metrics
+        cat > coverage-metrics.json <<EOF
+        {
+          "lines": $LINES_PCT,
+          "functions": $FUNCS_PCT,
+          "branches": $BRANCHES_PCT,
+          "thresholds": {"lines": ${{ inputs.min-lines }}, "functions": ${{ inputs.min-functions }}, "branches": ${{ inputs.min-branches }}},
+          "passed": $([ $PASS -eq 1 ] && echo true || echo false)
+        }
+EOF
+        if [ $PASS -ne 1 ]; then
+          echo "Coverage thresholds not met: ${FAIL_REASONS[*]}" >&2
+        fi
+    - name: Upload Coverage Artifact (Short Retention)
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-info
+        path: ${{ inputs.lcov-output }}
+        retention-days: 2
+    - name: Upload Coverage Test JSON
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-test-results
+        path: coverage_test_results.json
+    - name: Upload Coverage Metrics JSON
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+  name: coverage-metrics
+        path: coverage-metrics.json
+        retention-days: 7
+    - name: Fail if below thresholds
+      shell: bash
+      run: |
+        if [ -f coverage-metrics.json ]; then
+          PASSED=$(grep '"passed"' coverage-metrics.json | grep -c true || true)
+          if [ "$PASSED" -eq 0 ]; then
+            echo "Failing job due to coverage threshold miss." >&2
+            exit 1
+          fi
+        fi

@@ -32,6 +32,10 @@ class AudioPlayer;
 class AudioRecorder;
 class AudioLevelProcessor;
 class RealtimeScorer;
+// Forward declarations for enhanced analyzers (post-MVP enhanced platform)
+class PitchTracker;
+class HarmonicAnalyzer;
+class CadenceAnalyzer;
 
 /**
  * @typedef SessionId
@@ -181,7 +185,8 @@ class UnifiedAudioEngine {
         INSUFFICIENT_DATA = -5,  ///< Not enough audio data for analysis
         OUT_OF_MEMORY = -6,      ///< Memory allocation failed
         INIT_FAILED = -7,        ///< Engine initialization failed
-        INTERNAL_ERROR = -8      ///< Internal engine error
+        INTERNAL_ERROR = -8,     ///< Internal engine error
+        ALREADY_FINALIZED = -9   ///< Finalization already performed for session (idempotent)
     };
 
     /**
@@ -369,6 +374,9 @@ class UnifiedAudioEngine {
      * @return Result containing feature count, or error status
      */
     [[nodiscard]] Result<int> getFeatureCount(SessionId sessionId) const;
+    // Granular feature counts (master vs session) for diagnostics
+    [[nodiscard]] Result<int> getMasterFeatureCount(SessionId sessionId) const;
+    [[nodiscard]] Result<int> getSessionFeatureCount(SessionId sessionId) const;
 
     // === Real-time Scoring Features ===
 
@@ -461,6 +469,128 @@ class UnifiedAudioEngine {
      * @return Status::OK on success, error code on failure
      */
     [[nodiscard]] Status resetSession(SessionId sessionId);
+
+    // === Enhanced Analyzer Integration (Pitch / Harmonic / Cadence) ===
+    /**
+     * @brief Summary of enhanced analysis (pitch, harmonic, cadence) for a session
+     */
+    struct EnhancedAnalysisSummary {
+        float pitchHz = 0.0f;              ///< Estimated fundamental frequency
+        float pitchConfidence = 0.0f;      ///< Pitch confidence (0-1)
+        float harmonicFundamental = 0.0f;  ///< Harmonic fundamental frequency
+        float harmonicConfidence = 0.0f;   ///< Harmonic analysis confidence (0-1)
+        float tempoBPM = 0.0f;             ///< Estimated tempo (BPM)
+        float tempoConfidence = 0.0f;      ///< Tempo confidence (0-1)
+        // --- Finalize & Loudness Metrics (populated after finalizeSessionAnalysis()) ---
+        float similarityAtFinalize = 0.0f;  ///< Refined DTW similarity on selected segment
+        float normalizationScalar = 1.0f;   ///< Gain factor to match master RMS
+        float loudnessDeviation = 0.0f;     ///< (userRMS-masterRMS)/masterRMS (filled later)
+        uint64_t segmentStartMs = 0;        ///< Segment start (ms from session start)
+        uint64_t segmentDurationMs = 0;     ///< Segment duration in ms
+        std::chrono::steady_clock::time_point timestamp;  ///< Time analysis was produced
+        bool valid = false;      ///< Whether summary contains valid recent data
+        bool finalized = false;  ///< True once finalizeSessionAnalysis executed
+    };
+
+    /**
+     * @brief Real-time similarity readiness/introspection state
+     *
+     * Provides deterministic visibility into whether the progressive real-time
+     * similarity path has accumulated sufficient audio to be considered
+     * reliable. Enables tests (and UI) to eliminate timing flakiness and
+     * polling heuristics based on opaque score transitions.
+     */
+    struct SimilarityRealtimeState {
+        uint32_t framesObserved = 0;     ///< Approximate MFCC-sized frames observed
+        uint32_t minFramesRequired = 0;  ///< Minimum frames needed for reliability
+        bool usingRealtimePath = false;  ///< True when realtime scorer active & master set
+        bool reliable = false;           ///< True when current score meets reliability criteria
+        float provisionalScore = 0.0f;   ///< Latest overall score (may be unreliable)
+    };
+
+    /**
+     * @brief Snapshot of both current and peak similarity scores.
+     * Returned by getSimilarityScores() to support UIs needing trend + best.
+     */
+    struct SimilarityScoresSnapshot {
+        float current = 0.0f;  ///< Most recent overall similarity score
+        float peak = 0.0f;     ///< Highest overall score observed this session
+                               // Diagnostic component contributions (non-stable; may change)
+#ifndef HUNTMASTER_DISABLE_DIAGNOSTIC_COMPONENTS
+        float offsetComponent = -1.0f;
+        float dtwComponent = -1.0f;
+        float meanComponent = -1.0f;
+        float subsequenceComponent = -1.0f;
+        bool finalizeFallbackUsed = false;  ///< True if finalize used to salvage low realtime sim
+#endif
+    };
+
+    /**
+     * @brief Enable or disable enhanced analyzers for a session (lazy creation)
+     * @param sessionId Target session
+     * @param enable True to enable (creates analyzers if needed), false to disable & free
+     * @return Status::OK on success or error code
+     */
+    [[nodiscard]] Status setEnhancedAnalyzersEnabled(SessionId sessionId, bool enable);
+
+    /**
+     * @brief Query whether enhanced analyzers are enabled for a session
+     * @param sessionId Target session
+     * @return Result<bool> indicating enabled state or error
+     */
+    [[nodiscard]] Result<bool> getEnhancedAnalyzersEnabled(SessionId sessionId) const;
+
+    /**
+     * @brief Get latest enhanced analysis summary (auto-enables analyzers on first call)
+     * @param sessionId Target session
+     * @return Result containing summary or error status
+     */
+    [[nodiscard]] Result<EnhancedAnalysisSummary> getEnhancedAnalysisSummary(SessionId sessionId);
+
+    /**
+     * @brief Query real-time similarity readiness/introspection state
+     * @param sessionId Target session
+     * @return Result containing SimilarityRealtimeState or error status
+     */
+    [[nodiscard]] Result<SimilarityRealtimeState> getRealtimeSimilarityState(SessionId sessionId);
+    /**
+     * @brief Retrieve both current and peak similarity scores (realtime path only)
+     * @param sessionId Target session
+     * @return Result with snapshot or error. If realtime scorer inactive returns INSUFFICIENT_DATA
+     */
+    [[nodiscard]] Result<SimilarityScoresSnapshot> getSimilarityScores(SessionId sessionId);
+
+    /**
+     * @brief Query whether finalize fallback path (finalize improved from sub-threshold) occurred.
+     * @param sessionId Target session
+     * @return Result<bool> true if fallback triggered, false if not or error status
+     */
+    [[nodiscard]] Result<bool> getFinalizeFallbackUsed(SessionId sessionId);
+
+#ifdef HUNTMASTER_TEST_HOOKS
+    /**
+     * @brief TEST HOOK ONLY: Override the lastSimilarity value to simulate low realtime state.
+     * Has no effect outside test builds compiled with HUNTMASTER_TEST_HOOKS.
+     */
+    [[nodiscard]] Status testOverrideLastSimilarity(SessionId sessionId, float value);
+    /**
+     * @brief TEST HOOK ONLY: Adjust the finalize fallback threshold for deterministic tests.
+     */
+    [[nodiscard]] Status testSetFinalizeFallbackThreshold(SessionId sessionId, float value);
+#endif
+
+    // === Finalization Stage ===
+    /**
+     * @brief Perform finalize-stage segment selection, refined DTW, and normalization scalar
+     *
+     * Idempotent: subsequent calls return Status::ALREADY_FINALIZED without recomputation.
+     *
+     * Failure modes:
+     *  - SESSION_NOT_FOUND: invalid session id
+     *  - INSUFFICIENT_DATA: not enough frames or no voiced segment found
+     *  - ALREADY_FINALIZED: previously finalized
+     */
+    [[nodiscard]] Status finalizeSessionAnalysis(SessionId sessionId);
 
     // === Recording Management ===
 
@@ -640,10 +770,16 @@ class UnifiedAudioEngine {
         std::unique_ptr<class AudioRecorder> audioRecorder;
         std::unique_ptr<class AudioLevelProcessor> levelProcessor;
         std::unique_ptr<class RealtimeScorer> realtimeScorer;
+        // Enhanced analyzers (optional, lazily created)
+        std::unique_ptr<class PitchTracker> pitchTracker;
+        std::unique_ptr<class HarmonicAnalyzer> harmonicAnalyzer;
+        std::unique_ptr<class CadenceAnalyzer> cadenceAnalyzer;
+        EnhancedAnalysisSummary lastEnhancedSummary{};  // Cached summary
+        bool enhancedAnalyzersEnabled = false;
     };
 
     class Impl;
-    std::unique_ptr<Impl> pimpl;
+    std::unique_ptr<Impl> impl_;
 };
 
 // Clean C API that matches the C++ design

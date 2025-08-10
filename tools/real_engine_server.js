@@ -16,6 +16,7 @@ class RealEngineServer {
         this.port = port;
         this.enginePath = path.join(__dirname, '../../build/bin');
         this.masterCallsPath = path.join(__dirname, '../../data/master_calls');
+        this.normalizedCallsPath = path.join(__dirname, '../../data/processed_calls/normalized');
         this.tempPath = path.join(__dirname, '../../temp');
 
         this.stats = {
@@ -67,6 +68,10 @@ class RealEngineServer {
             console.log(`⚠️ Engine setup warning: ${error.message}`);
             console.log('💡 Some engine features may not be available');
         }
+    }
+
+    async pathExists(p) {
+        try { await fs.access(p); return true; } catch { return false; }
     }
 
     async handleRequest(req, res) {
@@ -135,6 +140,7 @@ class RealEngineServer {
             paths: {
                 engine: this.enginePath,
                 masterCalls: this.masterCallsPath,
+                normalizedCalls: this.normalizedCallsPath,
                 temp: this.tempPath
             }
         };
@@ -174,12 +180,13 @@ class RealEngineServer {
                 const turkeyFiles = await fs.readdir(turkeyPath);
                 for (const file of turkeyFiles) {
                     if (file.endsWith('.mp3') || file.endsWith('.wav')) {
-                        const filePath = path.join(turkeyPath, file);
+                        const normalizedAlt = path.join(this.normalizedCallsPath, 'turkey', file.replace(/\.(mp3|wav)$/i, '.wav'));
+                        const filePath = (await this.pathExists(normalizedAlt)) ? normalizedAlt : path.join(turkeyPath, file);
                         const stats = await fs.stat(filePath);
                         files.push({
                             name: file,
                             category: 'turkey',
-                            path: `turkey/${file}`,
+                            path: `turkey/${file.replace(/\.(mp3|wav)$/i, '.wav')}`,
                             fullPath: filePath,
                             size: stats.size,
                             modified: stats.mtime
@@ -196,12 +203,13 @@ class RealEngineServer {
                 const deerFiles = await fs.readdir(deerPath);
                 for (const file of deerFiles) {
                     if (file.endsWith('.mp3') || file.endsWith('.wav')) {
-                        const filePath = path.join(deerPath, file);
+                        const normalizedAlt = path.join(this.normalizedCallsPath, 'white-tail deer', file.replace(/\.(mp3|wav)$/i, '.wav'));
+                        const filePath = (await this.pathExists(normalizedAlt)) ? normalizedAlt : path.join(deerPath, file);
                         const stats = await fs.stat(filePath);
                         files.push({
                             name: file,
                             category: 'deer',
-                            path: `white-tail deer/${file}`,
+                            path: `white-tail deer/${file.replace(/\.(mp3|wav)$/i, '.wav')}`,
                             fullPath: filePath,
                             size: stats.size,
                             modified: stats.mtime
@@ -217,12 +225,13 @@ class RealEngineServer {
                 const rootFiles = await fs.readdir(this.masterCallsPath);
                 for (const file of rootFiles) {
                     if (file.endsWith('.mp3') || file.endsWith('.wav')) {
-                        const filePath = path.join(this.masterCallsPath, file);
+                        const normalizedAlt = path.join(this.normalizedCallsPath, file.replace(/\.(mp3|wav)$/i, '.wav'));
+                        const filePath = (await this.pathExists(normalizedAlt)) ? normalizedAlt : path.join(this.masterCallsPath, file);
                         const stats = await fs.stat(filePath);
                         files.push({
                             name: file,
                             category: 'other',
-                            path: file,
+                            path: file.replace(/\.(mp3|wav)$/i, '.wav'),
                             fullPath: filePath,
                             size: stats.size,
                             modified: stats.mtime
@@ -275,7 +284,11 @@ class RealEngineServer {
 
     async processAudioWithEngine(request) {
         const startTime = Date.now();
-        const audioFilePath = path.join(this.masterCallsPath, request.filePath);
+        // Prefer normalized version if it exists
+        const requestedBase = request.filePath.replace(/\.(mp3|wav)$/i, '.wav');
+        const normalizedCandidate = path.join(this.normalizedCallsPath, requestedBase);
+        const resolvedPath = await this.pathExists(normalizedCandidate) ? normalizedCandidate : path.join(this.masterCallsPath, request.filePath);
+        const audioFilePath = resolvedPath;
         const mfcFileName = request.fileName.replace(/\.(wav|mp3)$/i, '.mfc');
         const mfcFilePath = path.join(this.masterCallsPath, request.filePath.replace(/\.(wav|mp3)$/i, '.mfc'));
 

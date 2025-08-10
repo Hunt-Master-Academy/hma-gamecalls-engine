@@ -110,6 +110,12 @@ class PitchTracker {
     virtual Result<float, Error> getRealtimePitch() = 0;
 
     /**
+     * @brief Get real-time pitch confidence (0-1)
+     * @return Current confidence score for last detected pitch
+     */
+    virtual Result<float, Error> getRealtimeConfidence() = 0;
+
+    /**
      * @brief Process audio chunk for continuous pitch tracking
      * @param audio Audio samples to process
      * @return Processing status

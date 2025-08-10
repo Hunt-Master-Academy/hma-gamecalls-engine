@@ -374,13 +374,13 @@ trimSilence(const std::vector<float>& samples, float sampleRate, const VADConfig
                                            + " samples");
     }
 
-    for (int i = 0; i < fadeLength && i < trimmed.size(); ++i) {
+    for (int i = 0; i < fadeLength && static_cast<size_t>(i) < trimmed.size(); ++i) {
         float factor = static_cast<float>(i) / fadeLength;
         trimmed[i] *= factor;
     }
-    for (int i = 0; i < fadeLength && i < trimmed.size(); ++i) {
+    for (int i = 0; i < fadeLength && static_cast<size_t>(i) < trimmed.size(); ++i) {
         float factor = static_cast<float>(i) / fadeLength;
-        trimmed[trimmed.size() - 1 - i] *= factor;
+        trimmed[trimmed.size() - 1 - static_cast<size_t>(i)] *= factor;
     }
 
     if (config.enableDebug) {

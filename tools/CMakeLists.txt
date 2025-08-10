@@ -8,6 +8,11 @@
 
 message(STATUS "Configuring native tools...")
 
+# Ensure nlohmann_json is available
+if(NOT TARGET nlohmann_json::nlohmann_json)
+    message(FATAL_ERROR "nlohmann_json not available; ensure top-level CMake FetchContent declared it")
+endif()
+
 # ==============================================================================
 # Automatic Tool Discovery and Configuration
 # ==============================================================================
@@ -26,8 +31,8 @@ foreach(tool_source_path ${TOOL_SOURCES})
     # Create executable target
     add_executable(${tool_name} ${tool_source_path})
 
-    # Link against the core engine library
-    target_link_libraries(${tool_name} PRIVATE UnifiedAudioEngine)
+    # Link against the core engine library and json when needed
+    target_link_libraries(${tool_name} PRIVATE UnifiedAudioEngine nlohmann_json::nlohmann_json)
 
     # Ensure executable goes to build/bin directory
     set_target_properties(${tool_name} PROPERTIES

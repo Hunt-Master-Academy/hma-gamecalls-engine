@@ -1,153 +1,124 @@
-# Huntmaster Engine Documentation
+# Hunt Master Academy – Game Calls Engine Documentation Index
 
-**Last Updated**: August 2, 2025
-**Current Status**: MVP COMPLETED - Production Deployment Ready
-**Latest Achievement**: ALL outstanding optimization targets successfully addressed. MVP completion achieved across all critical systems.
-
----
-
-## 🎯 Quick Start
-
-| Need                        | Document                                                      |
-| --------------------------- | ------------------------------------------------------------- |
-| **Project Overview**        | [Main README](../README.md)                                   |
-| **Alpha Testing**           | [Alpha Testing Status](../ALPHA_TESTING_STATUS.md)           |
-| **API Specification**       | [Execution Chain](../ALPHA_TESTING_EXECUTION_CHAIN.md)       |
-| **Final Status Report**     | [MVP Todo Status](mvp_todo.md)                               |
-| **Project Structure**       | [Project Structure](PROJECT_STRUCTURE.md)                    |
-| **Build & Test**            | [Testing Guide](TESTING.md)                                   |
-| **Deploy to Production**    | [Deployment Guide](DEPLOYMENT.md)                             |
-| **Debug Issues**            | [Debugging Guide](DEBUGGING.md)                               |
-| **Add Features**            | [Feature Implementation Guide](FeatureImplementationGuide.md) |
+Last Updated: August 9, 2025
+Authoritative Roadmap: [mvp_todo.md](mvp_todo.md) (update there first)
+Scope: This /docs index covers ONLY the Game Calls Engine (Unified Audio Engine core). Platform‑wide (other pillars) features are informational only in the root README.
 
 ---
 
-## 📋 Documentation Structure
-
-### 🏗️ **Core Documentation**
-
-#### **Project Management**
-
-- **[MVP Todo Status](../mvp_todo.md)** - Complete final status with >95% completion achieved
-- **[API Integration Status](../API_INTEGRATION_STATUS.md)** - Comprehensive resolution of all outstanding targets
-
-#### **Technical Guides**
-
-- **[architecture.md](architecture.md)** - System architecture and technical design
-- **[TESTING.md](TESTING.md)** - Comprehensive testing framework and procedures
-- **[DEBUGGING.md](DEBUGGING.md)** - Debugging tools, techniques, and troubleshooting
-- **[DEPLOYMENT.md](DEPLOYMENT.md)** - Production deployment and configuration
-
-#### **Development**
-
-- **[FeatureImplementationGuide.md](FeatureImplementationGuide.md)** - Guide for implementing new features
-- **[TODO_Implementation_Guide.md](TODO_Implementation_Guide.md)** - Development workflow and TODO management
-
-### 📊 **Completion Reports**
-
-#### **Major Milestones**
-
-- **[Phase2.3_Completion_Report.md](Phase2.3_Completion_Report.md)** - Latest: Advanced Web Features completion
-- **[MVP_COMPLETION.md](MVP_COMPLETION.md)** - MVP validation and results
-
-#### **Component Completions**
-
-- **[SESSION_MANAGEMENT_COMPLETE.md](SESSION_MANAGEMENT_COMPLETE.md)** - Session management implementation
-- **[Audio-Processor-Completion-Report.md](Audio-Processor-Completion-Report.md)** - Audio processor modularization
-
-### 🗄️ **Historical Records**
-
-- **[archive/](archive/)** - Archived historical phase reports and outdated documentation
+## 1. Purpose
+Central navigation hub for engine documentation. The root repository README provides product/platform context; this index focuses on engineering references & implementation status.
 
 ---
 
-## 🎉 **Current Project Status: Phase 3 In Progress** ⏳
-
-**Latest Achievement**: All Phase 2 Modules Complete. Phase 3 architecture is planned and implementation is underway.
-
-### ✅ **Completed Phases**
-
-- **Phase 1**: Core Audio Engine Foundation - 100% Complete
-- **Phase 2**: Web Application Development - 100% Complete
-  - **Phase 2.1**: Core Web Components (11 ES6 modules, 10,340+ lines)
-  - **Phase 2.2**: User Interface Enhancement (Complete styling system, 7,894+ lines CSS)
-  - **Phase 2.3**: Advanced Web Features (8 enterprise components, 730 TODOs, 7,300+ lines)
-
-### ⏳ **In-Progress Phases**
-
-- **Phase 3**: Testing & Security Framework - **In Progress**
-  - **Phase 3.1**: Automated Testing Suite - **Complete**
-  - **Phase 3.2**: User Acceptance Testing - **Architecture Planned**
-  - **Phase 3.3**: Performance & Security Framework - **Architecture Planned**
-
-### 🚀 **Next Phase**
-
-- **WASM Integration Testing**: Final integration and cross-platform validation
+## 2. Status Snapshot (Sync with mvp_todo.md)
+Phase: Enhanced Platform Integration & UX Alignment
+Core Pipeline: Production stable (sessions, MFCC, realtime + DTW similarity)
+Enhanced Analyzers: Pitch / Harmonic / Cadence integrated (Phase 1)
+Immediate Focus: finalizeSessionAnalysis, similarity readiness API, loudness normalization, overlay export, calibration grades, coaching mapper
 
 ---
 
-## 🔧 **For Developers**
-
-### **Adding New Features**
-
-1. Review [FeatureImplementationGuide.md](FeatureImplementationGuide.md)
-2. Check [Implementation_Checklist.md](Implementation_Checklist.md) for current status
-3. Follow testing procedures in [TESTING.md](TESTING.md)
-
-### **Debugging Issues**
-
-1. Check [DEBUGGING.md](DEBUGGING.md) for tools and techniques
-2. Review recent status in [Current_Status_July24_2025.md](Current_Status_July24_2025.md)
-3. Check error patterns in test results
-
-### **Production Deployment**
-
-1. Follow [DEPLOYMENT.md](DEPLOYMENT.md) deployment guide
-2. Verify all tests pass using [TESTING.md](TESTING.md)
-3. Review security checklist in Phase 3 requirements
+## 3. Quick Links
+| Area | Document |
+|------|----------|
+| Roadmap / Tasks | [mvp_todo.md](mvp_todo.md) |
+| Architecture & Flow | [architecture.md](architecture.md) |
+| Project Layout | [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) |
+| Testing Strategy | [TESTING.md](TESTING.md) |
+| Debug & Instrumentation | [DEBUGGING.md](DEBUGGING.md) |
+| Deployment & Packaging | [DEPLOYMENT.md](DEPLOYMENT.md) |
+| Root Platform Context | [../README.md](../README.md) |
 
 ---
 
-## 📱 **For Users & Stakeholders**
-
-### **Project Overview**
-
-- **Main Project**: [Huntmaster Engine README](../README.md)
-- **Final Status**: [MVP Todo Status](../mvp_todo.md)
-- **API Integration**: [API Integration Status](../API_INTEGRATION_STATUS.md)
-- **WSL Resolution**: [WSL Audio Status](../WSL_AUDIO_STATUS.md)
-
-### **🎯 Final Achievement Metrics**
-
-- **Completion**: >95% success rate across all critical systems - PRODUCTION READY
-- **Quality**: 80 test files with production-ready builds, comprehensive testing framework
-- **Performance**: Sub-real-time processing (5.26x ratio) with optimization framework operational
-- **Security**: 99.3% security framework with μs-level performance
-- **Platform Support**: Cross-platform validated with WSL audio resolution complete
-- **Next Phase**: Performance optimization framework operational with clear enhancement path
+## 4. Core Concepts (Pointers)
+- Session Lifecycle & APIs: architecture.md (sections 3–6)
+- Realtime vs DTW Similarity: architecture.md (Similarity Architecture)
+- EnhancedAnalysisSummary Fields: architecture.md (Enhanced Analysis Summary)
+- Planned Additions (finalize, readiness, overlay): mvp_todo.md sections 2–4
 
 ---
 
-## 🔄 **Documentation Maintenance**
-
-This documentation structure was updated on August 2, 2025 to reflect:
-
-- ✅ **MVP Completion** - All outstanding optimization targets successfully addressed
-- ✅ **Production Readiness** - Comprehensive status reports and deployment guides
-- ✅ **Technical Solutions** - Complete resolution documentation for all identified issues
-- ✅ **Performance Framework** - Operational optimization infrastructure with clear enhancement path
-- ✅ **Team Collaboration** - Development environment and testing framework ready
-
-### **Current Documentation Status**
-
-Production-ready documentation with comprehensive technical solutions:
-
-- MVP completion status with final achievement metrics
-- API integration status with comprehensive resolution details
-- WSL audio resolution with complete technical solutions
-- Performance optimization framework with clear roadmap
-- Production deployment readiness assessment
+## 5. Active Work (High-Level)
+| Workstream | Goal | Doc Source |
+|------------|------|------------|
+| Finalize Stage | Segment extraction + refined DTW + loudness normalization | mvp_todo.md 3.1 |
+| Readiness API | Deterministic realtime similarity availability | mvp_todo.md 3.2 |
+| Loudness Metrics | Deviation + normalization scalar | mvp_todo.md 3.3 |
+| Overlay Export | Master/user waveform peak arrays | mvp_todo.md 3.4 |
+| Calibration | Map confidences → graded bands | mvp_todo.md 3.5 |
+| Coaching Mapper | Metric → structured feedback | mvp_todo.md 3.7 |
+| Virtual Clock | Remove sleep-based tests | mvp_todo.md 3.6 / TESTING.md |
 
 ---
 
-**💡 Need help?** Start with the [Implementation_Checklist.md](Implementation_Checklist.md) for the most current project status and next steps.
+## 6. Update Order (Governance)
+1. Modify feature/task → update mvp_todo.md.
+2. Adjust architecture.md if structural or pipeline changes.
+3. Update PROJECT_STRUCTURE.md for new public files/APIs.
+4. Reflect testing impacts in TESTING.md.
+5. (Optional) Adjust root README if user-facing narrative shifts.
+
+No direct edits here that conflict with mvp_todo.md — this file summarizes.
+
+---
+
+## 7. Naming & Conventions
+- Primary entry docs in uppercase (README.md, LICENSE); technical references may remain lowercase (architecture.md).
+- Avoid adding new top-level docs without explicit roadmap value.
+- All new public API fields: document in mvp_todo.md first.
+
+---
+
+## 8. Performance Targets (Reference)
+| Path | Target |
+|------|--------|
+| Streaming enhanced chunk | <12 ms |
+| finalizeSessionAnalysis (one-shot) | <40 ms |
+| Memory / session (post-finalize) | <15 MB |
+
+Guard assertions live in tests; adjust only with justification.
+
+---
+
+## 9. Pending API Additions (Planned)
+(Do not expose until implemented)
+- finalizeSessionAnalysis(SessionId)
+- getRealtimeSimilarityState(SessionId)
+- exportOverlayData(SessionId, decimation)
+- Added summary fields: similarityAtFinalize, segmentStartMs, segmentDurationMs, loudnessDeviation, normalizationScalar, pitchGrade, harmonicGrade, cadenceGrade
+
+---
+
+## 10. Skips & Debt (To Eliminate)
+| Item | Status | Removal Trigger |
+|------|--------|-----------------|
+| Similarity readiness test skips | Present (2) | Readiness API implemented |
+| Sleep-based stale test | Present | Virtual clock |
+| Uncalibrated confidence grades | Present | Calibration tables |
+
+---
+
+## 11. Contributing Reminder
+- Always check Result<T>/Status; no unchecked `.value`.
+- No new blocking sleeps; prepare for virtual clock.
+- Keep heavy diagnostics (cadence deep path) disabled by default.
+- Provide tests + performance guard for each new analyzer or finalize feature.
+
+---
+
+## 12. External Pillars (Informational)
+Other Academy pillars (Strategy, Stealth, Tracking, Marksmanship) are NOT implemented here. Do not introduce cross-pillar code until Game Calls exit criteria are met (see mvp_todo.md “Exit Criteria”).
+
+---
+
+## 13. Change Log (This Index)
+| Date | Change |
+|------|--------|
+| 2025-08-09 | Converted docs/README.md to structured index (removed prior redirect) |
+
+---
+
+## 14. Summary
+This index centralizes navigation for the Game Calls Engine. Treat mvp_todo.md as authoritative; all statuses here are derivative. Keep scope disciplined: finalize reliability → visualization & calibration → coaching →

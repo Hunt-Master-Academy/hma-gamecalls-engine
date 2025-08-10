@@ -24,6 +24,9 @@ endif()
 # Global Variables and Paths
 # ==============================================================================
 
+# Build options
+option(HUNTMASTER_BUILD_TOOLS "Build Huntmaster command-line tools" OFF)
+
 # Define project directories
 set(PROJECT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(PROJECT_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/include")
@@ -78,13 +81,20 @@ FetchContent_Declare(
     GIT_TAG master
 )
 
+# nlohmann/json (header-only)
+FetchContent_Declare(
+    nlohmann_json
+    GIT_REPOSITORY https://github.com/nlohmann/json.git
+    GIT_TAG v3.11.3
+)
+
 # Disable benchmark testing and KissFFT tools
 set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
 set(KISSFFT_TOOLS OFF CACHE BOOL "" FORCE)
 set(KISSFFT_TEST OFF CACHE BOOL "" FORCE)
 
 # Make dependencies available
-FetchContent_MakeAvailable(googletest benchmark kissfft)# ==============================================================================
+FetchContent_MakeAvailable(googletest benchmark kissfft nlohmann_json)# ==============================================================================
 # Platform Detection
 # ==============================================================================
 
@@ -107,7 +117,17 @@ add_subdirectory(src)
 # Add tests directory (if not building for WASM)
 if(NOT BUILDING_FOR_WASM)
     add_subdirectory(tests)
-    add_subdirectory(tools)
+
+    if(HUNTMASTER_BUILD_TOOLS)
+        add_subdirectory(tools)
+    else()
+        message(STATUS "Skipping tools build (HUNTMASTER_BUILD_TOOLS=OFF)")
+    endif()
+
+    # Micro-benchmark harness (always build; fast)
+    add_executable(huntmaster_bench tools/benchmarks/micro_bench.cpp)
+    target_link_libraries(huntmaster_bench PRIVATE UnifiedAudioEngine benchmark::benchmark pthread)
+    target_include_directories(huntmaster_bench PRIVATE ${PROJECT_INCLUDE_DIR})
 endif()
 
 # KissFFT is now available via FetchContent

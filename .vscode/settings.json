@@ -43,16 +43,20 @@
     "cmath": "cpp",
     "complex": "cpp"
   },
-  "C_Cpp.intelliSenseEngine": "Default",
+  "C_Cpp.intelliSenseEngine": "default",
   "C_Cpp.maxCachedProcesses": 2,
   "C_Cpp.maxConcurrentThreads": 2,
-  "C_Cpp.enhancedColorization": "Disabled",
-  "editor.semanticHighlighting.enabled": false,
+  "C_Cpp.enhancedColorization": "enabled",
+  "editor.semanticHighlighting.enabled": true,
   "typescript.preferences.includePackageJsonAutoImports": "off",
   "typescript.suggest.autoImports": false,
   "javascript.suggest.autoImports": false,
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "editor.formatOnSave": true,
-  "workbench.settings.enableNaturalLanguageSearch": false
+  "workbench.settings.enableNaturalLanguageSearch": false,
+  "C_Cpp.codeAnalysis.clangTidy.enabled": true,
+  "C_Cpp.codeAnalysis.clangTidy.useBuildPath": true,
+  "C_Cpp.codeAnalysis.clangTidy.path": "clang-tidy",
+  "C_Cpp.codeAnalysis.clangTidy.config": "file"
 }

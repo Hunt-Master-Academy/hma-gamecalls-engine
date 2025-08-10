@@ -2,10 +2,24 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "configure-debug",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "docker-debug"
+      ],
+      "problemMatcher": []
+    },
+    {
       "label": "build",
       "type": "shell",
       "command": "ninja",
-      "args": ["-C", "build"],
+      "args": [
+        "-C",
+        "build/debug"
+      ],
+      "dependsOn": "configure-debug",
       "group": {
         "kind": "build",
         "isDefault": true
@@ -18,13 +32,19 @@
         "showReuseMessage": true,
         "clear": false
       },
-      "problemMatcher": ["$gcc"]
+      "problemMatcher": [
+        "$gcc"
+      ]
     },
     {
       "label": "test",
       "type": "shell",
       "command": "timeout",
-      "args": ["60", "./build/bin/RunEngineTests", "--gtest_brief=yes"],
+      "args": [
+        "60",
+        "./build/debug/bin/RunEngineTests",
+        "--gtest_brief=yes"
+      ],
       "group": "test",
       "presentation": {
         "echo": true,
@@ -35,6 +55,190 @@
         "clear": true
       },
       "dependsOn": "build"
+    },
+    {
+      "label": "configure-asan",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "docker-asan"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "build-asan",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/asan",
+        "--parallel"
+      ],
+      "dependsOn": "configure-asan",
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "test-asan",
+      "type": "shell",
+      "command": "timeout",
+      "args": [
+        "90",
+        "./build/asan/bin/RunEngineTests",
+        "--gtest_brief=yes"
+      ],
+      "options": {
+        "env": {
+          "ASAN_OPTIONS": "detect_leaks=1,strict_init_order=1,abort_on_error=0"
+        }
+      },
+      "dependsOn": "build-asan",
+      "group": "test",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "configure-coverage",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "docker-coverage"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "build-coverage",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/coverage",
+        "--parallel"
+      ],
+      "dependsOn": "configure-coverage",
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "test-coverage",
+      "type": "shell",
+      "command": "timeout",
+      "args": [
+        "120",
+        "./scripts/measure_coverage.sh"
+      ],
+      "dependsOn": "build-coverage",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "configure-release",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "docker-rel"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "build-release",
+      "type": "shell",
+      "command": "ninja",
+      "args": [
+        "-C",
+        "build/release"
+      ],
+      "dependsOn": "configure-release",
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "fast-test",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "scripts/dev_fast_test.sh"
+      ],
+      "group": "test",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "perf-smoke",
+      "type": "shell",
+      "command": "timeout",
+      "args": [
+        "30",
+        "./build/debug/bin/perf_smoke"
+      ],
+      "dependsOn": "build",
+      "group": "test",
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "configure-ubsan",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--preset",
+        "docker-ubsan"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "build-ubsan",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "--build",
+        "build/ubsan",
+        "--parallel"
+      ],
+      "dependsOn": "configure-ubsan",
+      "group": "build",
+      "problemMatcher": [
+        "$gcc"
+      ]
+    },
+    {
+      "label": "test-ubsan",
+      "type": "shell",
+      "command": "timeout",
+      "args": [
+        "90",
+        "./build/ubsan/bin/RunEngineTests",
+        "--gtest_brief=yes"
+      ],
+      "dependsOn": "build-ubsan",
+      "group": "test",
+      "problemMatcher": [
+        {
+          "owner": "cpp",
+          "pattern": {
+            "regexp": "^(.*runtime error: .*)$",
+            "message": 1
+          }
+        },
+        "$gcc"
+      ]
     }
   ]
 }
