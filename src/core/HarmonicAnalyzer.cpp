@@ -18,6 +18,8 @@
 
 #ifdef USE_FFTW3
 #include <fftw3.h>
+#else
+#include "kiss_fftr.h"
 #endif
 
 namespace huntmaster {
@@ -46,6 +48,10 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
     fftwf_plan fftPlan_ = nullptr;
     fftwf_complex* fftInput_ = nullptr;
     fftwf_complex* fftOutput_ = nullptr;
+#endif
+#ifndef USE_FFTW3
+    kiss_fftr_cfg kissCfg_ = nullptr;
+    std::vector<kiss_fft_cpx> kissOut_;
 #endif
 
   public:
@@ -290,6 +296,13 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
         fftOutput_ = fftwf_alloc_complex(config_.fftSize);
         fftPlan_ =
             fftwf_plan_dft_1d(config_.fftSize, fftInput_, fftOutput_, FFTW_FORWARD, FFTW_ESTIMATE);
+#else
+        if (kissCfg_) {
+            kiss_fftr_free(kissCfg_);
+            kissCfg_ = nullptr;
+        }
+        kissCfg_ = kiss_fftr_alloc(static_cast<int>(config_.fftSize), 0, nullptr, nullptr);
+        kissOut_.resize(config_.fftSize / 2 + 1);
 #endif
     }
 
@@ -329,15 +342,15 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
             spectrum_[i] = std::sqrt(real * real + imag * imag);
         }
 #else
-        // Fallback: Simple DFT implementation
-        for (size_t k = 0; k < spectrum_.size(); ++k) {
-            float real = 0.0f, imag = 0.0f;
-            for (size_t n = 0; n < config_.fftSize; ++n) {
-                float angle = -2.0f * M_PI * k * n / config_.fftSize;
-                real += audio[n] * window_[n] * std::cos(angle);
-                imag += audio[n] * window_[n] * std::sin(angle);
-            }
-            spectrum_[k] = std::sqrt(real * real + imag * imag);
+        // Kiss FFT real-to-complex path
+        std::vector<float> tmp(config_.fftSize);
+        for (size_t i = 0; i < config_.fftSize; ++i)
+            tmp[i] = audio[i] * window_[i];
+        kiss_fftr(kissCfg_, tmp.data(), kissOut_.data());
+        for (size_t i = 0; i < spectrum_.size(); ++i) {
+            float real = kissOut_[i].r;
+            float imag = kissOut_[i].i;
+            spectrum_[i] = std::sqrt(real * real + imag * imag);
         }
 #endif
 
@@ -655,6 +668,13 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
             fftwf_free(fftOutput_);
             fftOutput_ = nullptr;
         }
+#endif
+#ifndef USE_FFTW3
+        if (kissCfg_) {
+            kiss_fftr_free(kissCfg_);
+            kissCfg_ = nullptr;
+        }
+        kissOut_.clear();
 #endif
     }
 };

@@ -45,7 +45,7 @@ void PerformanceProfiler::endTiming(const std::string& operation_name) {
     }
 }
 
-void PerformanceProfiler::recordMemoryUsage(const std::string& checkpoint_name) {
+void PerformanceProfiler::recordMemoryUsage([[maybe_unused]] const std::string& checkpoint_name) {
     if (!config_.enable_memory_tracking)
         return;
 
@@ -62,7 +62,7 @@ void PerformanceProfiler::recordMemoryUsage(const std::string& checkpoint_name) 
 
     memory_history_.push_back(snapshot);
 
-    // Limit memory history size
+    // Limit memory history size (checkpoint_name currently unused in minimal implementation)
     if (memory_history_.size() > config_.max_samples) {
         memory_history_.erase(memory_history_.begin());
     }
@@ -153,8 +153,7 @@ void PerformanceProfiler::generateReport(const std::string& output_file) const {
                << std::chrono::duration_cast<std::chrono::microseconds>(timing.min_time).count()
                << "μs" << std::setw(15)
                << std::chrono::duration_cast<std::chrono::microseconds>(timing.max_time).count()
-               << "μs"
-               << "\n";
+               << "μs" << "\n";
     }
 
     // Bottleneck Analysis

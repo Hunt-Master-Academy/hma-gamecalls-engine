@@ -41,7 +41,7 @@ AuditLogger::~AuditLogger() {
     // Cleanup handled automatically by RAII
 }
 
-void AuditLogger::logSecurityEvent(const SecurityEvent& event) {
+void AuditLogger::logSecurityEvent([[maybe_unused]] const SecurityEvent& event) {
     // TODO: Log security event with detailed classification
     // TODO: Record security event timestamp and source identification
     // TODO: Include security event threat analysis and assessment
@@ -59,7 +59,7 @@ void AuditLogger::logSecurityEvent(const SecurityEvent& event) {
     // TODO: Generate security event audit trail
 }
 
-void AuditLogger::logAccessAttempt(const AccessAttempt& attempt) {
+void AuditLogger::logAccessAttempt([[maybe_unused]] const AccessAttempt& attempt) {
     // TODO: Log authentication attempt with comprehensive details
     // TODO: Record authentication timestamp and source information
     // TODO: Include authentication method and security context
@@ -77,7 +77,7 @@ void AuditLogger::logAccessAttempt(const AccessAttempt& attempt) {
     // TODO: Generate authentication audit trail
 }
 
-void AuditLogger::logDataAccess(const DataAccessEvent& access) {
+void AuditLogger::logDataAccess([[maybe_unused]] const DataAccessEvent& access) {
     // TODO: Log data access attempt with comprehensive tracking
     // TODO: Record data access timestamp and session context
     // TODO: Include data classification and sensitivity level
@@ -95,7 +95,7 @@ void AuditLogger::logDataAccess(const DataAccessEvent& access) {
     // TODO: Generate data access audit trail
 }
 
-void AuditLogger::logSystemChange(const SystemChangeEvent& change) {
+void AuditLogger::logSystemChange([[maybe_unused]] const SystemChangeEvent& change) {
     // TODO: Log system event with comprehensive component tracking
     // TODO: Record system event timestamp and execution context
     // TODO: Include system event performance and resource utilization
@@ -120,7 +120,7 @@ void AuditLogger::logSystemChange(const SystemChangeEvent& change) {
     // TODO: Trigger change management alerts
 }
 
-void AuditLogger::logComplianceEvent(const ComplianceEvent& event) {
+void AuditLogger::logComplianceEvent([[maybe_unused]] const ComplianceEvent& event) {
     // TODO: Validate compliance event data
     // TODO: Map event to compliance requirements
     // TODO: Check compliance policy adherence
@@ -138,7 +138,7 @@ void AuditLogger::logComplianceEvent(const ComplianceEvent& event) {
     // TODO: Apply legal hold procedures
 }
 
-AuditReport AuditLogger::generateAuditReport(const ReportCriteria& criteria) {
+AuditReport AuditLogger::generateAuditReport([[maybe_unused]] const ReportCriteria& criteria) {
     AuditReport report = {};
 
     // TODO: Parse report criteria and filters
@@ -160,7 +160,8 @@ AuditReport AuditLogger::generateAuditReport(const ReportCriteria& criteria) {
     return report;
 }
 
-std::vector<SecurityEvent> AuditLogger::querySecurityEvents(const QueryCriteria& criteria) {
+std::vector<SecurityEvent>
+AuditLogger::querySecurityEvents([[maybe_unused]] const QueryCriteria& criteria) {
     std::vector<SecurityEvent> events;
 
     // TODO: Parse query criteria
@@ -182,7 +183,7 @@ std::vector<SecurityEvent> AuditLogger::querySecurityEvents(const QueryCriteria&
     return events;
 }
 
-void AuditLogger::archiveOldLogs(uint32_t retentionDays) {
+void AuditLogger::archiveOldLogs([[maybe_unused]] uint32_t retentionDays) {
     // TODO: Calculate archive cutoff date
     // TODO: Identify logs for archival
     // TODO: Validate log integrity before archive
@@ -257,7 +258,8 @@ void AuditLogger::configureAlerts(const AlertConfig& alertConfig) {
     // TODO: Log alert configuration
 }
 
-bool AuditLogger::exportAuditData(const ExportCriteria& criteria, const std::string& format) {
+bool AuditLogger::exportAuditData([[maybe_unused]] const ExportCriteria& criteria,
+                                  [[maybe_unused]] const std::string& format) {
     // TODO: Validate export criteria
     // TODO: Check export permissions
     // TODO: Query audit data for export

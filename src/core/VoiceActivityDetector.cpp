@@ -52,7 +52,7 @@ class VoiceActivityDetector::Impl {
         return static_cast<float>(sum_sq / audio.size());
     }
 
-    void updateAdaptiveThreshold(float current_energy) {
+    void updateAdaptiveThreshold([[maybe_unused]] float current_energy) {
         // For testing and initial implementation, use the configured threshold
         // In production, this could be enhanced with adaptive behavior
         adaptive_threshold_ = config_.energy_threshold;

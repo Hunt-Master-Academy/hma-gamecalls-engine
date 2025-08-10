@@ -28,8 +28,10 @@ class AudioRecorder::Impl {
     std::atomic<float> currentLevel{0.0f};
     mutable std::mutex dataMutex;
 
-    static void
-    data_callback(ma_device* pDevice, void* pOutput, const void* pInput, ma_uint32 frameCount) {
+    static void data_callback(ma_device* pDevice,
+                              [[maybe_unused]] void* pOutput,
+                              const void* pInput,
+                              ma_uint32 frameCount) {
         Impl* impl = static_cast<Impl*>(pDevice->pUserData);
         if (impl->recording) {
             std::lock_guard<std::mutex> lock(impl->dataMutex);

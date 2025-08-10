@@ -1,201 +1,98 @@
+// Huntmaster Engine - PitchTracker YIN Implementation (single clean version)
+
 #include "huntmaster/core/PitchTracker.h"
 
 #include <algorithm>
-#include <chrono>
 #include <cmath>
-#include <complex>
 #include <numeric>
-
-#include <fftw3.h>
+#include <optional>
+#include <span>
+#include <sstream>
+#include <vector>
 
 #include "huntmaster/core/DebugLogger.h"
-#include "huntmaster/core/PerformanceProfiler.h"
-#include "huntmaster/security/memory-guard.h"
 
 namespace huntmaster {
 
-/**
- * @brief Internal implementation of PitchTracker using YIN algorithm
- */
-class PitchTrackerImpl : public PitchTracker {
-  private:
-    Config config_;
-
-    // YIN algorithm buffers
-    std::vector<float> yinBuffer_;
-    std::vector<float> audioBuffer_;
-    std::vector<float> pitchHistory_;
-    std::vector<float> confidenceHistory_;
-
-    // Analysis state
-    float currentPitch_ = 0.0f;
-    float currentConfidence_ = 0.0f;
-    bool isInitialized_ = false;
-    size_t processedSamples_ = 0;
-
-    // Performance monitoring
-    mutable security::MemoryGuard memoryGuard_;
-
-    // Smoothing state
-    float smoothedPitch_ = 0.0f;
-    bool hasValidPitch_ = false;
-
+class PitchTrackerImpl final : public PitchTracker {
   public:
-    explicit PitchTrackerImpl(const Config& config)
-        : config_(config), memoryGuard_(security::GuardConfig{}) {
+    using Config = PitchTracker::Config;
+    using Error = PitchTracker::Error;
+    using PitchResult = PitchTracker::PitchResult;
+    template <typename T>
+    using ResultT = PitchTracker::Result<T, Error>;
+
+    explicit PitchTrackerImpl(const Config& cfg) : config_(cfg) {
         initialize();
     }
-
     ~PitchTrackerImpl() override = default;
 
-    Result<PitchResult, Error> detectPitch(std::span<const float> audio) override {
-        if (audio.empty()) {
-            return Result<PitchResult, Error>(unexpected<Error>(Error::INVALID_AUDIO_DATA));
+    ResultT<PitchResult> detectPitch(std::span<const float> audio) override {
+        if (audio.empty())
+            return ResultT<PitchResult>(unexpected<Error>(Error::INVALID_AUDIO_DATA));
+        if (audio.size() < config_.windowSize)
+            return ResultT<PitchResult>(unexpected<Error>(Error::INSUFFICIENT_DATA));
+        auto pc = yin(audio);
+        PitchResult r;
+        if (pc.has_value()) {
+            r.frequency = pc->first;
+            r.confidence = pc->second;
+            if (config_.enableSmoothing && hasPitch_)
+                r.frequency = smooth(r.frequency);
+            r.isVoiced = r.confidence > config_.threshold;
+            r.timestamp = static_cast<float>(processedSamples_) / config_.sampleRate;
+            updateHistory(r.frequency, r.confidence);
+            r.statistics = computeStats();
+            if (config_.enableVibratoDetection)
+                r.vibrato = computeVibrato();
+            r.contour = pitchHistory_;
+            currentPitch_ = r.frequency;
+            currentConfidence_ = r.confidence;
+            hasPitch_ = r.isVoiced;
         }
-
-        if (audio.size() < config_.windowSize) {
-            return Result<PitchResult, Error>(unexpected<Error>(Error::INSUFFICIENT_DATA));
-        }
-
-        try {
-            PitchResult result;
-
-            // Apply YIN algorithm
-            auto yinResult = performYinAnalysis(audio);
-            if (!yinResult.has_value()) {
-                return Result<PitchResult, Error>(unexpected<Error>(yinResult.error()));
-            }
-
-            auto pitchConfidence = yinResult.value();
-            float pitch = pitchConfidence.first;
-            float confidence = pitchConfidence.second;
-
-            result.frequency = pitch;
-            result.confidence = confidence;
-            result.isVoiced = confidence > config_.threshold;
-            result.timestamp = static_cast<float>(processedSamples_) / config_.sampleRate;
-
-            // Apply smoothing if enabled
-            if (config_.enableSmoothing && hasValidPitch_) {
-                result.frequency = applySmoothingFilter(pitch);
-            }
-
-            // Analyze vibrato if enabled
-            if (config_.enableVibratoDetection) {
-                result.vibrato = analyzeVibrato();
-            }
-
-            // Calculate pitch statistics
-            result.statistics = calculatePitchStatistics();
-
-            // Update history
-            updatePitchHistory(result.frequency, result.confidence);
-
-            // Generate pitch contour
-            result.contour = generatePitchContour();
-
-            currentPitch_ = result.frequency;
-            currentConfidence_ = result.confidence;
-            hasValidPitch_ = result.isVoiced;
-
-            return Result<PitchResult, Error>(std::move(result));
-
-        } catch (const std::exception& e) {
-            DebugLogger::getInstance().log(Component::GENERAL,
-                                           DebugLevel::ERROR,
-                                           "PitchTracker::detectPitch failed: "
-                                               + std::string(e.what()));
-            return Result<PitchResult, Error>(unexpected<Error>(Error::PROCESSING_ERROR));
-        }
+        return ResultT<PitchResult>(std::move(r));
     }
 
-    Result<float, Error> getRealtimePitch() override {
-        if (!isInitialized_) {
-            return Result<float, Error>(unexpected<Error>(Error::INITIALIZATION_FAILED));
-        }
-
-        return Result<float, Error>(currentPitch_);
+    ResultT<float> getRealtimePitch() override {
+        if (!initialized_)
+            return ResultT<float>(unexpected<Error>(Error::INITIALIZATION_FAILED));
+        return ResultT<float>(currentPitch_);
+    }
+    ResultT<float> getRealtimeConfidence() override {
+        if (!initialized_)
+            return ResultT<float>(unexpected<Error>(Error::INITIALIZATION_FAILED));
+        return ResultT<float>(currentConfidence_);
     }
 
-    Result<void, Error> processAudioChunk(std::span<const float> audio) override {
-        if (audio.empty()) {
-            return Result<void, Error>(unexpected<Error>(Error::INVALID_AUDIO_DATA));
-        }
-
-        try {
-            // Append to audio buffer
-            audioBuffer_.insert(audioBuffer_.end(), audio.begin(), audio.end());
-            processedSamples_ += audio.size();
-
-            // Process if we have enough samples
-            if (audioBuffer_.size() >= config_.windowSize) {
-                // Process overlapping windows
-                size_t processed = 0;
-                while (audioBuffer_.size() - processed >= config_.windowSize) {
-                    std::span<const float> window(audioBuffer_.data() + processed,
-                                                  config_.windowSize);
-
-                    auto pitchResult = performYinAnalysis(window);
-                    if (pitchResult.has_value()) {
-                        auto pitchConfidence = pitchResult.value();
-                        float pitch = pitchConfidence.first;
-                        float confidence = pitchConfidence.second;
-
-                        if (config_.enableSmoothing && hasValidPitch_) {
-                            pitch = applySmoothingFilter(pitch);
-                        }
-
-                        updatePitchHistory(pitch, confidence);
-                        currentPitch_ = pitch;
-                        currentConfidence_ = confidence;
-                        hasValidPitch_ = confidence > config_.threshold;
-                    }
-
-                    processed += config_.hopSize;
-                }
-
-                // Keep remaining samples for next chunk
-                if (processed > 0) {
-                    audioBuffer_.erase(audioBuffer_.begin(), audioBuffer_.begin() + processed);
-                }
+    ResultT<void> processAudioChunk(std::span<const float> audio) override {
+        if (audio.empty())
+            return ResultT<void>(unexpected<Error>(Error::INVALID_AUDIO_DATA));
+        audioBuffer_.insert(audioBuffer_.end(), audio.begin(), audio.end());
+        processedSamples_ += audio.size();
+        while (audioBuffer_.size() >= config_.windowSize) {
+            std::span<const float> window(audioBuffer_.data(), config_.windowSize);
+            auto pc = yin(window);
+            if (pc.has_value()) {
+                float f = pc->first;
+                float c = pc->second;
+                if (config_.enableSmoothing && hasPitch_)
+                    f = smooth(f);
+                updateHistory(f, c);
+                currentPitch_ = f;
+                currentConfidence_ = c;
+                hasPitch_ = c > config_.threshold;
             }
-
-            return Result<void, Error>();
-
-        } catch (const std::exception& e) {
-            DebugLogger::getInstance().log(Component::GENERAL,
-                                           DebugLevel::ERROR,
-                                           "PitchTracker::processAudioChunk failed: "
-                                               + std::string(e.what()));
-            return Result<void, Error>(unexpected<Error>(Error::PROCESSING_ERROR));
+            size_t hop = std::min(config_.hopSize, config_.windowSize);
+            if (audioBuffer_.size() > hop)
+                audioBuffer_.erase(audioBuffer_.begin(), audioBuffer_.begin() + hop);
+            else
+                audioBuffer_.clear();
         }
+        return ResultT<void>();
     }
 
-    Result<std::vector<float>, Error> getPitchContour(float durationMs) override {
-        if (!isInitialized_) {
-            return Result<std::vector<float>, Error>(
-                unexpected<Error>(Error::INITIALIZATION_FAILED));
-        }
-
-        try {
-            size_t numSamples = static_cast<size_t>((durationMs / 1000.0f)
-                                                    * (config_.sampleRate / config_.hopSize));
-            numSamples = std::min(numSamples, pitchHistory_.size());
-
-            std::vector<float> contour;
-            if (numSamples > 0) {
-                contour.assign(pitchHistory_.end() - numSamples, pitchHistory_.end());
-            }
-
-            return Result<std::vector<float>, Error>(std::move(contour));
-
-        } catch (const std::exception& e) {
-            DebugLogger::getInstance().log(Component::GENERAL,
-                                           DebugLevel::ERROR,
-                                           "PitchTracker::getPitchContour failed: "
-                                               + std::string(e.what()));
-            return Result<std::vector<float>, Error>(unexpected<Error>(Error::PROCESSING_ERROR));
-        }
+    ResultT<std::vector<float>> getPitchContour(float /*durationMs*/) override {
+        return ResultT<std::vector<float>>(pitchHistory_);
     }
 
     void reset() override {
@@ -204,331 +101,249 @@ class PitchTrackerImpl : public PitchTracker {
         confidenceHistory_.clear();
         currentPitch_ = 0.0f;
         currentConfidence_ = 0.0f;
-        smoothedPitch_ = 0.0f;
-        hasValidPitch_ = false;
+        smoothPitch_ = 0.0f;
         processedSamples_ = 0;
+        hasPitch_ = false;
     }
 
-    Result<void, Error> updateConfig(const Config& config) override {
-        if (config.sampleRate <= 0 || config.windowSize == 0) {
-            return Result<void, Error>(unexpected<Error>(Error::INVALID_SAMPLE_RATE));
-        }
-
-        config_ = config;
-        return initialize() ? Result<void, Error>()
-                            : Result<void, Error>(unexpected<Error>(Error::INITIALIZATION_FAILED));
+    ResultT<void> updateConfig(const Config& cfg) override {
+        if (cfg.sampleRate <= 0.0f || cfg.windowSize == 0 || cfg.hopSize == 0)
+            return ResultT<void>(unexpected<Error>(Error::INVALID_WINDOW_SIZE));
+        config_ = cfg;
+        initialize();
+        return ResultT<void>();
     }
 
     const Config& getConfig() const override {
         return config_;
     }
-
     bool isActive() const override {
-        return isInitialized_ && hasValidPitch_;
+        return hasPitch_;
     }
-
     std::string getProcessingStats() const override {
-        return "PitchTracker: Performance profiling disabled in enhanced analyzer development";
+        return "PitchTracker(YIN) active";
     }
 
   private:
-    bool initialize() {
-        try {
-            // Validate configuration
-            if (config_.sampleRate <= 0 || config_.windowSize == 0) {
-                return false;
-            }
+    Config config_{};
+    bool initialized_ = false;
+    bool hasPitch_ = false;
+    float currentPitch_ = 0.0f;
+    float currentConfidence_ = 0.0f;
+    float smoothPitch_ = 0.0f;
+    size_t processedSamples_ = 0;
+    std::vector<float> audioBuffer_;
+    std::vector<float> pitchHistory_;
+    std::vector<float> confidenceHistory_;
 
-            // Initialize buffers
-            yinBuffer_.resize(config_.windowSize / 2);
-            audioBuffer_.reserve(config_.windowSize * 2);
-
-            // Reserve history buffers (keep last 10 seconds of data)
-            size_t historySize = static_cast<size_t>(10.0f * config_.sampleRate / config_.hopSize);
-            pitchHistory_.reserve(historySize);
-            confidenceHistory_.reserve(historySize);
-
-            isInitialized_ = true;
-            return true;
-
-        } catch (const std::exception& e) {
-            DebugLogger::getInstance().log(Component::GENERAL,
-                                           DebugLevel::ERROR,
-                                           "PitchTracker initialization failed: "
-                                               + std::string(e.what()));
-            return false;
-        }
+    void initialize() {
+        audioBuffer_.reserve(config_.windowSize * 2);
+        size_t hist =
+            static_cast<size_t>(10.0f * config_.sampleRate / std::max<size_t>(1, config_.hopSize));
+        pitchHistory_.reserve(hist);
+        confidenceHistory_.reserve(hist);
+        initialized_ = true;
     }
 
-    Result<std::pair<float, float>, Error> performYinAnalysis(std::span<const float> audio) {
-        if (audio.size() < config_.windowSize) {
-            return Result<std::pair<float, float>, Error>(
-                unexpected<Error>(Error::INSUFFICIENT_DATA));
-        }
+    std::optional<std::pair<float, float>> yin(std::span<const float> audio) const {
+        const size_t N = config_.windowSize;
+        if (audio.size() < N)
+            return std::nullopt;
+        size_t minTau = static_cast<size_t>(config_.sampleRate / config_.maxFrequency);
+        if (minTau < 2)
+            minTau = 2;
+        size_t maxTau =
+            static_cast<size_t>(config_.sampleRate / std::max(config_.minFrequency, 1.0f));
+        if (maxTau >= N / 2)
+            maxTau = N / 2 - 1;
+        if (minTau >= maxTau)
+            return std::nullopt;
 
-        try {
-            // Step 1: Calculate difference function
-            calculateDifferenceFunction(audio);
-
-            // Step 2: Cumulative mean normalized difference function
-            calculateCumulativeMeanNormalizedDifference();
-
-            // Step 3: Absolute threshold
-            int tau = getAbsoluteThreshold();
-
-            if (tau == -1) {
-                // No pitch found
-                return Result<std::pair<float, float>, Error>(std::make_pair(0.0f, 0.0f));
+        std::vector<float> diff(maxTau + 1, 0.0f);
+        for (size_t tau = 1; tau <= maxTau; ++tau) {
+            double s = 0.0;
+            for (size_t i = 0; i + tau < N; ++i) {
+                float d = audio[i] - audio[i + tau];
+                s += static_cast<double>(d) * d;
             }
-
-            // Step 4: Parabolic interpolation
-            float betterTau = parabolicInterpolation(tau);
-
-            // Step 5: Convert to frequency
-            float frequency = config_.sampleRate / betterTau;
-
-            // Validate frequency range
-            if (frequency < config_.minFrequency || frequency > config_.maxFrequency) {
-                return Result<std::pair<float, float>, Error>(std::make_pair(0.0f, 0.0f));
-            }
-
-            // Calculate confidence (inverse of minimum YIN value)
-            float confidence = 1.0f - yinBuffer_[tau];
-            confidence = std::clamp(confidence, 0.0f, 1.0f);
-
-            return Result<std::pair<float, float>, Error>(std::make_pair(frequency, confidence));
-
-        } catch (const std::exception& e) {
-            return Result<std::pair<float, float>, Error>(
-                unexpected<Error>(Error::PROCESSING_ERROR));
+            diff[tau] = static_cast<float>(s);
         }
-    }
 
-    void calculateDifferenceFunction(std::span<const float> audio) {
-        size_t W = yinBuffer_.size();
-
-        for (size_t tau = 0; tau < W; ++tau) {
-            float sum = 0.0f;
-            for (size_t i = 0; i < W; ++i) {
-                float delta = audio[i] - audio[i + tau];
-                sum += delta * delta;
-            }
-            yinBuffer_[tau] = sum;
+        std::vector<float> cmnd(maxTau + 1, 0.0f);
+        cmnd[0] = 1.0f;
+        double run = 0.0;
+        for (size_t tau = 1; tau <= maxTau; ++tau) {
+            run += diff[tau];
+            cmnd[tau] =
+                run > 0.0 ? diff[tau] * static_cast<float>(tau) / static_cast<float>(run) : 1.0f;
         }
-    }
 
-    void calculateCumulativeMeanNormalizedDifference() {
-        yinBuffer_[0] = 1.0f;
-
-        float runningSum = 0.0f;
-        for (size_t tau = 1; tau < yinBuffer_.size(); ++tau) {
-            runningSum += yinBuffer_[tau];
-            yinBuffer_[tau] = yinBuffer_[tau] * tau / runningSum;
-        }
-    }
-
-    int getAbsoluteThreshold() {
-        size_t tau_min = static_cast<size_t>(config_.sampleRate / config_.maxFrequency);
-        size_t tau_max = static_cast<size_t>(config_.sampleRate / config_.minFrequency);
-        tau_max = std::min(tau_max, yinBuffer_.size() - 1);
-
-        for (size_t tau = tau_min; tau < tau_max; ++tau) {
-            if (yinBuffer_[tau] < config_.threshold) {
-                // Find local minimum starting from this point
-                while (tau + 1 < tau_max && yinBuffer_[tau + 1] < yinBuffer_[tau]) {
-                    tau++;
-                }
-                return static_cast<int>(tau);
+        size_t tauEstimate = 0;
+        for (size_t tau = minTau; tau <= maxTau; ++tau) {
+            if (cmnd[tau] < config_.threshold) {
+                while (tau + 1 <= maxTau && cmnd[tau + 1] < cmnd[tau])
+                    ++tau;
+                tauEstimate = tau;
+                break;
             }
         }
+        if (!tauEstimate)
+            return std::nullopt;
 
-        return -1;  // No period found
+        float confidence = 1.0f - cmnd[tauEstimate];
+        float pitch = static_cast<float>(config_.sampleRate / static_cast<float>(tauEstimate));
+        if (pitch < config_.minFrequency || pitch > config_.maxFrequency)
+            return std::nullopt;
+        return std::make_pair(pitch, confidence);
     }
 
-    float parabolicInterpolation(int tau) {
-        if (tau == 0 || tau >= static_cast<int>(yinBuffer_.size()) - 1) {
-            return static_cast<float>(tau);
+    float smooth(float p) {
+        float a = std::clamp(config_.smoothingFactor, 0.0f, 1.0f);
+        if (!hasPitch_) {
+            smoothPitch_ = p;
+            return p;
         }
-
-        float s0 = yinBuffer_[tau - 1];
-        float s1 = yinBuffer_[tau];
-        float s2 = yinBuffer_[tau + 1];
-
-        // Parabolic interpolation
-        float a = (s0 - 2 * s1 + s2) / 2.0f;
-        float b = (s2 - s0) / 2.0f;
-
-        if (std::abs(a) < 1e-10f) {
-            return static_cast<float>(tau);
-        }
-
-        float x0 = -b / (2 * a);
-        return tau + x0;
+        smoothPitch_ = (1.0f - a) * smoothPitch_ + a * p;
+        return smoothPitch_;
     }
 
-    float applySmoothingFilter(float newPitch) {
-        if (!hasValidPitch_) {
-            smoothedPitch_ = newPitch;
-            return newPitch;
-        }
-
-        // Simple exponential smoothing
-        smoothedPitch_ =
-            (1.0f - config_.smoothingFactor) * smoothedPitch_ + config_.smoothingFactor * newPitch;
-        return smoothedPitch_;
-    }
-
-    PitchResult::Vibrato analyzeVibrato() {
-        PitchResult::Vibrato vibrato;
-
-        if (pitchHistory_.size() < 20) {
-            return vibrato;  // Not enough data
-        }
-
-        // Simple vibrato detection based on pitch variance and periodicity
-        // Take last 2 seconds of pitch data
-        size_t analysisWindow = std::min(
-            static_cast<size_t>(2.0f * config_.sampleRate / config_.hopSize), pitchHistory_.size());
-
-        auto start = pitchHistory_.end() - analysisWindow;
-        auto end = pitchHistory_.end();
-
-        // Calculate mean and variance
-        float mean = std::accumulate(start, end, 0.0f) / analysisWindow;
-        float variance = 0.0f;
-
-        for (auto it = start; it != end; ++it) {
-            float diff = *it - mean;
-            variance += diff * diff;
-        }
-        variance /= analysisWindow;
-
-        // Simple vibrato detection heuristics
-        if (variance > 100.0f) {                            // Sufficient pitch variation
-            vibrato.rate = 4.5f;                            // Typical vibrato rate
-            vibrato.extent = std::sqrt(variance) / 100.0f;  // Convert to semitones approximation
-            vibrato.regularity =
-                std::min(1.0f, 1.0f / (variance / 10000.0f));  // Regularity heuristic
-        }
-
-        return vibrato;
-    }
-
-    PitchResult::PitchStatistics calculatePitchStatistics() {
-        PitchResult::PitchStatistics stats;
-
-        if (pitchHistory_.empty()) {
-            return stats;
-        }
-
-        // Calculate statistics from recent pitch history (last 1 second)
-        size_t analysisWindow = std::min(
-            static_cast<size_t>(1.0f * config_.sampleRate / config_.hopSize), pitchHistory_.size());
-
-        auto start = pitchHistory_.end() - analysisWindow;
-        auto end = pitchHistory_.end();
-
-        // Calculate mean
-        stats.mean = std::accumulate(start, end, 0.0f) / analysisWindow;
-
-        // Calculate standard deviation
-        float variance = 0.0f;
-        for (auto it = start; it != end; ++it) {
-            float diff = *it - stats.mean;
-            variance += diff * diff;
-        }
-        stats.standardDeviation = std::sqrt(variance / analysisWindow);
-
-        // Calculate range
-        auto minMax = std::minmax_element(start, end);
-        stats.range = *minMax.second - *minMax.first;
-
-        // Calculate stability (inverse of coefficient of variation)
-        if (stats.mean > 0) {
-            float cv = stats.standardDeviation / stats.mean;
-            stats.stability = 1.0f / (1.0f + cv);
-        }
-
-        return stats;
-    }
-
-    void updatePitchHistory(float pitch, float confidence) {
+    void updateHistory(float pitch, float conf) {
         pitchHistory_.push_back(pitch);
-        confidenceHistory_.push_back(confidence);
-
-        // Keep only recent history (10 seconds)
-        size_t maxHistory = static_cast<size_t>(10.0f * config_.sampleRate / config_.hopSize);
-        if (pitchHistory_.size() > maxHistory) {
+        confidenceHistory_.push_back(conf);
+        size_t maxEntries =
+            static_cast<size_t>(10.0f * config_.sampleRate / std::max<size_t>(1, config_.hopSize));
+        if (pitchHistory_.size() > maxEntries) {
             pitchHistory_.erase(pitchHistory_.begin());
             confidenceHistory_.erase(confidenceHistory_.begin());
         }
     }
 
-    std::vector<float> generatePitchContour() {
-        // Return recent pitch contour (last 1 second)
-        size_t contourLength = std::min(
-            static_cast<size_t>(1.0f * config_.sampleRate / config_.hopSize), pitchHistory_.size());
+    PitchResult::PitchStatistics computeStats() const {
+        PitchResult::PitchStatistics st{};
+        if (pitchHistory_.empty())
+            return st;
+        auto [minIt, maxIt] = std::minmax_element(pitchHistory_.begin(), pitchHistory_.end());
+        double sum = std::accumulate(pitchHistory_.begin(), pitchHistory_.end(), 0.0);
+        st.mean = static_cast<float>(sum / pitchHistory_.size());
+        double var = 0.0;
+        for (float v : pitchHistory_)
+            var += (v - st.mean) * (v - st.mean);
+        var /= pitchHistory_.size();
+        st.standardDeviation = static_cast<float>(std::sqrt(var));
+        st.range = *maxIt - *minIt;
+        st.stability = (st.mean > 0.0f) ? 1.0f / (1.0f + (st.standardDeviation / st.mean)) : 0.0f;
+        return st;
+    }
 
-        if (contourLength == 0) {
-            return {};
+    PitchResult::Vibrato computeVibrato() const {
+        PitchResult::Vibrato v{};
+        // Require a minimum number of pitch estimates to attempt vibrato analysis
+        if (pitchHistory_.size() < 12 || config_.hopSize == 0 || config_.sampleRate <= 0.0f) {
+            return v;  // defaults zero
         }
 
-        std::vector<float> contour;
-        contour.assign(pitchHistory_.end() - contourLength, pitchHistory_.end());
-        return contour;
+        // Use at most the last few seconds of history to avoid stale influence
+        size_t maxSamples = static_cast<size_t>(
+            std::max(1.0f, 2.0f * config_.sampleRate / std::max<size_t>(1, config_.hopSize)));
+        size_t startIndex =
+            pitchHistory_.size() > maxSamples ? pitchHistory_.size() - maxSamples : 0;
+        std::span<const float> recent(&pitchHistory_[startIndex],
+                                      pitchHistory_.size() - startIndex);
+
+        // Compute mean and variance (extent as std dev around mean)
+        double mean = std::accumulate(recent.begin(), recent.end(), 0.0) / recent.size();
+        double var = 0.0;
+        for (float p : recent)
+            var += (p - mean) * (p - mean);
+        var /= recent.size();
+        v.extent = static_cast<float>(std::sqrt(var));
+
+        // Centered series for zero crossing / cycle detection
+        std::vector<float> centered;
+        centered.reserve(recent.size());
+        for (float p : recent)
+            centered.push_back(p - static_cast<float>(mean));
+
+        // Simple amplitude gate: require overall extent above small threshold
+        if (v.extent < 0.1f) {
+            return v;  // negligible modulation
+        }
+
+        // Detect zero crossings for vibrato rate estimation
+        std::vector<size_t> zeroCrossIdx;
+        zeroCrossIdx.reserve(centered.size() / 2);
+        for (size_t i = 1; i < centered.size(); ++i) {
+            if ((centered[i - 1] <= 0.0f && centered[i] > 0.0f)
+                || (centered[i - 1] >= 0.0f && centered[i] < 0.0f)) {
+                zeroCrossIdx.push_back(i);
+            }
+        }
+        if (zeroCrossIdx.size() < 4) {  // not enough cycles
+            return v;
+        }
+
+        // Vibrato rate: zero crossings / (2 * durationSeconds)
+        double hopSeconds =
+            static_cast<double>(config_.hopSize) / static_cast<double>(config_.sampleRate);
+        double durationSeconds = centered.size() * hopSeconds;
+        if (durationSeconds > 0.0) {
+            v.rate = static_cast<float>((zeroCrossIdx.size() / 2.0) / durationSeconds);
+        }
+
+        // Regularity: based on std dev of cycle lengths (zero-cross interval pairs)
+        std::vector<double> cycleLengths;
+        for (size_t i = 2; i < zeroCrossIdx.size(); i += 2) {
+            size_t prev = zeroCrossIdx[i - 2];
+            size_t cur = zeroCrossIdx[i];
+            cycleLengths.push_back((cur - prev) * hopSeconds);
+        }
+        if (cycleLengths.size() >= 2) {
+            double cMean = std::accumulate(cycleLengths.begin(), cycleLengths.end(), 0.0)
+                           / cycleLengths.size();
+            double cVar = 0.0;
+            for (double c : cycleLengths)
+                cVar += (c - cMean) * (c - cMean);
+            cVar /= cycleLengths.size();
+            double cStd = std::sqrt(cVar);
+            if (cMean > 0.0) {
+                double cv = cStd / cMean;  // coefficient of variation
+                v.regularity =
+                    static_cast<float>(1.0 / (1.0 + cv));  // maps 0 (irregular) .. 1 (regular)
+            }
+        }
+        return v;
     }
 };
 
-// Factory method implementation
 PitchTracker::Result<std::unique_ptr<PitchTracker>, PitchTracker::Error>
 PitchTracker::create(const Config& config) {
+    if (config.sampleRate <= 0.0f || config.windowSize == 0 || config.hopSize == 0)
+        return PitchTracker::Result<std::unique_ptr<PitchTracker>, PitchTracker::Error>(
+            unexpected<Error>(Error::INVALID_WINDOW_SIZE));
     try {
-        auto tracker = std::unique_ptr<PitchTracker>(new PitchTrackerImpl(config));
-        return Result<std::unique_ptr<PitchTracker>, Error>(std::move(tracker));
-    } catch (const std::exception& e) {
-        DebugLogger::getInstance().log(Component::GENERAL,
-                                       DebugLevel::ERROR,
-                                       "PitchTracker::create failed: " + std::string(e.what()));
-        return Result<std::unique_ptr<PitchTracker>, Error>(
+        auto ptr = std::unique_ptr<PitchTracker>(new PitchTrackerImpl(config));
+        return PitchTracker::Result<std::unique_ptr<PitchTracker>, Error>(std::move(ptr));
+    } catch (...) {
+        return PitchTracker::Result<std::unique_ptr<PitchTracker>, Error>(
             unexpected<Error>(Error::INITIALIZATION_FAILED));
     }
 }
 
-// JSON export implementation
 std::string PitchTracker::exportToJson(const PitchResult& result) {
-    std::ostringstream json;
-    json << "{";
-    json << "\"frequency\":" << result.frequency << ",";
-    json << "\"confidence\":" << result.confidence << ",";
-    json << "\"isVoiced\":" << (result.isVoiced ? "true" : "false") << ",";
-    json << "\"timestamp\":" << result.timestamp << ",";
-
-    // Vibrato information
-    json << "\"vibrato\":{";
-    json << "\"rate\":" << result.vibrato.rate << ",";
-    json << "\"extent\":" << result.vibrato.extent << ",";
-    json << "\"regularity\":" << result.vibrato.regularity;
-    json << "},";
-
-    // Statistics
-    json << "\"statistics\":{";
-    json << "\"mean\":" << result.statistics.mean << ",";
-    json << "\"standardDeviation\":" << result.statistics.standardDeviation << ",";
-    json << "\"range\":" << result.statistics.range << ",";
-    json << "\"stability\":" << result.statistics.stability;
-    json << "},";
-
-    // Pitch contour
-    json << "\"contour\":[";
+    std::ostringstream oss;
+    oss << '{' << "\"frequency\":" << result.frequency << ",\"confidence\":" << result.confidence
+        << ",\"isVoiced\":" << (result.isVoiced ? 1 : 0) << ",\"timestamp\":" << result.timestamp
+        << ",\"statistics\":{\"mean\":" << result.statistics.mean
+        << ",\"standardDeviation\":" << result.statistics.standardDeviation
+        << ",\"range\":" << result.statistics.range
+        << ",\"stability\":" << result.statistics.stability << '}' << ",\"contour\":[";
     for (size_t i = 0; i < result.contour.size(); ++i) {
-        if (i > 0)
-            json << ",";
-        json << result.contour[i];
+        if (i)
+            oss << ',';
+        oss << result.contour[i];
     }
-    json << "]";
-
-    json << "}";
-    return json.str();
+    oss << "]}";
+    return oss.str();
 }
 
 }  // namespace huntmaster

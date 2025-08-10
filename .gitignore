@@ -52,6 +52,9 @@ data_backup/
 # Node modules (if any)
 node_modules/
 
+# Generated API documentation (regenerate locally as needed)
+docs/api/
+
 # Python cache
 __pycache__/
 *.pyc
