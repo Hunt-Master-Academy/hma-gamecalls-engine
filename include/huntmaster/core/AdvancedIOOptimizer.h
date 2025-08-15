@@ -37,7 +37,7 @@
 #endif
 #endif
 
-#include "huntmaster/core/OptimizedAudioIO.h"
+#include "OptimizedAudioIO.h"
 
 // Compatibility layer for non-Linux systems
 #ifndef __linux__

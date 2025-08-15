@@ -140,4 +140,36 @@ The engine becomes the acoustic backbone for training, coaching, gamification, a
 
     ---
 
-    _End of high-level roadmap. Refer to `mvp_todo.md` for all operational details._
+_End of high-level roadmap. Refer to `mvp_todo.md` for all operational details._
+
+---
+
+## Analysis & Calibration (Planned)
+
+Purpose
+- Strengthen deterministic analysis with device/environment-aware calibration and transparent “why” factors. Engine-only scope; orchestration handles security/UX/CI.
+
+Scope (Engine Additive, Non-Breaking)
+- Microphone Calibration & Gain Advisor
+    - Detect clipping/too‑quiet, estimate noise floor, compute headroom, suggest input gain presets.
+    - Summary (planned): peakLevelDbFS, rmsDbFS, noiseFloorDbFS, headroomDb, recommendation {increase|decrease|ok}.
+- Latency & Clock‑Drift Calibration
+    - One‑time loopback/clap test to estimate I/O latency and drift (ppm); compensate in DTW alignment window.
+    - Session fields (planned): alignmentOffsetMs, driftPpm applied to DTWComparator banding.
+- Environment Profiler (optional NR)
+    - Ambient profile capture + VAD‑aware normalization hooks. Optional RNNoise behind build/runtime flags; disabled by default.
+    - Summary (planned): noiseFloorDbFS, spectralTilt, bandEnergy{low,mid,high}.
+- Multi‑Dimensional Confidence and “Why” Breakdown
+    - Expose per‑metric contributions (mfcc, pitch, harmonic, cadence, loudness) and short factor strings that explain score composition; sums within tolerance to total.
+
+Acceptance Signals
+- Deterministic unit tests cover: zero/quiet/loud bounds; synthetic offset/drift compensation; ambient profile improving VAD false‑positive rate on quiet scenes; contributions sum within epsilon.
+- JSON exports include new fields; backward compatible with existing consumers.
+- Performance unchanged in streaming hot path; calibration tasks run off critical path or with negligible overhead.
+
+Dependencies & Risks
+- Optional NR depends on an external library; keep hard‑off by default with deterministic fallback.
+- DTW band adjustments must preserve existing correctness tests.
+
+Governance
+- Status/acceptance tracked in `docs/mvp_todo.md`. This section is vision/roadmap only.

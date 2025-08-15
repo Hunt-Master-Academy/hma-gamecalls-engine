@@ -51,3 +51,13 @@ TEST_F(VADStateTransitionTest, InitialStateIsSilence) {
     EXPECT_FALSE(result.value().is_active);
     EXPECT_FALSE(vad.isVoiceActive());
 }
+
+// TODO: Expand VAD state transition testing with comprehensive scenarios:
+// [ ] Test complete state machine: SILENCE -> CANDIDATE -> ACTIVE -> POST_BUFFER -> SILENCE
+// [ ] Test all possible state transitions and their conditions
+// [ ] Test state persistence and memory between processWindow calls
+// [ ] Test invalid state transitions (ensure they don't occur)
+// [ ] Test state timing accuracy with different configuration values
+// [ ] Test concurrent state queries during processing
+// [ ] Test state reset functionality (if available)
+// [ ] Test edge cases where state changes occur mid-processing

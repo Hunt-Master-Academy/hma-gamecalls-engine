@@ -1,11 +1,15 @@
 var searchData=
 [
-  ['_7eaudiobufferpool_0',['~AudioBufferPool',['../classhuntmaster_1_1AudioBufferPool.html#a2c936aaefcdae1442922b913e678d5f8',1,'huntmaster::AudioBufferPool']]],
-  ['_7eaudiolevelprocessor_1',['~AudioLevelProcessor',['../classhuntmaster_1_1AudioLevelProcessor.html#ae0d99aaf3d3e44a8661e175d4f6eaf49',1,'huntmaster::AudioLevelProcessor']]],
-  ['_7eaudioplayer_2',['~AudioPlayer',['../classhuntmaster_1_1AudioPlayer.html#a9994f1e5ed9b6e9e50d8c5f6fb84af9c',1,'huntmaster::AudioPlayer']]],
-  ['_7eaudiorecorder_3',['~AudioRecorder',['../classhuntmaster_1_1AudioRecorder.html#a058aec2836c53faee14a49fdf62bfb16',1,'huntmaster::AudioRecorder']]],
-  ['_7erealtimescorer_4',['~RealtimeScorer',['../classhuntmaster_1_1RealtimeScorer.html#a2fe938e8b54f4a9d8d5c7d37533cc733',1,'huntmaster::RealtimeScorer']]],
-  ['_7eunifiedaudioengine_5',['~UnifiedAudioEngine',['../classhuntmaster_1_1UnifiedAudioEngine.html#a2a3d6fe12c139cd8305507de0c7d5158',1,'huntmaster::UnifiedAudioEngine']]],
-  ['_7evoiceactivitydetector_6',['~VoiceActivityDetector',['../classhuntmaster_1_1VoiceActivityDetector.html#a2611c17542dbd55e61d5444ac39adb57',1,'huntmaster::VoiceActivityDetector']]],
-  ['_7ewaveformgenerator_7',['~WaveformGenerator',['../classhuntmaster_1_1WaveformGenerator.html#a885b8205a9ef52cc61920a18ddabf8ed',1,'huntmaster::WaveformGenerator']]]
+  ['vadconfig_0',['VADConfig',['../structhuntmaster_1_1VADConfig.html',1,'huntmaster']]],
+  ['vaderror_1',['VADError',['../VoiceActivityDetector_8h.html#a03feea6a1015fab892f249150b98d6ad',1,'huntmaster']]],
+  ['vadresult_2',['VADResult',['../structhuntmaster_1_1VADResult.html',1,'huntmaster']]],
+  ['valid_3',['valid',['../structhuntmaster_1_1UnifiedAudioEngine_1_1EnhancedAnalysisSummary.html#a40254c7b1110ae6771f6fcd741e1f372',1,'huntmaster::UnifiedAudioEngine::EnhancedAnalysisSummary::valid'],['../classhuntmaster_1_1AudioBufferPool_1_1BufferHandle.html#a976ee7bb916e9c46f2713872bc334984',1,'huntmaster::AudioBufferPool::BufferHandle::valid()']]],
+  ['validateformat_4',['validateFormat',['../classhuntmaster_1_1core_1_1AudioFormatDetector.html#a3899c4007d9c49680641f036418fdd6c',1,'huntmaster::core::AudioFormatDetector']]],
+  ['validationerrors_5',['ValidationErrors',['../structhuntmaster_1_1ComponentErrorHandler_1_1ValidationErrors.html',1,'huntmaster::ComponentErrorHandler']]],
+  ['value_6',['value',['../structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html#a21ba5583ee866ef047f864c001e65b4b',1,'huntmaster::UnifiedAudioEngine::Result']]],
+  ['vectoredio_7',['vectoredIO',['../classhuntmaster_1_1io_1_1AdvancedAsyncIO.html#a30f4cc91258862cc2df75e9b8e28b9e7',1,'huntmaster::io::AdvancedAsyncIO']]],
+  ['voiceactivitydetector_8',['voiceactivitydetector',['../classhuntmaster_1_1VoiceActivityDetector.html',1,'huntmaster::VoiceActivityDetector'],['../classhuntmaster_1_1VoiceActivityDetector.html#a00704bf1bd7ce5035f027c6248915c64',1,'huntmaster::VoiceActivityDetector::VoiceActivityDetector(const Config &amp;config)'],['../classhuntmaster_1_1VoiceActivityDetector.html#a0f2e800088771fd30179a4438eda7243',1,'huntmaster::VoiceActivityDetector::VoiceActivityDetector(VoiceActivityDetector &amp;&amp;) noexcept']]],
+  ['voiceactivitydetector_2eh_9',['VoiceActivityDetector.h',['../VoiceActivityDetector_8h.html',1,'']]],
+  ['volume_10',['volume',['../structhuntmaster_1_1RealtimeScorer_1_1SimilarityScore.html#ae913c7be4d69b6f49908854b95021bca',1,'huntmaster::RealtimeScorer::SimilarityScore::volume'],['../structhuntmaster_1_1RealtimeScoringResult.html#a8c59758e508f6d24213925f5ed04d805',1,'huntmaster::RealtimeScoringResult::volume']]],
+  ['volumeweight_11',['volumeweight',['../structhuntmaster_1_1RealtimeScorer_1_1Config.html#aa45bdfd2eee889b3afecf3c805a37c41',1,'huntmaster::RealtimeScorer::Config::volumeWeight'],['../structhuntmaster_1_1RealtimeScorerConfig.html#a73d9b0e704112228106ef55bf9ac061d',1,'huntmaster::RealtimeScorerConfig::volumeWeight']]]
 ];

@@ -1,5 +1,29 @@
 var searchData=
 [
-  ['unloadmastercall_0',['unloadMasterCall',['../classhuntmaster_1_1UnifiedAudioEngine.html#a4c1e6567a76d28f95908b1f9e3950c25',1,'huntmaster::UnifiedAudioEngine']]],
-  ['updateconfig_1',['updateconfig',['../classhuntmaster_1_1AudioLevelProcessor.html#a2f882c96a9cdfa7f931b1a5a19b4c273',1,'huntmaster::AudioLevelProcessor::updateConfig()'],['../classhuntmaster_1_1RealtimeScorer.html#afb1db37553aec8cc0c381e9f2fc5a7b0',1,'huntmaster::RealtimeScorer::updateConfig()'],['../classhuntmaster_1_1WaveformGenerator.html#afc6057aa7e48b9ecd335353e858b2722',1,'huntmaster::WaveformGenerator::updateConfig()']]]
+  ['savememorybuffertowav_0',['saveMemoryBufferToWav',['../classhuntmaster_1_1AudioRecorder.html#a4d8f562e56539d257a49f399370b0e99',1,'huntmaster::AudioRecorder']]],
+  ['saverecording_1',['saveRecording',['../classhuntmaster_1_1UnifiedAudioEngine.html#ab3ffd7ca3507e1f6f024a02336be9e68',1,'huntmaster::UnifiedAudioEngine']]],
+  ['savetowav_2',['saveToWav',['../classhuntmaster_1_1AudioRecorder.html#a9026a0439c7e4e4ce04c59c094c87ad2',1,'huntmaster::AudioRecorder']]],
+  ['savetowavtrimmed_3',['saveToWavTrimmed',['../classhuntmaster_1_1AudioRecorder.html#aeb23d696c35e22fb9964de7863656d4c',1,'huntmaster::AudioRecorder']]],
+  ['setbuffercallback_4',['setBufferCallback',['../classhuntmaster_1_1StreamingAudioBuffer.html#aaca89e80a8b4f1bf52f3b1686403e683',1,'huntmaster::StreamingAudioBuffer']]],
+  ['setconversionoptions_5',['setConversionOptions',['../classhuntmaster_1_1core_1_1AudioFormatConverter.html#ab8c8084df0b1b4e80eede45ddfbf7ce0',1,'huntmaster::core::AudioFormatConverter']]],
+  ['setconversionquality_6',['setConversionQuality',['../classhuntmaster_1_1core_1_1AudioFormatConverter.html#ab4aa9666e8cb03f6857cb3108b5e25f0',1,'huntmaster::core::AudioFormatConverter']]],
+  ['setenabled_7',['setEnabled',['../classhuntmaster_1_1ErrorLogger.html#aba5c5a3f71ea6c0ff7da0c358640fc3e',1,'huntmaster::ErrorLogger']]],
+  ['setenhancedanalyzersenabled_8',['setEnhancedAnalyzersEnabled',['../classhuntmaster_1_1UnifiedAudioEngine.html#ad50290bcd64ec3b741c76232a4d6acf2',1,'huntmaster::UnifiedAudioEngine']]],
+  ['setmastercall_9',['setMasterCall',['../classhuntmaster_1_1RealtimeScorer.html#a863f3fbe444fa29fe82d2fefa23bcfab',1,'huntmaster::RealtimeScorer']]],
+  ['setminimumseverity_10',['setMinimumSeverity',['../classhuntmaster_1_1ErrorLogger.html#ac6b2cdb914e3689c2240b9cb0bee9028',1,'huntmaster::ErrorLogger']]],
+  ['setrealtimescorerconfig_11',['setRealtimeScorerConfig',['../classhuntmaster_1_1UnifiedAudioEngine.html#a9d0a3fd620d3aaf7cc63550ef27ceda1',1,'huntmaster::UnifiedAudioEngine']]],
+  ['setuptoolsdebug_12',['setupToolsDebug',['../classhuntmaster_1_1DebugConfig.html#a03d9b96e4ee5e94e2c36e8e7af9cb57e',1,'huntmaster::DebugConfig']]],
+  ['setwindowratio_13',['setWindowRatio',['../classhuntmaster_1_1DTWComparator.html#ae44f3e4d052001323e050bea46795606',1,'huntmaster::DTWComparator']]],
+  ['setzoomlevel_14',['setZoomLevel',['../classhuntmaster_1_1WaveformGenerator.html#a3132d03e52f204201c06f7ac69a2f440',1,'huntmaster::WaveformGenerator']]],
+  ['severitytostring_15',['severityToString',['../classhuntmaster_1_1ErrorLogger.html#a4bc095a939b06747d03d39ca8e483c89',1,'huntmaster::ErrorLogger']]],
+  ['shutdown_16',['shutdown',['../classhuntmaster_1_1io_1_1AdvancedAsyncIO.html#ab845a97600d12bd70082f7ccdf5afc6b',1,'huntmaster::io::AdvancedAsyncIO']]],
+  ['size_17',['size',['../classhuntmaster_1_1AudioBufferPool_1_1BufferHandle.html#a9a83b066d88cd5765058ab10537afb86',1,'huntmaster::AudioBufferPool::BufferHandle']]],
+  ['start_18',['start',['../classhuntmaster_1_1AsyncAudioWriter.html#afc6d27af0c8fb11b2e49986b8429ee02',1,'huntmaster::AsyncAudioWriter']]],
+  ['startmemoryrecording_19',['startMemoryRecording',['../classhuntmaster_1_1UnifiedAudioEngine.html#a39baaafb041c156086cf78dd28d020a7',1,'huntmaster::UnifiedAudioEngine']]],
+  ['startmonitoring_20',['startMonitoring',['../classhuntmaster_1_1ErrorMonitor.html#a61eeef2003090394a5355377f8ad9c75',1,'huntmaster::ErrorMonitor']]],
+  ['startrecording_21',['startrecording',['../classhuntmaster_1_1AudioRecorder.html#afeaebdc5d0af00f2436766dbb86facc3',1,'huntmaster::AudioRecorder::startRecording()'],['../classhuntmaster_1_1UnifiedAudioEngine.html#a1ccbe06863622d7ea87ee689e6a43290',1,'huntmaster::UnifiedAudioEngine::startRecording()']]],
+  ['statustoerrorcode_22',['statusToErrorCode',['../classhuntmaster_1_1ComponentErrorHandler.html#a7ca17419a05797ea7617e9cb3266a49c',1,'huntmaster::ComponentErrorHandler']]],
+  ['stop_23',['stop',['../classhuntmaster_1_1AudioPlayer.html#a2b9e6e24da188aef77f3ba442cdf511d',1,'huntmaster::AudioPlayer::stop()'],['../classhuntmaster_1_1AsyncAudioWriter.html#aada04ea75bf5d5af1ba96d1575eb1a61',1,'huntmaster::AsyncAudioWriter::stop()']]],
+  ['stopmonitoring_24',['stopMonitoring',['../classhuntmaster_1_1ErrorMonitor.html#a78e611f7e48a15583e9e388b3c60a155',1,'huntmaster::ErrorMonitor']]],
+  ['stoprecording_25',['stoprecording',['../classhuntmaster_1_1AudioRecorder.html#a7d4faa6f9d40cc7cb60fd3874d6c5d54',1,'huntmaster::AudioRecorder::stopRecording()'],['../classhuntmaster_1_1UnifiedAudioEngine.html#a7065171695e7450df922c4d114fc1f68',1,'huntmaster::UnifiedAudioEngine::stopRecording()']]]
 ];

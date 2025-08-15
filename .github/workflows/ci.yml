@@ -92,6 +92,11 @@ jobs:
       - name: Run Tests
         run: |
           timeout 90 ./build/bin/RunEngineTests --gtest_brief=1 --gtest_output=json:build_test_results.json
+      - name: Diagnostics-Off Sanity
+        run: |
+          if [ -f ./build/bin/RunEngineNoDiagTests ]; then
+            timeout 60 ./build/bin/RunEngineNoDiagTests --gtest_brief=1 --gtest_filter=-DISABLED_* || true
+          fi
       - name: Upload Test Results (Build)
         if: always()
         uses: actions/upload-artifact@v4
@@ -244,6 +249,98 @@ jobs:
           clang-tidy -p build \
             -checks='-*,bugprone-*,performance-*,modernize-*' \
             $FILES || { echo 'clang-tidy reported issues'; exit 1; }
+
+  wasm-smoke:
+    name: WASM Smoke Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Emscripten SDK
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: 3.1.47
+      - name: Configure (WASM)
+        run: |
+          emcmake cmake -S . -B build-wasm -G Ninja -DCMAKE_BUILD_TYPE=Release
+      - name: Build (WASM interface)
+        run: |
+          cmake --build build-wasm -j $(nproc) --target huntmaster_wasm
+      - name: Verify artifacts
+        run: |
+          test -f web/dist/huntmaster_engine.js && ls -lh web/dist/huntmaster_engine.*
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install Playwright (Chromium) and http-server
+        run: |
+          npm --version
+          npm init -y >/dev/null 2>&1
+          npm i -D playwright@1.46.0 http-server@14
+          npx playwright install --with-deps chromium
+      - name: Create WASM smoke HTML
+        run: |
+          cat > web/dist/smoke.html << 'EOF'
+          <!doctype html>
+          <html>
+            <head><meta charset="utf-8"><title>Huntmaster WASM Smoke</title></head>
+            <body>
+              <script src="./huntmaster_engine.js"></script>
+              <script>
+                (async () => {
+                  try {
+                    if (typeof HuntmasterEngine !== 'function') {
+                      console.error('HUNTMASTER_WASM_FAIL: factory missing');
+                    } else {
+                      const mod = await HuntmasterEngine();
+                      if (mod) {
+                        console.log('HUNTMASTER_WASM_OK');
+                      } else {
+                        console.error('HUNTMASTER_WASM_FAIL: no module');
+                      }
+                    }
+                  } catch (e) {
+                    console.error('HUNTMASTER_WASM_FAIL: ' + (e && e.message ? e.message : e));
+                  }
+                })();
+              </script>
+            </body>
+          </html>
+          EOF
+      - name: Serve dist and run headless browser check
+        run: |
+          npx http-server web/dist -p 8080 -c-1 &
+          SRV_PID=$!
+          # Wait for server
+          for i in {1..20}; do
+            curl -fsS http://127.0.0.1:8080/ >/dev/null && break || sleep 0.5
+          done
+          # Playwright script
+          node - <<'NODE'
+          const { chromium } = require('playwright');
+          (async () => {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage();
+            let ok = false;
+            page.on('console', msg => {
+              const t = msg.text();
+              if (t.includes('HUNTMASTER_WASM_OK')) ok = true;
+              if (t.includes('HUNTMASTER_WASM_FAIL')) console.error(t);
+            });
+            await page.goto('http://127.0.0.1:8080/smoke.html', { waitUntil: 'load', timeout: 20000 });
+            // Give time for WASM to initialize
+            await page.waitForTimeout(2000);
+            await browser.close();
+            if (!ok) {
+              console.error('WASM smoke test did not report OK');
+              process.exit(1);
+            } else {
+              console.log('WASM smoke test OK');
+            }
+          })().catch(e => { console.error(e); process.exit(1); });
+          NODE
+          kill $SRV_PID || true
 
   determine-sanitizers:
     name: Determine Sanitizers

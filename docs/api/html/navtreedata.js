@@ -25,125 +25,45 @@
 var NAVTREE =
 [
   [ "Huntmaster Audio Engine", "index.html", [
-    [ "</blockquote>", "index.html#autotoc_md1", null ],
-    [ "🚧 Project Status: In Development", "index.html#autotoc_md2", [
-      [ "Phase 1: Game Calls MVP", "index.html#autotoc_md3", null ]
-    ] ],
-    [ "✨ Features", "index.html#autotoc_md4", null ],
-    [ "🔧 Debugging & Development Tools", "index.html#autotoc_md5", [
-      [ "Debug Features", "index.html#autotoc_md6", null ],
-      [ "Available Tools", "index.html#autotoc_md7", null ],
-      [ "Debug Usage Examples", "index.html#autotoc_md8", null ],
-      [ "Debug Components", "index.html#autotoc_md9", null ]
-    ] ],
-    [ "📚 API Documentation", "index.html#autotoc_md10", [
-      [ "Documentation Features", "index.html#autotoc_md11", null ],
-      [ "Generating Documentation", "index.html#autotoc_md12", [
-        [ "Prerequisites", "index.html#autotoc_md13", null ],
-        [ "Generate HTML Documentation", "index.html#autotoc_md14", null ],
-        [ "Documentation Output", "index.html#autotoc_md15", null ]
+    [ "Hunt Master Academy – Game Calls Engine (Huntmaster Audio Core)", "index.html", "index" ],
+    [ "Hunt Master Academy Game Calls Engine – Updated Comprehensive TODO & Roadmap", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html", [
+      [ "1. Current Phase Snapshot", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md20", null ],
+      [ "2. Immediate Goals (Execution Order)", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md22", null ],
+      [ "3. Detailed Task Breakdown", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md24", [
+        [ "3.1 Finalize Stage", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md25", null ],
+        [ "3.2 Similarity Readiness", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md26", null ],
+        [ "3.3 Loudness Enhancements", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md27", null ],
+        [ "3.4 Waveform Overlay", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md28", null ],
+        [ "3.5 Calibration", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md29", null ],
+        [ "3.6 Test & Infra", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md30", null ],
+        [ "3.7 Coaching Feedback (Phase Edge)", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md31", null ]
       ] ],
-      [ "Online Documentation", "index.html#autotoc_md16", null ],
-      [ "Key API Interfaces", "index.html#autotoc_md17", null ]
-    ] ],
-    [ "🏗️ Build System", "index.html#autotoc_md18", [
-      [ "Build System Architecture", "index.html#autotoc_md19", null ],
-      [ "Prerequisites", "index.html#autotoc_md20", null ],
-      [ "Quick Start", "index.html#autotoc_md21", [
-        [ "Native Build (Windows, Linux, macOS)", "index.html#autotoc_md22", null ],
-        [ "WebAssembly Build", "index.html#autotoc_md23", null ]
-      ] ],
-      [ "Build Configuration Options", "index.html#autotoc_md24", [
-        [ "Custom Configuration Examples", "index.html#autotoc_md25", null ]
-      ] ],
-      [ "Build Targets", "index.html#autotoc_md26", [
-        [ "Core Library", "index.html#autotoc_md27", null ],
-        [ "Development Tools (10 tools)", "index.html#autotoc_md28", null ],
-        [ "Test Suite", "index.html#autotoc_md29", null ]
-      ] ],
-      [ "Platform-Specific Notes", "index.html#autotoc_md30", [
-        [ "Windows", "index.html#autotoc_md31", null ],
-        [ "Linux/macOS", "index.html#autotoc_md32", null ]
-      ] ],
-      [ "Troubleshooting", "index.html#autotoc_md33", [
-        [ "Common Issues", "index.html#autotoc_md34", null ],
-        [ "Getting Help", "index.html#autotoc_md35", null ]
-      ] ]
-    ] ],
-    [ "Dependencies", "index.html#autotoc_md36", [
-      [ "Dependency Management", "index.html#autotoc_md37", null ]
-    ] ],
-    [ "📚 Documentation", "index.html#autotoc_md38", null ],
-    [ "🏗️ Project Structure", "index.html#autotoc_md39", null ],
-    [ "Huntmaster Audio Engine - Cross-Platform Architecture", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html", [
-      [ "Executive Summary", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md41", null ],
-      [ "Core Design Principles", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md43", [
-        [ "1. <strong>Modern C++20 Architecture</strong>", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md44", null ],
-        [ "2. <strong>Unified Build System</strong>", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md45", null ],
-        [ "3. <strong>Real-Time Processing Architecture</strong>", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md46", null ],
-        [ "Comprehensive Error Types", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md47", null ]
-      ] ],
-      [ "Build System & Development Infrastructure", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md49", [
-        [ "Modular CMake Architecture (Refactored)", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md50", [
-          [ "Key Improvements", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md51", null ]
-        ] ],
-        [ "CMake Configuration", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md52", null ],
-        [ "Build Targets & Automation", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md53", [
-          [ "Core Library", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md54", null ],
-          [ "Development Tools (Auto-discovered)", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md55", null ],
-          [ "Test Infrastructure", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md56", null ]
-        ] ],
-        [ "Cross-Platform Build Commands", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md57", null ],
-        [ "Testing Infrastructure", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md58", null ],
-        [ "Dependency Management", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md59", null ],
-        [ "Diagnostic Tools", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md60", null ]
-      ] ],
-      [ "Platform-Specific Implementations", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md62", [
-        [ "Web (WASM)", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md63", null ],
-        [ "Mobile Platforms", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md64", null ],
-        [ "Desktop", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md65", null ]
-      ] ],
-      [ "Performance Optimizations", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md67", [
-        [ "SIMD Acceleration", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md68", null ],
-        [ "Memory Efficiency", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md69", null ],
-        [ "Real-Time Guarantees", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md70", null ]
-      ] ],
-      [ "Data Pipeline & Processing Flow", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md72", [
-        [ "Audio Processing Pipeline", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md73", null ],
-        [ "File Organization", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md74", null ]
-      ] ],
-      [ "Development Status & MVP Completion", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md76", [
-        [ "✅ Completed Core Components (95% Complete)", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md77", null ],
-        [ "� <strong>MVP REQUIRED COMPONENTS</strong> (0% Complete)", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md78", null ],
-        [ "🔄 <strong>MVP ENHANCEMENT COMPONENTS</strong> (Foundation Exists)", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md79", null ],
-        [ "🎯 <strong>MVP ADVANCED FEATURES</strong> (Future Phases)", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md80", null ]
-      ] ],
-      [ "MVP Implementation Roadmap", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md82", [
-        [ "🎯 <strong>Phase 1: Critical Components</strong> (2-3 weeks)", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md83", null ],
-        [ "🚀 <strong>Phase 2: Enhanced Scoring</strong> (1-2 weeks)", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md84", null ],
-        [ "📊 <strong>Phase 3: Visualization Support</strong> (1-2 weeks)", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md85", null ],
-        [ "🎵 <strong>Phase 4: Advanced Features</strong> (2-3 weeks)", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md86", null ],
-        [ "⚡ <strong>Integration Strategy</strong>", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md87", null ],
-        [ "🔄 <strong>Existing Foundation Leveraged</strong>", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md88", null ]
-      ] ],
-      [ "Testing & Quality Assurance", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md90", [
-        [ "Test Coverage Strategy", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md91", null ],
-        [ "Continuous Integration", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md92", null ]
-      ] ],
-      [ "Future Roadmap & Extensibility", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md94", [
-        [ "Short-term Goals (Next 3 months)", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md95", null ],
-        [ "Long-term Vision (6-12 months)", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md96", null ],
-        [ "Architecture Extensibility", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md97", null ]
-      ] ],
-      [ "Conclusion", "md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md99", null ]
+      [ "4. API Additions (Planned Specifications)", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md33", null ],
+      [ "5. Acceptance Criteria (Near-Term)", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md35", null ],
+      [ "6. Risk Log", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md37", null ],
+      [ "7. Performance Guard Targets (Maintain)", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md39", null ],
+      [ "8. Backlog (Deferred Until Core Gaps Closed)", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md41", null ],
+      [ "9. Completed (Do Not Rework)", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md43", null ],
+      [ "10. Deprecations / Gated", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md45", null ],
+      [ "11. Implementation Sequencing (Two-Week Micro Plan)", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md47", null ],
+      [ "12. Metrics to Track", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md49", null ],
+      [ "13. Test Additions Required", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md51", null ],
+      [ "14. Data / Assets Needed", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md53", null ],
+      [ "15. Documentation Tasks (Parallel)", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md55", null ],
+      [ "16. Out-of-Scope (For Now)", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md57", null ],
+      [ "17. Exit Criteria for Current Phase", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md59", null ],
+      [ "18. Quick Progress Checklist (Tick as Completed)", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md61", null ],
+      [ "19. Notes & Constraints", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md63", null ],
+      [ "20. Summary", "md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md65", null ]
     ] ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],
       [ "Class Index", "classes.html", null ],
       [ "Class Members", "functions.html", [
         [ "All", "functions.html", "functions_dup" ],
-        [ "Functions", "functions_func.html", null ],
-        [ "Variables", "functions_vars.html", null ],
+        [ "Functions", "functions_func.html", "functions_func" ],
+        [ "Variables", "functions_vars.html", "functions_vars" ],
+        [ "Typedefs", "functions_type.html", null ],
         [ "Enumerations", "functions_enum.html", null ]
       ] ]
     ] ],
@@ -156,8 +76,10 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"AudioBufferPool_8h_source.html",
-"index.html#autotoc_md39"
+"AdvancedIOOptimizer_8h.html",
+"classhuntmaster_1_1ErrorLogger.html#ab7ce1f7e1b139335083fd179e26ad30a",
+"classhuntmaster_1_1io_1_1NUMAAudioAllocator.html#a1cffd626c912e4ade40cd29deb216fe3",
+"structhuntmaster_1_1MFCCProcessor_1_1Config.html#a42c9b0e0c9cececd593973b71bae4451"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

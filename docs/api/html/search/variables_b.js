@@ -1,11 +1,9 @@
 var searchData=
 [
-  ['recommendation_0',['recommendation',['../structhuntmaster_1_1RealtimeScorer_1_1RealtimeFeedback.html#a35be0a4498ed5db3574442aa678df6f1',1,'huntmaster::RealtimeScorer::RealtimeFeedback::recommendation'],['../structhuntmaster_1_1RealtimeFeedback.html#afa3360dc89000cf5a4f83a8f90c8b8bb',1,'huntmaster::RealtimeFeedback::recommendation']]],
-  ['rmsamplitude_1',['rmsAmplitude',['../structhuntmaster_1_1WaveformGenerator_1_1WaveformData.html#ac79d5cdfdc046d84a9cfe2e1d6d75236',1,'huntmaster::WaveformGenerator::WaveformData']]],
-  ['rmsattacktimems_2',['rmsAttackTimeMs',['../structhuntmaster_1_1AudioLevelProcessor_1_1Config.html#a3a4c908ada0770b4e30d81dfe096cfa4',1,'huntmaster::AudioLevelProcessor::Config']]],
-  ['rmsdb_3',['rmsDb',['../structhuntmaster_1_1AudioLevelProcessor_1_1LevelMeasurement.html#ab303fe5d43df1560787cf422ce35a107',1,'huntmaster::AudioLevelProcessor::LevelMeasurement']]],
-  ['rmsenvelope_4',['rmsEnvelope',['../structhuntmaster_1_1WaveformGenerator_1_1WaveformData.html#accbccf25b382a81bed0c05e5c135a119',1,'huntmaster::WaveformGenerator::WaveformData']]],
-  ['rmslinear_5',['rmsLinear',['../structhuntmaster_1_1AudioLevelProcessor_1_1LevelMeasurement.html#a32e8953f29fe38ac3c000b6ed5a0da71',1,'huntmaster::AudioLevelProcessor::LevelMeasurement']]],
-  ['rmsreleasetimems_6',['rmsReleaseTimeMs',['../structhuntmaster_1_1AudioLevelProcessor_1_1Config.html#a7a2f8dba5612605a641340300318bdd3',1,'huntmaster::AudioLevelProcessor::Config']]],
-  ['rmswindowms_7',['rmsWindowMs',['../structhuntmaster_1_1WaveformGenerator_1_1Config.html#ad46c76082bdd8e558aac81cb0013f143',1,'huntmaster::WaveformGenerator::Config']]]
+  ['onsetthreshold_0',['onsetThreshold',['../structhuntmaster_1_1CadenceAnalyzer_1_1Config.html#af9c913ac87cfa54c8f04a2577a187cc2',1,'huntmaster::CadenceAnalyzer::Config']]],
+  ['originalsamplecount_1',['originalSampleCount',['../structhuntmaster_1_1WaveformGenerator_1_1WaveformData.html#a8fd5c253ade9b7bc3e099b3b7cec2c64',1,'huntmaster::WaveformGenerator::WaveformData']]],
+  ['outputfilename_2',['outputFilename',['../structhuntmaster_1_1AudioRecorder_1_1Config.html#abf1442e7549f64ef82e50127c99e8a77',1,'huntmaster::AudioRecorder::Config']]],
+  ['outputsize_3',['outputSize',['../structhuntmaster_1_1core_1_1ConversionMetrics.html#af09f794d570ac89b4c6b9c060a2eeede',1,'huntmaster::core::ConversionMetrics']]],
+  ['overall_4',['overall',['../structhuntmaster_1_1RealtimeScorer_1_1SimilarityScore.html#a78e00ab26f3e2e4be9a88b52b5e8183b',1,'huntmaster::RealtimeScorer::SimilarityScore::overall'],['../structhuntmaster_1_1RealtimeScoringResult.html#a26e12b8216569f7e505550193171644a',1,'huntmaster::RealtimeScoringResult::overall']]],
+  ['overallrhythmscore_5',['overallRhythmScore',['../structhuntmaster_1_1CadenceAnalyzer_1_1CadenceProfile.html#a5accfb12a765683d12a045f91d776bc8',1,'huntmaster::CadenceAnalyzer::CadenceProfile']]]
 ];

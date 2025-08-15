@@ -43,3 +43,15 @@ TEST_F(VADDiagnosticTest, DiagnoseFrameCounting) {
         }
     }
 }
+
+// TODO: Expand VAD diagnostic testing with comprehensive debugging capabilities:
+// [ ] Test frame counting accuracy across different sample rates
+// [ ] Test timing precision with high-resolution audio input
+// [ ] Test diagnostic output for all state transitions
+// [ ] Test energy calculation diagnostics and accuracy verification
+// [ ] Test internal state inspection and validation
+// [ ] Test performance diagnostics (processing time, memory usage)
+// [ ] Test configuration parameter effects on diagnostic measurements
+// [ ] Test diagnostic logging and debugging output formatting
+// [ ] Test edge case diagnostics (overflow, underflow, boundary conditions)
+// [ ] Test diagnostic data consistency across different platforms

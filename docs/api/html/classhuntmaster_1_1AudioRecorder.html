@@ -92,6 +92,7 @@ $(document).ready(function(){initNavTree('classhuntmaster_1_1AudioRecorder.html'
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="classhuntmaster_1_1AudioRecorder-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">huntmaster::AudioRecorder Class Reference</div></div>
@@ -108,6 +109,18 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhuntmaster_1_1AudioRecorder_1_1Config.html">Config</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configuration parameters for audio recording.  <a href="structhuntmaster_1_1AudioRecorder_1_1Config.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhuntmaster_1_1AudioRecorder_1_1MemoryBufferStats.html">MemoryBufferStats</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get memory buffer statistics.  <a href="structhuntmaster_1_1AudioRecorder_1_1MemoryBufferStats.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
+Public Types</h2></td></tr>
+<tr class="memitem:aba75115a76ad859afde8b0cf412763bd" id="r_aba75115a76ad859afde8b0cf412763bd"><td class="memItemLeft" align="right" valign="top">enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1AudioRecorder.html#aba75115a76ad859afde8b0cf412763bd">RecordingMode</a> { <a class="el" href="classhuntmaster_1_1AudioRecorder.html#aba75115a76ad859afde8b0cf412763bda1b38e956857856983cd979cc86b4e232">MEMORY_BASED</a>
+, <a class="el" href="classhuntmaster_1_1AudioRecorder.html#aba75115a76ad859afde8b0cf412763bda218e3511f219c67a022bfb7bf3bd312f">FILE_BASED</a>
+, <a class="el" href="classhuntmaster_1_1AudioRecorder.html#aba75115a76ad859afde8b0cf412763bda3bf07fe8ac3883060b1558113ba248d4">HYBRID</a>
+ }</td></tr>
+<tr class="memdesc:aba75115a76ad859afde8b0cf412763bd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines the recording storage mode.  <a href="classhuntmaster_1_1AudioRecorder.html#aba75115a76ad859afde8b0cf412763bd">More...</a><br /></td></tr>
+<tr class="separator:aba75115a76ad859afde8b0cf412763bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -141,22 +154,82 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:afc688afc06250969d744375cf3e62bef" id="r_afc688afc06250969d744375cf3e62bef"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1AudioRecorder.html#afc688afc06250969d744375cf3e62bef">getDuration</a> () const</td></tr>
 <tr class="memdesc:afc688afc06250969d744375cf3e62bef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the duration of the current recording.  <br /></td></tr>
 <tr class="separator:afc688afc06250969d744375cf3e62bef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a70359bf4db040475cb0bb68c699199d9" id="r_a70359bf4db040475cb0bb68c699199d9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhuntmaster_1_1AudioRecorder.html#aba75115a76ad859afde8b0cf412763bd">RecordingMode</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1AudioRecorder.html#a70359bf4db040475cb0bb68c699199d9">getRecordingMode</a> () const</td></tr>
+<tr class="memdesc:a70359bf4db040475cb0bb68c699199d9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the current recording mode.  <br /></td></tr>
+<tr class="separator:a70359bf4db040475cb0bb68c699199d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0b86af0e5667c0b928e8b38604572dd" id="r_ae0b86af0e5667c0b928e8b38604572dd"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1AudioRecorder.html#ae0b86af0e5667c0b928e8b38604572dd">getRecordedDataSize</a> () const</td></tr>
+<tr class="memdesc:ae0b86af0e5667c0b928e8b38604572dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get recorded audio data size.  <br /></td></tr>
+<tr class="separator:ae0b86af0e5667c0b928e8b38604572dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85c771dae8900c256abbbbdf0a10f78e" id="r_a85c771dae8900c256abbbbdf0a10f78e"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1AudioRecorder.html#a85c771dae8900c256abbbbdf0a10f78e">copyRecordedData</a> (float *buffer, size_t maxSamples) const</td></tr>
+<tr class="memdesc:a85c771dae8900c256abbbbdf0a10f78e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy recorded audio data to external buffer.  <br /></td></tr>
+<tr class="separator:a85c771dae8900c256abbbbdf0a10f78e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab76b5d39197dfdfdf097ea6c10eebaaf" id="r_ab76b5d39197dfdfdf097ea6c10eebaaf"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1AudioRecorder.html#ab76b5d39197dfdfdf097ea6c10eebaaf">clearMemoryBuffer</a> ()</td></tr>
+<tr class="memdesc:ab76b5d39197dfdfdf097ea6c10eebaaf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear the memory recording buffer.  <br /></td></tr>
+<tr class="separator:ab76b5d39197dfdfdf097ea6c10eebaaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42f5196f0b60c6dc4e81ba0088fd0e0c" id="r_a42f5196f0b60c6dc4e81ba0088fd0e0c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1AudioRecorder.html#a42f5196f0b60c6dc4e81ba0088fd0e0c">isMemoryBufferNearCapacity</a> (float thresholdPercent=0.8f) const</td></tr>
+<tr class="memdesc:a42f5196f0b60c6dc4e81ba0088fd0e0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if memory buffer is near capacity.  <br /></td></tr>
+<tr class="separator:a42f5196f0b60c6dc4e81ba0088fd0e0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec00aaf7c5ef785991574123b78a7418" id="r_aec00aaf7c5ef785991574123b78a7418"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structhuntmaster_1_1AudioRecorder_1_1MemoryBufferStats.html">MemoryBufferStats</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1AudioRecorder.html#aec00aaf7c5ef785991574123b78a7418">getMemoryBufferStats</a> () const</td></tr>
+<tr class="memdesc:aec00aaf7c5ef785991574123b78a7418"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get memory buffer statistics.  <br /></td></tr>
+<tr class="separator:aec00aaf7c5ef785991574123b78a7418"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d8f562e56539d257a49f399370b0e99" id="r_a4d8f562e56539d257a49f399370b0e99"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1AudioRecorder.html#a4d8f562e56539d257a49f399370b0e99">saveMemoryBufferToWav</a> (const std::string &amp;filename, bool applyTrimming=true) const</td></tr>
+<tr class="memdesc:a4d8f562e56539d257a49f399370b0e99"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save memory buffer to WAV file.  <br /></td></tr>
+<tr class="separator:a4d8f562e56539d257a49f399370b0e99"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Real-time audio recording interface optimized for wildlife call capture. </p>
-<p>The <a class="el" href="classhuntmaster_1_1AudioRecorder.html" title="Real-time audio recording interface optimized for wildlife call capture.">AudioRecorder</a> class provides a high-level interface for capturing audio from input devices with minimal latency and optimal settings for wildlife call analysis. It supports mono recording at various sample rates and provides real-time audio level monitoring.</p>
+<p>The <a class="el" href="classhuntmaster_1_1AudioRecorder.html" title="Real-time audio recording interface optimized for wildlife call capture.">AudioRecorder</a> class provides a high-level interface for capturing audio from input devices with minimal latency and optimal settings for wildlife call analysis. It supports both file-based and memory-based recording modes, along with real-time audio level monitoring.</p>
 <p>Key features:</p><ul>
 <li>Real-time audio capture with configurable parameters</li>
 <li>Live audio level monitoring for UI feedback</li>
 <li>Automatic silence trimming for clean recordings</li>
 <li>WAV file export with proper formatting</li>
-<li>Thread-safe recording operations </li>
+<li>Memory-based recording for direct data access</li>
+<li>Thread-safe recording operations</li>
+<li>Hybrid recording mode (simultaneous file and memory recording) </li>
 </ul>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#_a0">/mnt/e/develop/Huntmaster/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#_a0">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="AudioRecorder_8h_source.html#l00062">62</a> of file <a class="el" href="AudioRecorder_8h_source.html">AudioRecorder.h</a>.</p>
-</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<p class="definition">Definition at line <a class="el" href="AudioRecorder_8h_source.html#l00068">68</a> of file <a class="el" href="AudioRecorder_8h_source.html">AudioRecorder.h</a>.</p>
+</div><h2 class="groupheader">Member Enumeration Documentation</h2>
+<a id="aba75115a76ad859afde8b0cf412763bd" name="aba75115a76ad859afde8b0cf412763bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba75115a76ad859afde8b0cf412763bd">&#9670;&#160;</a></span>RecordingMode</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum class <a class="el" href="classhuntmaster_1_1AudioRecorder.html#aba75115a76ad859afde8b0cf412763bd">huntmaster::AudioRecorder::RecordingMode</a></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Defines the recording storage mode. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="aba75115a76ad859afde8b0cf412763bda1b38e956857856983cd979cc86b4e232" name="aba75115a76ad859afde8b0cf412763bda1b38e956857856983cd979cc86b4e232"></a>MEMORY_BASED&#160;</td><td class="fielddoc"><p>Store recorded audio only in memory buffers. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="aba75115a76ad859afde8b0cf412763bda218e3511f219c67a022bfb7bf3bd312f" name="aba75115a76ad859afde8b0cf412763bda218e3511f219c67a022bfb7bf3bd312f"></a>FILE_BASED&#160;</td><td class="fielddoc"><p>Stream recorded audio directly to file. </p>
+</td></tr>
+<tr><td class="fieldname"><a id="aba75115a76ad859afde8b0cf412763bda3bf07fe8ac3883060b1558113ba248d4" name="aba75115a76ad859afde8b0cf412763bda3bf07fe8ac3883060b1558113ba248d4"></a>HYBRID&#160;</td><td class="fielddoc"><p>Store in memory and optionally stream to file simultaneously. </p>
+</td></tr>
+</table>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a11">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+</dl>
+
+<p class="definition">Definition at line <a class="el" href="AudioRecorder_8h_source.html#l00074">74</a> of file <a class="el" href="AudioRecorder_8h_source.html">AudioRecorder.h</a>.</p>
+
+</div>
+</div>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ab9d8b213a9a6d095bcf2a9aa07bf9eed" name="ab9d8b213a9a6d095bcf2a9aa07bf9eed"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab9d8b213a9a6d095bcf2a9aa07bf9eed">&#9670;&#160;</a></span>AudioRecorder()</h2>
 
@@ -174,7 +247,7 @@ Public Member Functions</h2></td></tr>
 
 <p>Construct a new <a class="el" href="classhuntmaster_1_1AudioRecorder.html" title="Real-time audio recording interface optimized for wildlife call capture.">AudioRecorder</a> object. </p>
 <p>Creates an <a class="el" href="classhuntmaster_1_1AudioRecorder.html" title="Real-time audio recording interface optimized for wildlife call capture.">AudioRecorder</a> instance with default configuration. The recorder is initially in a stopped state. </p>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a9">/mnt/e/develop/Huntmaster/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a19">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
 </dl>
 
 </div>
@@ -196,12 +269,76 @@ Public Member Functions</h2></td></tr>
 
 <p>Destroy the <a class="el" href="classhuntmaster_1_1AudioRecorder.html" title="Real-time audio recording interface optimized for wildlife call capture.">AudioRecorder</a> object. </p>
 <p>Automatically stops any active recording and cleans up resources. </p>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a10">/mnt/e/develop/Huntmaster/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a20">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
 </dl>
 
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="ab76b5d39197dfdfdf097ea6c10eebaaf" name="ab76b5d39197dfdfdf097ea6c10eebaaf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab76b5d39197dfdfdf097ea6c10eebaaf">&#9670;&#160;</a></span>clearMemoryBuffer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool huntmaster::AudioRecorder::clearMemoryBuffer </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Clear the memory recording buffer. </p>
+<p>Clears the internal memory buffer, freeing up space for new recordings. Only affects memory-based and hybrid recording modes. File-based recording is unaffected.</p>
+<dl class="section return"><dt>Returns</dt><dd>true if buffer was cleared successfully </dd></dl>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a27">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+</dl>
+
+</div>
+</div>
+<a id="a85c771dae8900c256abbbbdf0a10f78e" name="a85c771dae8900c256abbbbdf0a10f78e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a85c771dae8900c256abbbbdf0a10f78e">&#9670;&#160;</a></span>copyRecordedData()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t huntmaster::AudioRecorder::copyRecordedData </td>
+          <td>(</td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>buffer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>maxSamples</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Copy recorded audio data to external buffer. </p>
+<p>Efficiently copies recorded audio samples to a user-provided buffer. Only works for memory-based and hybrid recording modes.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">buffer</td><td>Destination buffer (must be pre-allocated) </td></tr>
+    <tr><td class="paramname">maxSamples</td><td>Maximum number of samples to copy </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Number of samples actually copied </dd></dl>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a26">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+</dl>
+
+</div>
+</div>
 <a id="aca233470f3408b355c76d777fbf7cec8" name="aca233470f3408b355c76d777fbf7cec8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aca233470f3408b355c76d777fbf7cec8">&#9670;&#160;</a></span>getCurrentLevel()</h2>
 
@@ -223,7 +360,7 @@ Public Member Functions</h2></td></tr>
 <dl class="section note"><dt>Note</dt><dd>This method provides real-time feedback and can be called frequently </dd>
 <dd>
 Returns 0.0 when no recording is active </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a7">/mnt/e/develop/Huntmaster/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a8">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
 </dl>
 
 </div>
@@ -246,7 +383,29 @@ Returns 0.0 when no recording is active </dd></dl>
 <p>Get the duration of the current recording. </p>
 <p>Returns the total duration of the current recording session in seconds.</p>
 <dl class="section return"><dt>Returns</dt><dd>Recording duration in seconds, or 0.0 if no recording is active </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a14">/mnt/e/develop/Huntmaster/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a23">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+</dl>
+
+</div>
+</div>
+<a id="aec00aaf7c5ef785991574123b78a7418" name="aec00aaf7c5ef785991574123b78a7418"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aec00aaf7c5ef785991574123b78a7418">&#9670;&#160;</a></span>getMemoryBufferStats()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structhuntmaster_1_1AudioRecorder_1_1MemoryBufferStats.html">MemoryBufferStats</a> huntmaster::AudioRecorder::getMemoryBufferStats </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get memory buffer statistics. </p>
+<dl class="section return"><dt>Returns</dt><dd>Current memory buffer statistics </dd></dl>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a34">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
 </dl>
 
 </div>
@@ -271,7 +430,83 @@ Returns 0.0 when no recording is active </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>Vector of normalized audio samples</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>The returned data remains valid until the next recording session starts </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classhuntmaster_1_1AudioRecorder.html#aca233470f3408b355c76d777fbf7cec8" title="Get the current real-time audio level.">getCurrentLevel()</a> for real-time audio level monitoring </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a12">/mnt/e/develop/Huntmaster/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a9">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+</dl>
+
+</div>
+</div>
+<a id="ae0b86af0e5667c0b928e8b38604572dd" name="ae0b86af0e5667c0b928e8b38604572dd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0b86af0e5667c0b928e8b38604572dd">&#9670;&#160;</a></span>getRecordedDataSize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t huntmaster::AudioRecorder::getRecordedDataSize </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get recorded audio data size. </p>
+<p>Returns the number of samples currently stored in memory. Only applicable for memory-based and hybrid recording modes.</p>
+<dl class="section return"><dt>Returns</dt><dd>Number of audio samples in memory buffer </dd></dl>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a25">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+</dl>
+
+</div>
+</div>
+<a id="a70359bf4db040475cb0bb68c699199d9" name="a70359bf4db040475cb0bb68c699199d9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a70359bf4db040475cb0bb68c699199d9">&#9670;&#160;</a></span>getRecordingMode()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classhuntmaster_1_1AudioRecorder.html#aba75115a76ad859afde8b0cf412763bd">RecordingMode</a> huntmaster::AudioRecorder::getRecordingMode </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the current recording mode. </p>
+<p>Returns the recording mode that was set when recording started.</p>
+<dl class="section return"><dt>Returns</dt><dd>Current recording mode </dd></dl>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a24">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+</dl>
+
+</div>
+</div>
+<a id="a42f5196f0b60c6dc4e81ba0088fd0e0c" name="a42f5196f0b60c6dc4e81ba0088fd0e0c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a42f5196f0b60c6dc4e81ba0088fd0e0c">&#9670;&#160;</a></span>isMemoryBufferNearCapacity()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool huntmaster::AudioRecorder::isMemoryBufferNearCapacity </td>
+          <td>(</td>
+          <td class="paramtype">float&#160;</td>
+          <td class="paramname"><em>thresholdPercent</em> = <code>0.8f</code></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check if memory buffer is near capacity. </p>
+<p>Returns true if the memory buffer is approaching its maximum size limit. Useful for implementing memory management strategies.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">thresholdPercent</td><td>Percentage threshold (0.0-1.0, default 0.8 = 80%) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if buffer usage exceeds the threshold </dd></dl>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a28">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
 </dl>
 
 </div>
@@ -293,7 +528,48 @@ Returns 0.0 when no recording is active </dd></dl>
 
 <p>Check if a recording session is currently active. </p>
 <dl class="section return"><dt>Returns</dt><dd>true if recording is in progress, false otherwise </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a6">/mnt/e/develop/Huntmaster/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a7">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+</dl>
+
+</div>
+</div>
+<a id="a4d8f562e56539d257a49f399370b0e99" name="a4d8f562e56539d257a49f399370b0e99"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4d8f562e56539d257a49f399370b0e99">&#9670;&#160;</a></span>saveMemoryBufferToWav()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool huntmaster::AudioRecorder::saveMemoryBufferToWav </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filename</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>applyTrimming</em> = <code>true</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Save memory buffer to WAV file. </p>
+<p>Saves the current memory buffer contents to a WAV file without affecting the ongoing recording. Works for all recording modes.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filename</td><td>Path to the output WAV file </td></tr>
+    <tr><td class="paramname">applyTrimming</td><td>Whether to apply automatic silence trimming </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if saved successfully </dd></dl>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a35">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
 </dl>
 
 </div>
@@ -324,7 +600,7 @@ Returns 0.0 when no recording is active </dd></dl>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if the file was saved successfully, false otherwise</dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classhuntmaster_1_1AudioRecorder.html#aeb23d696c35e22fb9964de7863656d4c" title="Save recorded audio to WAV file with automatic silence trimming.">saveToWavTrimmed()</a> for automatic silence removal </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a13">/mnt/e/develop/Huntmaster/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a22">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
 </dl>
 
 </div>
@@ -356,7 +632,7 @@ Returns 0.0 when no recording is active </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>true if the file was saved successfully, false otherwise</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>This method applies automatic silence detection and trimming </dd></dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="classhuntmaster_1_1AudioRecorder.html#a9026a0439c7e4e4ce04c59c094c87ad2" title="Save recorded audio to WAV file without processing.">saveToWav()</a> for saving without trimming </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a8">/mnt/e/develop/Huntmaster/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a10">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
 </dl>
 
 </div>
@@ -388,7 +664,7 @@ Returns 0.0 when no recording is active </dd></dl>
 <dl class="section return"><dt>Returns</dt><dd>true if recording started successfully, false otherwise</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Only one recording session can be active at a time </dd></dl>
 <dl class="section warning"><dt>Warning</dt><dd>Ensure proper audio permissions are granted on mobile platforms </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a5">/mnt/e/develop/Huntmaster/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a6">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
 </dl>
 
 </div>
@@ -411,7 +687,7 @@ Returns 0.0 when no recording is active </dd></dl>
 <p>Stop the current recording session. </p>
 <p>Stops the active recording session and finalizes the captured audio data. This method blocks until the recording thread has been properly shut down.</p>
 <dl class="section note"><dt>Note</dt><dd>Safe to call even if no recording is active </dd></dl>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a11">/mnt/e/develop/Huntmaster/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#a21">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
 </dl>
 
 </div>

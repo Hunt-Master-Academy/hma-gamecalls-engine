@@ -1,4 +1,25 @@
 var searchData=
 [
-  ['historysize_0',['historySize',['../structhuntmaster_1_1AudioLevelProcessor_1_1Config.html#a48174aa7e905c7f5761a966ff0169813',1,'huntmaster::AudioLevelProcessor::Config']]]
+  ['enable_5fcaching_0',['enable_caching',['../structhuntmaster_1_1MFCCProcessor_1_1Config.html#a820d7882e92e9fdc69ba92de7ab64896',1,'huntmaster::MFCCProcessor::Config']]],
+  ['enable_5fsimd_1',['enable_simd',['../structhuntmaster_1_1DTWComparator_1_1Config.html#a3c18a957d409026010526a1b6f1c2c55',1,'huntmaster::DTWComparator::Config::enable_simd'],['../structhuntmaster_1_1MFCCProcessor_1_1Config.html#a1eb5aa0bbd93d87df7a97231443271a3',1,'huntmaster::MFCCProcessor::Config::enable_simd']]],
+  ['enablebeattracking_2',['enableBeatTracking',['../structhuntmaster_1_1CadenceAnalyzer_1_1Config.html#a4e070e9dc1859cfcc5283e9a73237032',1,'huntmaster::CadenceAnalyzer::Config']]],
+  ['enablecircularbuffer_3',['enableCircularBuffer',['../structhuntmaster_1_1AudioRecorder_1_1Config.html#ae045ca252ee80ff9eec1335d12b564d2',1,'huntmaster::AudioRecorder::Config']]],
+  ['enabled_4',['enabled',['../structhuntmaster_1_1VADConfig.html#a6b86f01f55da227632c1b117c59b9f94',1,'huntmaster::VADConfig']]],
+  ['enabledithering_5',['enableDithering',['../structhuntmaster_1_1core_1_1ConversionOptions.html#ab09201eafe96f0a835e30026ce881008',1,'huntmaster::core::ConversionOptions']]],
+  ['enableformanttracking_6',['enableFormantTracking',['../structhuntmaster_1_1HarmonicAnalyzer_1_1Config.html#a4de2091eea08d19e8d67ac4b1012f357',1,'huntmaster::HarmonicAnalyzer::Config']]],
+  ['enablenormalization_7',['enableNormalization',['../structhuntmaster_1_1core_1_1ConversionOptions.html#a8daf9c43c2368ec974bfdf9f45381375',1,'huntmaster::core::ConversionOptions']]],
+  ['enableonsetdetection_8',['enableOnsetDetection',['../structhuntmaster_1_1CadenceAnalyzer_1_1Config.html#a463d6ac28407beae08d187511f3d3991',1,'huntmaster::CadenceAnalyzer::Config']]],
+  ['enableoptimizedio_9',['enableOptimizedIO',['../structhuntmaster_1_1AudioRecorder_1_1Config.html#a479c9e181528f05e3528415cbac3ca78',1,'huntmaster::AudioRecorder::Config']]],
+  ['enablepeakhold_10',['enablePeakHold',['../structhuntmaster_1_1WaveformGenerator_1_1Config.html#afee692f81c01babd7e769fa591a66da2',1,'huntmaster::WaveformGenerator::Config']]],
+  ['enablepitchanalysis_11',['enablepitchanalysis',['../structhuntmaster_1_1RealtimeScorer_1_1Config.html#a6a17addb69c2734eee49215002d8ed1f',1,'huntmaster::RealtimeScorer::Config::enablePitchAnalysis'],['../structhuntmaster_1_1RealtimeScorerConfig.html#a40f6393a1ab67ef39c055d41e945c2d1',1,'huntmaster::RealtimeScorerConfig::enablePitchAnalysis']]],
+  ['enablermsoverlay_12',['enableRmsOverlay',['../structhuntmaster_1_1WaveformGenerator_1_1Config.html#ad421f7eb0a72c8b3ec78aabe735d4200',1,'huntmaster::WaveformGenerator::Config']]],
+  ['enablesmoothing_13',['enableSmoothing',['../structhuntmaster_1_1PitchTracker_1_1Config.html#a2ef926cd457c382904dabee06d4ca9bb',1,'huntmaster::PitchTracker::Config']]],
+  ['enablesyllableanalysis_14',['enableSyllableAnalysis',['../structhuntmaster_1_1CadenceAnalyzer_1_1Config.html#a02837f85e7e0de051bae996cb27fb3d7',1,'huntmaster::CadenceAnalyzer::Config']]],
+  ['enabletonalanalysis_15',['enableTonalAnalysis',['../structhuntmaster_1_1HarmonicAnalyzer_1_1Config.html#a878606565ca868cafcdb889b1beda406',1,'huntmaster::HarmonicAnalyzer::Config']]],
+  ['enablevibratodetection_16',['enableVibratoDetection',['../structhuntmaster_1_1PitchTracker_1_1Config.html#a39d6d398f21064062dec85467075f282',1,'huntmaster::PitchTracker::Config']]],
+  ['energy_5flevel_17',['energy_level',['../structhuntmaster_1_1VADResult.html#a5352c9672efef2203d88f7745334962e',1,'huntmaster::VADResult']]],
+  ['energy_5fthreshold_18',['energy_threshold',['../structhuntmaster_1_1VADConfig.html#ac0bd9b8b559b439022f8699aea331018',1,'huntmaster::VADConfig::energy_threshold'],['../structhuntmaster_1_1VoiceActivityDetector_1_1Config.html#a9d3736c536d262d7898e147dc9767ba4',1,'huntmaster::VoiceActivityDetector::Config::energy_threshold']]],
+  ['errorcode_19',['errorCode',['../structhuntmaster_1_1ErrorInfo.html#a46b6b05f1ada9178c252aa7246e74683',1,'huntmaster::ErrorInfo']]],
+  ['errors_20',['errors',['../structhuntmaster_1_1core_1_1AudioFormatInfo.html#a288bf5fb7bd416ca961d399565c3476d',1,'huntmaster::core::AudioFormatInfo']]],
+  ['estimatedtempo_21',['estimatedTempo',['../structhuntmaster_1_1CadenceAnalyzer_1_1CadenceProfile.html#ac663e9b1c90eff85259da89669aa91c1',1,'huntmaster::CadenceAnalyzer::CadenceProfile']]]
 ];

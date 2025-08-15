@@ -26,7 +26,7 @@
 #include <thread>
 #include <vector>
 
-#include "huntmaster/core/DebugLogger.h"
+#include "DebugLogger.h"
 
 namespace huntmaster {
 

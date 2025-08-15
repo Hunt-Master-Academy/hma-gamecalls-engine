@@ -5,7 +5,7 @@ Status Context: Core Engine Production | Enhanced Analyzers Phase 1 Integrated |
 ---
 
 ## 1. Purpose
-This guide describes the runtime debugging, tracing, and performance instrumentation facilities for the Huntmaster Audio Engine. It is aligned with the current roadmap (finalize session stage, similarity readiness API, loudness normalization, waveform overlay export, calibration). Always reconcile changes with `docs/mvp_todo.md` before modifying this file.
+This guide describes the runtime debugging, tracing, and performance instrumentation facilities for the Huntmaster Audio Engine. It is aligned with the current roadmap (finalize session stage, similarity readiness API, loudness normalization, waveform overlay export, calibration). Always reconcile changes with `docs/mvp_todo.md` before modifying this file. Finalize, readiness, loudness, and base overlay export are implemented.
 
 ---
 
@@ -38,6 +38,7 @@ Ordered by verbosity (NONE < ERROR < WARN < INFO < DEBUG < TRACE). Recommendatio
 ---
 
 ## 4. Components (Current Map)
+
 | Component Enum | Scope |
 |----------------|-------|
 | GENERAL | Generic / uncategorized |
@@ -56,6 +57,9 @@ Ordered by verbosity (NONE < ERROR < WARN < INFO < DEBUG < TRACE). Recommendatio
 | OVERLAY_EXPORT (Planned) | Waveform downsampling / peak packing |
 | FINALIZE_STAGE (Planned) | Segment extraction + refined DTW |
 | CALIBRATION (Planned) | Confidence grade mapping |
+| CALIBRATION_LVL (Planned) | Mic gain/noise floor advisor |
+| CALIBRATION_LATENCY (Planned) | Latency/drift calibration |
+| ENVIRONMENT_PROFILER (Planned) | Ambient profiling / NR flag |
 
 (Older names like AUDIO_ENGINE / FEATURE_EXTRACTION may remain in code until a consolidation pass; keep mappings consistent.)
 
@@ -64,6 +68,7 @@ Ordered by verbosity (NONE < ERROR < WARN < INFO < DEBUG < TRACE). Recommendatio
 ## 5. Quick Usage Examples
 
 ### 5.1 Configure Global + Component Log Levels
+
 ```cpp
 auto& logger = huntmaster::DebugLogger::getInstance();
 logger.setGlobalLogLevel(huntmaster::LogLevel::ERROR); // baseline
@@ -73,16 +78,19 @@ logger.setComponentLogLevel(huntmaster::Component::UNIFIED_ENGINE,
                             huntmaster::LogLevel::INFO);
 logger.setComponentLogLevel(huntmaster::Component::PERFORMANCE,
                             huntmaster::LogLevel::DEBUG);
-```
+```cpp
 
 ### 5.2 File Logging
+
 ```cpp
 logger.enableFileLogging("debug_session.log");
 logger.enableTimestamps(true);
 logger.enableThreadIds(true);
+
 ```
 
 ### 5.3 Scoped Performance
+
 ```cpp
 {
     AutoProfiler p("processAudioChunk");
@@ -106,6 +114,7 @@ logger.enableThreadIds(true);
 ---
 
 ## 7. Avoiding Performance Regressions
+
 - Never leave TRACE logs active in benchmarks.
 - Wrap expensive formatting inside level checks if outside logger’s guard.
 - Do not log per-sample data; log per-frame or per-chunk summaries.
@@ -114,13 +123,17 @@ logger.enableThreadIds(true);
 ---
 
 ## 8. Upcoming Debug Hooks (Planned)
+
 | Feature | Debug Signals |
 |---------|---------------|
 | finalizeSessionAnalysis | Segment boundaries chosen, RMS stats, DTW refinement time |
-| Similarity readiness API | framesObserved, minFramesRequired, reliability transitions |
+| Similarity readiness API | framesObserved, minFramesRequired, reliability transitions (implemented) |
 | Loudness normalization | masterRMS, userSegmentRMS, normalizationScalar, clipping guard |
-| Overlay export | Peak block size, downsample ratio, alignmentOffsetMs |
+| Overlay export | Peak block size, downsample ratio, alignmentOffsetMs (offset control pending) |
 | Calibration mapping | Raw confidence → grade transitions with thresholds |
+| Mic calibration | peakLevelDbFS, rmsDbFS, noiseFloorDbFS, headroomDb, recommendation |
+| Latency/drift calibration | alignmentOffsetMs, driftPpm, compensation applied to DTW band |
+| Environment profiler | ambient profile metrics, NR path enabled=false/true |
 
 Add logging only after minimal overhead validated.
 
@@ -139,6 +152,7 @@ Add logging only after minimal overhead validated.
 ---
 
 ## 10. Conditional / Scoped Logging Patterns
+
 ```cpp
 if (logger.isEnabled(huntmaster::Component::REALTIME_SCORER,
                      huntmaster::LogLevel::DEBUG)) {
@@ -147,6 +161,7 @@ if (logger.isEnabled(huntmaster::Component::REALTIME_SCORER,
                "Frames=" + std::to_string(state.framesObserved));
 }
 ```
+
 (Use helper `isEnabled` pattern to avoid constructing large strings unnecessarily.)
 
 ---
@@ -162,6 +177,7 @@ if (logger.isEnabled(huntmaster::Component::REALTIME_SCORER,
 | HUNTMASTER_PROFILING | Enable AutoProfiler blocks globally | OFF |
 
 Sample bootstrap:
+
 ```cpp
 if (const char* lvl = std::getenv("HUNTMASTER_LOG_LEVEL")) {
     logger.setGlobalLogLevel(parseLogLevel(lvl));
@@ -171,7 +187,9 @@ if (const char* lvl = std::getenv("HUNTMASTER_LOG_LEVEL")) {
 ---
 
 ## 12. Integration with Tools
+
 Example CLI (interactive_recorder):
+
 ```bash
 ./interactive_recorder --debug --engine-debug --performance
 ./interactive_recorder --trace --pitch-debug
@@ -181,6 +199,7 @@ Ensure each new tool maps CLI flags → component levels without duplicating log
 ---
 
 ## 13. Testing & Debugging
+
 - Do not assert on debug log content in standard tests (flaky).
 - Add targeted debug-mode tests only if they validate structural invariants (e.g., readiness transition).
 - Use environment variable toggles in CI only for specialized debug workflows (never default).
@@ -188,7 +207,9 @@ Ensure each new tool maps CLI flags → component levels without duplicating log
 ---
 
 ## 14. Memory & Resource Verification
+
 Combine valgrind / sanitizers with minimal logging:
+
 ```bash
 LOG_LEVEL=ERROR timeout 60 valgrind --leak-check=full ./build/bin/RunEngineTests
 ```
@@ -197,6 +218,7 @@ Avoid TRACE under valgrind (excess noise, slowdown).
 ---
 
 ## 15. Planned Additions Checklist (Update After Implementation)
+
 | Item | Added | Notes |
 |------|-------|-------|
 | FINALIZE_STAGE component | [ ] | After finalizeSessionAnalysis implemented |
@@ -208,6 +230,7 @@ Avoid TRACE under valgrind (excess noise, slowdown).
 ---
 
 ## 16. Common Pitfalls
+
 | Pitfall | Impact | Fix |
 |---------|--------|-----|
 | TRACE everywhere | Massive latency | Restrict & recompile |
@@ -218,6 +241,7 @@ Avoid TRACE under valgrind (excess noise, slowdown).
 ---
 
 ## 17. Minimal Production Template
+
 ```cpp
 auto& logger = huntmaster::DebugLogger::getInstance();
 logger.setGlobalLogLevel(huntmaster::LogLevel::ERROR);
@@ -228,7 +252,9 @@ logger.enableTimestamps(true);
 ---
 
 ## 18. Update Policy
+
 Any new component or analyzer:
+
 1. Add component enum
 2. Provide targeted log messages at INFO (state transitions) only
 3. Avoid TRACE until profiling impact measured
@@ -237,6 +263,7 @@ Any new component or analyzer:
 ---
 
 ## 19. Summary
+
 The debugging system balances observability with real-time performance. Maintain discipline: minimal logs in critical loops, targeted component activation, readiness & finalize instrumentation added only when implemented, and all evolutions tracked via `docs/mvp_todo.md`.
 
 ---

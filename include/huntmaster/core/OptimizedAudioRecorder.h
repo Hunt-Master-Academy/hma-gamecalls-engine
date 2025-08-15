@@ -17,16 +17,9 @@
 namespace huntmaster {
 
 namespace io {
-// Forward declarations
+// Forward declaration for optional IO optimizer integration
 class MasterIOOptimizer;
-}
-
-namespace huntmaster {
-
-namespace io {
-// Forward declarations
-class MasterIOOptimizer;
-}
+}  // namespace io
 
 /**
  * @brief High-performance audio recorder with optimized I/O and multiple recording modes
@@ -82,19 +75,28 @@ class OptimizedAudioRecorder {
     std::unique_ptr<Impl> pImpl;
 
   public:
-    explicit OptimizedAudioRecorder(const Config& config = Config{});
+    explicit OptimizedAudioRecorder(const Config& config);
     ~OptimizedAudioRecorder();
 
     /**
      * @brief Start recording with optimized I/O
      */
-    bool startRecording();
+    // Low-level controls implemented in the .cpp
+    bool start();
+    void stop();
+
+    // Backwards-compatible wrappers for higher-level API usage
+    bool startRecording() {
+        return start();
+    }
+    bool stopRecording() {
+        stop();
+        return true;
+    }
 
     /**
      * @brief Stop recording and finalize file
      */
-    bool stopRecording();
-
     /**
      * @brief Check if currently recording
      */
@@ -181,217 +183,30 @@ class OptimizedAudioRecorder {
     /**
      * @brief Get performance metrics
      */
-    IOPerformanceMetrics getMetrics() const;
+    // Metrics API not yet implemented for optimized recorder path
+    // IOPerformanceMetrics getMetrics() const;
 
     /**
      * @brief Set real-time audio callback
      */
-    using AudioCallback =
-        std::function<void(const float* data, size_t frameCount, double timestamp)>;
-    void setAudioCallback(AudioCallback callback);
+    // Realtime callbacks/monitoring/config are not exposed yet
 
-    /**
-     * @brief Enable/disable monitoring during recording
-     */
-    void setMonitoringEnabled(bool enabled);
-
-    /**
-     * @brief Get buffer health information
-     */
-    StreamingAudioBuffer::BufferHealth getBufferHealth() const;
-
-    /**
-     * @brief Configure real-time processing
-     */
-    struct ProcessingConfig {
-        bool enableEcho = false;
-        bool enableReverb = false;
-        float echoDelay = 0.3f;
-        float echoFeedback = 0.4f;
-        float reverbRoomSize = 0.5f;
-    };
-
-    void setProcessingConfig(const ProcessingConfig& config);
+#ifdef HUNTMASTER_TEST_HOOKS
+    // Test-only helpers to inject samples without opening audio devices.
+    // Only effective in MEMORY_BASED or HYBRID modes; no-ops otherwise.
+    void testFeedMemorySamples(const float* samples, size_t sampleCount);
+    // Feed frames through the file-based pipeline (uses internal streaming buffer). No device
+    // required. frames is in units of frames (per channel groups), not samples.
+    void testFeedFileSamples(const float* interleaved, size_t frames);
+    // Force flush any buffered frames from the streaming buffer into recordedData (file/hybrid
+    // modes).
+    void testForceFlushFileBuffer();
+    // Get number of samples captured on the file path (valid in FILE_BASED/HYBRID).
+    size_t testGetFileRecordedSamples() const;
+#endif
 };
 
-/**
- * @brief High-performance audio player with optimized I/O
- */
-class OptimizedAudioPlayer {
-  public:
-    struct Config {
-        // Playback settings
-        bool enableGaplessPlayback = true;
-        bool enableCrossfade = false;
-        float crossfadeDuration = 0.1f;
-
-        // Buffer settings
-        size_t playbackBufferFrames = 8192;
-        size_t prebufferFrames = 4096;
-
-        // I/O optimization
-        bool enableMemoryMapping = true;
-        bool enablePrefetch = true;
-        size_t prefetchSize = 1024 * 1024;  // 1MB
-
-        // Quality settings
-        bool enableResampling = true;
-        bool enableVolumeControl = true;
-        float defaultVolume = 1.0f;
-    };
-
-  private:
-    class Impl;
-    std::unique_ptr<Impl> pImpl;
-
-  public:
-    explicit OptimizedAudioPlayer(const Config& config = Config{});
-    ~OptimizedAudioPlayer();
-
-    /**
-     * @brief Load audio file for playback
-     */
-    bool loadFile(const std::string& filename);
-
-    /**
-     * @brief Start playback
-     */
-    bool play();
-
-    /**
-     * @brief Pause playback
-     */
-    bool pause();
-
-    /**
-     * @brief Stop playback
-     */
-    bool stop();
-
-    /**
-     * @brief Seek to position (in seconds)
-     */
-    bool seek(double position);
-
-    /**
-     * @brief Check if currently playing
-     */
-    bool isPlaying() const;
-
-    /**
-     * @brief Get current playback position (in seconds)
-     */
-    double getPosition() const;
-
-    /**
-     * @brief Get total duration (in seconds)
-     */
-    double getDuration() const;
-
-    /**
-     * @brief Set playback volume (0.0 to 1.0)
-     */
-    void setVolume(float volume);
-
-    /**
-     * @brief Get current volume
-     */
-    float getVolume() const;
-
-    /**
-     * @brief Get performance metrics
-     */
-    IOPerformanceMetrics getMetrics() const;
-
-    /**
-     * @brief Set playback callback for real-time processing
-     */
-    using PlaybackCallback = std::function<void(float* data, size_t frameCount, double timestamp)>;
-    void setPlaybackCallback(PlaybackCallback callback);
-
-    /**
-     * @brief Queue next file for gapless playback
-     */
-    bool queueFile(const std::string& filename);
-
-    /**
-     * @brief Clear playback queue
-     */
-    void clearQueue();
-
-    /**
-     * @brief Get queue size
-     */
-    size_t getQueueSize() const;
-};
-
-/**
- * @brief Batch audio processor for high-throughput operations
- */
-class BatchAudioProcessor {
-  public:
-    struct Config {
-        size_t maxParallelFiles = 4;
-        size_t chunkSizeFrames = 16384;
-        bool enableProgressReporting = true;
-        bool enableErrorRecovery = true;
-        std::string tempDirectory = "/tmp";
-    };
-
-    struct ProcessingJob {
-        std::string inputFile;
-        std::string outputFile;
-        std::function<bool(const float*, size_t, float*)> processor;
-        std::function<void(double)> progressCallback;
-    };
-
-  private:
-    class Impl;
-    std::unique_ptr<Impl> pImpl;
-
-  public:
-    explicit BatchAudioProcessor(const Config& config = Config{});
-    ~BatchAudioProcessor();
-
-    /**
-     * @brief Add processing job to queue
-     */
-    bool addJob(const ProcessingJob& job);
-
-    /**
-     * @brief Start batch processing
-     */
-    bool startProcessing();
-
-    /**
-     * @brief Stop batch processing
-     */
-    void stopProcessing();
-
-    /**
-     * @brief Check if processing is active
-     */
-    bool isProcessing() const;
-
-    /**
-     * @brief Get overall progress (0.0 to 1.0)
-     */
-    double getProgress() const;
-
-    /**
-     * @brief Get performance metrics
-     */
-    IOPerformanceMetrics getMetrics() const;
-
-    /**
-     * @brief Clear job queue
-     */
-    void clearJobs();
-
-    /**
-     * @brief Get queue size
-     */
-    size_t getQueueSize() const;
-};
+// OptimizedAudioPlayer and BatchAudioProcessor are internal-only for now and
+// intentionally not exposed in the public header until stabilized.
 
 }  // namespace huntmaster

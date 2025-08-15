@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Huntmaster Audio Engine: Huntmaster Audio Engine</title>
+<title>Huntmaster Audio Engine: Hunt Master Academy – Game Calls Engine (Huntmaster Audio Core)</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -90,314 +90,166 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 </div>
 
 <div><div class="header">
-  <div class="headertitle"><div class="title">Huntmaster Audio Engine </div></div>
+  <div class="headertitle"><div class="title">Hunt Master Academy – Game Calls Engine (Huntmaster Audio Core) </div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2README"></a> </p><blockquote class="doxtable">
-<p>&zwj;⚠️ <b>License: All Rights Reserved</b></p>
-<p>The source code for this project is made available for <b>portfolio review and evaluation purposes only.</b> It is not licensed for use of any kind, commercial or non-commercial, without express written permission from the author. For licensing inquiries, please contact <a href="#" onclick="location.href='mai'+'lto:'+'tim'+'e@'+'3dt'+'ec'+'hso'+'lu'+'tio'+'ns'+'.us'; return false;">time@<span class="obfuscator">.nosp@m.</span>3dte<span class="obfuscator">.nosp@m.</span>chsol<span class="obfuscator">.nosp@m.</span>utio<span class="obfuscator">.nosp@m.</span>ns.us</a>. </p>
-</blockquote>
+<div class="textblock"><p><a class="anchor" id="md__2workspaces_2huntmaster-engine_2README"></a> Last Updated: August 9, 2025 Status: MVP COMPLETE – Enhanced Analyzers Phase 1 Integrated (Pitch, Harmonic, Cadence) Current Phase: Enhanced Platform Integration &amp; UX Alignment</p>
 <h1><a class="anchor" id="autotoc_md1"></a>
-&lt;/blockquote&gt;</h1>
-<p>The Huntmaster Audio Engine is a cross-platform C++ audio analysis engine designed to be the core of the Huntmaster platform. Its primary function is to analyze and compare audio recordings of animal calls, such as deer grunts or turkey gobbles, by providing a similarity score. It is built to be a self-contained, high-performance static library that can be easily integrated into various client applications (desktop, mobile, etc.).</p>
+Platform Context</h1>
+<p>Hunt Master Academy is a multi‑pillar training platform (Game Calls, Game Strategy, Stealth &amp; Scouting, Tracking &amp; Recovery, Gear &amp; Marksmanship). THIS REPOSITORY: Implements only the Game Calls pillar realtime analysis core (“Unified Audio Engine”). Roadmap authority: docs/mvp_todo.md (always sync changes there first).</p>
 <h1><a class="anchor" id="autotoc_md2"></a>
-🚧 Project Status: In Development</h1>
-<p>This engine is currently under active development for its Minimum Viable Product (MVP). The core architecture is in place, and development is focused on implementing the master call processing pipeline.</p>
-<h2><a class="anchor" id="autotoc_md3"></a>
-Phase 1: Game Calls MVP</h2>
-<p>✅ Sprint 1: Environment &amp; Core Dependencies (100%)</p>
-<p>🚧 Sprint 2: Master Call Pipeline &amp; Feature Extraction (50%)</p>
-<p>⏳ Sprint 3: Real-time Processing &amp; DTW Comparison (0%)</p>
-<p>⏳ Sprint 4: API Implementation &amp; Unit Testing (25%)</p>
-<p>⏳ Sprint 5: Build System &amp; Integration Prep (25%)</p>
-<h1><a class="anchor" id="autotoc_md4"></a>
-✨ Features</h1>
-<p><b>MFCC Extraction</b>: Converts raw audio signals into Mel-Frequency Cepstral Coefficients, a standard representation for audio feature analysis.</p>
-<p><b>Offline Processing</b>: Designed to pre-process and store feature data from master call audio files.</p>
-<p><b>Real-time Analysis</b>: (In Progress) Will support processing live audio chunks from a microphone.</p>
-<p><b>Audio Comparison</b>: (In Progress) Will use Dynamic Time Warping (DTW) to compare the features of a user's call against a master call.</p>
-<p><b>Cross-Platform</b>: Built with CMake to support compilation across different operating systems.</p>
-<p><b>Static Library</b>: Designed to be compiled into a .lib or .a file for easy integration with other projects.</p>
-<p><b>Comprehensive API Documentation</b>: Full Doxygen-style documentation for all public interfaces with examples and best practices.</p>
-<p><b>Comprehensive Debugging Infrastructure</b>: Thread-safe, component-specific debugging system with 5 log levels and performance monitoring across all tools.</p>
-<h1><a class="anchor" id="autotoc_md5"></a>
-🔧 Debugging &amp; Development Tools</h1>
-<p>The Huntmaster Engine includes a comprehensive debugging infrastructure with 10 enhanced tools, each supporting detailed debugging capabilities:</p>
-<h2><a class="anchor" id="autotoc_md6"></a>
-Debug Features</h2>
-<ul>
-<li><b>Thread-safe logging</b> with component-specific levels</li>
-<li><b>5 Debug levels</b>: ERROR, WARN, INFO, DEBUG, TRACE</li>
-<li><b>14 Component categories</b> for targeted debugging</li>
-<li><b>Performance monitoring</b> with timing metrics</li>
-<li><b>Console and file output</b> options</li>
-<li><b>Configurable timestamps</b> and thread IDs</li>
-</ul>
-<h2><a class="anchor" id="autotoc_md7"></a>
-Available Tools</h2>
-<ol type="1">
-<li><b>interactive_recorder</b> - Interactive audio recording with live monitoring</li>
-<li><b>debug_dtw_similarity</b> - DTW similarity analysis debugging</li>
-<li><b>simple_unified_test</b> - Core engine functionality testing</li>
-<li><b>test_mfcc_debugging</b> - MFCC feature extraction analysis</li>
-<li><b>analyze_recording</b> - Audio file analysis tool</li>
-<li><b>audio_trimmer</b> - Audio preprocessing utility</li>
-<li><b>audio_visualization</b> - Audio data visualization</li>
-<li><b>detailed_analysis</b> - Comprehensive audio analysis</li>
-<li><b>generate_features</b> - Feature extraction tool</li>
-<li><b>real_time_recording_monitor</b> - Real-time audio monitoring</li>
-</ol>
-<h2><a class="anchor" id="autotoc_md8"></a>
-Debug Usage Examples</h2>
-<div class="fragment"><div class="line"># Basic debugging</div>
-<div class="line">./interactive_recorder --debug</div>
-<div class="line"> </div>
-<div class="line"># Trace-level debugging with performance metrics</div>
-<div class="line">./interactive_recorder --trace --performance</div>
-<div class="line"> </div>
-<div class="line"># Component-specific debugging</div>
-<div class="line">./interactive_recorder --engine-debug --recording-debug</div>
-<div class="line"> </div>
-<div class="line"># Help for any tool</div>
-<div class="line">./interactive_recorder --help</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md9"></a>
-Debug Components</h2>
-<ul>
-<li><b>GENERAL</b> - General system operations</li>
-<li><b>UNIFIED_ENGINE</b> - Core engine functionality</li>
-<li><b>MFCC_PROCESSOR</b> - MFCC feature extraction</li>
-<li><b>DTW_COMPARATOR</b> - Dynamic Time Warping comparison</li>
-<li><b>VAD</b> - Voice Activity Detection</li>
-<li><b>REALTIME_PROCESSOR</b> - Real-time processing</li>
-<li><b>AUDIO_BUFFER_POOL</b> - Audio buffer management</li>
-<li><b>AUDIO_LEVEL_PROCESSOR</b> - Audio level processing</li>
-<li><b>WAVEFORM_GENERATOR</b> - Audio waveform generation</li>
-<li><b>REALTIME_SCORER</b> - Real-time scoring</li>
-<li><b>TOOLS</b> - Development tools</li>
-<li><b>AUDIO_ENGINE</b> - Audio engine operations</li>
-<li><b>FEATURE_EXTRACTION</b> - Feature extraction processes</li>
-<li><b>SIMILARITY_ANALYSIS</b> - Similarity analysis algorithms</li>
-<li><b>PERFORMANCE</b> - Performance monitoring and metrics</li>
-</ul>
-<h1><a class="anchor" id="autotoc_md10"></a>
-📚 API Documentation</h1>
-<p>The Huntmaster Audio Engine provides comprehensive API documentation for all public interfaces to help developers integrate the engine into their applications.</p>
-<h2><a class="anchor" id="autotoc_md11"></a>
-Documentation Features</h2>
-<ul>
-<li><b>Complete API Reference</b>: Doxygen-generated documentation for all public classes, methods, and functions</li>
-<li><b>Usage Examples</b>: Code examples for common integration patterns</li>
-<li><b>Algorithm Details</b>: Technical explanations of MFCC extraction, DTW comparison, and VAD processing</li>
-<li><b>Integration Guides</b>: Platform-specific integration instructions for mobile and desktop applications</li>
-<li><b>Best Practices</b>: Recommended patterns for real-time processing and memory management</li>
-</ul>
-<h2><a class="anchor" id="autotoc_md12"></a>
-Generating Documentation</h2>
-<h3><a class="anchor" id="autotoc_md13"></a>
-Prerequisites</h3>
-<ul>
-<li><b>Doxygen</b> 1.8.13 or higher</li>
-<li><b>Graphviz</b> (optional, for class diagrams)</li>
-</ul>
-<h3><a class="anchor" id="autotoc_md14"></a>
-Generate HTML Documentation</h3>
-<div class="fragment"><div class="line"># Linux/macOS</div>
-<div class="line">./scripts/generate_docs.sh</div>
-<div class="line"> </div>
-<div class="line"># Windows</div>
-<div class="line">scripts\generate_docs.bat</div>
-<div class="line"> </div>
-<div class="line"># Manual generation</div>
-<div class="line">doxygen Doxyfile</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md15"></a>
-Documentation Output</h3>
-<p>Generated documentation is available at:</p>
-<ul>
-<li><b>Main documentation</b>: <code>docs/api/html/index.html</code></li>
-<li><b>Class index</b>: <code>docs/api/html/annotated.html</code></li>
-<li><b>File index</b>: <code>docs/api/html/files.html</code></li>
-<li><b>Namespace index</b>: <code>docs/api/html/namespaces.html</code></li>
-</ul>
-<h2><a class="anchor" id="autotoc_md16"></a>
-Online Documentation</h2>
-<p>For the latest API documentation, visit our GitHub Pages deployment (available after merging to main branch).</p>
-<h2><a class="anchor" id="autotoc_md17"></a>
-Key API Interfaces</h2>
-<ul>
-<li>**<code>UnifiedAudioEngine</code>**: Main engine interface for audio analysis</li>
-<li>**<code>MFCCProcessor</code>**: Feature extraction from audio data</li>
-<li>**<code>DTWComparator</code>**: Audio similarity comparison algorithms</li>
-<li>**<code>VoiceActivityDetector</code>**: Audio activity detection</li>
-<li>**<code>AudioRecorder</code>**: Real-time audio capture</li>
-<li>**<code>AudioPlayer</code>**: Audio playback functionality</li>
-</ul>
-<h1><a class="anchor" id="autotoc_md18"></a>
-🏗️ Build System</h1>
-<p>The Huntmaster Engine uses a <b>modular CMake build system</b> that supports both native and WebAssembly builds from a unified configuration. The build system has been refactored into a hierarchical structure for improved maintainability and scalability.</p>
-<h2><a class="anchor" id="autotoc_md19"></a>
-Build System Architecture</h2>
-<p>The CMake configuration is organized across multiple specialized files:</p>
-<ul>
-<li><b>Root <code>CMakeLists.txt</code></b>: Project-wide configuration and build coordination</li>
-<li>**<code>src/CMakeLists.txt</code>**: Core UnifiedAudioEngine library configuration</li>
-<li>**<code>tests/CMakeLists.txt</code>**: Complete test suite (unit tests, integration tests, benchmarks)</li>
-<li>**<code>tools/CMakeLists.txt</code>**: Command-line development tools</li>
-</ul>
-<h2><a class="anchor" id="autotoc_md20"></a>
-Prerequisites</h2>
-<ul>
-<li><b>CMake</b> 3.16 or higher</li>
-<li><b>C++20</b> compatible compiler (GCC 10+, Clang 12+, MSVC 2019+)</li>
-<li><b>Git</b> for submodule management</li>
-</ul>
-<h2><a class="anchor" id="autotoc_md21"></a>
-Quick Start</h2>
-<h3><a class="anchor" id="autotoc_md22"></a>
-Native Build (Windows, Linux, macOS)</h3>
-<div class="fragment"><div class="line"># Clone with submodules</div>
-<div class="line">git clone --recursive https://github.com/tescolopio/huntmaster-engine.git</div>
-<div class="line">cd huntmaster-engine</div>
-<div class="line"> </div>
-<div class="line"># Configure and build</div>
-<div class="line">cmake -B build</div>
-<div class="line">cmake --build build</div>
-<div class="line"> </div>
-<div class="line"># Run tests</div>
-<div class="line">cd build &amp;&amp; ctest</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md23"></a>
-WebAssembly Build</h3>
-<div class="fragment"><div class="line"># Setup Emscripten SDK (first time only)</div>
-<div class="line">cd tools/emsdk</div>
-<div class="line">./emsdk install latest</div>
-<div class="line">./emsdk activate latest</div>
-<div class="line">source ./emsdk_env.sh</div>
-<div class="line"> </div>
-<div class="line"># Build for WebAssembly</div>
-<div class="line">cd ../..</div>
-<div class="line">emcmake cmake -B build-wasm</div>
-<div class="line">cmake --build build-wasm</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md24"></a>
-Build Configuration Options</h2>
+Pillar 1 (Game Calls) Feature Landscape &amp; Status (Roadmap-Aligned)</h1>
 <table class="markdownTable">
 <tr class="markdownTableHead">
-<th class="markdownTableHeadNone">Option   </th><th class="markdownTableHeadNone">Default   </th><th class="markdownTableHeadNone">Description    </th></tr>
+<th class="markdownTableHeadNone">Layer   </th><th class="markdownTableHeadNone">Implemented Now   </th><th class="markdownTableHeadNone">In Progress (Near-Term)   </th><th class="markdownTableHeadNone">Planned (Later Phases)    </th></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>HUNTMASTER_BUILD_TESTS</code>   </td><td class="markdownTableBodyNone"><code>ON</code>   </td><td class="markdownTableBodyNone">Enable unit tests and benchmarks    </td></tr>
+<td class="markdownTableBodyNone">Core Audio Pipeline   </td><td class="markdownTableBodyNone">Session engine, MFCC, realtime + DTW similarity   </td><td class="markdownTableBodyNone">finalizeSessionAnalysis (segment + refined DTW)   </td><td class="markdownTableBodyNone">Multi-master comparative sets    </td></tr>
 <tr class="markdownTableRowEven">
-<td class="markdownTableBodyNone"><code>HUNTMASTER_BUILD_TOOLS</code>   </td><td class="markdownTableBodyNone"><code>ON</code>   </td><td class="markdownTableBodyNone">Enable command-line development tools    </td></tr>
+<td class="markdownTableBodyNone">Enhanced Analyzers   </td><td class="markdownTableBodyNone">Pitch, Harmonic, Cadence (EMA smoothed)   </td><td class="markdownTableBodyNone">Confidence calibration (grades)   </td><td class="markdownTableBodyNone">VolumeEnvelopeTracker, MasterCallAnalyzer    </td></tr>
 <tr class="markdownTableRowOdd">
-<td class="markdownTableBodyNone"><code>CMAKE_BUILD_TYPE</code>   </td><td class="markdownTableBodyNone"><code>Debug</code>   </td><td class="markdownTableBodyNone">Build type: Debug, Release, RelWithDebInfo   </td></tr>
+<td class="markdownTableBodyNone">Loudness   </td><td class="markdownTableBodyNone">RMS / Peak measurement   </td><td class="markdownTableBodyNone">Normalization scalar + deviation metric   </td><td class="markdownTableBodyNone">Dynamic envelope / attack-decay metrics    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Segmentation   </td><td class="markdownTableBodyNone">Streaming VAD gating   </td><td class="markdownTableBodyNone">Best-call region extraction   </td><td class="markdownTableBodyNone">Multi-pass smart segmentation    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">Readiness   </td><td class="markdownTableBodyNone">Implicit (frame accumulation)   </td><td class="markdownTableBodyNone">Explicit readiness state API   </td><td class="markdownTableBodyNone">Predictive readiness heuristics    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Visualization Data   </td><td class="markdownTableBodyNone">(Single waveform via existing tools)   </td><td class="markdownTableBodyNone">Overlay export (master + user peaks)   </td><td class="markdownTableBodyNone">Spectrogram overlays / dialect layers    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">Coaching Metrics   </td><td class="markdownTableBodyNone">Raw similarity + analyzer values   </td><td class="markdownTableBodyNone">Metric→tip mapper (non-AI), graded bands   </td><td class="markdownTableBodyNone">AI narrative feedback / adaptive drills    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Practice UX   </td><td class="markdownTableBodyNone">(External UI: load, record, basic metrics)   </td><td class="markdownTableBodyNone">Countdown integration + overlay alignment   </td><td class="markdownTableBodyNone">Scenario-driven guided sessions    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">Data Calibration   </td><td class="markdownTableBodyNone">None   </td><td class="markdownTableBodyNone">Pitch / harmonic / cadence grade thresholds   </td><td class="markdownTableBodyNone">Species &amp; call-type specific calibration    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Testing   </td><td class="markdownTableBodyNone">Core + analyzer + real audio MFCC distance   </td><td class="markdownTableBodyNone">Remove similarity skips (readiness loop)   </td><td class="markdownTableBodyNone">Curriculum progression tests    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">Performance   </td><td class="markdownTableBodyNone">&lt;12 ms enhanced path   </td><td class="markdownTableBodyNone">Guard finalize (&lt;40 ms)   </td><td class="markdownTableBodyNone">SIMD optimization wave 2   </td></tr>
 </table>
-<h3><a class="anchor" id="autotoc_md25"></a>
-Custom Configuration Examples</h3>
-<div class="fragment"><div class="line"># Release build with optimizations</div>
-<div class="line">cmake -B build -DCMAKE_BUILD_TYPE=Release</div>
-<div class="line">cmake --build build</div>
-<div class="line"> </div>
-<div class="line"># Build without tests for faster compilation</div>
-<div class="line">cmake -B build -DHUNTMASTER_BUILD_TESTS=OFF</div>
-<div class="line">cmake --build build</div>
-<div class="line"> </div>
-<div class="line"># Build only the core library</div>
-<div class="line">cmake -B build -DHUNTMASTER_BUILD_TESTS=OFF -DHUNTMASTER_BUILD_TOOLS=OFF</div>
-<div class="line">cmake --build build</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md26"></a>
-Build Targets</h2>
-<p>The modular build system automatically discovers and configures:</p>
-<h3><a class="anchor" id="autotoc_md27"></a>
-Core Library</h3>
-<ul>
-<li>**<code>UnifiedAudioEngine</code>**: Main static library for all platforms</li>
-</ul>
-<h3><a class="anchor" id="autotoc_md28"></a>
-Development Tools (10 tools)</h3>
-<ul>
-<li>**<code>interactive_recorder</code>**: Interactive audio recording with live monitoring</li>
-<li>**<code>debug_dtw_similarity</code>**: DTW similarity analysis debugging</li>
-<li>**<code>analyze_recording</code>**: Audio file analysis tool</li>
-<li>**<code>audio_trimmer</code>**: Audio preprocessing utility</li>
-<li>**<code>simple_unified_test</code>**: Core engine functionality testing</li>
-<li>And 5 additional specialized tools...</li>
-</ul>
-<h3><a class="anchor" id="autotoc_md29"></a>
-Test Suite</h3>
-<ul>
-<li>**<code>RunEngineTests</code>**: Main Google Test runner</li>
-<li><b>Standalone diagnostic tools</b>: Individual test executables</li>
-<li><b>Integration tests</b>: Real wildlife call validation</li>
-<li><b>Benchmarks</b>: Performance testing with Google Benchmark</li>
-</ul>
-<h2><a class="anchor" id="autotoc_md30"></a>
-Platform-Specific Notes</h2>
-<h3><a class="anchor" id="autotoc_md31"></a>
-Windows</h3>
-<div class="fragment"><div class="line"># Visual Studio 2019/2022</div>
-<div class="line">cmake -B build -G &quot;Visual Studio 16 2019&quot;</div>
-<div class="line">cmake --build build --config Release</div>
-</div><!-- fragment --><h3><a class="anchor" id="autotoc_md32"></a>
-Linux/macOS</h3>
-<div class="fragment"><div class="line"># Debug build with detailed output</div>
-<div class="line">cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=ON</div>
-<div class="line">make -C build -j$(nproc)</div>
-</div><!-- fragment --><h2><a class="anchor" id="autotoc_md33"></a>
-Troubleshooting</h2>
-<h3><a class="anchor" id="autotoc_md34"></a>
-Common Issues</h3>
+<p>(For all “In Progress / Planned” see task breakdown in docs/mvp_todo.md.)</p>
+<h1><a class="anchor" id="autotoc_md3"></a>
+Mapping Original Pillar Breakdown → Current Scope</h1>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadNone">Original Pillar 1 Category   </th><th class="markdownTableHeadNone">Current Engine Coverage   </th><th class="markdownTableHeadNone">Deferred (Out of Scope Here)    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">Call Library &amp; Education (species, 200+ calls, dialect maps)   </td><td class="markdownTableBodyNone">Master call load + limited curated assets   </td><td class="markdownTableBodyNone">Full taxonomy, dialect maps, educational content (handled upstream)    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">AI Bioacoustics Coach (multi-dimensional feedback, progress dashboards)   </td><td class="markdownTableBodyNone">Core metrics (similarity, pitch, cadence, harmonicity)   </td><td class="markdownTableBodyNone">Historical progress graphs, rich UI overlays, narrative coaching    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">Structured Learning Modules (Foundation → Mastery hours)   </td><td class="markdownTableBodyNone">Not implemented (needs graded calibrations)   </td><td class="markdownTableBodyNone">Curriculum system, progression logic    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Interactive Practice Tools (scenarios, call-and-response, rhythm trainer)   </td><td class="markdownTableBodyNone">Cadence metric groundwork   </td><td class="markdownTableBodyNone">Scenario engine, simulator, device advisor    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">Field Mode (quick reference, situation matcher, favorites)   </td><td class="markdownTableBodyNone">None (engine-only)   </td><td class="markdownTableBodyNone">Field UX + library indexing / retrieval    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyNone">Field Recording &amp; Contribution   </td><td class="markdownTableBodyNone">Basic ability to process loaded audio   </td><td class="markdownTableBodyNone">Geotag, community submission, moderation    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyNone">Real-time Coaching (confidence meter, context tips)   </td><td class="markdownTableBodyNone">Raw confidences + smoothing   </td><td class="markdownTableBodyNone">Contextual suggestion engine   </td></tr>
+</table>
+<h1><a class="anchor" id="autotoc_md4"></a>
+Why Focus Narrowly Now</h1>
+<p>Reliability first: finalizeSessionAnalysis + readiness + calibration must stabilize before curriculum, AI coaching, cloud ingestion, or large library scaling to avoid compounding noisy metrics.</p>
+<h1><a class="anchor" id="autotoc_md5"></a>
+Cross-Pillar Reference (Informational Only)</h1>
+<p>Other pillars (Strategy, Stealth, Tracking, Marksmanship) will <em>consume</em> some Game Calls outputs (e.g., wind-aware calling heuristics) later. No implementation for those pillars exists in this repo; do not add here until Game Calls engine phase success criteria met (see docs/mvp_todo.md “Exit Criteria”).</p>
+<h1><a class="anchor" id="autotoc_md6"></a>
+Executive Summary</h1>
+<p>The Huntmaster Audio Engine (Game Calls pillar core) is a C++20, session‑oriented real‑time wildlife call analysis module providing deterministic MFCC feature extraction, dual (realtime + DTW) similarity scoring, and enhanced analyzers (pitch, harmonicity, cadence) with low latency (&lt;12 ms enhanced path). Next steps: finalize session analysis (segmentation + loudness normalization), similarity readiness API, waveform overlay, calibration &amp; coaching feedback.</p>
+<h1><a class="anchor" id="autotoc_md7"></a>
+High-Level User Flow (Target)</h1>
 <ol type="1">
-<li><b>Submodules not initialized</b>: Run <code>git submodule update --init --recursive</code></li>
-<li><b>CMake version too old</b>: Ensure CMake 3.16+</li>
-<li><b>C++20 not supported</b>: Update to GCC 10+, Clang 12+, or MSVC 2019+</li>
+<li>Select master call (waveform visible, playback).</li>
+<li>(Planned) Countdown → user records attempt.</li>
+<li>Streaming analysis: VAD → MFCC → realtime similarity → analyzers.</li>
+<li>(Planned) Overlay + stabilized metrics.</li>
+<li>Stop → (Planned) finalizeSessionAnalysis (segment, normalization, refined DTW).</li>
+<li>Feedback (scores + future AI narrative).</li>
 </ol>
-<h3><a class="anchor" id="autotoc_md35"></a>
-Getting Help</h3>
-<div class="fragment"><div class="line"># View all available targets</div>
-<div class="line">cmake --build build --target help</div>
-<div class="line"> </div>
-<div class="line"># Detailed build configuration</div>
-<div class="line">cmake -B build -DCMAKE_VERBOSE_MAKEFILE=ON</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md36"></a>
-Dependencies</h1>
-<p>This project uses git submodules for external dependencies:</p>
+<h1><a class="anchor" id="autotoc_md8"></a>
+Core Architecture</h1>
+<p>VAD → Levels → MFCC → RealtimeScorer → (Pitch/Harmonic/Cadence) → Summary (EMA) → Similarity (realtime or DTW fallback) → (Planned finalize refinement).</p>
+<h1><a class="anchor" id="autotoc_md9"></a>
+Key Current Features</h1>
 <ul>
-<li><b>KissFFT</b>: Fast Fourier Transform library (<code>libs/kissfft</code>)</li>
-<li><b>GoogleTest</b>: Testing framework (<code>tests/lib/googletest</code>)</li>
-<li><b>Google Benchmark</b>: Performance benchmarking (<code>tests/lib/benchmark</code>)</li>
-<li><b>Emscripten SDK</b>: WebAssembly compilation (<code>tools/emsdk</code>)</li>
+<li>Master call loading + MFCC cache</li>
+<li>Realtime similarity &amp; DTW fallback</li>
+<li>PitchTracker (YIN) w/ confidence</li>
+<li>HarmonicAnalyzer baseline</li>
+<li>CadenceAnalyzer base rhythm</li>
+<li>EnhancedAnalysisSummary (EMA smoothing)</li>
+<li>Security &amp; performance instrumentation</li>
+<li>Real audio integration tests</li>
 </ul>
-<h2><a class="anchor" id="autotoc_md37"></a>
-Dependency Management</h2>
-<div class="fragment"><div class="line"># Initial clone with all dependencies</div>
-<div class="line">git clone --recursive https://github.com/tescolopio/huntmaster-engine.git</div>
-<div class="line"> </div>
-<div class="line"># Update existing repository</div>
-<div class="line">git pull</div>
-<div class="line">git submodule update --init --recursive</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md38"></a>
-📚 Documentation</h1>
-<p>Comprehensive documentation is available in the <a href="docs/"><code>docs/</code></a> directory:</p>
+<h1><a class="anchor" id="autotoc_md10"></a>
+Planned (Active Roadmap)</h1>
 <ul>
-<li><b><a class="el" href="md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html">Architecture Guide</a></b> - Technical design and system architecture</li>
-<li><b>Debugging Guide</b> - Debug tools and troubleshooting</li>
-<li><b>Deployment Guide</b> - Production deployment and configuration</li>
-<li><b>Feature Implementation</b> - Guide for adding new features</li>
-<li><b>Development Progress</b> - Project milestones and progress</li>
+<li>finalizeSessionAnalysis()</li>
+<li>Similarity readiness API</li>
+<li>Waveform overlay export</li>
+<li>Confidence calibration → graded feedback</li>
+<li>Loudness deviation metrics</li>
+<li>Coaching feedback mapper</li>
+<li>MasterCallAnalyzer &amp; VolumeEnvelopeTracker (later)</li>
+<li>Cloud sync / gamification (future phases)</li>
 </ul>
-<p>For a complete documentation index, see `docs/README.md`.</p>
-<h1><a class="anchor" id="autotoc_md39"></a>
-🏗️ Project Structure</h1>
-<div class="fragment"><div class="line">huntmaster-engine/</div>
-<div class="line">├── src/              # Core engine source code</div>
-<div class="line">├── include/          # Public header files</div>
-<div class="line">├── tests/            # Unit tests, integration tests, benchmarks</div>
-<div class="line">├── tools/            # Development and diagnostic tools</div>
-<div class="line">├── docs/             # Project documentation</div>
-<div class="line">├── libs/             # Third-party libraries (git submodules)</div>
-<div class="line">├── scripts/          # Build and utility scripts</div>
-<div class="line">├── .vscode/          # VS Code configuration</div>
-<div class="line">└── build/            # Build output directory</div>
-<div class="line">    ├── bin/          # Compiled executables</div>
-<div class="line">    └── lib/          # Static libraries</div>
-</div><!-- fragment --> </div></div><!-- PageDoc -->
+<h1><a class="anchor" id="autotoc_md11"></a>
+Public API (Current)</h1>
+<div class="fragment"><div class="line"><span class="keyword">auto</span> engineR = UnifiedAudioEngine::create();</div>
+<div class="line"><span class="keyword">auto</span> engine  = std::move(engineR.value);</div>
+<div class="line"><span class="keyword">auto</span> sessionR = engine-&gt;createSession(44100.f);</div>
+<div class="line">SessionId session = sessionR.value;</div>
+<div class="line"> </div>
+<div class="line">engine-&gt;loadMasterCall(session, <span class="stringliteral">&quot;buck_grunt&quot;</span>);</div>
+<div class="line">engine-&gt;setEnhancedAnalyzersEnabled(session, <span class="keyword">true</span>);</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Stream audio chunks</span></div>
+<div class="line">engine-&gt;processAudioChunk(session, std::span&lt;const float&gt;(buffer));</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Realtime similarity (peak-smoothed) single value</span></div>
+<div class="line"><span class="keywordtype">float</span> similarity = engine-&gt;getSimilarityScore(session).value;</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Current + peak snapshot (UI may want both)</span></div>
+<div class="line"><span class="keyword">auto</span> scoresSnap = engine-&gt;getSimilarityScores(session); <span class="comment">// { current, peak }</span></div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Readiness / reliability introspection</span></div>
+<div class="line"><span class="keyword">auto</span> rtStateR = engine-&gt;getRealtimeSimilarityState(session);</div>
+<div class="line"><span class="keywordflow">if</span> (rtStateR.isOk()) {</div>
+<div class="line">    <span class="keyword">auto</span> st = rtStateR.value; <span class="comment">// framesObserved, minFramesRequired, reliable, provisionalScore</span></div>
+<div class="line">}</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Enhanced analysis summary</span></div>
+<div class="line"><span class="keyword">auto</span> enhanced = engine-&gt;getEnhancedAnalysisSummary(session);</div>
+<div class="line"> </div>
+<div class="line">engine-&gt;destroySession(session);</div>
+</div><!-- fragment --><p> (Coming) finalizeSessionAnalysis(session), overlay export, calibration utilities.</p>
+<h1><a class="anchor" id="autotoc_md12"></a>
+Performance</h1>
+<p>Enhanced streaming &lt;12 ms typical; finalize target &lt;40 ms.</p>
+<h1><a class="anchor" id="autotoc_md13"></a>
+Testing</h1>
+<p>All core &amp; similarity readiness tests passing (self / asymmetric). Performance guards active (latency thresholds). Roadmap tasks in docs/mvp_todo.md.</p>
+<h1><a class="anchor" id="autotoc_md14"></a>
+Contributing (Internal)</h1>
+<ol type="1">
+<li>Update docs/mvp_todo.md first.</li>
+<li>Add tests + performance assertions.</li>
+<li>Enforce Result&lt;T&gt;/Status checks (never assume .value without isOk()).</li>
+<li>No new sleeps (virtual clock when added).</li>
+<li>Keep heavy diagnostics gated (use env HUNTMASTER_VERBOSE=1 for readiness debug logs).</li>
+</ol>
+<h1><a class="anchor" id="autotoc_md15"></a>
+Quick Build</h1>
+<div class="fragment"><div class="line">cmake -B build -DCMAKE_BUILD_TYPE=Release</div>
+<div class="line">cmake --build build</div>
+<div class="line">timeout 60 ./build/bin/RunEngineTests</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md16"></a>
+License</h1>
+<p>See LICENSE.</p>
+<h1><a class="anchor" id="autotoc_md17"></a>
+More Documentation</h1>
+<p>docs/mvp_todo.md • docs/architecture.md • docs/PROJECT_STRUCTURE.md • docs/DEBUGGING.md • docs/DEPLOYMENT.md • docs/TESTING.md</p>
+<p>This README is the single entry point; docs/README.md </p>
+</div></div><!-- PageDoc -->
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

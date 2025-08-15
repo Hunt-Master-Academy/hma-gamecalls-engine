@@ -107,8 +107,20 @@ $(document).ready(function(){initNavTree('classhuntmaster_1_1UnifiedAudioEngine.
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1EnhancedAnalysisSummary.html">EnhancedAnalysisSummary</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Summary of enhanced analysis (pitch, harmonic, cadence) for a session.  <a href="structhuntmaster_1_1UnifiedAudioEngine_1_1EnhancedAnalysisSummary.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1MemoryBufferInfo.html">MemoryBufferInfo</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get memory buffer usage information.  <a href="structhuntmaster_1_1UnifiedAudioEngine_1_1MemoryBufferInfo.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html">Result</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Template wrapper for operation results with error handling.  <a href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1SimilarityRealtimeState.html">SimilarityRealtimeState</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Real-time similarity readiness/introspection state.  <a href="structhuntmaster_1_1UnifiedAudioEngine_1_1SimilarityRealtimeState.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1SimilarityScoresSnapshot.html">SimilarityScoresSnapshot</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Snapshot of both current and peak similarity scores.  <a href="structhuntmaster_1_1UnifiedAudioEngine_1_1SimilarityScoresSnapshot.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-types" name="pub-types"></a>
@@ -123,10 +135,15 @@ Public Types</h2></td></tr>
 , <a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356caf5d0aa0db6ffc40d938f1412b89d946c">INSUFFICIENT_DATA</a> = -5
 , <a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356cac56ddb8056b120c9d5fee05981f219c6">OUT_OF_MEMORY</a> = -6
 , <a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356caa656b0cae2ef29e5d121c6a1edec670b">INIT_FAILED</a> = -7
+, <br />
+&#160;&#160;<a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356cae8c0c70879b5895c615677261d64a1ee">INTERNAL_ERROR</a> = -8
 <br />
  }</td></tr>
 <tr class="memdesc:a75e221c1a85d3e4d83965946401e356c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Error codes and status indicators for engine operations.  <a href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356c">More...</a><br /></td></tr>
 <tr class="separator:a75e221c1a85d3e4d83965946401e356c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0320dac8e40a0600b387f6d89a265fcd" id="r_a0320dac8e40a0600b387f6d89a265fcd"><td class="memItemLeft" align="right" valign="top"><a id="a0320dac8e40a0600b387f6d89a265fcd" name="a0320dac8e40a0600b387f6d89a265fcd"></a>enum class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a0320dac8e40a0600b387f6d89a265fcd">RecordingMode</a> </td></tr>
+<tr class="memdesc:a0320dac8e40a0600b387f6d89a265fcd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get recording mode information. <br /></td></tr>
+<tr class="separator:a0320dac8e40a0600b387f6d89a265fcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-methods" name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -187,12 +204,42 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a4d375c48f7231045530b13b5c9a56807" id="r_a4d375c48f7231045530b13b5c9a56807"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356c">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a4d375c48f7231045530b13b5c9a56807">resetSession</a> (<a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a> sessionId)</td></tr>
 <tr class="memdesc:a4d375c48f7231045530b13b5c9a56807"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset a session's analysis state.  <br /></td></tr>
 <tr class="separator:a4d375c48f7231045530b13b5c9a56807"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad50290bcd64ec3b741c76232a4d6acf2" id="r_ad50290bcd64ec3b741c76232a4d6acf2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356c">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#ad50290bcd64ec3b741c76232a4d6acf2">setEnhancedAnalyzersEnabled</a> (<a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a> sessionId, bool enable)</td></tr>
+<tr class="memdesc:ad50290bcd64ec3b741c76232a4d6acf2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable or disable enhanced analyzers for a session (lazy creation)  <br /></td></tr>
+<tr class="separator:ad50290bcd64ec3b741c76232a4d6acf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a806f6e123a50c24471135bdf7345379c" id="r_a806f6e123a50c24471135bdf7345379c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html">Result</a>&lt; bool &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a806f6e123a50c24471135bdf7345379c">getEnhancedAnalyzersEnabled</a> (<a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a> sessionId) const</td></tr>
+<tr class="memdesc:a806f6e123a50c24471135bdf7345379c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query whether enhanced analyzers are enabled for a session.  <br /></td></tr>
+<tr class="separator:a806f6e123a50c24471135bdf7345379c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a848fcf669dabce9fbf030f26cd302793" id="r_a848fcf669dabce9fbf030f26cd302793"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html">Result</a>&lt; <a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1EnhancedAnalysisSummary.html">EnhancedAnalysisSummary</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a848fcf669dabce9fbf030f26cd302793">getEnhancedAnalysisSummary</a> (<a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a> sessionId)</td></tr>
+<tr class="memdesc:a848fcf669dabce9fbf030f26cd302793"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get latest enhanced analysis summary (auto-enables analyzers on first call)  <br /></td></tr>
+<tr class="separator:a848fcf669dabce9fbf030f26cd302793"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc76dc4bf96df615a25f3da7ee09e005" id="r_adc76dc4bf96df615a25f3da7ee09e005"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html">Result</a>&lt; <a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1SimilarityRealtimeState.html">SimilarityRealtimeState</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#adc76dc4bf96df615a25f3da7ee09e005">getRealtimeSimilarityState</a> (<a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a> sessionId)</td></tr>
+<tr class="memdesc:adc76dc4bf96df615a25f3da7ee09e005"><td class="mdescLeft">&#160;</td><td class="mdescRight">Query real-time similarity readiness/introspection state.  <br /></td></tr>
+<tr class="separator:adc76dc4bf96df615a25f3da7ee09e005"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afcb5d97066af4b3ec7c6f6c83fc58ce7" id="r_afcb5d97066af4b3ec7c6f6c83fc58ce7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html">Result</a>&lt; <a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1SimilarityScoresSnapshot.html">SimilarityScoresSnapshot</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#afcb5d97066af4b3ec7c6f6c83fc58ce7">getSimilarityScores</a> (<a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a> sessionId)</td></tr>
+<tr class="memdesc:afcb5d97066af4b3ec7c6f6c83fc58ce7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrieve both current and peak similarity scores (realtime path only)  <br /></td></tr>
+<tr class="separator:afcb5d97066af4b3ec7c6f6c83fc58ce7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1ccbe06863622d7ea87ee689e6a43290" id="r_a1ccbe06863622d7ea87ee689e6a43290"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356c">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a1ccbe06863622d7ea87ee689e6a43290">startRecording</a> (<a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a> sessionId)</td></tr>
 <tr class="memdesc:a1ccbe06863622d7ea87ee689e6a43290"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start audio recording for a session.  <br /></td></tr>
 <tr class="separator:a1ccbe06863622d7ea87ee689e6a43290"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a39baaafb041c156086cf78dd28d020a7" id="r_a39baaafb041c156086cf78dd28d020a7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356c">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a39baaafb041c156086cf78dd28d020a7">startMemoryRecording</a> (<a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a> sessionId, double maxDurationSeconds=0.0)</td></tr>
+<tr class="memdesc:a39baaafb041c156086cf78dd28d020a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start memory-based audio recording for a session.  <br /></td></tr>
+<tr class="separator:a39baaafb041c156086cf78dd28d020a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7065171695e7450df922c4d114fc1f68" id="r_a7065171695e7450df922c4d114fc1f68"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356c">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a7065171695e7450df922c4d114fc1f68">stopRecording</a> (<a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a> sessionId)</td></tr>
 <tr class="memdesc:a7065171695e7450df922c4d114fc1f68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stop audio recording for a session.  <br /></td></tr>
 <tr class="separator:a7065171695e7450df922c4d114fc1f68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3ffd7ca3507e1f6f024a02336be9e68" id="r_ab3ffd7ca3507e1f6f024a02336be9e68"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html">Result</a>&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#ab3ffd7ca3507e1f6f024a02336be9e68">saveRecording</a> (<a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a> sessionId, std::string_view filename)</td></tr>
+<tr class="memdesc:ab3ffd7ca3507e1f6f024a02336be9e68"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save recorded audio to file.  <br /></td></tr>
+<tr class="separator:ab3ffd7ca3507e1f6f024a02336be9e68"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1f63ad0a2f1ad64a35018f33b0597ae7" id="r_a1f63ad0a2f1ad64a35018f33b0597ae7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html">Result</a>&lt; std::vector&lt; float &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a1f63ad0a2f1ad64a35018f33b0597ae7">getRecordedAudioData</a> (<a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a> sessionId) const</td></tr>
+<tr class="memdesc:a1f63ad0a2f1ad64a35018f33b0597ae7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get recorded audio data from memory.  <br /></td></tr>
+<tr class="separator:a1f63ad0a2f1ad64a35018f33b0597ae7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c8a00aa087c5378b2df08ed2ed0a1d3" id="r_a3c8a00aa087c5378b2df08ed2ed0a1d3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html">Result</a>&lt; size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a3c8a00aa087c5378b2df08ed2ed0a1d3">copyRecordedAudioData</a> (<a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a> sessionId, float *buffer, size_t maxSamples) const</td></tr>
+<tr class="memdesc:a3c8a00aa087c5378b2df08ed2ed0a1d3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy recorded audio data to external buffer.  <br /></td></tr>
+<tr class="separator:a3c8a00aa087c5378b2df08ed2ed0a1d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9cf5d1f4099a13d35b902ee7f49d886c" id="r_a9cf5d1f4099a13d35b902ee7f49d886c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356c">Status</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a9cf5d1f4099a13d35b902ee7f49d886c">clearRecordingBuffer</a> (<a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a> sessionId)</td></tr>
+<tr class="memdesc:a9cf5d1f4099a13d35b902ee7f49d886c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clear memory recording buffer.  <br /></td></tr>
+<tr class="separator:a9cf5d1f4099a13d35b902ee7f49d886c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -213,7 +260,7 @@ Static Public Member Functions</h2></td></tr>
 </ul>
 <dl class="section note"><dt>Note</dt><dd>This class is designed to be instantiated once per application and supports multiple concurrent analysis sessions. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="UnifiedAudioEngine_8h_source.html#l00176">176</a> of file <a class="el" href="UnifiedAudioEngine_8h_source.html">UnifiedAudioEngine.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="UnifiedAudioEngine_8h_source.html#l00170">170</a> of file <a class="el" href="UnifiedAudioEngine_8h_source.html">UnifiedAudioEngine.h</a>.</p>
 </div><h2 class="groupheader">Member Enumeration Documentation</h2>
 <a id="a75e221c1a85d3e4d83965946401e356c" name="a75e221c1a85d3e4d83965946401e356c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a75e221c1a85d3e4d83965946401e356c">&#9670;&#160;</a></span>Status</h2>
@@ -254,9 +301,11 @@ Static Public Member Functions</h2></td></tr>
 </td></tr>
 <tr><td class="fieldname"><a id="a75e221c1a85d3e4d83965946401e356caa656b0cae2ef29e5d121c6a1edec670b" name="a75e221c1a85d3e4d83965946401e356caa656b0cae2ef29e5d121c6a1edec670b"></a>INIT_FAILED&#160;</td><td class="fielddoc"><p>Engine initialization failed. </p>
 </td></tr>
+<tr><td class="fieldname"><a id="a75e221c1a85d3e4d83965946401e356cae8c0c70879b5895c615677261d64a1ee" name="a75e221c1a85d3e4d83965946401e356cae8c0c70879b5895c615677261d64a1ee"></a>INTERNAL_ERROR&#160;</td><td class="fielddoc"><p>Internal engine error. </p>
+</td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="UnifiedAudioEngine_8h_source.html#l00185">185</a> of file <a class="el" href="UnifiedAudioEngine_8h_source.html">UnifiedAudioEngine.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="UnifiedAudioEngine_8h_source.html#l00179">179</a> of file <a class="el" href="UnifiedAudioEngine_8h_source.html">UnifiedAudioEngine.h</a>.</p>
 
 </div>
 </div>
@@ -282,6 +331,80 @@ Static Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a9cf5d1f4099a13d35b902ee7f49d886c" name="a9cf5d1f4099a13d35b902ee7f49d886c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9cf5d1f4099a13d35b902ee7f49d886c">&#9670;&#160;</a></span>clearRecordingBuffer()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356c">Status</a> huntmaster::UnifiedAudioEngine::clearRecordingBuffer </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a>&#160;</td>
+          <td class="paramname"><em>sessionId</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Clear memory recording buffer. </p>
+<p>Clears the memory recording buffer, freeing up space for new recordings. Only affects memory-based recordings.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sessionId</td><td>Target session </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356cae0aa021e21dddbd6d8cecec71e9cf564" title="Operation completed successfully.">Status::OK</a> on success, error code on failure </dd></dl>
+
+</div>
+</div>
+<a id="a3c8a00aa087c5378b2df08ed2ed0a1d3" name="a3c8a00aa087c5378b2df08ed2ed0a1d3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c8a00aa087c5378b2df08ed2ed0a1d3">&#9670;&#160;</a></span>copyRecordedAudioData()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html">Result</a>&lt; size_t &gt; huntmaster::UnifiedAudioEngine::copyRecordedAudioData </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a>&#160;</td>
+          <td class="paramname"><em>sessionId</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float *&#160;</td>
+          <td class="paramname"><em>buffer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>maxSamples</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Copy recorded audio data to external buffer. </p>
+<p>Efficiently copies recorded audio data to a user-provided buffer. Only works for memory-based recordings.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sessionId</td><td>Target session </td></tr>
+    <tr><td class="paramname">buffer</td><td>Destination buffer </td></tr>
+    <tr><td class="paramname">maxSamples</td><td>Maximum samples to copy </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Number of samples actually copied </dd></dl>
+
+</div>
+</div>
 <a id="a0ce7c8a3a7db54110df5bcedf3452c48" name="a0ce7c8a3a7db54110df5bcedf3452c48"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0ce7c8a3a7db54110df5bcedf3452c48">&#9670;&#160;</a></span>create()</h2>
 
@@ -536,6 +659,60 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a848fcf669dabce9fbf030f26cd302793" name="a848fcf669dabce9fbf030f26cd302793"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a848fcf669dabce9fbf030f26cd302793">&#9670;&#160;</a></span>getEnhancedAnalysisSummary()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html">Result</a>&lt; <a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1EnhancedAnalysisSummary.html">EnhancedAnalysisSummary</a> &gt; huntmaster::UnifiedAudioEngine::getEnhancedAnalysisSummary </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a>&#160;</td>
+          <td class="paramname"><em>sessionId</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get latest enhanced analysis summary (auto-enables analyzers on first call) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sessionId</td><td>Target session </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html" title="Template wrapper for operation results with error handling.">Result</a> containing summary or error status </dd></dl>
+
+</div>
+</div>
+<a id="a806f6e123a50c24471135bdf7345379c" name="a806f6e123a50c24471135bdf7345379c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a806f6e123a50c24471135bdf7345379c">&#9670;&#160;</a></span>getEnhancedAnalyzersEnabled()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html">Result</a>&lt; bool &gt; huntmaster::UnifiedAudioEngine::getEnhancedAnalyzersEnabled </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a>&#160;</td>
+          <td class="paramname"><em>sessionId</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Query whether enhanced analyzers are enabled for a session. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sessionId</td><td>Target session </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Result&lt;bool&gt; indicating enabled state or error </dd></dl>
+
+</div>
+</div>
 <a id="adcaee4959a14d28666e7cf4d5ff1660c" name="adcaee4959a14d28666e7cf4d5ff1660c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#adcaee4959a14d28666e7cf4d5ff1660c">&#9670;&#160;</a></span>getFeatureCount()</h2>
 
@@ -591,6 +768,61 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="adc76dc4bf96df615a25f3da7ee09e005" name="adc76dc4bf96df615a25f3da7ee09e005"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc76dc4bf96df615a25f3da7ee09e005">&#9670;&#160;</a></span>getRealtimeSimilarityState()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html">Result</a>&lt; <a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1SimilarityRealtimeState.html">SimilarityRealtimeState</a> &gt; huntmaster::UnifiedAudioEngine::getRealtimeSimilarityState </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a>&#160;</td>
+          <td class="paramname"><em>sessionId</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Query real-time similarity readiness/introspection state. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sessionId</td><td>Target session </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html" title="Template wrapper for operation results with error handling.">Result</a> containing <a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1SimilarityRealtimeState.html" title="Real-time similarity readiness/introspection state.">SimilarityRealtimeState</a> or error status </dd></dl>
+
+</div>
+</div>
+<a id="a1f63ad0a2f1ad64a35018f33b0597ae7" name="a1f63ad0a2f1ad64a35018f33b0597ae7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1f63ad0a2f1ad64a35018f33b0597ae7">&#9670;&#160;</a></span>getRecordedAudioData()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html">Result</a>&lt; std::vector&lt; float &gt; &gt; huntmaster::UnifiedAudioEngine::getRecordedAudioData </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a>&#160;</td>
+          <td class="paramname"><em>sessionId</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get recorded audio data from memory. </p>
+<p>Returns recorded audio samples directly from memory buffer. Only works for memory-based recordings.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sessionId</td><td>Target session </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Vector of audio samples (interleaved if multi-channel) </dd></dl>
+
+</div>
+</div>
 <a id="a3e83e9bc2178ebd1965729281f11b787" name="a3e83e9bc2178ebd1965729281f11b787"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3e83e9bc2178ebd1965729281f11b787">&#9670;&#160;</a></span>getSessionDuration()</h2>
 
@@ -643,6 +875,33 @@ Static Public Member Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html" title="Template wrapper for operation results with error handling.">Result</a> containing similarity score, or error status </dd></dl>
+
+</div>
+</div>
+<a id="afcb5d97066af4b3ec7c6f6c83fc58ce7" name="afcb5d97066af4b3ec7c6f6c83fc58ce7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afcb5d97066af4b3ec7c6f6c83fc58ce7">&#9670;&#160;</a></span>getSimilarityScores()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html">Result</a>&lt; <a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1SimilarityScoresSnapshot.html">SimilarityScoresSnapshot</a> &gt; huntmaster::UnifiedAudioEngine::getSimilarityScores </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a>&#160;</td>
+          <td class="paramname"><em>sessionId</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Retrieve both current and peak similarity scores (realtime path only) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sessionId</td><td>Target session </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html" title="Template wrapper for operation results with error handling.">Result</a> with snapshot or error. If realtime scorer inactive returns INSUFFICIENT_DATA </dd></dl>
 
 </div>
 </div>
@@ -781,6 +1040,83 @@ Static Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="ab3ffd7ca3507e1f6f024a02336be9e68" name="ab3ffd7ca3507e1f6f024a02336be9e68"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab3ffd7ca3507e1f6f024a02336be9e68">&#9670;&#160;</a></span>saveRecording()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structhuntmaster_1_1UnifiedAudioEngine_1_1Result.html">Result</a>&lt; std::string &gt; huntmaster::UnifiedAudioEngine::saveRecording </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a>&#160;</td>
+          <td class="paramname"><em>sessionId</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string_view&#160;</td>
+          <td class="paramname"><em>filename</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Save recorded audio to file. </p>
+<p>Saves the recorded audio data to a file. Works for both file-based and memory-based recordings.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sessionId</td><td>Target session </td></tr>
+    <tr><td class="paramname">filename</td><td>Output filename </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Full path to saved file on success, error on failure </dd></dl>
+
+</div>
+</div>
+<a id="ad50290bcd64ec3b741c76232a4d6acf2" name="ad50290bcd64ec3b741c76232a4d6acf2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad50290bcd64ec3b741c76232a4d6acf2">&#9670;&#160;</a></span>setEnhancedAnalyzersEnabled()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356c">Status</a> huntmaster::UnifiedAudioEngine::setEnhancedAnalyzersEnabled </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a>&#160;</td>
+          <td class="paramname"><em>sessionId</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>enable</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enable or disable enhanced analyzers for a session (lazy creation) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sessionId</td><td>Target session </td></tr>
+    <tr><td class="paramname">enable</td><td>True to enable (creates analyzers if needed), false to disable &amp; free </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356cae0aa021e21dddbd6d8cecec71e9cf564" title="Operation completed successfully.">Status::OK</a> on success or error code </dd></dl>
+
+</div>
+</div>
 <a id="a9d0a3fd620d3aaf7cc63550ef27ceda1" name="a9d0a3fd620d3aaf7cc63550ef27ceda1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9d0a3fd620d3aaf7cc63550ef27ceda1">&#9670;&#160;</a></span>setRealtimeScorerConfig()</h2>
 
@@ -813,6 +1149,45 @@ Static Public Member Functions</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">sessionId</td><td>Target session </td></tr>
     <tr><td class="paramname">config</td><td>Configuration parameters for scoring algorithm </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356cae0aa021e21dddbd6d8cecec71e9cf564" title="Operation completed successfully.">Status::OK</a> on success, error code on failure </dd></dl>
+
+</div>
+</div>
+<a id="a39baaafb041c156086cf78dd28d020a7" name="a39baaafb041c156086cf78dd28d020a7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a39baaafb041c156086cf78dd28d020a7">&#9670;&#160;</a></span>startMemoryRecording()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356c">Status</a> huntmaster::UnifiedAudioEngine::startMemoryRecording </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="UnifiedAudioEngine_8h.html#af98192fc2926acd1774058d24f4717af">SessionId</a>&#160;</td>
+          <td class="paramname"><em>sessionId</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&#160;</td>
+          <td class="paramname"><em>maxDurationSeconds</em> = <code>0.0</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Start memory-based audio recording for a session. </p>
+<p>Begins audio capture directly to memory buffer for later processing. This mode is optimal for scenarios requiring post-processing or immediate access to recorded data.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sessionId</td><td>Target session </td></tr>
+    <tr><td class="paramname">maxDurationSeconds</td><td>Maximum recording duration (0 = no limit) </td></tr>
   </table>
   </dd>
 </dl>

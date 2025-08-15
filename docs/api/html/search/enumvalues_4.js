@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['no_5fmaster_5fcall_0',['NO_MASTER_CALL',['../classhuntmaster_1_1RealtimeScorer.html#a01ceb51b1db0463fedbd9b0843e26d69a001566220cba89f8859f0dac62c293f3',1,'huntmaster::RealtimeScorer']]],
-  ['not_5finitialized_1',['NOT_INITIALIZED',['../VoiceActivityDetector_8h.html#a03feea6a1015fab892f249150b98d6ada02de9649e258d1dd94056e676061e969',1,'huntmaster']]]
+  ['error_5ffeedback_0',['ERROR_FEEDBACK',['../AudioFormatConverter_8h.html#a7ca08b8bb9b99624686a0decaa52945ea3a73402132e5d3748aa45ea03759c6a2',1,'huntmaster::core']]]
 ];

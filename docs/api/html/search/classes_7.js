@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['unifiedaudioengine_0',['UnifiedAudioEngine',['../classhuntmaster_1_1UnifiedAudioEngine.html',1,'huntmaster']]]
+  ['levelmeasurement_0',['LevelMeasurement',['../structhuntmaster_1_1AudioLevelProcessor_1_1LevelMeasurement.html',1,'huntmaster::AudioLevelProcessor']]],
+  ['logstream_1',['LogStream',['../classhuntmaster_1_1LogStream.html',1,'huntmaster']]]
 ];

@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['waveformdata_0',['WaveformData',['../structhuntmaster_1_1WaveformGenerator_1_1WaveformData.html',1,'huntmaster::WaveformGenerator']]],
-  ['waveformgenerator_1',['WaveformGenerator',['../classhuntmaster_1_1WaveformGenerator.html',1,'huntmaster']]]
+  ['numaaudioallocator_0',['NUMAAudioAllocator',['../classhuntmaster_1_1io_1_1NUMAAudioAllocator.html',1,'huntmaster::io']]],
+  ['numatopology_1',['NUMATopology',['../structhuntmaster_1_1io_1_1NUMATopology.html',1,'huntmaster::io']]]
 ];

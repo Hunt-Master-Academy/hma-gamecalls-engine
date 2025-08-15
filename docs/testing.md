@@ -1,6 +1,6 @@
 # Hunt Master Academy Game Calls Audio Engine – Testing & Validation Guide
-Last Updated: August 9, 2025
-Status Context: Core Engine Production | Enhanced Analyzers Phase 1 Integrated | Entering UX Alignment & Finalization
+Last Updated: August 14, 2025
+Status Context: Core Engine Production | Enhanced Analyzers Phase 1 Integrated | Test Suite Reorganized & Archived | Extended Capabilities Phase
 Authoritative roadmap: see [docs/mvp_todo.md](mvp_todo.md)
 
 ---
@@ -16,9 +16,9 @@ Defines the canonical testing strategy (unit, integration, performance, future f
 | Determinism | No data‑dependent randomness without fixed seed |
 | Fast Feedback | Majority of tests complete < 10s total |
 | Zero Silent Failures | All Result<T> / Status checked; no ignored errors |
-| No Long Sleeps | Use virtual clock (planned) to replace real waits |
+| No Long Sleeps | Virtual clock abstraction replaces real waits |
 | Asset Isolation | Only sanctioned audio assets in data/master_calls & data/processed_calls |
-| No Permanent Skips | Temporary skips only allowed until readiness API implemented (tracked in TODO) |
+| No Permanent Skips | 0 skips; readiness API drives assertions |
 | Perf Guarded | Latency thresholds asserted for critical paths |
 | Idempotent | Re-running tests yields identical outcomes |
 | Minimal Logging | Tests run at ERROR log level unless debugging |
@@ -28,14 +28,24 @@ Defines the canonical testing strategy (unit, integration, performance, future f
 ## 3. Current Test Inventory (Snapshot)
 | Category | Examples | Status |
 |----------|----------|--------|
-| Unit – Core | MFCCProcessor, DTWComparator, VoiceActivityDetector | Passing |
+| Unit – Core | MFCCProcessor, DTWComparator, VoiceActivityDetector | Passing (121 tests) |
 | Unit – Enhanced | PitchTracker, CadenceAnalyzer, HarmonicAnalyzer | Passing |
+| Unit – VAD | State machine, thresholds, transitions | Passing |
+| Unit – Audio | Player, Recorder, Level processing | Passing |
+| Unit – Memory/Security | Access control, memory protection | Passing |
+| Unit – I/O Optimization | Async writers, streaming buffers | Passing |
+| Unit – DTW | Edge cases, window paths, cost computation | Passing |
 | Integration – Engine | Session create/load/process, similarity retrieval | Passing |
-| Real Audio Integration | Master call MFCC distance, similarity scaffolding | Passing (2 readiness skips) |
+| Real Audio Integration | Master call MFCC distance, similarity scaffolding | Passing (0 skips) |
 | Performance Guards | Combined enhanced path < target | Passing |
-| Staleness / Invalidation | Summary stale invalidation | Passing (sleep-based – to refactor) |
 
-Target (near-term): 0 skips after readiness instrumentation.
+**Test Suite Structure:** Reorganized into focused directories:
+- `tests/unit/` - Component-level unit tests (core, analyzers, vad, audio, etc.)
+- `tests/integration/` - Cross-component integration tests
+- `tests/performance/` - Performance benchmarking and profiling
+- `tests/lib/` - Shared test utilities and fixtures
+
+Target: All 121 tests passing with 0 skips; expand extended capabilities coverage.
 
 ---
 
@@ -100,10 +110,8 @@ Add no new large binaries without approval. Consider Git LFS if >10 MB.
 
 ---
 
-## 7. Similarity Readiness Testing (Current vs Planned)
-Current: Two integration tests skip when `getSimilarityScore()` returns INSUFFICIENT_DATA after chunk feeding.
-Planned: Introduce `getRealtimeSimilarityState()` to poll until `reliable == true` or frame threshold reached; then assert final similarity.
-Acceptance: Replace skips with loop:
+## 7. Similarity Readiness Testing
+Use `getRealtimeSimilarityState()` to poll until `reliable == true` or frame threshold reached; then assert final similarity. Example:
 ```cpp
 for (int i=0; i<maxChunks && !state.reliable; ++i) feedChunk(...);
 EXPECT_TRUE(state.reliable);
@@ -111,7 +119,7 @@ EXPECT_TRUE(state.reliable);
 
 ---
 
-## 8. Upcoming Finalization Tests (Planned)
+## 8. Finalization & Overlay Tests
 | Test | Intent |
 |------|--------|
 | FinalizeCreatesSegmentAndRefinedSimilarity | finalizeSessionAnalysis populates segment & refined similarity |
@@ -130,7 +138,7 @@ Add only after API fields appear in summary struct.
 |-------|-----------|-----------|
 | processAudioChunk (enhanced on) | < 12 ms | Maintain real-time UX |
 | Individual analyzer (pitch/harmonic/cadence) | < 4 ms | Prevent single analyzer dominance |
-| finalizeSessionAnalysis (planned) | < 40 ms | One-shot post-stop responsiveness |
+| finalizeSessionAnalysis | < 40 ms | One-shot post-stop responsiveness |
 
 Pattern:
 ```cpp
@@ -142,14 +150,8 @@ EXPECT_LT(dt, 12.0) << "Enhanced path regression";
 
 ---
 
-## 10. Virtual Clock Refactor (Planned)
-Current stale invalidation test uses `std::this_thread::sleep_for`.
-Planned approach:
-- Inject IClock (interface) into session
-- Test supplies FakeClock advancing millis manually
-- Remove real sleeps (reduces CI wall time & flake risk)
-
-Do not add new sleeps.
+## 10. Virtual Clock
+All timing-sensitive tests use a FakeClock to advance millis manually. Do not add real sleeps.
 
 ---
 
@@ -241,8 +243,42 @@ Do not gate deployment on coverage until finalize stage is merged.
 
 ---
 
+## 19.1 Analysis & Calibration (Planned – Test Additions)
+
+Planned suites to accompany finalize/readiness/overlay/calibration features (see mvp_todo.md):
+
+- Finalize Stage
+    - Segment extraction: multi-burst and trailing-silence selection
+    - Refined DTW: similarityAtFinalize monotonic vs provisional
+    - Loudness normalization: RMS error ≤ 2%
+- Readiness
+    - Deterministic threshold loop: reliable within N frames at given sampleRate
+    - Negative path: stays unreliable below threshold
+- Overlay Export
+    - Decimation length ratio within tolerance; drift < 1 frame per block
+    - Offset handling (when setOverlayOffset is added)
+- Calibration Grades
+    - Boundary fixtures for pitch/harmonic/cadence A–F transitions
+    - Stability after readiness: grade variance < target band
+
+- Mic Calibration Advisor
+    - Synthetic noise/music fixtures to validate noise floor and headroom calculation
+    - Recommendation bands map deterministically to documented thresholds
+
+- Latency/Drift Calibrator
+    - Synthetic offset fixtures to validate ms error ≤ 1 ms
+    - Synthetic drift (ppm) fixtures to validate ppm error ≤ 10 ppm
+
+Acceptance snapshot (add when APIs land):
+
+- 0 skips in similarity/overlay/finalize
+- finalize path < 40 ms typical; streaming unchanged
+- Export arrays sizes and alignment deterministic across runs
+
 ## 20. Exit Criteria (Testing Phase Alignment)
+
 All of:
+
 - 0 skips
 - finalizeSessionAnalysis tests green
 - Readiness deterministic
@@ -253,6 +289,7 @@ All of:
 ---
 
 ## 21. Quick Command Reference
+
 ```bash
 # Full suite
 timeout 60 ./build/bin/RunEngineTests
@@ -270,7 +307,9 @@ timeout 30 ./build/bin/RunEngineTests --gtest_filter="*Performance*"
 ---
 
 ## 22. Test Failure Example (Similarity Readiness)
+
 Observed:
+
 - getSimilarityScore(): INSUFFICIENT_DATA
 Action:
 - Feed additional frames until readiness threshold (planned API)
@@ -280,6 +319,7 @@ Else → fail with diagnostic log extraction.
 ---
 
 ## 23. Maintenance Checklist
+
 | Interval | Action |
 |----------|--------|
 | Weekly | Confirm no new skips |
@@ -290,6 +330,7 @@ Else → fail with diagnostic log extraction.
 ---
 
 ## 24. Summary
-Testing framework ensures correctness, timing guarantees, and future extensibility (finalize, readiness, overlay, calibration). Eliminate skips, enforce Result<T> discipline, keep latency guards tight, and align every addition with [docs/mvp_todo.md](mvp_todo.md).
+
+Testing framework ensures correctness, timing guarantees, and future extensibility (finalize, readiness, overlay, calibration). Eliminate skips, enforce `Result<T>` discipline, keep latency guards tight, and align every addition with [docs/mvp_todo.md](mvp_todo.md).
 
 ---

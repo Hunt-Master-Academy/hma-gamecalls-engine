@@ -13,9 +13,8 @@
 #include <random>
 #include <vector>
 
-#include <gtest/gtest.h>
-
-#include "TestAudioBuffer.h"
+#include "../TestAudioBuffer.h"
+#include "gtest/gtest.h"
 #include "huntmaster/core/AudioConfig.h"
 #include "huntmaster/visualization/WaveformAnalyzer.h"
 

@@ -94,6 +94,7 @@ $(document).ready(function(){initNavTree('classhuntmaster_1_1AudioLevelProcessor
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-types">Public Types</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
+<a href="#pub-static-methods">Static Public Member Functions</a> &#124;
 <a href="classhuntmaster_1_1AudioLevelProcessor-members.html">List of all members</a>  </div>
   <div class="headertitle"><div class="title">huntmaster::AudioLevelProcessor Class Reference</div></div>
 </div><!--header-->
@@ -167,6 +168,15 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a8b76b844cfdf84bb3519a8370cacfa5c" id="r_a8b76b844cfdf84bb3519a8370cacfa5c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1AudioLevelProcessor.html#a8b76b844cfdf84bb3519a8370cacfa5c">isInitialized</a> () const noexcept</td></tr>
 <tr class="memdesc:a8b76b844cfdf84bb3519a8370cacfa5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if processor is properly initialized.  <br /></td></tr>
 <tr class="separator:a8b76b844cfdf84bb3519a8370cacfa5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-static-methods" name="pub-static-methods"></a>
+Static Public Member Functions</h2></td></tr>
+<tr class="memitem:a5ba5ef7ca39b6cdfeaa3cb941804b402" id="r_a5ba5ef7ca39b6cdfeaa3cb941804b402"><td class="memItemLeft" align="right" valign="top">static float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1AudioLevelProcessor.html#a5ba5ef7ca39b6cdfeaa3cb941804b402">calculateRMS</a> (std::span&lt; const float &gt; samples, int numChannels=1) noexcept</td></tr>
+<tr class="memdesc:a5ba5ef7ca39b6cdfeaa3cb941804b402"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate RMS (Root Mean Square) level from audio samples.  <br /></td></tr>
+<tr class="separator:a5ba5ef7ca39b6cdfeaa3cb941804b402"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72ce69cdbee00e551422acb100f1e21e" id="r_a72ce69cdbee00e551422acb100f1e21e"><td class="memItemLeft" align="right" valign="top">static float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classhuntmaster_1_1AudioLevelProcessor.html#a72ce69cdbee00e551422acb100f1e21e">calculatePeak</a> (std::span&lt; const float &gt; samples, int numChannels=1) noexcept</td></tr>
+<tr class="memdesc:a72ce69cdbee00e551422acb100f1e21e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate peak level from audio samples.  <br /></td></tr>
+<tr class="separator:a72ce69cdbee00e551422acb100f1e21e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Real-time audio level processor for RMS, peak, and dB calculations. </p>
@@ -255,6 +265,100 @@ Public Member Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a72ce69cdbee00e551422acb100f1e21e" name="a72ce69cdbee00e551422acb100f1e21e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a72ce69cdbee00e551422acb100f1e21e">&#9670;&#160;</a></span>calculatePeak()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static float huntmaster::AudioLevelProcessor::calculatePeak </td>
+          <td>(</td>
+          <td class="paramtype">std::span&lt; const float &gt;&#160;</td>
+          <td class="paramname"><em>samples</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>numChannels</em> = <code>1</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Calculate peak level from audio samples. </p>
+<p>Finds the maximum absolute amplitude in the provided audio samples. For multi-channel audio, returns the maximum peak across all channels.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">samples</td><td>Audio samples to analyze (interleaved if multi-channel) </td></tr>
+    <tr><td class="paramname">numChannels</td><td>Number of audio channels (1=mono, 2=stereo, etc.) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Peak level as linear amplitude (0.0-1.0+), or 0.0 if samples are empty/invalid </dd></dl>
+
+</div>
+</div>
+<a id="a5ba5ef7ca39b6cdfeaa3cb941804b402" name="a5ba5ef7ca39b6cdfeaa3cb941804b402"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ba5ef7ca39b6cdfeaa3cb941804b402">&#9670;&#160;</a></span>calculateRMS()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static float huntmaster::AudioLevelProcessor::calculateRMS </td>
+          <td>(</td>
+          <td class="paramtype">std::span&lt; const float &gt;&#160;</td>
+          <td class="paramname"><em>samples</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>numChannels</em> = <code>1</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Calculate RMS (Root Mean Square) level from audio samples. </p>
+<p>Calculates the RMS level of the provided audio samples. For multi-channel audio, averages the RMS across all channels.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">samples</td><td>Audio samples to analyze (interleaved if multi-channel) </td></tr>
+    <tr><td class="paramname">numChannels</td><td>Number of audio channels (1=mono, 2=stereo, etc.) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>RMS level as linear amplitude (0.0-1.0+), or 0.0 if samples are empty/invalid </dd></dl>
+
+</div>
+</div>
 <a id="a97d001e808d1dfb795920d985592ddbb" name="a97d001e808d1dfb795920d985592ddbb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a97d001e808d1dfb795920d985592ddbb">&#9670;&#160;</a></span>exportHistoryToJson()</h2>
 

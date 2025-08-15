@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['4_3a_20advanced_20features_20strong_202_203_20weeks_0',['🎵 &lt;strong&gt;Phase 4: Advanced Features&lt;/strong&gt; (2-3 weeks)',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md86',1,'']]]
+  ['5_20acceptance_20criteria_20near_20term_0',['5. Acceptance Criteria (Near-Term)',['../md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md35',1,'']]],
+  ['5_20calibration_1',['3.5 Calibration',['../md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md29',1,'']]]
 ];

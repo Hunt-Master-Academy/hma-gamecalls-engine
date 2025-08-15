@@ -1,9 +1,13 @@
 var searchData=
 [
-  ['enabled_0',['enabled',['../structhuntmaster_1_1VADConfig.html#a6b86f01f55da227632c1b117c59b9f94',1,'huntmaster::VADConfig']]],
-  ['enablepeakhold_1',['enablePeakHold',['../structhuntmaster_1_1WaveformGenerator_1_1Config.html#afee692f81c01babd7e769fa591a66da2',1,'huntmaster::WaveformGenerator::Config']]],
-  ['enablepitchanalysis_2',['enablepitchanalysis',['../structhuntmaster_1_1RealtimeScorer_1_1Config.html#a6a17addb69c2734eee49215002d8ed1f',1,'huntmaster::RealtimeScorer::Config::enablePitchAnalysis'],['../structhuntmaster_1_1RealtimeScorerConfig.html#a40f6393a1ab67ef39c055d41e945c2d1',1,'huntmaster::RealtimeScorerConfig::enablePitchAnalysis']]],
-  ['enablermsoverlay_3',['enableRmsOverlay',['../structhuntmaster_1_1WaveformGenerator_1_1Config.html#ad421f7eb0a72c8b3ec78aabe735d4200',1,'huntmaster::WaveformGenerator::Config']]],
-  ['energy_5flevel_4',['energy_level',['../structhuntmaster_1_1VADResult.html#a5352c9672efef2203d88f7745334962e',1,'huntmaster::VADResult']]],
-  ['energy_5fthreshold_5',['energy_threshold',['../structhuntmaster_1_1VADConfig.html#ac0bd9b8b559b439022f8699aea331018',1,'huntmaster::VADConfig::energy_threshold'],['../structhuntmaster_1_1VoiceActivityDetector_1_1Config.html#a9d3736c536d262d7898e147dc9767ba4',1,'huntmaster::VoiceActivityDetector::Config::energy_threshold']]]
+  ['db_5fceiling_0',['db_ceiling',['../structhuntmaster_1_1SpectrogramProcessor_1_1Config.html#afbc3419c34725bc685a9fbb0065cfff1',1,'huntmaster::SpectrogramProcessor::Config']]],
+  ['db_5ffloor_1',['db_floor',['../structhuntmaster_1_1SpectrogramProcessor_1_1Config.html#ad8b496875439f8613a3bada0414b4b75',1,'huntmaster::SpectrogramProcessor::Config']]],
+  ['dbceiling_2',['dbCeiling',['../structhuntmaster_1_1AudioLevelProcessor_1_1Config.html#aed02bb581c9d62fb4c397e92a21fd4ef',1,'huntmaster::AudioLevelProcessor::Config']]],
+  ['dbfloor_3',['dbFloor',['../structhuntmaster_1_1AudioLevelProcessor_1_1Config.html#a1ea9f4beaf6b0a86e00a3a3135e8141a',1,'huntmaster::AudioLevelProcessor::Config']]],
+  ['details_4',['details',['../structhuntmaster_1_1ErrorInfo.html#a5382992c455a0aadc3401a3d7b14e773',1,'huntmaster::ErrorInfo']]],
+  ['distance_5fweight_5',['distance_weight',['../structhuntmaster_1_1DTWComparator_1_1Config.html#a27ea97a76aaab00a1283e8e42ca3e1a2',1,'huntmaster::DTWComparator::Config']]],
+  ['downsampleratio_6',['downsampleRatio',['../structhuntmaster_1_1WaveformGenerator_1_1Config.html#a6bedf125c3984b0e189da98d04e0d829',1,'huntmaster::WaveformGenerator::Config']]],
+  ['dtwdistancescaling_7',['dtwDistanceScaling',['../structhuntmaster_1_1RealtimeScorer_1_1Config.html#adcc6ade967e6a86c528384950791550f',1,'huntmaster::RealtimeScorer::Config']]],
+  ['duration_8',['duration',['../structhuntmaster_1_1core_1_1AudioFormatInfo.html#a13a8a00e6ca3eaa1b9a57798052a9fec',1,'huntmaster::core::AudioFormatInfo::duration'],['../structhuntmaster_1_1VADResult.html#a044c285cae1d173fefa88940633c1d22',1,'huntmaster::VADResult::duration']]],
+  ['durationseconds_9',['durationSeconds',['../structhuntmaster_1_1core_1_1AudioFormatInfo.html#a088cbfc64cb82aa1d40d1a4ab466086f',1,'huntmaster::core::AudioFormatInfo']]]
 ];

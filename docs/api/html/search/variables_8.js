@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['originalsamplecount_0',['originalSampleCount',['../structhuntmaster_1_1WaveformGenerator_1_1WaveformData.html#a8fd5c253ade9b7bc3e099b3b7cec2c64',1,'huntmaster::WaveformGenerator::WaveformData']]],
-  ['overall_1',['overall',['../structhuntmaster_1_1RealtimeScorer_1_1SimilarityScore.html#a78e00ab26f3e2e4be9a88b52b5e8183b',1,'huntmaster::RealtimeScorer::SimilarityScore::overall'],['../structhuntmaster_1_1RealtimeScoringResult.html#a26e12b8216569f7e505550193171644a',1,'huntmaster::RealtimeScoringResult::overall']]]
+  ['lifter_5fcoeff_0',['lifter_coeff',['../structhuntmaster_1_1MFCCProcessor_1_1Config.html#abbb0d1eba0214901de5612bed3820acb',1,'huntmaster::MFCCProcessor::Config']]],
+  ['line_1',['line',['../structhuntmaster_1_1ErrorInfo.html#a0f462d11ddb1dcd828ce818f971246a9',1,'huntmaster::ErrorInfo']]],
+  ['low_5ffreq_2',['low_freq',['../structhuntmaster_1_1MFCCProcessor_1_1Config.html#a42c9b0e0c9cececd593973b71bae4451',1,'huntmaster::MFCCProcessor::Config']]]
 ];

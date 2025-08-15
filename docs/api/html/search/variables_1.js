@@ -1,7 +1,9 @@
 var searchData=
 [
-  ['channels_0',['channels',['../structhuntmaster_1_1AudioRecorder_1_1Config.html#ac1ee2fa44368e7747db59642b7c0d99b',1,'huntmaster::AudioRecorder::Config']]],
-  ['confidence_1',['confidence',['../structhuntmaster_1_1RealtimeScorer_1_1SimilarityScore.html#aaf03e2daa75437de7d1f8c554eb22dda',1,'huntmaster::RealtimeScorer::SimilarityScore::confidence'],['../structhuntmaster_1_1RealtimeScoringResult.html#a8878221976630a109a827342e8afe3e3',1,'huntmaster::RealtimeScoringResult::confidence']]],
-  ['confidencethreshold_2',['confidencethreshold',['../structhuntmaster_1_1RealtimeScorer_1_1Config.html#afcb227df1c7075560360c8c4dd4525a9',1,'huntmaster::RealtimeScorer::Config::confidenceThreshold'],['../structhuntmaster_1_1RealtimeScorerConfig.html#a766fe5e913bc23e552cfea2fea999384',1,'huntmaster::RealtimeScorerConfig::confidenceThreshold']]],
-  ['currentscore_3',['currentscore',['../structhuntmaster_1_1RealtimeScorer_1_1RealtimeFeedback.html#a292729d437e18e6c37635d26f318b38d',1,'huntmaster::RealtimeScorer::RealtimeFeedback::currentScore'],['../structhuntmaster_1_1RealtimeFeedback.html#a27e48fbe7fb175173abc792f1743366a',1,'huntmaster::RealtimeFeedback::currentScore']]]
+  ['beatstrengths_0',['beatStrengths',['../structhuntmaster_1_1CadenceAnalyzer_1_1CadenceProfile.html#acd4bae38f0a11546d61d771aecc581e1',1,'huntmaster::CadenceAnalyzer::CadenceProfile']]],
+  ['beattimes_1',['beatTimes',['../structhuntmaster_1_1CadenceAnalyzer_1_1CadenceProfile.html#a9dd6a405e4755855379971cf3cb97f37',1,'huntmaster::CadenceAnalyzer::CadenceProfile']]],
+  ['bitdepth_2',['bitDepth',['../structhuntmaster_1_1core_1_1AudioFormatInfo.html#a765091ef35b4a80d797c43ca9d9a647b',1,'huntmaster::core::AudioFormatInfo']]],
+  ['bitrate_3',['bitrate',['../structhuntmaster_1_1core_1_1AudioFormatInfo.html#ac2788795dc544f6898080ff7da14d4b2',1,'huntmaster::core::AudioFormatInfo']]],
+  ['buffersize_4',['bufferSize',['../structhuntmaster_1_1AudioRecorder_1_1Config.html#a7a5ae38c162cd08f97aa040bb613c6c7',1,'huntmaster::AudioRecorder::Config']]],
+  ['bytesused_5',['bytesUsed',['../structhuntmaster_1_1AudioRecorder_1_1MemoryBufferStats.html#aed098d485e987bf4b6412122972f90c7',1,'huntmaster::AudioRecorder::MemoryBufferStats']]]
 ];

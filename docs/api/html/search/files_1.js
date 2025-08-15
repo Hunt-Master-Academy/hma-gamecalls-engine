@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['unifiedaudioengine_2eh_0',['UnifiedAudioEngine.h',['../UnifiedAudioEngine_8h.html',1,'']]]
+  ['dtwcomparator_2eh_0',['DTWComparator.h',['../DTWComparator_8h.html',1,'']]]
 ];

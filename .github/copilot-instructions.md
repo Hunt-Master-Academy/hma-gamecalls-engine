@@ -1,29 +1,121 @@
-# GitHub Copilot Instructions - Huntmaster Audio Engine
+# GitHub Copilot Instructions – Huntmaster Audio Engine
 
-You are an AI programming assistant helping with the Huntmaster Audio Engine, a production-ready C++20 wildlife call analysis system.
+Last Updated: 2025-08-10
 
-## 🎯 Primary Development Guide
+Purpose: Provide lightweight guard‑rails so the assistant can act autonomously without micromanaged step lists. Keep focus on roadmap execution (see `docs/mvp_todo.md`). Prefer progress over ceremony.
 
-**ALWAYS FOLLOW**: The development plan is documented in `docs/mvp_todo.md` - this is the authoritative source for:
-- Current project status and phase
-- Implementation priorities and roadmap
-- Enhanced platform features roadmap
-- Success criteria and completion status
+## 1. Single Source of Truth
 
-**DOCUMENTATION APPROACH**:
-- Reference and update `docs/mvp_todo.md` for all major development decisions
-- Only create supplementary documentation when it adds value beyond the MVP todo
-- All status updates should be reflected in the MVP todo document first
-- **DO NOT CREATE NEW DOCUMENTS** unless specifically directed by the user
-- **DO NOT DELETE `docs/mvp_todo.md`** unless specifically directed by the user - this is the authoritative project roadmap
+`docs/mvp_todo.md` governs: status, priorities, acceptance criteria. Before adding/modifying engine APIs, tests, or docs: read it, align with it, then (if you change scope) update it first. Do not create new roadmap documents.
+
+## 2. Current Phase Snapshot (Condensed)
+
+State (see mvp_todo for detail):
+
+-   Core engine: production
+-   Enhanced analyzers (Pitch / Harmonic / Cadence): integrated & streaming
+-   Finalize stage: implemented (segment extraction + refined DTW + loudness normalization)
+-   Readiness API: implemented
+-   Loudness metrics: active (normalizationScalar, loudnessDeviation)
+-   Calibration grades: NOT implemented (next wave)
+-   Waveform overlay export: scaffold only (returns INSUFFICIENT_DATA)
+-   Tests: Some still pending conversion from legacy skip patterns (goal: 0 skips)
+
+## 3. Near-Term Priorities (Execute In This Order Unless mvp_todo Changes)
+
+1. Convert remaining similarity test skips → deterministic asserts using readiness state.
+2. Ensure synthetic fallback tests produce deterministic separation (self > diff with margin) without weakening real‑asset assertions.
+3. Implement waveform overlay export (downsampled aligned peak arrays; minimal API only).
+4. Calibration mapping (pitch / harmonic / cadence → letter grades) + tests.
+5. Virtual clock abstraction to remove sleep timing reliance in tests.
+6. Coaching feedback mapper (simple rule table) – only after grades exist.
+
+If you finish these and roadmap not updated, pause and surface a succinct proposal before proceeding to backlog items.
+
+## 4. Guiding Principles
+
+Keep changes small, testable, additive.
+Favor clarity & determinism in analysis outputs.
+Never silently relax an assertion intended for production correctness—gate only when synthetic fallback explicitly detected.
+Preserve performance targets (<12 ms streaming path, <40 ms finalize typical).
+Avoid creating new documentation files unless explicitly requested; update existing sections instead.
+
+## 5. Core Coding Patterns (Concise Reference)
+
+-   Sessions: All operations require a valid `SessionId`.
+-   Result<T>: Always check `isOk()` before using `.value`.
+-   Audio input: Use `std::span<const float>` (zero copy) for processing.
+-   Construction: Use factory `::create()` methods; no direct `new` of core engines.
+-   No exceptions for control flow – rely on status/result enums.
+-   Tests: Must use timeouts (existing task definitions already do this).
+
+Example Session Pattern:
+
+```cpp
+auto engR = UnifiedAudioEngine::create();
+ASSERT_TRUE(engR.isOk());
+auto eng = std::move(engR.value);
+auto sR = eng->createSession(44100.f);
+ASSERT_TRUE(sR.isOk());
+SessionId sid = sR.value;
+// ... work ...
+eng->destroySession(sid);
+```
+
+## 6. Public API (Current vs Imminent)
+
+Current key calls: `createSession`, `destroySession`, `loadMasterCall`, `processAudioChunk`, `getSimilarityScore`, `getRealtimeSimilarityState`, `finalizeSessionAnalysis`, `getEnhancedSummary`, `enableEnhancedAnalyzers`.
+Scaffold / upcoming: `exportOverlayData` (currently placeholder), future `setOverlayOffset`, calibration grade fields, coaching feedback accessors.
+When adding fields to summaries or new methods: update header + minimal test + reflect in `docs/mvp_todo.md` (single commit if practical).
+
+## 7. Testing & Quality
+
+-   Goal: zero skips; synthetic fallbacks must not mask regressions.
+-   Use readiness API instead of arbitrary sleeps.
+-   When adding a feature: add at least 1 happy path + 1 edge case test.
+-   Deterministic synthetic data: Ensure different masters produce measurable feature divergence (modify MFCC frames if audio spectral tweaks insufficient).
+-   Do not assert on log strings.
+-   Keep test runtime lean; prefer targeted generator helpers.
+
+## 8. Similarity Separation (Current Pain Point)
+
+If synthetic diff scores saturate at 1.0, introduce deliberate MFCC frame perturbation (e.g., systematic coefficient offsets every Nth frame) rather than broad noise that normalizes away. Apply only in test helper; never contaminate production path.
+
+## 9. Performance Discipline
+
+Use profiling blocks sparingly (AutoProfiler) and avoid TRACE logs in hot loops by default. Flag any change that pushes typical streaming processing >12 ms.
+
+## 10. Minimal Do / Don't
+
+Do: Align with roadmap, keep PRs focused, update tests and mvp_todo together.
+Do: Fail fast on invalid session or Result<T> misuse.
+Don't: Introduce new doc files, broaden synthetic leniency, or remove timeouts.
+Don't: Add heavy analyzer diagnostics without an explicit guard.
+
+## 11. Contribution Flow (Lightweight)
+
+1. Read `docs/mvp_todo.md` (confirm priorities unchanged).
+2. Implement focused change (code + tests).
+3. Run debug build + tests (tasks already configured).
+4. Update `docs/mvp_todo.md` if feature/metric/API status changes.
+5. Keep commits descriptive ("tests: convert similarity skip X" / "core: implement overlay export base").
+
+## 12. When Unsure
+
+Surface a concise (<=5 bullet) clarification request; otherwise proceed with a reasonable assumption and note it in the commit message + mvp_todo.
+
+---
+
+Operate autonomously: as long as work advances the enumerated near‑term priorities and stays consistent with `docs/mvp_todo.md`, proceed without waiting for further direction.
 
 ## Project Context
 
 This is a cross-platform audio processing engine that analyzes and compares animal calls using MFCC feature extraction and DTW pattern matching. The engine targets desktop, web (WebAssembly), and mobile platforms with a unified build system.
 
 **Current Status**: MVP COMPLETED - Production Deployment Ready (August 3, 2025)
-- Phase: Enhanced Platform Implementation (Advanced Features)
-- Next: PitchTracker, HarmonicAnalyzer, CadenceAnalyzer implementation
+
+-   Phase: Enhanced Platform Implementation (Advanced Features)
+-   Next: PitchTracker, HarmonicAnalyzer, CadenceAnalyzer implementation
 
 ### Core Architecture Principles
 
@@ -84,21 +176,22 @@ engine->destroySession(session);  // Always cleanup
 
 ### Core Components Location
 
-- `src/core/UnifiedAudioEngine.cpp` - Main orchestrator (95%+ complete)
-- `src/core/MFCCProcessor.cpp` - Feature extraction (production-ready)
-- `src/core/DTWComparator.cpp` - Pattern matching (production-ready)
-- `src/core/VoiceActivityDetector.cpp` - Voice detection (operational)
-- `src/core/AudioLevelProcessor.cpp` - Level monitoring (complete)
-- `src/core/RealtimeScorer.cpp` - Multi-dimensional scoring (operational)
+-   `src/core/UnifiedAudioEngine.cpp` - Main orchestrator (95%+ complete)
+-   `src/core/MFCCProcessor.cpp` - Feature extraction (production-ready)
+-   `src/core/DTWComparator.cpp` - Pattern matching (production-ready)
+-   `src/core/VoiceActivityDetector.cpp` - Voice detection (operational)
+-   `src/core/AudioLevelProcessor.cpp` - Level monitoring (complete)
+-   `src/core/RealtimeScorer.cpp` - Multi-dimensional scoring (operational)
 
 ### Enhanced Platform Components (Next Implementation Phase)
 
 **From Enhanced Roadmap in `docs/mvp_todo.md`**:
-- `src/core/PitchTracker.cpp` - YIN algorithm pitch detection (planned)
-- `src/core/HarmonicAnalyzer.cpp` - Tonal quality analysis (planned)
-- `src/core/CadenceAnalyzer.cpp` - Rhythm pattern analysis (planned)
-- `src/core/VolumeEnvelopeTracker.cpp` - Dynamic analysis (planned)
-- `src/core/MasterCallAnalyzer.cpp` - Automated analysis (planned)
+
+-   `src/core/PitchTracker.cpp` - YIN algorithm pitch detection (planned)
+-   `src/core/HarmonicAnalyzer.cpp` - Tonal quality analysis (planned)
+-   `src/core/CadenceAnalyzer.cpp` - Rhythm pattern analysis (planned)
+-   `src/core/VolumeEnvelopeTracker.cpp` - Dynamic analysis (planned)
+-   `src/core/MasterCallAnalyzer.cpp` - Automated analysis (planned)
 
 ### Audio Processing Pipeline
 
@@ -116,31 +209,34 @@ auto score = engine->getSimilarityScore(session);
 **Follow the enhanced roadmap in `docs/mvp_todo.md` for:**
 
 1. **Advanced Analysis Components (Phase 2)**:
-   - PitchTracker implementation with YIN algorithm
-   - HarmonicAnalyzer for tonal quality assessment
-   - CadenceAnalyzer for rhythm patterns
-   - Multi-dimensional analysis features
+
+    - PitchTracker implementation with YIN algorithm
+    - HarmonicAnalyzer for tonal quality assessment
+    - CadenceAnalyzer for rhythm patterns
+    - Multi-dimensional analysis features
 
 2. **Learning & Gamification System (Phase 3)**:
-   - Progress tracking and analytics
-   - Achievement and gamification system
-   - Interactive scenario engine
-   - Personalized learning recommendations
+
+    - Progress tracking and analytics
+    - Achievement and gamification system
+    - Interactive scenario engine
+    - Personalized learning recommendations
 
 3. **Cloud Integration & CMS (Phase 4)**:
-   - Backend API and database design
-   - User authentication and data sync
-   - CMS integration for content management
-   - Cross-platform synchronization
+    - Backend API and database design
+    - User authentication and data sync
+    - CMS integration for content management
+    - Cross-platform synchronization
 
 **Implementation Timeline**: Follow the 32-week development strategy outlined in MVP todo
 
 ## Alpha Testing Status
 
 **Current State**: 97.5% Complete - Ready for Testing
-- **Access**: `http://localhost:8080/alpha_test_refactored.html`
-- **Features**: Real-time recording, similarity scoring, waveform visualization
-- **Performance**: <50ms latency, 44.1kHz sampling, 30-90% similarity range
+
+-   **Access**: `http://localhost:8080/alpha_test_refactored.html`
+-   **Features**: Real-time recording, similarity scoring, waveform visualization
+-   **Performance**: <50ms latency, 44.1kHz sampling, 30-90% similarity range
 
 ## Testing Patterns
 
@@ -189,11 +285,11 @@ EXPECT_EQ(status, UnifiedAudioEngine::Status::OK);
 
 #### Command Timeout Guidelines
 
-- **Unit Tests**: 60 seconds timeout (quick execution expected)
-- **Integration Tests**: 90 seconds timeout (moderate complexity)
-- **Performance/Load Tests**: 120 seconds timeout (resource intensive)
-- **WASM Tests**: 120 seconds timeout (compilation + execution overhead)
-- **Security/Fuzz Tests**: 180 seconds timeout (extensive validation)
+-   **Unit Tests**: 60 seconds timeout (quick execution expected)
+-   **Integration Tests**: 90 seconds timeout (moderate complexity)
+-   **Performance/Load Tests**: 120 seconds timeout (resource intensive)
+-   **WASM Tests**: 120 seconds timeout (compilation + execution overhead)
+-   **Security/Fuzz Tests**: 180 seconds timeout (extensive validation)
 
 #### Terminal Command Patterns
 
@@ -254,12 +350,12 @@ fi
 # Example GitHub Actions step with timeout
 - name: Run Unit Tests
   run: |
-    timeout 60 ./bin/RunEngineTests --gtest_brief=yes
+      timeout 60 ./bin/RunEngineTests --gtest_brief=yes
   timeout-minutes: 2 # Additional CI timeout layer
 
 - name: Run Performance Tests
   run: |
-    timeout 120 ./bin/performance_profiling_demo
+      timeout 120 ./bin/performance_profiling_demo
   timeout-minutes: 3 # Additional CI timeout layer
 ```
 
@@ -374,9 +470,9 @@ engine->setRealtimeScorerConfig(session, scorerConfig);
 
 ### Module Structure
 
-- Core bindings: `web/src/modules/UnifiedAudioModule.js`
-- Event system: `web/src/modules/EventManager.js`
-- ES6 modular interface for browser integration
+-   Core bindings: `web/src/modules/UnifiedAudioModule.js`
+-   Event system: `web/src/modules/EventManager.js`
+-   ES6 modular interface for browser integration
 
 ### WASM API Pattern
 
@@ -391,9 +487,9 @@ await engine.loadMasterCall(session, "turkey_gobble");
 
 ### Environment Setup
 
-- Development occurs in WSL2 Ubuntu 24.04 on Windows 11
-- Use Linux-specific paths and commands
-- Audio testing may require PulseAudio configuration in WSL
+-   Development occurs in WSL2 Ubuntu 24.04 on Windows 11
+-   Use Linux-specific paths and commands
+-   Audio testing may require PulseAudio configuration in WSL
 
 ### WSL Audio Configuration
 
@@ -404,31 +500,33 @@ export PULSE_SERVER=tcp:$(cat /etc/resolv.conf | grep nameserver | awk '{print $
 
 ### File System Considerations
 
-- Use `/home/username/projects/` for best performance
-- Avoid `/mnt/c/` for build operations (slow I/O)
-- Git line endings: Use LF (configure `.gitattributes`)
+-   Use `/home/username/projects/` for best performance
+-   Avoid `/mnt/c/` for build operations (slow I/O)
+-   Git line endings: Use LF (configure `.gitattributes`)
 
 ### Build Performance Tips
 
-- Use `ccache` for faster rebuilds
-- Consider WSL2 memory allocation in `.wslconfig`
-- Use native Linux tools, not Windows versions
+-   Use `ccache` for faster rebuilds
+-   Consider WSL2 memory allocation in `.wslconfig`
+-   Use native Linux tools, not Windows versions
 
 ## Important Notes
 
 ### Current Project Status (August 3, 2025)
 
 **From `docs/mvp_todo.md`**:
-- ✅ **MVP Phase**: COMPLETED - Production deployment ready
-- ✅ **Core Audio Engine**: 93.0% Complete → PRODUCTION READY
-- ✅ **Security Framework**: 99.3% Complete → PRODUCTION DEPLOYMENT READY
-- ✅ **Performance Framework**: Sub-real-time processing (0.275x ratio)
-- ✅ **Alpha Testing**: 97.5% Complete with operational interface
-- 🔄 **Enhanced Features**: Next implementation phase ready
+
+-   ✅ **MVP Phase**: COMPLETED - Production deployment ready
+-   ✅ **Core Audio Engine**: 93.0% Complete → PRODUCTION READY
+-   ✅ **Security Framework**: 99.3% Complete → PRODUCTION DEPLOYMENT READY
+-   ✅ **Performance Framework**: Sub-real-time processing (0.275x ratio)
+-   ✅ **Alpha Testing**: 97.5% Complete with operational interface
+-   🔄 **Enhanced Features**: Next implementation phase ready
 
 ### Development Priorities
 
 **Current Focus**: Enhanced platform features implementation
+
 1. **PitchTracker**: YIN algorithm for fundamental frequency detection
 2. **HarmonicAnalyzer**: Spectral analysis for tonal quality assessment
 3. **CadenceAnalyzer**: Temporal pattern analysis for rhythm detection
@@ -436,22 +534,22 @@ export PULSE_SERVER=tcp:$(cat /etc/resolv.conf | grep nameserver | awk '{print $
 
 ### Current Limitations
 
-- Enhanced analysis components (PitchTracker, HarmonicAnalyzer) not yet implemented
-- Learning platform and gamification features in planning phase
-- Cloud integration and CMS features planned for Phase 4
-- Advanced UI components for configuration panel (5% remaining)
+-   Enhanced analysis components (PitchTracker, HarmonicAnalyzer) not yet implemented
+-   Learning platform and gamification features in planning phase
+-   Cloud integration and CMS features planned for Phase 4
+-   Advanced UI components for configuration panel (5% remaining)
 
 ### Performance Targets
 
-- Real-time processing: < 10ms latency
-- Memory usage: < 50MB per session
-- CPU usage: < 20% on mobile devices
+-   Real-time processing: < 10ms latency
+-   Memory usage: < 50MB per session
+-   CPU usage: < 20% on mobile devices
 
 ### Thread Safety
 
-- Each session is thread-isolated
-- No shared mutable state between sessions
-- Lock-free audio processing paths
+-   Each session is thread-isolated
+-   No shared mutable state between sessions
+-   Lock-free audio processing paths
 
 ## Error Handling Best Practices
 
@@ -463,34 +561,37 @@ export PULSE_SERVER=tcp:$(cat /etc/resolv.conf | grep nameserver | awk '{print $
 
 ## File Organization
 
-- `include/huntmaster/` - Public headers
-- `src/core/` - Core implementation
-- `src/platform/` - Platform-specific code
-- `tests/unit/` - Unit tests
-- `tests/lib/` - Test utilities
-- `tools/` - CLI diagnostic tools
-- `web/` - WebAssembly interface
+-   `include/huntmaster/` - Public headers
+-   `src/core/` - Core implementation
+-   `src/platform/` - Platform-specific code
+-   `tests/unit/` - Unit tests
+-   `tests/lib/` - Test utilities
+-   `tools/` - CLI diagnostic tools
+-   `web/` - WebAssembly interface
 
 Remember: This is a production audio engine where correctness and real-time performance are critical. Always follow the established patterns for session management, error handling, and memory efficiency.
 
 ## 📋 Development Workflow
 
 ### Before Starting Any Work
+
 1. **Check `docs/mvp_todo.md`** for current phase and priorities
 2. **Update MVP todo** with progress and decisions
 3. **Follow established roadmap** rather than creating new plans
 4. **Reference Alpha Testing status** for integration requirements
 
 ### When Adding Features
+
 1. **Validate against enhanced roadmap** in MVP todo
 2. **Follow 32-week development timeline** priorities
 3. **Update status in MVP todo** upon completion
 4. **Integrate with Alpha Testing interface** when applicable
 
 ### Documentation Guidelines
-- **Primary**: Update `docs/mvp_todo.md` for all major changes
-- **Secondary**: Create supplementary docs only when they add unique value
-- **Testing**: Reference Alpha Testing execution chain for validation
-- **Status**: All project status updates go in MVP todo first
-- **CRITICAL**: Never create new documents unless specifically requested by user
-- **CRITICAL**: Never delete `docs/mvp_todo.md` unless specifically requested by user
+
+-   **Primary**: Update `docs/mvp_todo.md` for all major changes
+-   **Secondary**: Create supplementary docs only when they add unique value
+-   **Testing**: Reference Alpha Testing execution chain for validation
+-   **Status**: All project status updates go in MVP todo first
+-   **CRITICAL**: Never create new documents unless specifically requested by user
+-   **CRITICAL**: Never delete `docs/mvp_todo.md` unless specifically requested by user

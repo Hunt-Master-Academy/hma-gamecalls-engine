@@ -116,14 +116,34 @@ int&#160;</td><td class="memItemRight" valign="bottom"><b>channels</b> = 1</td><
 int&#160;</td><td class="memItemRight" valign="bottom"><b>bufferSize</b> = 512</td></tr>
 <tr class="memdesc:a7a5ae38c162cd08f97aa040bb613c6c7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Buffer size in samples (affects latency and performance) <br /></td></tr>
 <tr class="separator:a7a5ae38c162cd08f97aa040bb613c6c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76482d07c9c3708efa515387f605cfd7" id="r_a76482d07c9c3708efa515387f605cfd7"><td class="memItemLeft" align="right" valign="top"><a id="a76482d07c9c3708efa515387f605cfd7" name="a76482d07c9c3708efa515387f605cfd7"></a>
+<a class="el" href="classhuntmaster_1_1AudioRecorder.html#aba75115a76ad859afde8b0cf412763bd">RecordingMode</a>&#160;</td><td class="memItemRight" valign="bottom"><b>recordingMode</b> = <a class="el" href="classhuntmaster_1_1AudioRecorder.html#aba75115a76ad859afde8b0cf412763bda1b38e956857856983cd979cc86b4e232">RecordingMode::MEMORY_BASED</a></td></tr>
+<tr class="memdesc:a76482d07c9c3708efa515387f605cfd7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Recording storage mode. <br /></td></tr>
+<tr class="separator:a76482d07c9c3708efa515387f605cfd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abf1442e7549f64ef82e50127c99e8a77" id="r_abf1442e7549f64ef82e50127c99e8a77"><td class="memItemLeft" align="right" valign="top"><a id="abf1442e7549f64ef82e50127c99e8a77" name="abf1442e7549f64ef82e50127c99e8a77"></a>
+std::string&#160;</td><td class="memItemRight" valign="bottom"><b>outputFilename</b></td></tr>
+<tr class="memdesc:abf1442e7549f64ef82e50127c99e8a77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Output filename for file-based or hybrid recording. <br /></td></tr>
+<tr class="separator:abf1442e7549f64ef82e50127c99e8a77"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe3fe932c797fc448b59aaa6e9541f66" id="r_afe3fe932c797fc448b59aaa6e9541f66"><td class="memItemLeft" align="right" valign="top"><a id="afe3fe932c797fc448b59aaa6e9541f66" name="afe3fe932c797fc448b59aaa6e9541f66"></a>
+size_t&#160;</td><td class="memItemRight" valign="bottom"><b>maxMemoryBufferSize</b> = 0</td></tr>
+<tr class="memdesc:afe3fe932c797fc448b59aaa6e9541f66"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum memory buffer size in samples (0 = unlimited) <br /></td></tr>
+<tr class="separator:afe3fe932c797fc448b59aaa6e9541f66"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae045ca252ee80ff9eec1335d12b564d2" id="r_ae045ca252ee80ff9eec1335d12b564d2"><td class="memItemLeft" align="right" valign="top"><a id="ae045ca252ee80ff9eec1335d12b564d2" name="ae045ca252ee80ff9eec1335d12b564d2"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>enableCircularBuffer</b> = false</td></tr>
+<tr class="memdesc:ae045ca252ee80ff9eec1335d12b564d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable automatic memory management (circular buffer) <br /></td></tr>
+<tr class="separator:ae045ca252ee80ff9eec1335d12b564d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a479c9e181528f05e3528415cbac3ca78" id="r_a479c9e181528f05e3528415cbac3ca78"><td class="memItemLeft" align="right" valign="top"><a id="a479c9e181528f05e3528415cbac3ca78" name="a479c9e181528f05e3528415cbac3ca78"></a>
+bool&#160;</td><td class="memItemRight" valign="bottom"><b>enableOptimizedIO</b> = true</td></tr>
+<tr class="memdesc:a479c9e181528f05e3528415cbac3ca78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable real-time I/O optimizations. <br /></td></tr>
+<tr class="separator:a479c9e181528f05e3528415cbac3ca78"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Configuration parameters for audio recording. </p>
-<p>This structure contains all parameters needed to configure the audio recording session, including sample rate, channel configuration, and buffer settings for optimal performance. </p>
-<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#_a1">/mnt/e/develop/Huntmaster/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
+<p>This structure contains all parameters needed to configure the audio recording session, including sample rate, channel configuration, buffer settings, and recording mode for optimal performance. </p>
+<dl class="section examples"><dt>Examples</dt><dd><a class="el" href="_2workspaces_2huntmaster-engine_2include_2huntmaster_2core_2AudioRecorder_8h-example.html#_a1">/workspaces/huntmaster-engine/include/huntmaster/core/AudioRecorder.h</a>.</dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="AudioRecorder_8h_source.html#l00072">72</a> of file <a class="el" href="AudioRecorder_8h_source.html">AudioRecorder.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="AudioRecorder_8h_source.html#l00091">91</a> of file <a class="el" href="AudioRecorder_8h_source.html">AudioRecorder.h</a>.</p>
 </div><hr/>The documentation for this struct was generated from the following file:<ul>
 <li>huntmaster/core/<a class="el" href="AudioRecorder_8h_source.html">AudioRecorder.h</a></li>
 </ul>

@@ -1,6 +1,6 @@
-# Hunt Master Academy Game Calls Engine – Updated Comprehensive TODO & Roadmap
-Last Updated: August 9, 2025
-Status: MVP COMPLETE | Enhanced Analyzers Phase 1 Integrated | Entering UX Alignment & Finalization
+# Hunt Master Academy Game Calls Engine – Architecture & Status
+Last Updated: August 13, 2025
+Status: MVP COMPLETE | Enhanced Analyzers Phase 1 Integrated | UX Alignment & Calibration Mapping
 
 ---
 
@@ -10,27 +10,24 @@ Status: MVP COMPLETE | Enhanced Analyzers Phase 1 Integrated | Entering UX Align
 |-----------|--------|-------|
 | Core Engine | Production | Stable session orchestration & streaming pipeline |
 | Enhanced Analyzers | Integrated (Pitch/Harmonic/Cadence) | All live; confidence smoothing active |
-| Similarity | Realtime + DTW fallback | Need readiness introspection & finalize pass |
-| Visualization | Waveform (single) | Overlay, alignment, countdown pending |
-| Post-Processing | Missing finalize stage | Segmentation + refined DTW not yet added |
-| Loudness | Monitoring only | Normalization & deviation metrics pending |
-| Confidence Calibration | Not calibrated | Raw → grade mapping required |
-| Tests | Passing (19, 2 skips) | Skips due to similarity readiness opaque |
+| Similarity | Realtime + DTW fallback | Readiness API present; finalize pass active |
+| Visualization | Overlay export (data) | Offset control, countdown pending |
+| Post-Processing | Finalize stage implemented | Segment-scoped refined DTW active |
+| Loudness | Normalization active | Deviation & scalar populated in summary |
+| Confidence Calibration | Partially calibrated | Grade table mapping in progress |
+| Tests | Passing (0 skips) | Readiness removed sleeps; finalize tests in place |
 | Performance | <12 ms enhanced path | Heavy cadence diagnostic path gated |
-| Security | 98%+ | Complete & stable |
-| Documentation | Being realigned | This file authoritative reference |
+| Security | 100% | Complete & stable |
+| Documentation | Realigned | This file + mvp_todo authoritative |
 
 ---
 
 ## 2. Immediate Goals (Execution Order)
 
-1. finalizeSessionAnalysis() – segmentation + normalization + refined DTW.
-2. Similarity readiness API – getRealtimeSimilarityState().
-3. Loudness normalization factor & summary fields (loudnessDeviation, segmentStartMs, segmentDurationMs).
-4. Convert similarity skips → asserts (after readiness instrumentation).
-5. Virtual clock abstraction (remove sleep-based stale invalidation test).
-6. Calibration tables: pitchConfidence & harmonicConfidence → graded bands.
-7. Waveform overlay data export (aligned envelopes + offset).
+1. Calibration tables: pitch/harmonic/cadence → graded bands.
+2. Coaching feedback mapper (metrics → structured tips).
+3. Waveform overlay offset control (aligned envelopes + offset).
+4. Virtual clock instrumentation already present in tests.
 8. Countdown integration (UI-level; provide engine timing hints).
 9. Coaching feedback mapper (metrics → structured tips).
 10. Heavy cadence diagnostic flag (explicit engine config gate).
@@ -43,35 +40,35 @@ Status: MVP COMPLETE | Enhanced Analyzers Phase 1 Integrated | Entering UX Align
 
 | Task | Description | Priority |
 |------|-------------|----------|
-| Segment Extraction | Choose best contiguous active segment (VAD + pitch stability) | P0 |
-| Refined DTW | Run DTW on extracted segment only | P0 |
-| Normalization Scalar | Compute user gain to match master RMS | P0 |
-| Store Final Metrics | similarityAtFinalize, segmentStartMs, segmentDurationMs | P0 |
-| API | Status finalizeSessionAnalysis(SessionId) | P0 |
+| Segment Extraction | Choose best contiguous active segment (VAD + pitch stability) | P0 (DONE) |
+| Refined DTW | Run DTW on extracted segment only | P0 (DONE) |
+| Normalization Scalar | Compute user gain to match master RMS | P0 (DONE) |
+| Store Final Metrics | similarityAtFinalize, segmentStartMs, segmentDurationMs | P0 (DONE) |
+| API | Status finalizeSessionAnalysis(SessionId) | P0 (DONE) |
 
 ### 3.2 Similarity Readiness
 
 | Task | Description | Priority |
 |------|-------------|----------|
-| Compute Minimum Frames | Derived from MFCC window/hop constants | P1 |
-| Expose State Struct | framesObserved, minFramesRequired, usingRealtimePath, reliable | P1 |
-| Update Tests | Convert skip → assert | P1 |
+| Compute Minimum Frames | Derived from MFCC window/hop constants | DONE |
+| Expose State Struct | framesObserved, minFramesRequired, usingRealtimePath, reliable | DONE |
+| Update Tests | Convert skip → assert | DONE |
 
 ### 3.3 Loudness Enhancements
 
 | Task | Description | Priority |
 |------|-------------|----------|
-| Capture Master Loudness | RMS/peak at load | P1 |
-| User Rolling Loudness | Per segment RMS | P1 |
-| Deviation Metric | (userRMS - masterRMS)/masterRMS | P1 |
-| Summary Fields | loudnessDeviation, normalizationApplied | P1 |
+| Capture Master Loudness | RMS/peak at load | DONE |
+| User Rolling Loudness | Per segment RMS | DONE |
+| Deviation Metric | (userRMS - masterRMS)/masterRMS | DONE |
+| Summary Fields | loudnessDeviation, normalizationScalar | DONE |
 
 ### 3.4 Waveform Overlay
 
 | Task | Description | Priority |
 |------|-------------|----------|
 | Unified Timeline Model | Master length reference; user progress mapping | P2 |
-| Export Overlay Data | Downsampled user & master peak arrays | P2 |
+| Export Overlay Data | Downsampled user & master peak arrays | P2 (BASE DONE) |
 | Alignment Offset Control | Provide setOverlayOffset(SessionId, ms) | P3 |
 | Visual Markers | Segment boundaries, pitch contour (future) | P3 |
 
@@ -105,7 +102,7 @@ Status: MVP COMPLETE | Enhanced Analyzers Phase 1 Integrated | Entering UX Align
 
 ---
 
-## 4. API Additions (Planned Specifications)
+## 4. API Additions (Current + Planned)
 
 ```cpp
 struct SimilarityRealtimeState {
@@ -119,9 +116,12 @@ struct SimilarityRealtimeState {
 Result<SimilarityRealtimeState> getRealtimeSimilarityState(SessionId);
 
 Status finalizeSessionAnalysis(SessionId); // Populates final metrics & locks segment scope
+
+// Overlay export (implemented)
+Result<OverlayData> exportOverlayData(SessionId, uint32_t decimation);
 ```
 
-EnhancedAnalysisSummary additions (post-implementation):
+EnhancedAnalysisSummary fields (current + planned):
 ```cpp
 float loudnessDeviation;
 float normalizationScalar;
@@ -153,6 +153,123 @@ char cadenceGrade;
 
 | Risk | Impact | Mitigation |
 |------|--------|------------|
+
+---
+
+## 7. Analysis & Calibration (Planned – Engine Scope)
+
+Purpose
+
+- Add deterministic calibration primitives that improve robustness across devices and environments while preserving performance and explainability. Orchestration (security/UX/CI) remains out of scope here.
+
+Planned Components
+
+- LoudnessCalibration
+    - Computes peakLevelDbFS, rmsDbFS, noiseFloorDbFS, headroomDb
+    - Recommends input gain: {increase|decrease|ok}
+- LatencyDriftCalibrator
+    - Estimates alignmentOffsetMs and driftPpm via loopback/clap test
+    - Provides compensation hints to DTWComparator window/band
+- EnvironmentProfiler
+    - Captures ambient profile (noiseFloorDbFS, spectralTilt, bandEnergy)
+    - Optional RNNoise path behind build/runtime flags (default: disabled)
+- ScoreContributions
+    - RealtimeScorer exposes contributions {mfcc,pitch,harmonic,cadence,loudness}
+    - Provides why[]: stable factor IDs for UI mapping
+
+Public API (planned, additive)
+
+---
+
+## Appendix: API Call Maps (Realtime, Finalize, Calibration)
+
+Shared notes
+- All calls return Status or Result<T>; check `.isOk()` before using `.value`.
+- Common errors: INVALID_SESSION, BAD_CONFIG, NOT_READY, INSUFFICIENT_DATA, UNSUPPORTED, IO_ERROR.
+- Perf budgets: streaming hop <12 ms; finalize <40 ms typical.
+
+Realtime similarity (implemented)
+- createSession(sampleRateHz) → Result<SessionId>
+- loadMasterCall(session, masterIdOrUri) → Status
+- enableEnhancedAnalyzers(session, true) → Status (optional)
+- Loop per chunk:
+    - processAudioChunk(session, span<const float>) → Status
+    - getRealtimeSimilarityState(session) → Result<State{framesObserved,minFramesRequired,ready}>
+    - If ready: getSimilarityScore(session), getEnhancedSummary(session), exportOverlayData(session)
+- destroySession(session) → Status
+
+Finalize path (implemented)
+- finalizeSessionAnalysis(session) → Result<FinalizedSummary{similarityAtFinalize,segmentStartMs,segmentDurationMs,loudnessDeviation,normalizationScalar}>
+- Optionally read getEnhancedSummary(session) after finalize
+
+Calibration flows (planned)
+- Mic Calibration Advisor: getCalibrationSummary(session) → Result<LoudnessCalibrationSummary>
+- Latency/Drift: begin → submitImpulse → finalizeLatencyDriftCalibration(session) → Result<LatencyDriftReport>
+- Environment Profiler: captureAmbientProfile(session,durationMs); setNoiseSuppressionEnabled(session,bool)
+
+Mermaid overview
+
+```mermaid
+flowchart TD
+    subgraph Realtime[Realtime Similarity (Implemented)]
+        A1[createSession] --> A2[loadMasterCall]
+        A2 --> A3[enableEnhancedAnalyzers (opt)]
+        A3 --> A4[processAudioChunk (loop)]
+        A4 --> A5{getRealtimeSimilarityState.ready?}
+        A5 -- no --> A4
+        A5 -- yes --> A6[getSimilarityScore]
+        A6 --> A7[getEnhancedSummary]
+        A7 --> A8[exportOverlayData]
+    end
+
+    subgraph Finalize[Finalize Path (Implemented)]
+        F1[processAudioChunk (all audio)]
+        F1 --> F2[finalizeSessionAnalysis]
+    end
+
+    subgraph Calibration[Analysis & Calibration (Planned)]
+        C1[Mic Gain Advisor] --> C1a[getCalibrationSummary]
+        C2[Latency/Drift] --> C2a[begin → submit → finalize]
+        C3[Environment] --> C3a[captureAmbientProfile → setNoiseSuppressionEnabled]
+    end
+```
+
+
+```cpp
+struct LoudnessCalibrationSummary {
+        float peakLevelDbFS;
+        float rmsDbFS;
+        float noiseFloorDbFS;
+        float headroomDb;
+        enum class Recommendation { Increase, Decrease, Ok } recommendation;
+};
+
+struct LatencyDriftReport {
+        float alignmentOffsetMs; // may be positive or negative
+        float driftPpm;          // parts per million
+};
+
+Result<LoudnessCalibrationSummary> getCalibrationSummary(SessionId);
+Status beginLatencyDriftCalibration(SessionId);
+Status submitCalibrationImpulse(SessionId, std::span<const float>);
+Result<LatencyDriftReport> finalizeLatencyDriftCalibration(SessionId);
+
+// Optional NR control (flag guarded, default false)
+Status setNoiseSuppressionEnabled(SessionId, bool enabled);
+Result<EnvironmentProfile> captureAmbientProfile(SessionId, uint32_t durationMs);
+
+// Contributions/Why breakdown via enhanced summary JSON
+```
+
+Testing & Hooks
+
+- Use HUNTMASTER_TEST_HOOKS for synthetic injection (zero/quiet/loud; offset/drift) without device I/O.
+- Ensure sums of contributions ≈ totalScore within epsilon.
+- Keep calibration off hot loops; verify perf guard remains <12 ms.
+
+WASM Notes
+
+- Expose summaries and JSON only; NR flag remains false by default.
 | Segment mis-selection on noisy tails | Poor final similarity | Multi-heuristic scoring (VAD + energy + pitch stability) |
 | Over-normalization clipping | Distorted analysis | Pre-scan headroom check & clamp scalar |
 | Confidence misgrading early | Misleading coaching | Gate grading until min frames |

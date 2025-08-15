@@ -1,5 +1,27 @@
 var searchData=
 [
-  ['key_20api_20interfaces_0',['Key API Interfaces',['../index.html#autotoc_md17',1,'']]],
-  ['key_20improvements_1',['Key Improvements',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md51',1,'']]]
+  ['harmonicamps_0',['harmonicAmps',['../structhuntmaster_1_1HarmonicAnalyzer_1_1HarmonicProfile.html#afbb6d8a52a08575fe5c0f0b553c69880',1,'huntmaster::HarmonicAnalyzer::HarmonicProfile']]],
+  ['harmonicanalyzer_1',['harmonicanalyzer',['../classhuntmaster_1_1HarmonicAnalyzer.html#a8d44f153c2a37f9a3c601a73fa519d7d',1,'huntmaster::HarmonicAnalyzer::HarmonicAnalyzer()=default'],['../classhuntmaster_1_1HarmonicAnalyzer.html#ac8d4733d3eedc69efc9337a6787312a9',1,'huntmaster::HarmonicAnalyzer::HarmonicAnalyzer(const HarmonicAnalyzer &amp;)=delete'],['../classhuntmaster_1_1HarmonicAnalyzer.html',1,'huntmaster::HarmonicAnalyzer']]],
+  ['harmonicconfidence_2',['harmonicConfidence',['../structhuntmaster_1_1UnifiedAudioEngine_1_1EnhancedAnalysisSummary.html#a26c9260d3b40b080d24f4664b415a60a',1,'huntmaster::UnifiedAudioEngine::EnhancedAnalysisSummary']]],
+  ['harmonicfreqs_3',['harmonicFreqs',['../structhuntmaster_1_1HarmonicAnalyzer_1_1HarmonicProfile.html#aec189cfe3133346447f8b7991348e17a',1,'huntmaster::HarmonicAnalyzer::HarmonicProfile']]],
+  ['harmonicfundamental_4',['harmonicFundamental',['../structhuntmaster_1_1UnifiedAudioEngine_1_1EnhancedAnalysisSummary.html#ae05480173612560045cb1a4b34585de6',1,'huntmaster::UnifiedAudioEngine::EnhancedAnalysisSummary']]],
+  ['harmonicprofile_5',['HarmonicProfile',['../structhuntmaster_1_1HarmonicAnalyzer_1_1HarmonicProfile.html',1,'huntmaster::HarmonicAnalyzer']]],
+  ['harmonicratios_6',['harmonicRatios',['../structhuntmaster_1_1HarmonicAnalyzer_1_1HarmonicProfile.html#a793a0a9184c5823ec6d712e3237e8d2c',1,'huntmaster::HarmonicAnalyzer::HarmonicProfile']]],
+  ['harmonictolerance_7',['harmonicTolerance',['../structhuntmaster_1_1HarmonicAnalyzer_1_1Config.html#aff644bc100ac9cca7a1ac8ace4e04397',1,'huntmaster::HarmonicAnalyzer::Config']]],
+  ['harmonictonoiseratio_8',['harmonicToNoiseRatio',['../structhuntmaster_1_1HarmonicAnalyzer_1_1HarmonicProfile.html#aed192d1e07db2cbedc35e571668dc248',1,'huntmaster::HarmonicAnalyzer::HarmonicProfile']]],
+  ['hascorruption_9',['hasCorruption',['../structhuntmaster_1_1core_1_1AudioFormatInfo.html#a5c7a6d063adafcc1fea042d4edf17143',1,'huntmaster::core::AudioFormatInfo']]],
+  ['hasmastercall_10',['hasMasterCall',['../classhuntmaster_1_1RealtimeScorer.html#a10fa0b112ed2308cc07454b05b81833e',1,'huntmaster::RealtimeScorer']]],
+  ['hasmetadata_11',['hasMetadata',['../structhuntmaster_1_1core_1_1AudioFormatInfo.html#a29d60f103e4817fb076fddcce85f20f2',1,'huntmaster::core::AudioFormatInfo']]],
+  ['hasstrongrhythm_12',['hasStrongRhythm',['../structhuntmaster_1_1CadenceAnalyzer_1_1CadenceProfile.html#a4ed86381b12b04f1eeba87c6ab6cd7ea',1,'huntmaster::CadenceAnalyzer::CadenceProfile']]],
+  ['high_13',['high',['../AudioFormatConverter_8h.html#aeb1d642b80c656c2c8f3cdf248f7a249ab89de3b4b81c4facfac906edf29aec8c',1,'HIGHhuntmaster::core'],['../AudioFormatConverter_8h.html#a01ff8e9f05419e508925bf33776f322fab89de3b4b81c4facfac906edf29aec8c',1,'HIGHhuntmaster::core']]],
+  ['high_20level_20user_20flow_20target_14',['High-Level User Flow (Target)',['../index.html#autotoc_md7',1,'']]],
+  ['high_5ffreq_15',['high_freq',['../structhuntmaster_1_1MFCCProcessor_1_1Config.html#a85c6e7f0794c0819975f9d552899e311',1,'huntmaster::MFCCProcessor::Config']]],
+  ['historysize_16',['historySize',['../structhuntmaster_1_1AudioLevelProcessor_1_1Config.html#a48174aa7e905c7f5761a966ff0169813',1,'huntmaster::AudioLevelProcessor::Config']]],
+  ['hop_5fsize_17',['hop_size',['../structhuntmaster_1_1SpectrogramProcessor_1_1Config.html#a4c9f17788821871f678dc891840b73c5',1,'huntmaster::SpectrogramProcessor::Config']]],
+  ['hop_5fsize_5fseconds_18',['hop_size_seconds',['../structhuntmaster_1_1SpectrogramData.html#a1b0135acb7f897ea8d44c7fcfa1b1bae',1,'huntmaster::SpectrogramData']]],
+  ['hopsize_19',['hopsize',['../structhuntmaster_1_1CadenceAnalyzer_1_1Config.html#a1f37fc44eb9d0595a010adca972a89e2',1,'huntmaster::CadenceAnalyzer::Config::hopSize'],['../structhuntmaster_1_1HarmonicAnalyzer_1_1Config.html#a0bfcc8cd03f242136aa6a437957d1006',1,'huntmaster::HarmonicAnalyzer::Config::hopSize'],['../structhuntmaster_1_1PitchTracker_1_1Config.html#ad48c39948428a04995e81f6b210a0f9a',1,'huntmaster::PitchTracker::Config::hopSize']]],
+  ['hunt_20master_20academy_20–_20game_20calls_20engine_20huntmaster_20audio_20core_20',['Hunt Master Academy – Game Calls Engine (Huntmaster Audio Core)',['../index.html',1,'']]],
+  ['hunt_20master_20academy_20game_20calls_20engine_20–_20updated_20comprehensive_20todo_20roadmap_21',['Hunt Master Academy Game Calls Engine – Updated Comprehensive TODO &amp; Roadmap',['../md__2workspaces_2huntmaster-engine_2docs_2architecture.html',1,'']]],
+  ['huntmaster_20audio_20core_22',['Hunt Master Academy – Game Calls Engine (Huntmaster Audio Core)',['../index.html',1,'']]],
+  ['hybrid_23',['HYBRID',['../classhuntmaster_1_1AudioRecorder.html#aba75115a76ad859afde8b0cf412763bda3bf07fe8ac3883060b1558113ba248d4',1,'huntmaster::AudioRecorder']]]
 ];

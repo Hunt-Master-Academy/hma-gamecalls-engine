@@ -6,7 +6,9 @@
 #include <complex>
 #include <fstream>
 #include <numeric>
+#include <span>
 #include <sstream>
+#include <vector>
 
 #include "huntmaster/core/DebugLogger.h"
 #include "huntmaster/core/PerformanceProfiler.h"
@@ -39,8 +41,10 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
     bool isInitialized_ = false;
     bool isActive_ = false;
 
-    // Performance tracking
-    size_t processedFrames_ = 0;
+    // Performance tracking (legacy processedFrames_ kept as aggregate for backward compatibility)
+    size_t processedFrames_ = 0;  // legacy aggregate = analysisCalls_ + streamingFrames_
+    size_t analysisCalls_ = 0;    // number of one-shot analyzeHarmonics() invocations
+    size_t streamingFrames_ = 0;  // number of hop-advanced frames via processAudioChunk()
     double totalProcessingTime_ = 0.0;
     double maxProcessingTime_ = 0.0;
 
@@ -72,6 +76,9 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
     }
 
     Result<HarmonicProfile, Error> analyzeHarmonics(std::span<const float> audio) override {
+        // TODO: Add comprehensive unit tests for analyzeHarmonics method (0% coverage currently)
+        // TODO: Test with various audio frequencies, harmonics, and edge cases
+        // TODO: Test error handling for insufficient data and initialization failures
         security::MemoryGuard guard(security::GuardConfig{});
 
         if (!isInitialized_) {
@@ -128,6 +135,9 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
             auto end = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration<double, std::milli>(end - start).count();
             updatePerformanceStats(duration);
+            // Count one-shot analysis window
+            analysisCalls_ += 1;
+            processedFrames_ = analysisCalls_ + streamingFrames_;
 
             // DEBUG_LOG removed for compilation
             // "Analysis complete - Fundamental: " + std::to_string(profile.fundamentalFreq)
@@ -160,7 +170,8 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
 
             // Advance by hop size
             buffer_.erase(buffer_.begin(), buffer_.begin() + config_.hopSize);
-            processedFrames_++;
+            streamingFrames_++;
+            processedFrames_ = analysisCalls_ + streamingFrames_;
         }
 
         return Result<void, Error>();
@@ -219,6 +230,8 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
         currentProfile_ = HarmonicProfile{};
         isActive_ = false;
         processedFrames_ = 0;
+        analysisCalls_ = 0;
+        streamingFrames_ = 0;
         totalProcessingTime_ = 0.0;
         maxProcessingTime_ = 0.0;
 
@@ -252,12 +265,18 @@ class HarmonicAnalyzerImpl : public HarmonicAnalyzer {
     std::string getProcessingStats() const override {
         std::ostringstream oss;
         oss << "HarmonicAnalyzer Stats:\n";
+        oss << "  Analysis windows: " << analysisCalls_ << "\n";
+        oss << "  Streaming frames: " << streamingFrames_ << "\n";
+        // Backward compatibility line (was previously the only counter)
         oss << "  Processed frames: " << processedFrames_ << "\n";
+        oss << "  (Legacy aggregate processed frames - same as above): " << processedFrames_
+            << "\n";
         oss << "  Total processing time: " << totalProcessingTime_ << "ms\n";
         oss << "  Max processing time: " << maxProcessingTime_ << "ms\n";
-        if (processedFrames_ > 0) {
-            oss << "  Average processing time: " << (totalProcessingTime_ / processedFrames_)
-                << "ms\n";
+        size_t denom = analysisCalls_ + streamingFrames_;
+        if (denom > 0) {
+            oss << "  Average processing time: "
+                << (totalProcessingTime_ / static_cast<double>(denom)) << "ms\n";
         }
         oss << "  FFT size: " << config_.fftSize << "\n";
         oss << "  Sample rate: " << config_.sampleRate << "Hz";

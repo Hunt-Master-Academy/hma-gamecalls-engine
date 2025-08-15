@@ -41,3 +41,13 @@ TEST_F(VADActiveTransitionTest, CandidateToActive) {
     EXPECT_TRUE(result3.value().is_active) << "Should be active after 3 frames";
     EXPECT_TRUE(vad.isVoiceActive());
 }
+
+// TODO: Expand VAD active transition testing with additional scenarios:
+// [ ] Test different min_sound_duration values (shorter/longer requirements)
+// [ ] Test interrupted sequences (high signal -> low signal -> high signal)
+// [ ] Test gradual energy increase over transition period
+// [ ] Test edge case where energy drops just before min_sound_duration
+// [ ] Test very short bursts that shouldn't trigger activation
+// [ ] Test sustained activity detection over longer periods
+// [ ] Test transition timing accuracy with precise audio samples
+// [ ] Test multiple rapid transitions (voice start/stop patterns)

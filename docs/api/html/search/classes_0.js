@@ -1,7 +1,19 @@
 var searchData=
 [
-  ['audiobufferpool_0',['AudioBufferPool',['../classhuntmaster_1_1AudioBufferPool.html',1,'huntmaster']]],
-  ['audiolevelprocessor_1',['AudioLevelProcessor',['../classhuntmaster_1_1AudioLevelProcessor.html',1,'huntmaster']]],
-  ['audioplayer_2',['AudioPlayer',['../classhuntmaster_1_1AudioPlayer.html',1,'huntmaster']]],
-  ['audiorecorder_3',['AudioRecorder',['../classhuntmaster_1_1AudioRecorder.html',1,'huntmaster']]]
+  ['adaptivebuffermanager_0',['AdaptiveBufferManager',['../classhuntmaster_1_1io_1_1AdaptiveBufferManager.html',1,'huntmaster::io']]],
+  ['advancedasyncio_1',['AdvancedAsyncIO',['../classhuntmaster_1_1io_1_1AdvancedAsyncIO.html',1,'huntmaster::io']]],
+  ['advancediometrics_2',['AdvancedIOMetrics',['../structhuntmaster_1_1io_1_1AdvancedIOMetrics.html',1,'huntmaster::io']]],
+  ['asyncaudiowriter_3',['AsyncAudioWriter',['../classhuntmaster_1_1AsyncAudioWriter.html',1,'huntmaster']]],
+  ['audiobuffer_4',['AudioBuffer',['../classhuntmaster_1_1core_1_1AudioBuffer.html',1,'huntmaster::core']]],
+  ['audiobufferpool_5',['AudioBufferPool',['../classhuntmaster_1_1AudioBufferPool.html',1,'huntmaster']]],
+  ['audioconfig_6',['AudioConfig',['../structhuntmaster_1_1core_1_1AudioConfig.html',1,'huntmaster::core']]],
+  ['audioengineerrors_7',['AudioEngineErrors',['../structhuntmaster_1_1ComponentErrorHandler_1_1AudioEngineErrors.html',1,'huntmaster::ComponentErrorHandler']]],
+  ['audioformat_8',['AudioFormat',['../structhuntmaster_1_1MemoryMappedAudioFile_1_1AudioFormat.html',1,'huntmaster::MemoryMappedAudioFile']]],
+  ['audioformatconverter_9',['AudioFormatConverter',['../classhuntmaster_1_1core_1_1AudioFormatConverter.html',1,'huntmaster::core']]],
+  ['audioformatdetector_10',['AudioFormatDetector',['../classhuntmaster_1_1core_1_1AudioFormatDetector.html',1,'huntmaster::core']]],
+  ['audioformatinfo_11',['AudioFormatInfo',['../structhuntmaster_1_1core_1_1AudioFormatInfo.html',1,'huntmaster::core']]],
+  ['audiolevelprocessor_12',['AudioLevelProcessor',['../classhuntmaster_1_1AudioLevelProcessor.html',1,'huntmaster']]],
+  ['audioplayer_13',['AudioPlayer',['../classhuntmaster_1_1AudioPlayer.html',1,'huntmaster']]],
+  ['audioprocessor_14',['AudioProcessor',['../classhuntmaster_1_1AudioProcessor.html',1,'huntmaster']]],
+  ['audiorecorder_15',['AudioRecorder',['../classhuntmaster_1_1AudioRecorder.html',1,'huntmaster']]]
 ];

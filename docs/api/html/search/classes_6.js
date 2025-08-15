@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['similarityscore_0',['SimilarityScore',['../structhuntmaster_1_1RealtimeScorer_1_1SimilarityScore.html',1,'huntmaster::RealtimeScorer']]]
+  ['ioerrors_0',['IOErrors',['../structhuntmaster_1_1ComponentErrorHandler_1_1IOErrors.html',1,'huntmaster::ComponentErrorHandler']]],
+  ['ioperformancemetrics_1',['IOPerformanceMetrics',['../structhuntmaster_1_1IOPerformanceMetrics.html',1,'huntmaster']]],
+  ['ioperformancemonitor_2',['IOPerformanceMonitor',['../classhuntmaster_1_1IOPerformanceMonitor.html',1,'huntmaster']]]
 ];

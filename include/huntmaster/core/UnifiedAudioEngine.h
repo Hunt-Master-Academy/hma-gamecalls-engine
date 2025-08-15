@@ -441,6 +441,23 @@ class UnifiedAudioEngine {
     [[nodiscard]] Result<std::string> exportScoringHistoryToJson(SessionId sessionId,
                                                                  size_t maxCount = 20);
 
+    // === Coaching Feedback (simple rule mapper) ===
+    /**
+     * @brief Simple coaching feedback derived from EnhancedAnalysisSummary
+     *
+     * Uses calibrated grades (A–F) and loudnessDeviation to produce actionable tips.
+     * Requires a valid EnhancedAnalysisSummary; returns INSUFFICIENT_DATA otherwise.
+     */
+    struct CoachingFeedback {
+        std::vector<std::string> suggestions;  ///< Ordered list of short, actionable tips
+    };
+    [[nodiscard]] Result<CoachingFeedback> getCoachingFeedback(SessionId sessionId);
+    /**
+     * @brief Export coaching feedback as a JSON object string
+     * Schema: { "suggestions": ["...", "..."] }
+     */
+    [[nodiscard]] Result<std::string> exportCoachingFeedbackToJson(SessionId sessionId);
+
     // === Session State Queries ===
 
     /**
@@ -487,6 +504,9 @@ class UnifiedAudioEngine {
         float loudnessDeviation = 0.0f;     ///< (userRMS-masterRMS)/masterRMS (filled later)
         uint64_t segmentStartMs = 0;        ///< Segment start (ms from session start)
         uint64_t segmentDurationMs = 0;     ///< Segment duration in ms
+        char pitchGrade = '\0';             ///< Calibrated pitch grade (A-F) placeholder
+        char harmonicGrade = '\0';          ///< Calibrated harmonic grade (A-F) placeholder
+        char cadenceGrade = '\0';           ///< Calibrated cadence/tempo grade (A-F) placeholder
         std::chrono::steady_clock::time_point timestamp;  ///< Time analysis was produced
         bool valid = false;      ///< Whether summary contains valid recent data
         bool finalized = false;  ///< True once finalizeSessionAnalysis executed
@@ -553,6 +573,48 @@ class UnifiedAudioEngine {
      * @return Result containing SimilarityRealtimeState or error status
      */
     [[nodiscard]] Result<SimilarityRealtimeState> getRealtimeSimilarityState(SessionId sessionId);
+
+    // === Waveform Overlay (Scaffolding + minimal configurability) ===
+    /**
+     * @brief Configuration for waveform overlay down-sampling/export
+     * All fields are optional via sensible defaults. Existing behavior preserved when using
+     * the legacy API (maxPoints only).
+     */
+    struct WaveformOverlayConfig {
+        // Target maximum number of points in each peaks array (user/master). Capped internally.
+        size_t maxPoints = 512;
+        // If > 0, force this decimation factor for user samples (samples per point). When set,
+        // the resulting number of points may exceed maxPoints but remains capped to a hard limit.
+        uint32_t userDecimationOverride = 0;  // 0 = auto derived from maxPoints
+        // Hop size (in samples) to approximate master energy from feature frames when raw master
+        // samples are unavailable. Default preserves prior behavior.
+        uint32_t masterApproxHopSamples = 256;
+        // Mapping applied to normalized master energy proxy prior to bucket peak calculation.
+        enum class EnergyMap { Linear, Sqrt, Log, Power };
+        EnergyMap energyMap = EnergyMap::Linear;  // default preserves prior behavior
+        // Exponent for Power mapping when energyMap == Power. Ignored otherwise. Typical > 0.
+        float powerGamma = 1.0f;
+        // When true, prefer the energy approximation path even if raw master samples are
+        // available (useful for deterministic tests and UI experiments).
+        bool preferEnergyApprox = false;
+    };
+    struct WaveformOverlayData {
+        std::vector<float> masterPeaks;  ///< Down-sampled peak envelope of master
+        std::vector<float> userPeaks;    ///< Down-sampled peak envelope of user session
+        uint32_t decimation = 0;         ///< Samples per point (approx)
+        bool valid = false;              ///< True if both arrays populated
+    };
+
+    /**
+     * @brief Export lightweight down-sampled waveform overlay data (scaffolding, configurable)
+     * @param sessionId Target session
+     * @param config Overlay export configuration (decimation/mapping). Defaults preserve legacy.
+     */
+    [[nodiscard]] Result<WaveformOverlayData>
+    getWaveformOverlayData(SessionId sessionId, const WaveformOverlayConfig& config);
+    // Backwards-compatible overload (preserves previous signature/behavior)
+    [[nodiscard]] Result<WaveformOverlayData> getWaveformOverlayData(SessionId sessionId,
+                                                                     size_t maxPoints = 512);
     /**
      * @brief Retrieve both current and peak similarity scores (realtime path only)
      * @param sessionId Target session
@@ -577,6 +639,26 @@ class UnifiedAudioEngine {
      * @brief TEST HOOK ONLY: Adjust the finalize fallback threshold for deterministic tests.
      */
     [[nodiscard]] Status testSetFinalizeFallbackThreshold(SessionId sessionId, float value);
+    /** TEST HOOK ONLY: Directly set master call RMS used for normalization/loudness deviation */
+    [[nodiscard]] Status testSetMasterCallRms(SessionId sessionId, float rms);
+    /**
+     * @brief TEST HOOK ONLY: Inject a synthetic master call feature set (MFCC frames) directly.
+     * Replaces any currently loaded master call for the session. Each inner vector must represent
+     * one feature frame with consistent dimensionality. No copy of strings/assets performed.
+     */
+    [[nodiscard]] Status
+    testInjectMasterCallFeatures(SessionId sessionId,
+                                 const std::vector<std::vector<float>>& features);
+    /** TEST HOOK ONLY: Directly set enhanced analyzer confidences for deterministic grade mapping
+     * tests */
+    [[nodiscard]] Status testSetEnhancedSummaryConfidences(SessionId sessionId,
+                                                           float pitchConf,
+                                                           float harmonicConf,
+                                                           float tempoConf);
+    /** TEST HOOK ONLY: Advance virtual clock (ms) to simulate time passage */
+    [[nodiscard]] Status testAdvanceVirtualClock(int64_t milliseconds);
+    // TEST HOOK ONLY: Return realtime MFCC frame count observed (session->framesObserved)
+    [[nodiscard]] Result<uint32_t> testGetRealtimeFrameCount(SessionId sessionId) const;
 #endif
 
     // === Finalization Stage ===

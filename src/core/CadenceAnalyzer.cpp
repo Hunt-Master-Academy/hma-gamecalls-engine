@@ -1,5 +1,12 @@
 #include "huntmaster/core/CadenceAnalyzer.h"
 
+// TODO: Improve test coverage for CadenceAnalyzer (currently 54% - target 90%+)
+// TODO: Add tests for onset detection edge cases and spectral flux computation
+// TODO: Test beat tracking state management and autocorrelation analysis
+// TODO: Add tests for different audio patterns (silence, noise, complex rhythms)
+// TODO: Test performance counters and instrumentation accuracy
+// TODO: Add comprehensive tests for streaming frame processing vs one-shot analysis
+
 #include <algorithm>
 #include <chrono>
 #include <cmath>
@@ -7,7 +14,11 @@
 #include <fstream>
 #include <numeric>
 #include <set>
+#include <span>
 #include <sstream>
+#include <vector>
+
+#include <kiss_fft.h>
 
 #include "huntmaster/core/DebugLogger.h"
 #include "huntmaster/core/PerformanceProfiler.h"
@@ -37,7 +48,12 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
     // Analysis state
     size_t frameSize_;
     size_t hopSize_;
-    size_t processedFrames_ = 0;
+    // analysisCalls_: number of top-level one-shot analyzeCadence() invocations
+    // streamingFrames_: number of hop-advanced frames processed via processAudioChunk()
+    // (processedFrames_ kept temporarily for backward compatibility but will mirror sum)
+    size_t processedFrames_ = 0;  // legacy aggregate (analysisCalls_ + streamingFrames_)
+    size_t analysisCalls_ = 0;
+    size_t streamingFrames_ = 0;
     double totalProcessingTime_ = 0.0;
     double maxProcessingTime_ = 0.0;
 
@@ -46,6 +62,12 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
     std::vector<float> spectralFlux_;
     std::vector<float> fastPathEnergies_;  // Raw frame energies for fast-path heuristics
     float adaptiveThreshold_ = 0.0f;
+
+    // FFT optimization state
+    kiss_fft_cfg fft_plan_ = nullptr;
+    std::vector<kiss_fft_cpx> fft_input_;
+    std::vector<kiss_fft_cpx> fft_output_;
+    size_t fft_size_ = 0;
 
     // Instrumentation counters (lightweight, no locking – per-analyzer instance usage)
     size_t spectralFluxFrames_ = 0;   // Number of frames processed for spectral flux in last call
@@ -68,7 +90,12 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
         //     + ", sample rate: " + std::to_string(config_.sampleRate));
     }
 
-    ~CadenceAnalyzerImpl() = default;
+    ~CadenceAnalyzerImpl() {
+        if (fft_plan_) {
+            kiss_fft_free(fft_plan_);
+            fft_plan_ = nullptr;
+        }
+    }
 
     Result<CadenceProfile, Error> analyzeCadence(std::span<const float> audio) override {
         security::MemoryGuard guard(security::GuardConfig{});
@@ -144,7 +171,8 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
             lastProcessingMs_ = duration;
             audioSamplesLast_ = audio.size();
             // Count a processed frame based on analysis window advanced implicitly by hop
-            processedFrames_ += 1;
+            analysisCalls_ += 1;
+            processedFrames_ = analysisCalls_ + streamingFrames_;
 
             // DEBUG_LOG removed for compilation
             // "Analysis complete - Tempo: " + std::to_string(profile.estimatedTempo)
@@ -177,7 +205,8 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
 
             // Advance by hop size
             buffer_.erase(buffer_.begin(), buffer_.begin() + hopSize_);
-            processedFrames_++;
+            streamingFrames_++;
+            processedFrames_ = analysisCalls_ + streamingFrames_;
         }
 
         return Result<void, Error>();
@@ -226,6 +255,8 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
         currentProfile_ = CadenceProfile{};
         isActive_ = false;
         processedFrames_ = 0;
+        analysisCalls_ = 0;
+        streamingFrames_ = 0;
         totalProcessingTime_ = 0.0;
         maxProcessingTime_ = 0.0;
         adaptiveThreshold_ = 0.0f;
@@ -265,19 +296,22 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
     std::string getProcessingStats() const override {
         std::ostringstream oss;
         oss << "CadenceAnalyzer Stats:\n";
-        oss << "  Processed frames: " << processedFrames_ << "\n";
+        oss << "  Analysis windows: " << analysisCalls_ << "\n";
+        oss << "  Streaming frames: " << streamingFrames_ << "\n";
+        oss << "  (Legacy aggregate processed frames): " << processedFrames_ << "\n";
         oss << "  Total processing time: " << totalProcessingTime_ << "ms\n";
         oss << "  Max processing time: " << maxProcessingTime_ << "ms\n";
-        if (processedFrames_ > 0) {
-            oss << "  Average processing time: " << (totalProcessingTime_ / processedFrames_)
-                << "ms\n";
+        size_t denom = (analysisCalls_ + streamingFrames_);
+        if (denom > 0) {
+            oss << "  Average processing time: "
+                << (totalProcessingTime_ / static_cast<double>(denom)) << "ms\n";
         }
         oss << "  Frame size: " << frameSize_ << " samples\n";
         oss << "  Hop size: " << hopSize_ << " samples\n";
         oss << "  Sample rate: " << config_.sampleRate << "Hz";
         oss << "\n  Last analysis window samples: " << audioSamplesLast_;
         oss << "\n  Last processing duration: " << lastProcessingMs_ << "ms";
-        oss << "\n  Spectral flux frames (last): " << spectralFluxFrames_;
+        oss << "\n  Internal spectral frames (last): " << spectralFluxFrames_;
         oss << "\n  Onset loop iterations (last): " << onsetLoopIterations_;
         oss << "\n  Onsets detected (last): " << onsetsDetectedLast_;
         oss << "\n  Autocorr max lag (last): " << autocorrMaxLagLast_;
@@ -324,6 +358,32 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
 
         prevSpectrum_.resize(frameSize_ / 2 + 1, 0.0f);
         spectralFlux_.clear();
+
+        // Initialize FFT for performance optimization
+        initializeFFT();
+    }
+
+    void initializeFFT(size_t fftSize = 0) {
+        // Use provided size or default to frameSize_
+        size_t targetSize = (fftSize > 0) ? fftSize : frameSize_;
+
+        // Only re-initialize if size changed
+        if (fft_plan_ && fft_size_ == targetSize) {
+            return;
+        }
+
+        // Clean up existing FFT plan if any
+        if (fft_plan_) {
+            kiss_fft_free(fft_plan_);
+        }
+
+        // Set FFT size
+        fft_size_ = targetSize;
+
+        // Allocate FFT plan and buffers
+        fft_plan_ = kiss_fft_alloc(static_cast<int>(fft_size_), 0, nullptr, nullptr);
+        fft_input_.resize(fft_size_);
+        fft_output_.resize(fft_size_);
     }
 
     Result<std::vector<float>, Error> detectOnsetsInternal(std::span<const float> audio) {
@@ -415,17 +475,32 @@ class CadenceAnalyzerImpl : public CadenceAnalyzer {
     }
 
     void computeMagnitudeSpectrum(std::span<const float> frame, std::vector<float>& spectrum) {
-        // Simple DFT implementation for magnitude spectrum
-        for (size_t k = 0; k < spectrum.size(); ++k) {
-            float real = 0.0f, imag = 0.0f;
+        // Use FFT for efficient magnitude spectrum computation
+        if (!fft_plan_ || frame.size() != fft_size_) {
+            initializeFFT(frame.size());
+        }
 
-            for (size_t n = 0; n < frame.size(); ++n) {
-                float angle = -2.0f * M_PI * k * n / frame.size();
-                real += frame[n] * std::cos(angle);
-                imag += frame[n] * std::sin(angle);
-            }
+        // Copy input data to FFT buffer (zero-padded if necessary)
+        std::fill(fft_input_.begin(), fft_input_.end(), kiss_fft_cpx{0.0f, 0.0f});
+        for (size_t i = 0; i < std::min(frame.size(), fft_size_); ++i) {
+            fft_input_[i].r = frame[i];
+            fft_input_[i].i = 0.0f;
+        }
 
+        // Perform FFT
+        kiss_fft(fft_plan_, fft_input_.data(), fft_output_.data());
+
+        // Compute magnitude spectrum (only use first half due to symmetry)
+        size_t halfSize = std::min(spectrum.size(), fft_size_ / 2 + 1);
+        for (size_t k = 0; k < halfSize; ++k) {
+            float real = fft_output_[k].r;
+            float imag = fft_output_[k].i;
             spectrum[k] = std::sqrt(real * real + imag * imag);
+        }
+
+        // Fill remaining spectrum bins with zeros if necessary
+        for (size_t k = halfSize; k < spectrum.size(); ++k) {
+            spectrum[k] = 0.0f;
         }
     }
 

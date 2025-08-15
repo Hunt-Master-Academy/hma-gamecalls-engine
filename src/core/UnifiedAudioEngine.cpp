@@ -1,5 +1,17 @@
 #include "huntmaster/core/UnifiedAudioEngine.h"
 
+// TODO: CRITICAL - Improve UnifiedAudioEngine test coverage (currently 17% - target 90%+)
+// TODO: Add comprehensive tests for session management (create/destroy/get active sessions)
+// TODO: Add tests for master call loading/unloading per session
+// TODO: Add tests for audio processing pipeline and similarity scoring
+// TODO: Add tests for enhanced analyzers enable/disable functionality
+// TODO: Add tests for coaching feedback generation and JSON export
+// TODO: Add tests for finalize session analysis (MVP TODO Item: DONE but needs more coverage)
+// TODO: Add tests for similarity realtime state and readiness API
+// TODO: Add tests for error handling and edge cases in all public methods
+// TODO: Add tests for concurrent session access and thread safety
+// TODO: Add performance tests for audio chunk processing latency (<12ms target)
+
 #include <algorithm>
 #include <atomic>
 #include <chrono>
@@ -11,6 +23,7 @@
 #include <mutex>
 #include <shared_mutex>
 #include <span>
+#include <sstream>
 #include <string_view>  // for master call id handling
 #include <unordered_map>
 
@@ -94,13 +107,31 @@ class UnifiedAudioEngine::Impl {
     Result<bool> getEnhancedAnalyzersEnabled(SessionId sessionId) const;
     Result<UnifiedAudioEngine::EnhancedAnalysisSummary>
     getEnhancedAnalysisSummary(SessionId sessionId);
+    Result<UnifiedAudioEngine::CoachingFeedback> getCoachingFeedback(SessionId sessionId);
+    Result<std::string> exportCoachingFeedbackToJson(SessionId sessionId);
     Result<UnifiedAudioEngine::SimilarityRealtimeState>
     getRealtimeSimilarityState(SessionId sessionId);
     Result<UnifiedAudioEngine::SimilarityScoresSnapshot> getSimilarityScores(SessionId sessionId);
+    Result<UnifiedAudioEngine::WaveformOverlayData>
+    getWaveformOverlayData(SessionId sessionId, const WaveformOverlayConfig& config);
+    Result<UnifiedAudioEngine::WaveformOverlayData> getWaveformOverlayData(SessionId sessionId,
+                                                                           size_t maxPoints);
     Result<bool> getFinalizeFallbackUsed(SessionId sessionId);
 #ifdef HUNTMASTER_TEST_HOOKS
     Status testOverrideLastSimilarity(SessionId sessionId, float value);
     Status testSetFinalizeFallbackThreshold(SessionId sessionId, float value);
+    Status testInjectMasterCallFeatures(SessionId sessionId,
+                                        const std::vector<std::vector<float>>& features);
+    Status testSetEnhancedSummaryConfidences(SessionId sessionId,
+                                             float pitchConf,
+                                             float harmonicConf,
+                                             float tempoConf);
+    Status testSetMasterCallRms(SessionId sessionId, float rms);
+    Status testAdvanceVirtualClock(int64_t milliseconds) {
+        advanceVirtualClock(milliseconds);
+        return Status::OK;
+    }
+    UnifiedAudioEngine::Result<uint32_t> testGetRealtimeFrameCount(SessionId sessionId) const;
 #endif
     Status finalizeSessionAnalysis(SessionId sessionId);
 
@@ -159,6 +190,19 @@ class UnifiedAudioEngine::Impl {
     Status configureDTW(SessionId sessionId, float windowRatio, bool enableSIMD = true);
     Result<float> getDTWWindowRatio(SessionId sessionId) const;
 
+    // Virtual clock helpers (test-only)
+    std::chrono::steady_clock::time_point nowBase() const {
+        return std::chrono::steady_clock::now();
+    }
+    std::chrono::steady_clock::time_point getNow() const {
+        if (virtualTimeOffsetMs_ == 0)
+            return nowBase();
+        return nowBase() + std::chrono::milliseconds(virtualTimeOffsetMs_);
+    }
+    void advanceVirtualClock(int64_t ms) {
+        virtualTimeOffsetMs_ += ms;
+    }
+
   private:
     // Session state structure - each session is completely isolated
     struct SessionState {
@@ -171,6 +215,8 @@ class UnifiedAudioEngine::Impl {
         std::string masterCallId;
         // Master call loudness (true RMS) captured at load for normalization calculations
         float masterCallRms = 0.0f;
+        // Raw master audio samples (retained for overlay export)
+        std::vector<float> masterRawSamples;
 
         // Audio processing state
         std::vector<float> currentSegmentBuffer;
@@ -296,6 +342,8 @@ class UnifiedAudioEngine::Impl {
             dtwComparator = std::make_unique<DTWComparator>(dtwConfig);
         }
     };
+
+    int64_t virtualTimeOffsetMs_ = 0;  // accumulated virtual ms offset (tests)
 
     // Thread-safe session management
     mutable std::shared_mutex sessionsMutex_;
@@ -431,9 +479,32 @@ UnifiedAudioEngine::getEnhancedAnalysisSummary(SessionId sessionId) {
     return impl_->getEnhancedAnalysisSummary(sessionId);
 }
 
+UnifiedAudioEngine::Result<UnifiedAudioEngine::CoachingFeedback>
+UnifiedAudioEngine::getCoachingFeedback(SessionId sessionId) {
+    return impl_->getCoachingFeedback(sessionId);
+}
+
+UnifiedAudioEngine::Result<std::string>
+UnifiedAudioEngine::exportCoachingFeedbackToJson(SessionId sessionId) {
+    return impl_->exportCoachingFeedbackToJson(sessionId);
+}
+
 UnifiedAudioEngine::Result<UnifiedAudioEngine::SimilarityRealtimeState>
 UnifiedAudioEngine::getRealtimeSimilarityState(SessionId sessionId) {
     return impl_->getRealtimeSimilarityState(sessionId);
+}
+
+UnifiedAudioEngine::Result<UnifiedAudioEngine::WaveformOverlayData>
+UnifiedAudioEngine::getWaveformOverlayData(SessionId sessionId,
+                                           const WaveformOverlayConfig& config) {
+    return impl_->getWaveformOverlayData(sessionId, config);
+}
+
+UnifiedAudioEngine::Result<UnifiedAudioEngine::WaveformOverlayData>
+UnifiedAudioEngine::getWaveformOverlayData(SessionId sessionId, size_t maxPoints) {
+    WaveformOverlayConfig cfg;
+    cfg.maxPoints = maxPoints;
+    return impl_->getWaveformOverlayData(sessionId, cfg);
 }
 
 UnifiedAudioEngine::Result<UnifiedAudioEngine::SimilarityScoresSnapshot>
@@ -453,6 +524,34 @@ UnifiedAudioEngine::Status UnifiedAudioEngine::testOverrideLastSimilarity(Sessio
 UnifiedAudioEngine::Status UnifiedAudioEngine::testSetFinalizeFallbackThreshold(SessionId sessionId,
                                                                                 float value) {
     return impl_->testSetFinalizeFallbackThreshold(sessionId, value);
+}
+UnifiedAudioEngine::Status
+UnifiedAudioEngine::testInjectMasterCallFeatures(SessionId sessionId,
+                                                 const std::vector<std::vector<float>>& features) {
+    return impl_->testInjectMasterCallFeatures(sessionId, features);
+}
+UnifiedAudioEngine::Status UnifiedAudioEngine::testSetEnhancedSummaryConfidences(
+    SessionId sessionId, float pitchConf, float harmonicConf, float tempoConf) {
+    return impl_->testSetEnhancedSummaryConfidences(sessionId, pitchConf, harmonicConf, tempoConf);
+}
+UnifiedAudioEngine::Status UnifiedAudioEngine::testSetMasterCallRms(SessionId sessionId,
+                                                                    float rms) {
+    return impl_->testSetMasterCallRms(sessionId, rms);
+}
+
+UnifiedAudioEngine::Status UnifiedAudioEngine::testAdvanceVirtualClock(int64_t milliseconds) {
+#ifdef HUNTMASTER_TEST_HOOKS
+    // Single advancement through test hook (which calls advanceVirtualClock internally)
+    impl_->testAdvanceVirtualClock(milliseconds);
+    return UnifiedAudioEngine::Status::OK;
+#else
+    (void)milliseconds;
+    return UnifiedAudioEngine::Status::UNSUPPORTED;
+#endif
+}
+UnifiedAudioEngine::Result<uint32_t>
+UnifiedAudioEngine::testGetRealtimeFrameCount(SessionId sessionId) const {
+    return impl_->testGetRealtimeFrameCount(sessionId);
 }
 #endif
 
@@ -781,6 +880,26 @@ UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::loadMasterCall(SessionId se
     // Try to load cached features first
     if (loadFeaturesFromFile(*session, masterCallIdStr) == Status::OK) {
         session->masterCallId = masterCallIdStr;
+        // Attempt to load corresponding raw wav for overlay retention (non-fatal if missing)
+        const std::string audioFilePathCached = masterCallsPath_ + masterCallIdStr + ".wav";
+        unsigned int channelsC = 0, sampleRateC = 0;
+        drwav_uint64 framesC = 0;
+        float* rawCached = drwav_open_file_and_read_pcm_frames_f32(
+            audioFilePathCached.c_str(), &channelsC, &sampleRateC, &framesC, nullptr);
+        if (rawCached) {
+            DrWavRAII cachedData(rawCached);
+            session->masterRawSamples.resize(framesC);
+            if (channelsC <= 1) {
+                std::copy(rawCached, rawCached + framesC, session->masterRawSamples.begin());
+            } else {
+                for (drwav_uint64 i = 0; i < framesC; ++i) {
+                    float sum = 0.0f;
+                    for (unsigned int ch = 0; ch < channelsC; ++ch)
+                        sum += rawCached[i * channelsC + ch];
+                    session->masterRawSamples[i] = sum / static_cast<float>(channelsC);
+                }
+            }
+        }
 
         // CRITICAL FIX: Set master call in RealtimeScorer even when using cached features
         if (session->realtimeScorer) {
@@ -830,6 +949,7 @@ UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::loadMasterCall(SessionId se
     }
 
     session->masterCallFeatures = std::move(*featuresResult);
+    session->masterRawSamples = std::move(monoSamples);  // retain raw samples for overlay
     session->masterCallId = masterCallIdStr;
     // Compute true RMS for master call (used later for normalization/loudness deviation)
     if (!monoSamples.empty()) {
@@ -1339,7 +1459,7 @@ UnifiedAudioEngine::Impl::getEnhancedAnalysisSummary(SessionId sessionId) {
         }
     }
     // Very lightweight placeholder: mark valid if we have at least 1 feature vector recently
-    auto now = std::chrono::steady_clock::now();
+    auto now = getNow();
     bool stale = false;
     if (session->enhancedSummary.valid) {
         auto ageMs =
@@ -1362,10 +1482,19 @@ UnifiedAudioEngine::Impl::getRealtimeSimilarityState(SessionId sessionId) {
         return {SimilarityRealtimeState{}, Status::SESSION_NOT_FOUND};
     SimilarityRealtimeState st{};
     st.framesObserved = session->framesObserved;
-    st.minFramesRequired = 25;  // heuristic threshold
-    st.usingRealtimePath = true;
-    st.reliable = st.framesObserved >= st.minFramesRequired;
+    // Derive min frames: require ~250ms of audio => ceil( (sampleRate*0.25 - frameSize) / hop )
+    // Using known MFCC frameSize=512, hop=256; fallback heuristic if sampleRate unknown.
+    uint32_t minFrames = 25;  // default legacy heuristic
+    if (session->sampleRate > 0) {
+        double targetSec = 0.25;                                          // 250ms
+        double framesNeeded = (targetSec * session->sampleRate) / 256.0;  // hop based
+        minFrames = static_cast<uint32_t>(std::clamp<std::uint64_t>(
+            static_cast<uint64_t>(std::ceil(framesNeeded)), 10ULL, 200ULL));
+    }
+    st.minFramesRequired = minFrames;
+    st.usingRealtimePath = !session->masterCallFeatures.empty();
     st.provisionalScore = session->lastSimilarity;
+    st.reliable = st.usingRealtimePath && st.framesObserved >= st.minFramesRequired;
     return {st, Status::OK};
 }
 
@@ -1415,6 +1544,92 @@ UnifiedAudioEngine::Impl::testSetFinalizeFallbackThreshold(SessionId sessionId, 
     session->finalizeFallbackThreshold = value;
     return Status::OK;
 }
+UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::testInjectMasterCallFeatures(
+    SessionId sessionId, const std::vector<std::vector<float>>& features) {
+    SessionState* session = getSession(sessionId);
+    if (!session)
+        return Status::SESSION_NOT_FOUND;
+    if (features.empty())
+        return Status::INVALID_PARAMS;
+    // Validate consistent dimensionality
+    size_t dim = features.front().size();
+    if (dim == 0)
+        return Status::INVALID_PARAMS;
+    for (const auto& f : features) {
+        if (f.size() != dim)
+            return Status::INVALID_PARAMS;
+    }
+    session->masterCallFeatures = features;  // copy (small for test usage)
+    // Synthesize a pseudo raw master waveform from feature energies if none present
+    session->masterRawSamples.clear();
+    session->masterRawSamples.reserve(features.size() * 256);
+    for (const auto& frame : features) {
+        float e = (!frame.empty()) ? std::fabs(frame[0]) : 0.0f;
+        float scaled = (e > 0.0f) ? std::min(e, 1.0f) : 0.0f;
+        for (size_t i = 0; i < 256; ++i) {
+            // Simple half-sine shaped envelope sample to approximate energy over hop
+            float phase = static_cast<float>(i) / 255.0f;
+            session->masterRawSamples.push_back(scaled
+                                                * std::sin(phase * static_cast<float>(M_PI)));
+        }
+    }
+    // Reset any related cached similarity state
+    session->peakSimilarity = 0.0f;
+    session->lastSimilarity = 0.0f;
+    return Status::OK;
+}
+
+UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::testSetEnhancedSummaryConfidences(
+    SessionId sessionId, float pitchConf, float harmonicConf, float tempoConf) {
+    SessionState* session = getSession(sessionId);
+    if (!session)
+        return Status::SESSION_NOT_FOUND;
+    pitchConf = std::clamp(pitchConf, 0.0f, 1.0f);
+    harmonicConf = std::clamp(harmonicConf, 0.0f, 1.0f);
+    tempoConf = std::clamp(tempoConf, 0.0f, 1.0f);
+    session->enhancedSummary.pitchConfidence = pitchConf;
+    session->enhancedSummary.harmonicConfidence = harmonicConf;
+    session->enhancedSummary.tempoConfidence = tempoConf;
+    session->enhancedSummary.valid = true;
+    auto mapGrade = [](float c) -> char {
+        if (c >= 0.85f)
+            return 'A';
+        if (c >= 0.70f)
+            return 'B';
+        if (c >= 0.55f)
+            return 'C';
+        if (c >= 0.40f)
+            return 'D';
+        if (c >= 0.25f)
+            return 'E';
+        return 'F';
+    };
+    session->enhancedSummary.pitchGrade = mapGrade(pitchConf);
+    session->enhancedSummary.harmonicGrade = mapGrade(harmonicConf);
+    session->enhancedSummary.cadenceGrade = mapGrade(tempoConf);
+    session->enhancedLastUpdate = getNow();
+    return Status::OK;
+}
+
+UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::testSetMasterCallRms(SessionId sessionId,
+                                                                          float rms) {
+    SessionState* session = getSession(sessionId);
+    if (!session)
+        return Status::SESSION_NOT_FOUND;
+    if (!std::isfinite(rms))
+        return Status::INVALID_PARAMS;
+    session->masterCallRms = rms < 0.0f ? 0.0f : rms;
+    return Status::OK;
+}
+
+UnifiedAudioEngine::Result<uint32_t>
+UnifiedAudioEngine::Impl::testGetRealtimeFrameCount(SessionId sessionId) const {
+    const SessionState* session = getSession(sessionId);
+    if (!session)
+        return {0u, Status::SESSION_NOT_FOUND};
+    return {session->framesObserved, Status::OK};
+}
+
 #endif
 
 UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::finalizeSessionAnalysis(SessionId sessionId) {
@@ -1427,7 +1642,42 @@ UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::finalizeSessionAnalysis(Ses
         return Status::INSUFFICIENT_DATA;
 
     float preFinalizeSimilarity = session->lastSimilarity;  // capture realtime state BEFORE refine
-    auto sim = getSimilarityScore(sessionId);
+    // Segment frame bounds (voice prioritized)
+    uint64_t startIdx = session->firstVoiceFrameIndex;
+    uint64_t endIdx = session->lastVoiceFrameIndex;
+    if (startIdx == std::numeric_limits<uint64_t>::max() || endIdx < startIdx) {
+        startIdx = session->firstFeatureIndex;
+        endIdx = session->lastFeatureIndex;
+    }
+    float refinedSimilarity = 0.0f;
+    bool refinedOk = false;
+    if (startIdx != std::numeric_limits<uint64_t>::max() && endIdx >= startIdx
+        && endIdx < session->sessionFeatures.size()) {
+        // Scoped vectors referencing selected segment of user features
+        std::vector<std::vector<float>> segmentFrames;
+        segmentFrames.reserve(static_cast<size_t>(endIdx - startIdx + 1));
+        for (uint64_t i = startIdx; i <= endIdx; ++i) {
+            segmentFrames.push_back(session->sessionFeatures[static_cast<size_t>(i)]);
+        }
+        if (session->dtwComparator && !session->masterCallFeatures.empty()
+            && !segmentFrames.empty()) {
+            float distance =
+                session->dtwComparator->compare(session->masterCallFeatures, segmentFrames);
+            if (std::isfinite(distance)) {
+                refinedSimilarity = std::clamp(1.0f / (1.0f + distance), 0.0f, 1.0f);
+                refinedOk = true;
+            }
+        }
+    }
+    // Fallback to full-path score if scoped refinement failed
+    if (!refinedOk) {
+        auto simFull = getSimilarityScore(sessionId);
+        if (simFull.isOk()) {
+            refinedSimilarity = simFull.value;
+            refinedOk = true;
+        }
+    }
+    Result<float> sim{refinedSimilarity, refinedOk ? Status::OK : Status::INSUFFICIENT_DATA};
     if (sim.isOk()) {
         session->enhancedSummary.similarityAtFinalize = sim.value;
         session->enhancedSummary.timestamp = std::chrono::steady_clock::now();
@@ -1490,9 +1740,238 @@ UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::finalizeSessionAnalysis(Ses
                       + " post=" + std::to_string(sim.value)
                       + (session->usedFinalizeFallback ? " [FALLBACK_USED]" : ""));
 #endif
+        // Grade mapping (assign only if not already assigned by test hook)
+        auto mapGrade = [](float c) -> char {
+            if (c >= 0.85f)
+                return 'A';
+            if (c >= 0.70f)
+                return 'B';
+            if (c >= 0.55f)
+                return 'C';
+            if (c >= 0.40f)
+                return 'D';
+            if (c >= 0.25f)
+                return 'E';
+            return 'F';
+        };
+        if (session->enhancedSummary.pitchGrade == '\0')
+            session->enhancedSummary.pitchGrade =
+                mapGrade(session->enhancedSummary.pitchConfidence);
+        if (session->enhancedSummary.harmonicGrade == '\0')
+            session->enhancedSummary.harmonicGrade =
+                mapGrade(session->enhancedSummary.harmonicConfidence);
+        if (session->enhancedSummary.cadenceGrade == '\0')
+            session->enhancedSummary.cadenceGrade =
+                mapGrade(session->enhancedSummary.tempoConfidence);
     }
     session->finalizedSimilarity = true;
     return Status::OK;
+}
+
+UnifiedAudioEngine::Result<UnifiedAudioEngine::WaveformOverlayData>
+UnifiedAudioEngine::Impl::getWaveformOverlayData(SessionId sessionId,
+                                                 const WaveformOverlayConfig& config) {
+    SessionState* session = getSession(sessionId);
+    if (!session)
+        return {WaveformOverlayData{}, Status::SESSION_NOT_FOUND};
+
+    // Sanitize maxPoints
+    size_t maxPoints = config.maxPoints;
+    if (maxPoints == 0)
+        maxPoints = 1;
+    maxPoints = std::min<size_t>(maxPoints, 4096);  // hard safety cap
+
+    WaveformOverlayData out;
+    out.decimation = 0;
+    out.valid = false;
+
+    // Source buffers
+    const std::vector<float>* userSamples = nullptr;
+    if (!session->recordingBuffer.empty()) {
+        userSamples = &session->recordingBuffer;
+    } else if (!session->currentSegmentBuffer.empty()) {
+        // Use whatever remains in segment buffer (overlap window) – minimal but better than empty
+        userSamples = &session->currentSegmentBuffer;
+    }
+
+    // We don't currently retain raw master audio samples; approximate a peak envelope using
+    // masterCallFeatures first coefficient (log-energy proxy) when available.
+    bool haveMasterRaw = !session->masterRawSamples.empty();
+    bool haveMasterApprox = !session->masterCallFeatures.empty();
+
+    if (!userSamples || userSamples->empty() || (!haveMasterRaw && !haveMasterApprox)) {
+        return {out, Status::INSUFFICIENT_DATA};
+    }
+
+    // Determine decimation based on user sample count or override
+    size_t totalUser = userSamples->size();
+    size_t decimation = config.userDecimationOverride > 0
+                            ? static_cast<size_t>(config.userDecimationOverride)
+                            : std::max<size_t>(1, (totalUser + maxPoints - 1) / maxPoints);
+    out.decimation = static_cast<uint32_t>(decimation);
+
+    // Down-sample user peaks (max abs per decimation window)
+    out.userPeaks.reserve(std::min(maxPoints, (totalUser + decimation - 1) / decimation));
+    for (size_t i = 0; i < totalUser; i += decimation) {
+        float peak = 0.0f;
+        size_t end = std::min(totalUser, i + decimation);
+        for (size_t j = i; j < end; ++j) {
+            peak = std::max(peak, std::fabs((*userSamples)[j]));
+        }
+        out.userPeaks.push_back(peak);
+    }
+
+    if (haveMasterRaw && !config.preferEnergyApprox) {
+        // Direct raw sample decimation like user
+        const auto& mraw = session->masterRawSamples;
+        size_t totalMaster = mraw.size();
+        size_t mDecimation =
+            std::max<size_t>(1, (totalMaster + out.userPeaks.size() - 1) / out.userPeaks.size());
+        out.masterPeaks.reserve(out.userPeaks.size());
+        for (size_t i = 0; i < totalMaster && out.masterPeaks.size() < out.userPeaks.size();
+             i += mDecimation) {
+            float peak = 0.0f;
+            size_t end = std::min(totalMaster, i + mDecimation);
+            for (size_t j = i; j < end; ++j)
+                peak = std::max(peak, std::fabs(mraw[j]));
+            out.masterPeaks.push_back(peak);
+        }
+        if (out.masterPeaks.size() < out.userPeaks.size()) {
+            out.masterPeaks.resize(out.userPeaks.size(), 0.0f);
+        }
+    } else {
+        // Energy approximation fallback (old path)
+        const auto& mframes = session->masterCallFeatures;
+        std::vector<float> energy;
+        energy.reserve(mframes.size());
+        float maxE = 0.0f;
+        for (const auto& f : mframes) {
+            float e = (!f.empty()) ? std::fabs(f[0]) : 0.0f;
+            energy.push_back(e);
+            maxE = std::max(maxE, e);
+        }
+        if (maxE > 0.0f)
+            for (float& e : energy)
+                e /= maxE;
+
+        // Apply optional energy mapping
+        switch (config.energyMap) {
+            case WaveformOverlayConfig::EnergyMap::Linear:
+                break;  // no-op
+            case WaveformOverlayConfig::EnergyMap::Sqrt:
+                for (float& e : energy)
+                    e = std::sqrt(std::max(0.0f, e));
+                break;
+            case WaveformOverlayConfig::EnergyMap::Power: {
+                float g = std::max(0.0f, config.powerGamma);
+                if (std::fabs(g - 1.0f) > 1e-6f) {
+                    for (float& e : energy)
+                        e = std::pow(std::max(0.0f, e), g);
+                }
+                break;
+            }
+            case WaveformOverlayConfig::EnergyMap::Log: {
+                // Smooth log mapping that maps 0->0 and 1->1 using log(1 + a*x)/log(1 + a)
+                constexpr float a = 9.0f;
+                const float denom = std::log1p(a);
+                for (float& e : energy)
+                    e = std::log1p(a * std::max(0.0f, e)) / denom;
+                break;
+            }
+        }
+
+        size_t hopSamples = std::max<uint32_t>(1, config.masterApproxHopSamples);
+        size_t approxSamples = energy.size() * hopSamples;
+        size_t mDecimation =
+            std::max<size_t>(1, (approxSamples + out.userPeaks.size() - 1) / out.userPeaks.size());
+        out.masterPeaks.reserve(out.userPeaks.size());
+        size_t framesPerBucket = std::max<size_t>(1, (mDecimation + hopSamples - 1) / hopSamples);
+        for (size_t i = 0; i < energy.size() && out.masterPeaks.size() < out.userPeaks.size();
+             i += framesPerBucket) {
+            float p = 0.0f;
+            size_t end = std::min(energy.size(), i + framesPerBucket);
+            for (size_t j = i; j < end; ++j)
+                p = std::max(p, energy[j]);
+            out.masterPeaks.push_back(p);
+        }
+        if (out.masterPeaks.size() < out.userPeaks.size())
+            out.masterPeaks.resize(out.userPeaks.size(), 0.0f);
+    }
+
+    if (out.masterPeaks.empty() || out.userPeaks.empty()) {
+        return {out, Status::INSUFFICIENT_DATA};
+    }
+
+    out.valid = true;
+    return {out, Status::OK};
+}
+
+UnifiedAudioEngine::Result<UnifiedAudioEngine::WaveformOverlayData>
+UnifiedAudioEngine::Impl::getWaveformOverlayData(SessionId sessionId, size_t maxPoints) {
+    WaveformOverlayConfig cfg;
+    cfg.maxPoints = maxPoints;
+    return getWaveformOverlayData(sessionId, cfg);
+}
+
+UnifiedAudioEngine::Result<UnifiedAudioEngine::CoachingFeedback>
+UnifiedAudioEngine::Impl::getCoachingFeedback(SessionId sessionId) {
+    SessionState* session = getSession(sessionId);
+    if (!session)
+        return {CoachingFeedback{}, Status::SESSION_NOT_FOUND};
+    // Require a valid enhanced summary (produced by analyzers or test hooks)
+    const auto& s = session->enhancedSummary;
+    if (!s.valid) {
+        return {CoachingFeedback{}, Status::INSUFFICIENT_DATA};
+    }
+    CoachingFeedback out;
+    auto add = [&](std::string msg) { out.suggestions.emplace_back(std::move(msg)); };
+    // Loudness suggestions
+    if (std::isfinite(s.loudnessDeviation)) {
+        if (s.loudnessDeviation > 0.20f)
+            add("Reduce volume by ~20% to match master loudness");
+        else if (s.loudnessDeviation < -0.20f)
+            add("Increase volume by ~20% to match master loudness");
+    }
+    // Pitch/harmonic/cadence grade suggestions
+    auto isBad = [](char g) { return g == 'D' || g == 'E' || g == 'F'; };
+    if (isBad(s.pitchGrade))
+        add("Stabilize pitch at call onset; hold steady fundamental");
+    if (isBad(s.harmonicGrade))
+        add("Aim for smoother tone; reduce breath noise for cleaner harmonics");
+    if (isBad(s.cadenceGrade))
+        add("Keep timing even; match the rhythm spacing of the master");
+    // If no issues detected, provide a positive nudge
+    if (out.suggestions.empty())
+        add("Solid match so far; maintain consistency through the call");
+    return {out, Status::OK};
+}
+
+UnifiedAudioEngine::Result<std::string>
+UnifiedAudioEngine::Impl::exportCoachingFeedbackToJson(SessionId sessionId) {
+    auto fb = getCoachingFeedback(sessionId);
+    if (!fb.isOk())
+        return {std::string{}, fb.error()};
+    const auto& v = fb.value;
+    std::ostringstream os;
+    os << "{\"suggestions\":[";
+    for (size_t i = 0; i < v.suggestions.size(); ++i) {
+        // Minimal JSON escaping for quotes and backslashes
+        std::string s;
+        s.reserve(v.suggestions[i].size() + 8);
+        for (char c : v.suggestions[i]) {
+            if (c == '"' || c == '\\') {
+                s.push_back('\\');
+                s.push_back(c);
+            } else if (c == '\n') {
+                s += "\\n";
+            } else {
+                s.push_back(c);
+            }
+        }
+        os << (i ? "," : "") << "\"" << s << "\"";
+    }
+    os << "]}";
+    return {os.str(), Status::OK};
 }
 
 // Additional implementations for remaining methods...

@@ -1,0 +1,84 @@
+# ============================================================================
+# tests/CMakeLists.txt - Test Suite Configuration (modernized)
+# ============================================================================
+
+message(STATUS "Configuring tests...")
+
+enable_testing()
+
+# Only wire Enhanced Analyzer integration/performance tests into the main runner
+set(ENHANCED_ANALYZER_TESTS
+	${CMAKE_CURRENT_SOURCE_DIR}/../test_data/integration/enhanced_analyzers/EnhancedAnalyzersIntegrationTest.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/../test_data/integration/enhanced_analyzers/EnhancedAnalyzersPerformanceTest.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/../test_data/integration/enhanced_analyzers/CadenceAnalyzerRealAudioTest.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/../test_data/integration/enhanced_analyzers/EnhancedAnalyzersEnableResetTest.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/../test_data/integration/enhanced_analyzers/MasterCallsComparisonTest.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/test_finalize_session.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/test_finalize_improvement.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/test_similarity_separation.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/test_finalize_fallback_flag.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/test_finalize_fallback_positive.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/test_finalize_successful_completion.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/test_unified_engine_orchestrator.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/test_orchestrator_state.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/test_unified_engine.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/analyzers/test_waveform_analyzer_direct_validation.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/analyzers/test_waveform_analyzer_edge_cases.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/analyzers/test_waveform_analyzer_comprehensive.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/test_finalize_rollback.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/test_session_management.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/test_state_machine.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/test_analyzer_integration.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/test_audio_streaming_optimization.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/test_improved_efficiency.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/core/test_unified_engine_statuses.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/dtw/test_dtw_window_and_path.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/dtw/test_dtw_processor_costs.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/core/test_finalize_success.cpp
+	# Consolidated analyzer tests
+	# CadenceAnalyzer comprehensive tests now re-enabled thanks to FFT optimization
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/analyzers/test_cadence_analyzer_comprehensive.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/analyzers/test_pitch_tracker_comprehensive.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/analyzers/test_harmonic_analyzer_comprehensive.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/analyzers/test_mfcc_direct_validation.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/analyzers/test_mfcc_edge_cases.cpp
+)
+
+add_executable(RunEngineTests ${ENHANCED_ANALYZER_TESTS})
+target_link_libraries(RunEngineTests PRIVATE UnifiedAudioEngine GTest::gtest_main GTest::gmock)
+
+message("  -- Enhanced Analyzer test runner 'RunEngineTests' configured")
+
+# Core optimized audio recording tests
+add_executable(RecorderTests
+	${CMAKE_CURRENT_SOURCE_DIR}/unit/core/test_optimized_audio_recorder.cpp
+)
+target_link_libraries(RecorderTests PRIVATE UnifiedAudioEngine GTest::gtest_main)
+
+add_test(NAME UnitTestSuite COMMAND RunEngineTests)
+add_test(NAME RecorderTestSuite COMMAND RecorderTests)
+
+# Configure test environment for CI/CD
+set_tests_properties(UnitTestSuite PROPERTIES
+	TIMEOUT 180
+	ENVIRONMENT "HUNTMASTER_TEST_MODE=1"
+)
+
+set_tests_properties(RecorderTestSuite PROPERTIES
+	TIMEOUT 60
+	ENVIRONMENT "HUNTMASTER_TEST_MODE=1"
+)
+
+# Performance tests (optional, longer timeout)
+add_executable(PerfTests
+	${CMAKE_CURRENT_SOURCE_DIR}/../test_data/integration/enhanced_analyzers/EnhancedAnalyzersPerformanceTest.cpp
+)
+target_link_libraries(PerfTests PRIVATE UnifiedAudioEngine GTest::gtest_main)
+
+add_test(NAME PerformanceTestSuite COMMAND PerfTests)
+set_tests_properties(PerformanceTestSuite PROPERTIES
+	TIMEOUT 300
+	ENVIRONMENT "HUNTMASTER_TEST_MODE=1;HUNTMASTER_PERF_TEST=1"
+)
+
+message("Tests configuration complete.")

@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['file_5fnot_5ffound_0',['FILE_NOT_FOUND',['../classhuntmaster_1_1UnifiedAudioEngine.html#a75e221c1a85d3e4d83965946401e356cacd54d99c8efb3c2db794197045f5b83c',1,'huntmaster::UnifiedAudioEngine']]]
+  ['component_5ferror_0',['COMPONENT_ERROR',['../classhuntmaster_1_1RealtimeScorer.html#a01ceb51b1db0463fedbd9b0843e26d69a5b37bf43e73c1ed9c8429730f4d157d5',1,'huntmaster::RealtimeScorer']]],
+  ['custom_1',['CUSTOM',['../AudioFormatConverter_8h.html#ab1d153845b3ce474f4cbd215783be600a72baef04098f035e8a320b03ad197818',1,'huntmaster::core']]]
 ];

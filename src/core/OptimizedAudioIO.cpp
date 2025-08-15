@@ -11,6 +11,7 @@
 #include <fstream>
 #include <iostream>
 #include <numeric>
+#include <unordered_map>
 
 #include "dr_wav.h"
 
@@ -20,6 +21,7 @@
 #else
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #endif
 
@@ -325,7 +327,7 @@ class AsyncAudioWriter::Impl {
     // Async processing
     std::thread writerThread_;
     std::queue<std::pair<std::vector<float>, WriteCallback>> writeQueue_;
-    std::mutex queueMutex_;
+    mutable std::mutex queueMutex_;
     std::condition_variable queueCondition_;
     std::atomic<bool> shouldStop_{false};
     std::atomic<bool> isActive_{false};

@@ -34,3 +34,13 @@ TEST(SimpleVADTest, BasicFunctionality) {
 
     EXPECT_TRUE(true);  // Just pass the test
 }
+
+// TODO: Transform SimpleVADTest into comprehensive VAD functionality testing:
+// [ ] Replace basic pass test with meaningful assertions on energy and activity
+// [ ] Test various signal amplitudes and their detected energy levels
+// [ ] Test different window durations and their effect on detection accuracy
+// [ ] Test VAD behavior with realistic audio patterns (speech, music, noise)
+// [ ] Test configuration parameter validation and boundary conditions
+// [ ] Test VAD performance metrics and processing timing
+// [ ] Test integration with different sample rates and audio formats
+// [ ] Add regression tests for known VAD accuracy issues

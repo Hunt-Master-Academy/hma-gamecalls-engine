@@ -50,3 +50,13 @@ TEST_F(VADThresholdTest, CheckThresholdValues) {
     // The energy should be greater than the threshold
     EXPECT_GT(result.value().energy_level, config.energy_threshold);
 }
+
+// TODO: Expand VAD threshold testing with additional test cases:
+// [ ] Test multiple threshold values (low, medium, high sensitivity)
+// [ ] Test boundary conditions (exactly at threshold, just above/below)
+// [ ] Test varying signal levels over time
+// [ ] Test different window sizes and their effect on threshold detection
+// [ ] Test threshold adaptation for different noise floors
+// [ ] Test silence detection (signals below threshold)
+// [ ] Test transition behavior when crossing threshold
+// [ ] Test with real-world audio patterns (speech, music, ambient noise)

@@ -1,8 +1,11 @@
 var searchData=
 [
-  ['2_203_20weeks_0',['2 3 weeks',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md83',1,'🎯 &lt;strong&gt;Phase 1: Critical Components&lt;/strong&gt; (2-3 weeks)'],['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md86',1,'🎵 &lt;strong&gt;Phase 4: Advanced Features&lt;/strong&gt; (2-3 weeks)']]],
-  ['2_20strong_20unified_20build_20system_20strong_1',['2. &lt;strong&gt;Unified Build System&lt;/strong&gt;',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md45',1,'']]],
-  ['2_20weeks_2',['2 weeks',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md85',1,'📊 &lt;strong&gt;Phase 3: Visualization Support&lt;/strong&gt; (1-2 weeks)'],['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md84',1,'🚀 &lt;strong&gt;Phase 2: Enhanced Scoring&lt;/strong&gt; (1-2 weeks)']]],
-  ['20_20architecture_20strong_3',['1. &lt;strong&gt;Modern C++20 Architecture&lt;/strong&gt;',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md44',1,'']]],
-  ['2_3a_20enhanced_20scoring_20strong_201_202_20weeks_4',['🚀 &lt;strong&gt;Phase 2: Enhanced Scoring&lt;/strong&gt; (1-2 weeks)',['../md__2mnt_2e_2develop_2Huntmaster_2huntmaster-engine_2docs_2architecture.html#autotoc_md84',1,'']]]
+  ['3_201_20finalize_20stage_0',['3.1 Finalize Stage',['../md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md25',1,'']]],
+  ['3_202_20similarity_20readiness_1',['3.2 Similarity Readiness',['../md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md26',1,'']]],
+  ['3_203_20loudness_20enhancements_2',['3.3 Loudness Enhancements',['../md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md27',1,'']]],
+  ['3_204_20waveform_20overlay_3',['3.4 Waveform Overlay',['../md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md28',1,'']]],
+  ['3_205_20calibration_4',['3.5 Calibration',['../md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md29',1,'']]],
+  ['3_206_20test_20infra_5',['3.6 Test &amp; Infra',['../md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md30',1,'']]],
+  ['3_207_20coaching_20feedback_20phase_20edge_6',['3.7 Coaching Feedback (Phase Edge)',['../md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md31',1,'']]],
+  ['3_20detailed_20task_20breakdown_7',['3. Detailed Task Breakdown',['../md__2workspaces_2huntmaster-engine_2docs_2architecture.html#autotoc_md24',1,'']]]
 ];

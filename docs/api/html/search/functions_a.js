@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['play_0',['play',['../classhuntmaster_1_1AudioPlayer.html#a34cb2346dabba3ec2955c6d863fc1fcd',1,'huntmaster::AudioPlayer']]],
-  ['processaudio_1',['processaudio',['../classhuntmaster_1_1AudioLevelProcessor.html#a3c6566e73d7cbb57877e3ce33928039a',1,'huntmaster::AudioLevelProcessor::processAudio()'],['../classhuntmaster_1_1RealtimeScorer.html#a711ceaaabd0f9dfcbb040965401abdcd',1,'huntmaster::RealtimeScorer::processAudio()'],['../classhuntmaster_1_1WaveformGenerator.html#a0e23832ca186612e5c16bd6b911bfbf0',1,'huntmaster::WaveformGenerator::processAudio()']]],
-  ['processaudiochunk_2',['processAudioChunk',['../classhuntmaster_1_1UnifiedAudioEngine.html#ac722bca4aca196b520e3d5ed4134a5d1',1,'huntmaster::UnifiedAudioEngine']]]
+  ['magnitudetodecibels_0',['magnitudeToDecibels',['../classhuntmaster_1_1SpectrogramProcessor.html#a984ec9676acc5fe4289fe7d435871977',1,'huntmaster::SpectrogramProcessor']]],
+  ['mfccerrortocode_1',['mfccErrorToCode',['../classhuntmaster_1_1ComponentErrorHandler.html#a5dce6242c5ccf3c862673989f7eb327d',1,'huntmaster::ComponentErrorHandler']]],
+  ['mfccprocessor_2',['mfccprocessor',['../classhuntmaster_1_1MFCCProcessor.html#af81676208579aeb30d685a6e90677c74',1,'huntmaster::MFCCProcessor::MFCCProcessor(const Config &amp;config)'],['../classhuntmaster_1_1MFCCProcessor.html#a320a325b2319fa0e7e64d414b1443ddf',1,'huntmaster::MFCCProcessor::MFCCProcessor(MFCCProcessor &amp;&amp;other) noexcept']]]
 ];

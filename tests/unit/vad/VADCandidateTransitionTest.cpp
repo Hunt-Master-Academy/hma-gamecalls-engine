@@ -43,3 +43,13 @@ TEST_F(VADCandidateTransitionTest, SilenceToCandidate) {
     ASSERT_TRUE(result.has_value());
     EXPECT_FALSE(result.value().is_active);
 }
+
+// TODO: Expand VAD candidate transition testing with detailed scenarios:
+// [ ] Test SILENCE -> CANDIDATE transition timing and conditions
+// [ ] Test CANDIDATE -> SILENCE transition (interrupted activation)
+// [ ] Test CANDIDATE -> ACTIVE transition with various signal patterns
+// [ ] Test candidate state persistence over multiple windows
+// [ ] Test candidate threshold behavior with borderline signal levels
+// [ ] Test candidate state with intermittent signal interruptions
+// [ ] Test energy accumulation behavior during candidate phase
+// [ ] Test candidate state timing accuracy with different configurations

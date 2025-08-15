@@ -1,8 +1,17 @@
 var searchData=
 [
-  ['dbceiling_0',['dbCeiling',['../structhuntmaster_1_1AudioLevelProcessor_1_1Config.html#aed02bb581c9d62fb4c397e92a21fd4ef',1,'huntmaster::AudioLevelProcessor::Config']]],
-  ['dbfloor_1',['dbFloor',['../structhuntmaster_1_1AudioLevelProcessor_1_1Config.html#a1ea9f4beaf6b0a86e00a3a3135e8141a',1,'huntmaster::AudioLevelProcessor::Config']]],
-  ['downsampleratio_2',['downsampleRatio',['../structhuntmaster_1_1WaveformGenerator_1_1Config.html#a6bedf125c3984b0e189da98d04e0d829',1,'huntmaster::WaveformGenerator::Config']]],
-  ['dtwdistancescaling_3',['dtwDistanceScaling',['../structhuntmaster_1_1RealtimeScorer_1_1Config.html#adcc6ade967e6a86c528384950791550f',1,'huntmaster::RealtimeScorer::Config']]],
-  ['duration_4',['duration',['../structhuntmaster_1_1VADResult.html#a044c285cae1d173fefa88940633c1d22',1,'huntmaster::VADResult']]]
+  ['category_0',['category',['../structhuntmaster_1_1ErrorInfo.html#a1d198f3b14740fa0dd754ad8c122ebb1',1,'huntmaster::ErrorInfo']]],
+  ['channels_1',['channels',['../structhuntmaster_1_1core_1_1AudioFormatInfo.html#ae4947449d20dcb1d3ff33aa2922f9f28',1,'huntmaster::core::AudioFormatInfo::channels'],['../structhuntmaster_1_1AudioRecorder_1_1Config.html#ac1ee2fa44368e7747db59642b7c0d99b',1,'huntmaster::AudioRecorder::Config::channels']]],
+  ['codecname_2',['codecName',['../structhuntmaster_1_1core_1_1AudioFormatInfo.html#adbff7e5a482ab9166ff981af641bf7f3',1,'huntmaster::core::AudioFormatInfo']]],
+  ['component_3',['component',['../structhuntmaster_1_1ErrorInfo.html#a728235e402d5ad914e778ee418ae6de7',1,'huntmaster::ErrorInfo']]],
+  ['compressionratio_4',['compressionRatio',['../structhuntmaster_1_1core_1_1AudioFormatInfo.html#a633906143c357a4356970009e5d1274c',1,'huntmaster::core::AudioFormatInfo']]],
+  ['confidence_5',['confidence',['../structhuntmaster_1_1RealtimeScoringResult.html#a8878221976630a109a827342e8afe3e3',1,'huntmaster::RealtimeScoringResult::confidence'],['../structhuntmaster_1_1RealtimeScorer_1_1SimilarityScore.html#aaf03e2daa75437de7d1f8c554eb22dda',1,'huntmaster::RealtimeScorer::SimilarityScore::confidence'],['../structhuntmaster_1_1PitchTracker_1_1PitchResult.html#a43ca61af25cf56a694d879b58ce552a3',1,'huntmaster::PitchTracker::PitchResult::confidence'],['../structhuntmaster_1_1HarmonicAnalyzer_1_1HarmonicProfile.html#a27772e60af61a0e2c34a29e38082f290',1,'huntmaster::HarmonicAnalyzer::HarmonicProfile::confidence'],['../structhuntmaster_1_1CadenceAnalyzer_1_1CadenceProfile.html#ababa5dbde05c78df719689072a0c9e87',1,'huntmaster::CadenceAnalyzer::CadenceProfile::confidence']]],
+  ['confidencethreshold_6',['confidencethreshold',['../structhuntmaster_1_1RealtimeScorer_1_1Config.html#afcb227df1c7075560360c8c4dd4525a9',1,'huntmaster::RealtimeScorer::Config::confidenceThreshold'],['../structhuntmaster_1_1RealtimeScorerConfig.html#a766fe5e913bc23e552cfea2fea999384',1,'huntmaster::RealtimeScorerConfig::confidenceThreshold']]],
+  ['context_7',['context',['../structhuntmaster_1_1ErrorInfo.html#a1412f50795ff8c083493d5295ebce377',1,'huntmaster::ErrorInfo']]],
+  ['contour_8',['contour',['../structhuntmaster_1_1PitchTracker_1_1PitchResult.html#accf82bdbe42b5b5fbde915abb8d2194a',1,'huntmaster::PitchTracker::PitchResult']]],
+  ['conversiontime_9',['conversionTime',['../structhuntmaster_1_1core_1_1ConversionMetrics.html#a065d83044d91acf8175d2eece292deb1',1,'huntmaster::core::ConversionMetrics']]],
+  ['cpuusage_10',['cpuUsage',['../structhuntmaster_1_1core_1_1ConversionMetrics.html#a25c80ec87207f04f944638b6040028c9',1,'huntmaster::core::ConversionMetrics']]],
+  ['current_11',['current',['../structhuntmaster_1_1UnifiedAudioEngine_1_1SimilarityScoresSnapshot.html#ae6ba459d8b1086e95373ab1f630867ad',1,'huntmaster::UnifiedAudioEngine::SimilarityScoresSnapshot']]],
+  ['currentsamples_12',['currentSamples',['../structhuntmaster_1_1AudioRecorder_1_1MemoryBufferStats.html#a62176fcc5e0d69eede82f7d7eeb45420',1,'huntmaster::AudioRecorder::MemoryBufferStats']]],
+  ['currentscore_13',['currentscore',['../structhuntmaster_1_1RealtimeScorer_1_1RealtimeFeedback.html#a292729d437e18e6c37635d26f318b38d',1,'huntmaster::RealtimeScorer::RealtimeFeedback::currentScore'],['../structhuntmaster_1_1RealtimeFeedback.html#a27e48fbe7fb175173abc792f1743366a',1,'huntmaster::RealtimeFeedback::currentScore']]]
 ];

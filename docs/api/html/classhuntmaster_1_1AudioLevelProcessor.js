@@ -12,6 +12,8 @@ var classhuntmaster_1_1AudioLevelProcessor =
     [ "AudioLevelProcessor", "classhuntmaster_1_1AudioLevelProcessor.html#a737b8b8f31a4592d40112624e47feccc", null ],
     [ "AudioLevelProcessor", "classhuntmaster_1_1AudioLevelProcessor.html#a79adcbbdbe357d421f6bc40f86fdd06e", null ],
     [ "~AudioLevelProcessor", "classhuntmaster_1_1AudioLevelProcessor.html#ae0d99aaf3d3e44a8661e175d4f6eaf49", null ],
+    [ "calculatePeak", "classhuntmaster_1_1AudioLevelProcessor.html#a72ce69cdbee00e551422acb100f1e21e", null ],
+    [ "calculateRMS", "classhuntmaster_1_1AudioLevelProcessor.html#a5ba5ef7ca39b6cdfeaa3cb941804b402", null ],
     [ "exportHistoryToJson", "classhuntmaster_1_1AudioLevelProcessor.html#a97d001e808d1dfb795920d985592ddbb", null ],
     [ "exportToJson", "classhuntmaster_1_1AudioLevelProcessor.html#aeba8feda3f258e31680cf5dd9c0ee619", null ],
     [ "getConfig", "classhuntmaster_1_1AudioLevelProcessor.html#a795cd3c38f0c2e0f5ea86befad37cd7e", null ],

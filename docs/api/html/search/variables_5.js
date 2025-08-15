@@ -1,8 +1,19 @@
 var searchData=
 [
-  ['invalid_5fsession_5fid_0',['INVALID_SESSION_ID',['../UnifiedAudioEngine_8h.html#a193061217c5757954834b384b94bd4d6',1,'huntmaster']]],
-  ['is_5factive_1',['is_active',['../structhuntmaster_1_1VADResult.html#a66b15449c8251dc01bedfe14da0877b7',1,'huntmaster::VADResult']]],
-  ['isimproving_2',['isimproving',['../structhuntmaster_1_1RealtimeScorer_1_1RealtimeFeedback.html#a47e63231b2fa73c6272de98d5c71213c',1,'huntmaster::RealtimeScorer::RealtimeFeedback::isImproving'],['../structhuntmaster_1_1RealtimeFeedback.html#a555e8417ba7c55bf4ec1396caf6a9e60',1,'huntmaster::RealtimeFeedback::isImproving']]],
-  ['ismatch_3',['ismatch',['../structhuntmaster_1_1RealtimeScorer_1_1SimilarityScore.html#ab049612d7e250c4b50d84e5b90f2b2ab',1,'huntmaster::RealtimeScorer::SimilarityScore::isMatch'],['../structhuntmaster_1_1RealtimeScoringResult.html#a0d1b2abf4cf0e776ffeb8adb6cda02f8',1,'huntmaster::RealtimeScoringResult::isMatch']]],
-  ['isreliable_4',['isreliable',['../structhuntmaster_1_1RealtimeScorer_1_1SimilarityScore.html#a973762ac220097bfe69ff8c77f0dbcc9',1,'huntmaster::RealtimeScorer::SimilarityScore::isReliable'],['../structhuntmaster_1_1RealtimeScoringResult.html#a84180d0708be503dcf5d47f09e8d2e18',1,'huntmaster::RealtimeScoringResult::isReliable']]]
+  ['fastpathoptimization_0',['fastPathOptimization',['../structhuntmaster_1_1CadenceAnalyzer_1_1Config.html#a5a79dcfbced0a9ef7553e9d03ef6107d',1,'huntmaster::CadenceAnalyzer::Config']]],
+  ['fftsize_1',['fftSize',['../structhuntmaster_1_1HarmonicAnalyzer_1_1Config.html#a9e69ce771de8334ede8aecf3b235d487',1,'huntmaster::HarmonicAnalyzer::Config']]],
+  ['file_2',['file',['../structhuntmaster_1_1ErrorInfo.html#a7b8cbfba07f0400df4eb7192f793846b',1,'huntmaster::ErrorInfo']]],
+  ['filesize_3',['fileSize',['../structhuntmaster_1_1core_1_1AudioFormatInfo.html#a05e8a77afe9a268c3a9b266458a47ced',1,'huntmaster::core::AudioFormatInfo']]],
+  ['formantbandwidths_4',['formantBandwidths',['../structhuntmaster_1_1HarmonicAnalyzer_1_1HarmonicProfile.html#accceacac03a6d3d67a888625c1afc139',1,'huntmaster::HarmonicAnalyzer::HarmonicProfile']]],
+  ['formants_5',['formants',['../structhuntmaster_1_1HarmonicAnalyzer_1_1HarmonicProfile.html#aa8670f7a436d0f3ae669e8518cca9268',1,'huntmaster::HarmonicAnalyzer::HarmonicProfile']]],
+  ['format_6',['format',['../structhuntmaster_1_1core_1_1AudioFormatInfo.html#a18a6f41c74c91f843affc0b354f3c055',1,'huntmaster::core::AudioFormatInfo']]],
+  ['frame_5fsize_7',['frame_size',['../structhuntmaster_1_1MFCCProcessor_1_1Config.html#a65fdcfc2d6ba0fe3a11b819cf1c4a6b0',1,'huntmaster::MFCCProcessor::Config']]],
+  ['framecount_8',['frameCount',['../structhuntmaster_1_1core_1_1AudioFormatInfo.html#a362d26a50e581c62d72fed1c34f55565',1,'huntmaster::core::AudioFormatInfo']]],
+  ['framesize_9',['frameSize',['../structhuntmaster_1_1CadenceAnalyzer_1_1Config.html#a355b61caa86ba07da43a20185c07ab93',1,'huntmaster::CadenceAnalyzer::Config']]],
+  ['framesobserved_10',['framesObserved',['../structhuntmaster_1_1UnifiedAudioEngine_1_1SimilarityRealtimeState.html#a6305b28c733dfacf7012f191646d216f',1,'huntmaster::UnifiedAudioEngine::SimilarityRealtimeState']]],
+  ['frequency_11',['frequency',['../structhuntmaster_1_1PitchTracker_1_1PitchResult.html#a9650e08fd9ea2ffcae86c86528a5fa6b',1,'huntmaster::PitchTracker::PitchResult']]],
+  ['frequency_5faxis_12',['frequency_axis',['../structhuntmaster_1_1SpectrogramData.html#a629af97fd93e691b8f47c871cd704a5b',1,'huntmaster::SpectrogramData']]],
+  ['frequency_5fbins_13',['frequency_bins',['../structhuntmaster_1_1SpectrogramData.html#a17b58930605d8fa70aa99b1961dde28c',1,'huntmaster::SpectrogramData']]],
+  ['function_14',['function',['../structhuntmaster_1_1ErrorInfo.html#a6f72c73676732a2cff41fcf44995767c',1,'huntmaster::ErrorInfo']]],
+  ['fundamentalfreq_15',['fundamentalFreq',['../structhuntmaster_1_1HarmonicAnalyzer_1_1HarmonicProfile.html#a75ec22c6b3e9b61d7fbfb585fc8e21aa',1,'huntmaster::HarmonicAnalyzer::HarmonicProfile']]]
 ];

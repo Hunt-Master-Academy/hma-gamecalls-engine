@@ -94,20 +94,17 @@ $(document).ready(function(){initNavTree('Basic-example.html',''); initResizable
 </div><!--header-->
 <div class="contents">
 <p>Usage:</p>
-<p>Usage: </p><div class="fragment"><div class="line"><span class="keyword">auto</span> engineResult = UnifiedAudioEngine::create();</div>
-<div class="line"><span class="keywordflow">if</span> (engineResult.isOk()) {</div>
-<div class="line">    <span class="keyword">auto</span> engine = std::move(*engineResult);</div>
+<p>Usage: </p><div class="fragment"><div class="line">DTWComparator::Config config;</div>
+<div class="line">config.window_ratio = 0.1f;  <span class="comment">// 10% window constraint</span></div>
+<div class="line">config.normalize_distance = <span class="keyword">true</span>;</div>
 <div class="line"> </div>
-<div class="line">    <span class="comment">// Load master call</span></div>
-<div class="line">    <span class="keyword">auto</span> loadResult = engine-&gt;loadMasterCall(<span class="stringliteral">&quot;deer_grunt.wav&quot;</span>);</div>
+<div class="line">DTWComparator comparator(config);</div>
 <div class="line"> </div>
-<div class="line">    <span class="comment">// Start real-time analysis</span></div>
-<div class="line">    <span class="keyword">auto</span> sessionResult = engine-&gt;startRealtimeAnalysis();</div>
-<div class="line">    <span class="keywordflow">if</span> (sessionResult.isOk()) {</div>
-<div class="line">        SessionId session = *sessionResult;</div>
-<div class="line">        <span class="comment">// Process audio and get feedback...</span></div>
-<div class="line">    }</div>
-<div class="line">}</div>
+<div class="line">std::vector&lt;std::vector&lt;float&gt;&gt; call1 = <span class="comment">// ... MFCC features from call 1</span></div>
+<div class="line">std::vector&lt;std::vector&lt;float&gt;&gt; call2 = <span class="comment">// ... MFCC features from call 2</span></div>
+<div class="line"> </div>
+<div class="line"><span class="keywordtype">float</span> similarity = comparator.compare(call1, call2);</div>
+<div class="line"><span class="comment">// Lower values indicate better similarity</span></div>
 </div><!-- fragment --><div class="fragment"></div><!-- fragment --> </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

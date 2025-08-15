@@ -16,6 +16,7 @@ message(STATUS "Configuring core UnifiedAudioEngine library...")
 set(UNIFIED_ENGINE_CORE_SOURCES
     "${PROJECT_SOURCE_DIR}/core/UnifiedAudioEngine.cpp"
     "${PROJECT_SOURCE_DIR}/core/AudioBufferPool.cpp"
+    "${PROJECT_SOURCE_DIR}/core/OptimizedAudioIO.cpp"
     "${PROJECT_SOURCE_DIR}/core/VoiceActivityDetector.cpp"
     "${PROJECT_SOURCE_DIR}/core/MFCCProcessor.cpp"
     "${PROJECT_SOURCE_DIR}/core/DTWComparator.cpp"
@@ -23,6 +24,7 @@ set(UNIFIED_ENGINE_CORE_SOURCES
     "${PROJECT_SOURCE_DIR}/core/WaveformGenerator.cpp"
     "${PROJECT_SOURCE_DIR}/core/AudioPlayer.cpp"
     "${PROJECT_SOURCE_DIR}/core/AudioRecorder.cpp"
+    "${PROJECT_SOURCE_DIR}/core/OptimizedAudioRecorder.cpp"
     "${PROJECT_SOURCE_DIR}/core/DTWProcessor.cpp"
     "${PROJECT_SOURCE_DIR}/core/ThirdPartyLibs.cpp"
     "${PROJECT_SOURCE_DIR}/core/AudioLevelProcessor.cpp"
@@ -87,6 +89,9 @@ target_include_directories(UnifiedAudioEngine PRIVATE
 target_link_libraries(UnifiedAudioEngine PUBLIC kissfft)
 target_compile_definitions(UnifiedAudioEngine PUBLIC HAVE_KISSFFT)
 
+# Enable test hooks for testing builds
+target_compile_definitions(UnifiedAudioEngine PUBLIC HUNTMASTER_TEST_HOOKS=1)
+
 # Link FFTW3 if available
 if(FFTW3_FOUND)
     if(FFTW3_LIBRARIES)
@@ -106,6 +111,36 @@ if(FFTW3_FOUND)
 else()
     target_compile_definitions(UnifiedAudioEngine PUBLIC FFTW_DISABLE)
     message(STATUS "FFTW3 support disabled - using stub implementation")
+endif()
+
+# Provide a diagnostics-off variant to ensure ABI compatibility for diag-off tests
+add_library(UnifiedAudioEngineNoDiag STATIC ${UNIFIED_ENGINE_CORE_SOURCES} ${PROFILING_SOURCES} ${SECURITY_SOURCES} ${VISUALIZATION_SOURCES})
+target_include_directories(UnifiedAudioEngineNoDiag PUBLIC
+    ${PROJECT_INCLUDE_DIR}
+    ${PROJECT_LIBS_DIR}/dr_wav
+    ${PROJECT_LIBS_DIR}/miniaudio
+    ${PROJECT_TESTS_DIR}/lib/googletest
+    ${PROJECT_LIBS_DIR}
+)
+target_include_directories(UnifiedAudioEngineNoDiag PRIVATE ${kissfft_SOURCE_DIR})
+target_link_libraries(UnifiedAudioEngineNoDiag PUBLIC kissfft)
+target_compile_definitions(UnifiedAudioEngineNoDiag PUBLIC HAVE_KISSFFT HUNTMASTER_DISABLE_DIAGNOSTIC_COMPONENTS=1)
+if(FFTW3_FOUND)
+    if(FFTW3_LIBRARIES)
+        target_link_libraries(UnifiedAudioEngineNoDiag PUBLIC ${FFTW3_LIBRARIES})
+    else()
+        target_link_libraries(UnifiedAudioEngineNoDiag PUBLIC ${FFTW3_LIBRARY})
+    endif()
+
+    if(FFTW3_INCLUDE_DIRS)
+        target_include_directories(UnifiedAudioEngineNoDiag PUBLIC ${FFTW3_INCLUDE_DIRS})
+    else()
+        target_include_directories(UnifiedAudioEngineNoDiag PUBLIC ${FFTW3_INCLUDE_DIR})
+    endif()
+
+    target_compile_definitions(UnifiedAudioEngineNoDiag PUBLIC HAVE_FFTW3)
+else()
+    target_compile_definitions(UnifiedAudioEngineNoDiag PUBLIC FFTW_DISABLE)
 endif()
 
 # ==============================================================================

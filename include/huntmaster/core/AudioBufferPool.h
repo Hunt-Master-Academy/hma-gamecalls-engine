@@ -6,6 +6,7 @@
 #include <chrono>
 #include <memory>
 #include <memory_resource>
+#include <optional>
 #include <semaphore>
 #include <span>
 #include <vector>
@@ -53,11 +54,14 @@ class AudioBufferPool {
      * @brief Configuration for buffer pool initialization
      */
     struct Config {
-        size_t pool_size{32};                                 // Number of buffers in pool
-        size_t buffer_size{4096};                             // Size of each buffer in bytes
-        size_t alignment{64};                                 // Memory alignment (cache line)
-        std::pmr::memory_resource* memory_resource{nullptr};  // Custom allocator
-        std::chrono::milliseconds acquire_timeout{100};       // Acquisition timeout
+        size_t pool_size{32};      // Number of buffers in pool (must be > 0; invalid if 0)
+        size_t buffer_size{4096};  // Size of each buffer in bytes (must be > 0; invalid if 0)
+        size_t alignment{64};      // Memory alignment (cache line; must be power of two and >=
+                                   // sizeof(float); invalid otherwise)
+        std::pmr::memory_resource* memory_resource{
+            nullptr};  // Custom allocator (nullptr for default)
+        std::chrono::milliseconds acquire_timeout{
+            100};  // Acquisition timeout (must be non-negative)
     };
 
     /**
@@ -70,6 +74,8 @@ class AudioBufferPool {
      * @brief Alternative constructor for backward compatibility
      * @param pool_size Number of buffers in the pool
      * @param buffer_size Size of each buffer in bytes
+     *
+     * Uses default alignment (64 bytes) and the default memory resource.
      */
     AudioBufferPool(size_t pool_size, size_t buffer_size);
 
@@ -89,57 +95,32 @@ class AudioBufferPool {
      */
     class BufferHandle {
       public:
-        BufferHandle() = default;
-        ~BufferHandle();
-
-        // Move-only semantics
-        BufferHandle(const BufferHandle&) = delete;
+        BufferHandle() = default;                    // Creates an empty (invalid) handle
+        ~BufferHandle();                             // Releases buffer back to pool if still owned
+        BufferHandle(const BufferHandle&) = delete;  // Non-copyable
         BufferHandle& operator=(const BufferHandle&) = delete;
-        BufferHandle(BufferHandle&&) noexcept;
+        BufferHandle(BufferHandle&&) noexcept;  // Movable
         BufferHandle& operator=(BufferHandle&&) noexcept;
 
-        /**
-         * @brief Get a span view of the buffer as float samples
-         * @return Span of float samples
-         */
         [[nodiscard]] std::span<float> data() noexcept;
         [[nodiscard]] std::span<const float> data() const noexcept;
-
-        /**
-         * @brief Get raw byte view of the buffer
-         * @return Span of bytes
-         */
         [[nodiscard]] std::span<std::byte> bytes() noexcept;
         [[nodiscard]] std::span<const std::byte> bytes() const noexcept;
-
-        /**
-         * @brief Get the size of the buffer in samples
-         * @return Number of float samples
-         */
-        [[nodiscard]] size_t size() const noexcept;
-
-        /**
-         * @brief Check if the handle contains a valid buffer
-         * @return True if valid
-         */
+        [[nodiscard]] size_t size() const noexcept;  // size in float samples
         [[nodiscard]] bool valid() const noexcept {
             return buffer_ != nullptr;
         }
         [[nodiscard]] explicit operator bool() const noexcept {
             return valid();
         }
-
-        // Iterator support for range-based for loops
-        [[nodiscard]] float* begin() noexcept;
+        [[nodiscard]] float* begin() noexcept;  // iteration support
         [[nodiscard]] float* end() noexcept;
         [[nodiscard]] const float* begin() const noexcept;
         [[nodiscard]] const float* end() const noexcept;
 
       private:
-        friend class AudioBufferPool;
-
+        friend class AudioBufferPool;  // Allow pool access to internals
         BufferHandle(AudioBufferPool* pool, void* buffer, size_t index);
-
         AudioBufferPool* pool_{nullptr};
         void* buffer_{nullptr};
         size_t index_{0};
@@ -152,16 +133,15 @@ class AudioBufferPool {
     [[nodiscard]] huntmaster::expected<BufferHandle, BufferPoolError> acquire();
 
     /**
-     * @brief Try to acquire a buffer with timeout
-     * @param timeout Maximum time to wait
-     * @return Buffer handle or error
+     * @brief Attempt to acquire within a user-specified timeout.
+     * @param timeout maximum wait duration
+     * @return handle on success or POOL_EXHAUSTED / ALLOCATION_FAILED
      */
     [[nodiscard]] huntmaster::expected<BufferHandle, BufferPoolError>
     tryAcquireFor(std::chrono::milliseconds timeout);
 
     /**
-     * @brief Release a buffer back to the pool (called automatically by BufferHandle)
-     * @param handle Buffer to release
+     * @brief Explicitly release a buffer early (optional). Safe to call on moved / empty handles.
      */
     void release(BufferHandle&& handle);
 
@@ -192,6 +172,14 @@ class AudioBufferPool {
     void resetStats() noexcept;
 
   private:
+    /**
+     * @class Impl
+     * @brief Internal implementation class for AudioBufferPool
+     *
+     * Encapsulates platform-specific details, buffer management logic, and
+     * synchronization mechanisms. Used to hide implementation details from
+     * the public interface (PIMPL idiom).
+     */
     class Impl;
     std::unique_ptr<Impl> pimpl_;
 };
