@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Consolidated Master Test Orchestrator (v2)
-# Single entry point for: unit/integration tests, diagnostics-off variant, tool smoke tests,
-# dynamic executable discovery, optional coverage, XML export, and configurable phases.
+# Consolidated Master Test Orchestrator (v3.0)
+# Single entry point for all testing needs: unit/integration tests, coverage analysis,
+# environment-specific testing, performance benchmarks, and comprehensive test orchestration.
+# Consolidates functionality from: master_test_focused.sh, master_test_with_coverage.sh,
+# docker_coverage_test.sh, test_integration.sh, and test_integration_phase1.sh
 
-VERSION="2.0"
+VERSION="3.0"
 PROJECT_ROOT="$(cd -- "$(dirname -- "$0")/.." && pwd)"
 TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
 TEST_OUTPUT_DIR="$PROJECT_ROOT/test_logs"
@@ -26,6 +28,16 @@ NO_COLOR="${NO_COLOR:-false}"
 TOOLS_LIST_DEFAULT="generate_features,debug_dtw_similarity,performance_profiling_demo"
 TOOLS_LIST="${TOOLS_LIST:-$TOOLS_LIST_DEFAULT}"
 
+# New enhanced options
+MODE="${MODE:-comprehensive}"        # comprehensive, focused, fast, integration, unit, docker
+ENVIRONMENT="${ENVIRONMENT:-auto}"   # auto, docker, wsl, ci, local
+JSON_OUTPUT="${JSON_OUTPUT:-false}"
+QUIET="${QUIET:-false}"
+VERBOSE="${VERBOSE:-false}"
+INTEGRATION_TESTS="${INTEGRATION_TESTS:-true}"
+PERFORMANCE_TESTS="${PERFORMANCE_TESTS:-true}"
+DOCKER_OPTIMIZED="${DOCKER_OPTIMIZED:-false}"
+
 # Colors
 if [[ "$NO_COLOR" == "true" || ! -t 1 ]]; then
     RED=""; GREEN=""; YELLOW=""; BLUE=""; PURPLE=""; CYAN=""; NC=""
@@ -45,21 +57,60 @@ hdr() { echo -e "${BLUE}================================================${NC}\n$
 
 usage() {
     cat <<EOF
-Huntmaster Master Test (v$VERSION)
+Huntmaster Master Test Orchestrator (v$VERSION)
+Single entry point for all testing needs in the Huntmaster Engine
+
 Usage: $0 [options]
-    --coverage                 Enable coverage collection (COVERAGE=true)
-    --enforce-coverage[=N]     Fail if coverage < N (default env COVERAGE_TARGET=$COVERAGE_TARGET)
+
+Testing Modes:
+    --mode=MODE                Testing mode (comprehensive, focused, fast, integration, unit, docker)
+                              comprehensive: All tests (default)
+                              focused: Critical tests only (replaces master_test_focused.sh)
+                              fast: Developer fast loop (similar to dev_fast_test.sh)
+                              integration: Integration tests only
+                              unit: Unit tests only
+                              docker: Docker-optimized testing
+
+Coverage Options:
+    --coverage                 Enable coverage collection
+    --coverage-only           Coverage analysis only (skip other tests)
+    --enforce-coverage[=N]     Fail if coverage < N (default: $COVERAGE_TARGET)
+    --target=N                 Set coverage target percentage
+
+Environment Options:
+    --environment=ENV          Target environment (auto, docker, wsl, ci, local)
+    --docker                   Enable Docker-specific optimizations
+    --ci                       Enable CI/CD optimizations
+
+Test Configuration:
     --phases=a,b,c             Override phases (default: $PHASES_DEFAULT)
     --gtest-filter=PATTERN     Pass gtest filter (e.g. "*Cadence*:-*Slow*")
-    --xml                      Emit gtest XML (test_logs/gtest_${TIMESTAMP}.xml)
-    --fast-fail                Abort on first failure
     --timeout-suite=SEC        Override suite timeout (default $SUITE_TIMEOUT)
-    --tools=list               Comma list tool names to smoke (default $TOOLS_LIST_DEFAULT)
+    --tools=list               Comma list tool names to smoke
+
+Output Options:
+    --xml                      Emit gtest XML output
+    --json                     Emit JSON test results
+    --verbose                  Enable verbose output
+    --quiet                    Minimal output only
     --no-color                 Disable ANSI colors
-    --list-phases              Show phase order & exit
+
+Control Options:
+    --fast-fail                Abort on first failure
+    --skip-integration         Skip integration tests
+    --skip-performance         Skip performance tests
+    --list-phases              Show available phases & exit
     --help                     Show this help
-Phases: unit, diagnostics-off, tools, discovery, coverage
-Environment overrides also accepted (PHASES, COVERAGE, etc.)
+
+Available Phases: unit, integration, diagnostics-off, performance, tools, discovery, coverage
+Environment variables: PHASES, COVERAGE, BUILD_DIR, etc. (see script for full list)
+
+Examples:
+    $0                              # Comprehensive testing
+    $0 --mode=focused --fast-fail   # Quick focused testing with fast failure
+    $0 --coverage --target=85       # Coverage testing with 85% target
+    $0 --mode=docker --ci           # Docker CI testing
+    $0 --mode=integration --verbose # Integration tests with verbose output
 EOF
 }
 
@@ -68,32 +119,119 @@ if [[ $# -gt 0 ]]; then
         case "$arg" in
             --help) usage; exit 0;;
             --coverage) COVERAGE=true;;
+            --coverage-only) COVERAGE=true; PHASES="coverage";;
             --xml) XML=true;;
+            --json) JSON_OUTPUT=true;;
+            --verbose) VERBOSE=true; NO_COLOR=false;;
+            --quiet) QUIET=true;;
             --fast-fail) FAST_FAIL=true;;
             --no-color) NO_COLOR=true;;
-            --list-phases) echo "$PHASES"; exit 0;;
+            --docker) DOCKER_OPTIMIZED=true; ENVIRONMENT="docker";;
+            --ci) ENVIRONMENT="ci"; FAST_FAIL=true; XML=true;;
+            --skip-integration) INTEGRATION_TESTS=false;;
+            --skip-performance) PERFORMANCE_TESTS=false;;
+            --list-phases) echo "Available phases: unit, integration, diagnostics-off, performance, tools, discovery, coverage"; exit 0;;
+            --mode=*) MODE="${arg#*=}";;
+            --environment=*) ENVIRONMENT="${arg#*=}";;
             --phases=*) PHASES="${arg#*=}";;
             --gtest-filter=*) GTEST_FILTER="${arg#*=}";;
             --timeout-suite=*) SUITE_TIMEOUT="${arg#*=}";;
             --tools=*) TOOLS_LIST="${arg#*=}";;
+            --target=*) COVERAGE_TARGET="${arg#*=}";;
             --enforce-coverage|--enforce-coverage=*) ENFORCE_COVERAGE=true; v="${arg#*=}"; [[ "$v" != "--enforce-coverage" && -n "$v" ]] && COVERAGE_TARGET="$v";;
             *) echo "Unknown option: $arg"; usage; exit 1;;
         esac
     done
 fi
 
-resolve_build_dir() {
-    local candidates=("$BUILD_DIR" build/debug build/release build/asan build/coverage build/ubsan build)
-    for d in "${candidates[@]}"; do
-        if [[ -d "$PROJECT_ROOT/$d/bin" ]]; then BUILD_DIR="$d"; break; fi
-    done
-    BIN_DIR="$PROJECT_ROOT/$BUILD_DIR/bin"
-    if [[ ! -d "$BIN_DIR" ]]; then
-        echo "Build binaries not found in candidates. Please build the project." >&2; exit 2
+# Auto-detect environment if set to auto
+detect_environment() {
+    if [[ "$ENVIRONMENT" == "auto" ]]; then
+        if [[ -f /.dockerenv ]] || [[ -n "${CONTAINER:-}" ]]; then
+            ENVIRONMENT="docker"
+            DOCKER_OPTIMIZED=true
+        elif grep -qi microsoft /proc/version 2>/dev/null; then
+            ENVIRONMENT="wsl"
+        elif [[ -n "${CI:-}" ]] || [[ -n "${GITHUB_ACTIONS:-}" ]] || [[ -n "${GITLAB_CI:-}" ]]; then
+            ENVIRONMENT="ci"
+            FAST_FAIL=true
+            XML=true
+        else
+            ENVIRONMENT="local"
+        fi
     fi
 }
 
-run_cmd() { # usage: run_cmd name timeout cmd arg1 arg2 ...
+# Configure phases based on mode
+configure_mode() {
+    case "$MODE" in
+        "comprehensive")
+            PHASES="unit,integration,diagnostics-off,performance,tools,discovery,coverage"
+            ;;
+        "focused")
+            PHASES="unit,tools,coverage"
+            GTEST_FILTER="${GTEST_FILTER:-*MasterCallsComparison*:*RealtimeSimilarity*:*Core*}"
+            SUITE_TIMEOUT=60
+            ;;
+        "fast")
+            PHASES="unit"
+            GTEST_FILTER="${GTEST_FILTER:-*MasterCallsComparison*:*RealtimeSimilarity*}"
+            SUITE_TIMEOUT=40
+            FAST_FAIL=true
+            ;;
+        "integration")
+            PHASES="integration,tools"
+            ;;
+        "unit")
+            PHASES="unit,diagnostics-off"
+            ;;
+        "performance")
+            PHASES="performance,tools"
+            SUITE_TIMEOUT=120
+            ;;
+        "docker")
+            PHASES="unit,integration,coverage"
+            DOCKER_OPTIMIZED=true
+            SUITE_TIMEOUT=180
+            ;;
+        *)
+            echo "Unknown mode: $MODE. Available: comprehensive, focused, fast, integration, unit, performance, docker"
+            exit 1
+            ;;
+    esac
+
+    # Disable phases based on flags
+    if [[ "$INTEGRATION_TESTS" == false ]]; then
+        PHASES=$(echo "$PHASES" | sed 's/integration,\|,integration\|integration//g')
+    fi
+    if [[ "$PERFORMANCE_TESTS" == false ]]; then
+        PHASES=$(echo "$PHASES" | sed 's/performance,\|,performance\|performance//g')
+    fi
+}
+
+resolve_build_dir() {
+    local candidates=("$BUILD_DIR" build/debug build/release build/asan build/coverage build/ubsan build)
+    for d in "${candidates[@]}"; do
+        if [[ -d "$PROJECT_ROOT/$d/bin" ]] || [[ -d "$PROJECT_ROOT/$d/tests" ]]; then
+            BUILD_DIR="$d"; break;
+        fi
+    done
+
+    # Check for binaries in both bin and tests directories
+    BIN_DIR="$PROJECT_ROOT/$BUILD_DIR/bin"
+    TEST_BIN_DIR="$PROJECT_ROOT/$BUILD_DIR/tests"
+
+    if [[ ! -d "$BIN_DIR" ]] && [[ ! -d "$TEST_BIN_DIR" ]]; then
+        echo "Build binaries not found in candidates. Please build the project." >&2; exit 2
+    fi
+
+    # Prefer tests directory if RunEngineTests is there, otherwise use bin
+    if [[ -f "$TEST_BIN_DIR/RunEngineTests" ]]; then
+        BIN_DIR="$TEST_BIN_DIR"
+    elif [[ ! -d "$BIN_DIR" ]] && [[ -d "$TEST_BIN_DIR" ]]; then
+        BIN_DIR="$TEST_BIN_DIR"
+    fi
+}run_cmd() { # usage: run_cmd name timeout cmd arg1 arg2 ...
     local name="$1"; local to="$2"; shift 2
         echo "[DEBUG] entering run_cmd with args: $# -> $*" | tee -a "$LOG_MAIN"
     ((TOTAL+=1))
@@ -159,13 +297,107 @@ phase_discovery() {
     [[ "$found_any" == false ]] && skip "no additional executables"
 }
 
+phase_integration() {
+    hdr "Phase: integration"
+    [[ "$INTEGRATION_TESTS" == true ]] || { skip "integration tests disabled"; return; }
+
+    # Test 1: Enhanced WASM Interface files
+    if [[ -f "$PROJECT_ROOT/include/huntmaster/platform/wasm/EnhancedWASMInterface.h" ]] &&
+       [[ -f "$PROJECT_ROOT/src/platform/wasm/EnhancedWASMInterface.cpp" ]]; then
+        ok "Enhanced WASM Interface files exist"
+    else
+        skip "Enhanced WASM Interface files not found"
+    fi
+
+    # Test 2: Core integration test executable
+    local integration_bin="$BIN_DIR/IntegrationTest"
+    if [[ -x "$integration_bin" ]]; then
+        run_cmd "IntegrationTest" "$SUITE_TIMEOUT" "$integration_bin" --gtest_brief=yes
+    else
+        skip "IntegrationTest binary not found"
+    fi
+
+    # Test 3: WASM build artifacts validation
+    if [[ -d "$PROJECT_ROOT/web/dist" ]]; then
+        local wasm_files=$(find "$PROJECT_ROOT/web/dist" -name "*.wasm" | wc -l)
+        if [[ $wasm_files -gt 0 ]]; then
+            ok "WASM build artifacts found ($wasm_files files)"
+        else
+            skip "No WASM artifacts in web/dist"
+        fi
+    else
+        skip "web/dist directory not found"
+    fi
+
+    # Test 4: API integration test
+    local api_test="$BIN_DIR/APIIntegrationTest"
+    if [[ -x "$api_test" ]]; then
+        run_cmd "APIIntegrationTest" 60 "$api_test"
+    else
+        skip "APIIntegrationTest binary not found"
+    fi
+}
+
+phase_performance() {
+    hdr "Phase: performance"
+    [[ "$PERFORMANCE_TESTS" == true ]] || { skip "performance tests disabled"; return; }
+
+    # Performance benchmarks
+    local perf_bin="$BIN_DIR/PerformanceTest"
+    if [[ -x "$perf_bin" ]]; then
+        run_cmd "PerformanceTest" 90 "$perf_bin" --benchmark_format=json --benchmark_out="$TEST_OUTPUT_DIR/benchmark_${TIMESTAMP}.json"
+    else
+        skip "PerformanceTest binary not found"
+    fi
+
+    # Performance profiling demo
+    local prof_demo="$BIN_DIR/performance_profiling_demo"
+    if [[ -x "$prof_demo" ]]; then
+        run_cmd "PerformanceProfilingDemo" 60 "$prof_demo"
+    else
+        skip "performance_profiling_demo not found"
+    fi
+
+    # Memory performance test
+    local mem_test="$BIN_DIR/MemoryPerformanceTest"
+    if [[ -x "$mem_test" ]]; then
+        run_cmd "MemoryPerformanceTest" 45 "$mem_test"
+    else
+        skip "MemoryPerformanceTest binary not found"
+    fi
+}
+
 phase_coverage() {
     [[ "$COVERAGE" == true ]] || { skip "coverage disabled"; return; }
     hdr "Phase: coverage"
-    # Simple gcov line coverage (fallback if gcovr not present)
+
+    # Enhanced coverage analysis with Docker optimization
+    local coverage_dir="$TEST_OUTPUT_DIR/coverage"
+    mkdir -p "$coverage_dir"
+
+    # Reset coverage counters for Docker environment
+    if [[ "$DOCKER_OPTIMIZED" == true ]]; then
+        find "$PROJECT_ROOT/$BUILD_DIR" -name "*.gcda" -delete 2>/dev/null || true
+        lcov --directory "$PROJECT_ROOT/$BUILD_DIR" --zerocounters 2>/dev/null || true
+    fi
+
+    # Advanced coverage with gcovr (preferred)
     if command -v gcovr >/dev/null 2>&1; then
-        (cd "$PROJECT_ROOT/$BUILD_DIR" && gcovr -r "$PROJECT_ROOT/src" --exclude '.*_deps.*' --xml -o "$TEST_OUTPUT_DIR/coverage_${TIMESTAMP}.xml" --txt >"$COVERAGE_LOG" 2>&1 || true)
-        # Attempt to parse line coverage percentage from gcovr text output
+        local gcovr_opts=(
+            -r "$PROJECT_ROOT/src"
+            --exclude '.*_deps.*'
+            --exclude '.*/tests/.*'
+            --exclude '.*/build/.*'
+        )
+
+        # Generate multiple output formats
+        (cd "$PROJECT_ROOT/$BUILD_DIR" && {
+            gcovr "${gcovr_opts[@]}" --xml -o "$coverage_dir/coverage_${TIMESTAMP}.xml"
+            gcovr "${gcovr_opts[@]}" --html-details -o "$coverage_dir/coverage_${TIMESTAMP}.html"
+            gcovr "${gcovr_opts[@]}" --txt > "$COVERAGE_LOG"
+        } 2>&1 || true)
+
+        # Parse coverage percentage
         local pct=""
         if grep -E 'lines:' "$COVERAGE_LOG" >/dev/null 2>&1; then
             # Format example: lines: 83.45% (1234 out of 1480)
@@ -173,10 +405,12 @@ phase_coverage() {
         elif grep -E '^TOTAL' "$COVERAGE_LOG" >/dev/null 2>&1; then
             pct=$(grep -E '^TOTAL' "$COVERAGE_LOG" | awk '{for(i=1;i<=NF;i++){if($i ~ /%/){gsub("%","",$i); print $i; exit}}}')
         fi
+
         if [[ -n "$pct" ]]; then
-            # Truncate decimal
             local pct_int=${pct%.*}
-            echo "Parsed Line Coverage (gcovr): ${pct}%" | tee -a "$COVERAGE_LOG"
+            echo "Line Coverage (gcovr): ${pct}%" | tee -a "$COVERAGE_LOG"
+            echo "Coverage report: $coverage_dir/coverage_${TIMESTAMP}.html" | tee -a "$COVERAGE_LOG"
+
             if [[ "$ENFORCE_COVERAGE" == true && $pct_int -lt $COVERAGE_TARGET ]]; then
                 fail "Coverage below target (${pct_int}% < ${COVERAGE_TARGET}%)"
             else
@@ -186,6 +420,7 @@ phase_coverage() {
             skip "Could not parse coverage percentage from gcovr output"
         fi
     else
+        # Fallback to basic gcov
         (cd "$PROJECT_ROOT/$BUILD_DIR" && find . -name '*.gcno' -exec gcov {} + >/dev/null 2>&1 || true)
         local total=0; local hit=0
         for g in "$PROJECT_ROOT/$BUILD_DIR"/*.gcov; do
@@ -201,7 +436,7 @@ phase_coverage() {
             if [[ "$ENFORCE_COVERAGE" == true && $pct -lt $COVERAGE_TARGET ]]; then
                 fail "Coverage below target (${pct}% < ${COVERAGE_TARGET}%)"; return 1
             else
-                ok "Coverage check passed (${pct}% >= target ${COVERAGE_TARGET}% )"
+                ok "Coverage check passed (${pct}% >= target ${COVERAGE_TARGET}%)"
             fi
         else
             skip "No coverage data produced"
@@ -211,6 +446,7 @@ phase_coverage() {
 
 summary() {
     hdr "Summary"
+    TOTAL=$((PASSED + FAILED + SKIPPED))
     local success_rate=0
     [[ $TOTAL -gt 0 ]] && success_rate=$((PASSED * 100 / TOTAL))
     echo "Total: $TOTAL  Passed: $PASSED  Failed: $FAILED  Skipped: $SKIPPED  Success: ${success_rate}%" | tee -a "$LOG_MAIN"
@@ -218,6 +454,41 @@ summary() {
         echo -e "${GREEN}ALL GREEN${NC}" | tee -a "$LOG_MAIN"
     else
         echo -e "${RED}FAILURES PRESENT${NC}" | tee -a "$LOG_MAIN"
+    fi
+
+    # JSON output if requested
+    if [[ "$JSON_OUTPUT" == true ]]; then
+        local json_file="$TEST_OUTPUT_DIR/test_results_${TIMESTAMP}.json"
+        cat > "$json_file" << EOF
+{
+  "timestamp": "$TIMESTAMP",
+  "mode": "$MODE",
+  "environment": "$ENVIRONMENT",
+  "phases": "$PHASES",
+  "results": {
+    "total": $TOTAL,
+    "passed": $PASSED,
+    "failed": $FAILED,
+    "skipped": $SKIPPED,
+    "success_rate": $success_rate
+  },
+  "configuration": {
+    "project_root": "$PROJECT_ROOT",
+    "build_dir": "$BUILD_DIR",
+    "coverage": $COVERAGE,
+    "coverage_target": $COVERAGE_TARGET,
+    "gtest_filter": "${GTEST_FILTER:-null}",
+    "tools": "$TOOLS_LIST",
+    "git_commit": "$(git -C "$PROJECT_ROOT" rev-parse --short HEAD 2>/dev/null || echo "unknown")",
+    "compiler": "$(g++ --version 2>/dev/null | head -1 || echo "unknown")"
+  },
+  "logs": {
+    "main_log": "$LOG_MAIN",
+    "coverage_log": "$COVERAGE_LOG"
+  }
+}
+EOF
+        echo "JSON results: $json_file"
     fi
 }
 
@@ -240,6 +511,8 @@ main() {
     for p in "${phase_array[@]}"; do
         case "$p" in
             unit) phase_unit;;
+            integration) phase_integration;;
+            performance) phase_performance;;
             diagnostics-off) phase_diagnostics_off;;
             tools) phase_tools;;
             discovery) phase_discovery;;
