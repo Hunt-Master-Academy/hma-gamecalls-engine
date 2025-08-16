@@ -8,6 +8,28 @@ Purpose: Provide lightweight guard‑rails so the assistant can act autonomously
 
 `docs/mvp_todo.md` governs: status, priorities, acceptance criteria. Before adding/modifying engine APIs, tests, or docs: read it, align with it, then (if you change scope) update it first. Do not create new roadmap documents.
 
+### 1.1 Phase Documents Usage (✅ ALIGNED)
+
+Phase documents in `docs/dev_phases/` are now **properly aligned** with `docs/mvp_todo.md` and can be used for concurrent development:
+
+-   **Phase 1:** Test Infrastructure & Quality Assurance (matches current MVP priority)
+-   **Phase 2:** Enhanced Analysis Components (PitchTracker, HarmonicAnalyzer, CadenceAnalyzer)
+-   **Phase 3:** Learning Platform & AI Coaching Features (post-MVP capabilities)
+
+**Usage Rules:**
+
+-   **Authority:** `docs/mvp_todo.md` remains the single source of truth for status and priorities
+-   **Cross-Reference:** Each phase task references specific MVP TODO sections/streams
+-   **Exit Criteria:** Phase exit criteria must match MVP acceptance criteria exactly
+-   **Updates:** Changes to scope must be reflected in both MVP TODO and phase docs simultaneously
+
+**Workflow for AI Developers:**
+
+1. Read `docs/mvp_todo.md` to understand current phase and priorities
+2. Use matching `docs/dev_phases/phaseN_*.md` for specific task breakdown and assignment
+3. Update both documents when making status changes
+4. Ensure phase tasks align with MVP TODO stream objectives
+
 ## 2. Current Phase Snapshot (Condensed)
 
 State (see mvp_todo for detail):
@@ -23,14 +45,24 @@ State (see mvp_todo for detail):
 
 ## 3. Near-Term Priorities (Execute In This Order Unless mvp_todo Changes)
 
-1. Convert remaining similarity test skips → deterministic asserts using readiness state.
-2. Ensure synthetic fallback tests produce deterministic separation (self > diff with margin) without weakening real‑asset assertions.
-3. Implement waveform overlay export (downsampled aligned peak arrays; minimal API only).
-4. Calibration mapping (pitch / harmonic / cadence → letter grades) + tests.
-5. Virtual clock abstraction to remove sleep timing reliance in tests.
-6. Coaching feedback mapper (simple rule table) – only after grades exist.
+**CURRENT PHASE:** Test Coverage Expansion & Quality Assurance (per MVP TODO)
 
-If you finish these and roadmap not updated, pause and surface a succinct proposal before proceeding to backlog items.
+**Immediate Priorities (from MVP TODO Stream A):**
+
+1. Create TestUtils.h infrastructure (blocking 10+ tests)
+2. Integrate high-impact test files (security, audio core, session state)
+3. Achieve 90% line coverage through systematic test integration
+4. Debug coverage collection pipeline (0% reporting issue)
+
+**Legacy Priorities (when above complete):**
+
+1. Convert remaining similarity test skips → deterministic asserts using readiness state
+2. Ensure synthetic fallback tests produce deterministic separation
+3. Implement waveform overlay export (downsampled aligned peak arrays)
+4. Calibration mapping (pitch / harmonic / cadence → letter grades) + tests
+5. Virtual clock abstraction to remove sleep timing reliance in tests
+
+If you finish current phase priorities and roadmap not updated, pause and surface a succinct proposal before proceeding.
 
 ## 4. Guiding Principles
 
@@ -94,11 +126,33 @@ Don't: Add heavy analyzer diagnostics without an explicit guard.
 
 ## 11. Contribution Flow (Lightweight)
 
-1. Read `docs/mvp_todo.md` (confirm priorities unchanged).
-2. Implement focused change (code + tests).
-3. Run debug build + tests (tasks already configured).
-4. Update `docs/mvp_todo.md` if feature/metric/API status changes.
-5. Keep commits descriptive ("tests: convert similarity skip X" / "core: implement overlay export base").
+1. Read `docs/mvp_todo.md` (confirm priorities unchanged) and the matching `docs/dev_phases/phase*.md`.
+2. Implement focused change (code + tests) aligned to specific MVP TODO stream and phase section.
+3. Run debug build + tests (with timeouts).
+4. If feature/metric/API status changes, update `docs/mvp_todo.md` and the affected phase doc together.
+5. Commit message format examples:
+    - tests: convert similarity skip X (mvp_todo Stream A.1, phase1 Stream A §A.1)
+    - core: implement PitchTracker YIN algorithm (mvp_todo Stream B.1, phase2 Stream D §D.1)
+
+## 12. Phase Document Quick Reference
+
+**Current Phase 1 (Active):** Test Infrastructure & Quality Assurance
+
+-   **Stream A:** Test Infrastructure Development (TestUtils.h, test integration)
+-   **Stream B:** Coverage Infrastructure & Quality Gates (gcovr, legacy conversion)
+-   **Stream C:** Security & Compliance Test Coverage (memory_guard, access_control)
+
+**Phase 2 (Next):** Enhanced Analysis Components Implementation
+
+-   **Stream D:** Core Enhanced Analysis (PitchTracker, HarmonicAnalyzer, CadenceAnalyzer)
+-   **Stream E:** Enhanced Analysis Integration & API
+-   **Stream F:** Enhanced Analysis Testing & Validation
+
+**Phase 3 (Future):** Learning Platform & AI Coaching Features
+
+-   **Stream G:** Progress Tracking & Analytics
+-   **Stream H:** Gamification & Achievement System
+-   **Stream I:** Cloud Integration & Synchronization
 
 ## 12. When Unsure
 

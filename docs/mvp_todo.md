@@ -1,7 +1,17 @@
 # Huntmaster Engine Development Roadmap & Task Coordination
-**Last Updated:** August 15, 2025
+**Last Updated:** August 16, 2025
 **Current Phase:** Test Coverage Expansion & Quality Assurance
 **Collaborative Mode:** Multi-Developer Concurrent Development
+
+## Phase Index (this file is authoritative)
+- **Phase 1 – Test Infrastructure & Quality Assurance:** `docs/dev_phases/phase1_foundational-infrastructure_todo.md`
+- **Phase 2 – Enhanced Analysis Components:** `docs/dev_phases/phase2_core-engine-hardening_todo.md`
+- **Phase 3 – Learning Platform & AI Coaching:** `docs/dev_phases/phase3_ai-coach_todo.md`
+
+**Notes:**
+- If any phase content conflicts with this file, update this file first, then reconcile the phase file in the same PR.
+- Each phase task must cite the `mvp_todo` section/anchor it implements.
+- Phase documents are now aligned and safe for concurrent development usage.
 
 ---
 
@@ -57,6 +67,20 @@
 **Status:** ✅ Complete
 **Owner:** Security Team
 **Last Review:** 2025-08-10
+
+### Stream D: Development Infrastructure
+**Status:** ✅ Major Cleanup Complete (Aug 15, 2025)
+**Owner:** DevOps Team
+
+#### Stream D.1: Scripts Directory Consolidation ✅ COMPLETED
+- **Achievement:** Reduced ~50+ scripts to 25 unified tools (50% reduction)
+- **Consolidated Tools:**
+  - `analyze_coverage.sh` (5 scripts → 1 unified tool)
+  - `manage_tests.sh` + `analyze_tests.sh` (5 scripts → 2 tools)
+  - `setup_environment.sh` (3 scripts → 1 unified tool)
+- **Impact:** Significantly reduced maintenance burden
+- **Archive:** `archive/consolidated_scripts_20250815/` (17 scripts preserved)
+- **Documentation:** `scripts_consolidation_report.md`
 
 ---
 
@@ -177,7 +201,62 @@
 
 ---
 
-## 🚨 **CONFLICT RESOLUTION**
+## �️ **UNIFIED DEVELOPMENT TOOLS** (New - Aug 15, 2025)
+
+### Coverage Analysis
+```bash
+# Comprehensive coverage analysis
+./scripts/analyze_coverage.sh --comprehensive --target=90
+
+# Quick coverage check
+./scripts/analyze_coverage.sh --basic --skip-build
+
+# Detailed analysis with debugging info
+./scripts/analyze_coverage.sh --robust --verbose
+```
+
+### Test Management
+```bash
+# Preview test cleanup (dry-run)
+./scripts/manage_tests.sh --dry-run
+
+# Clean up empty/stub test files
+./scripts/manage_tests.sh cleanup --execute
+
+# Reorganize tests by category
+./scripts/manage_tests.sh reorganize --execute
+
+# Check test organization status
+./scripts/manage_tests.sh verify
+```
+
+### Test Analysis
+```bash
+# Comprehensive test quality analysis
+./scripts/analyze_tests.sh --comprehensive --save-report
+
+# Test content analysis only
+./scripts/analyze_tests.sh --content --verbose
+
+# Test quality metrics with JSON output
+./scripts/analyze_tests.sh --quality --format=json
+```
+
+### Environment Setup
+```bash
+# Validate development environment
+./scripts/setup_environment.sh --validate
+
+# Set up development environment with auto-fix
+./scripts/setup_environment.sh --setup --auto-fix
+
+# Fix WSL audio issues
+./scripts/setup_environment.sh --fix-audio --platform=wsl
+```
+
+---
+
+## �🚨 **CONFLICT RESOLUTION**
 
 ### File Coordination
 - **CMakeLists.txt:** QA Team owns test integration section (lines 10-95)
