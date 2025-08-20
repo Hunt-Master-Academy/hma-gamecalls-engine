@@ -12,7 +12,7 @@ BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
 NC='\033[0m'
 
-success() { echo -e "${GREEN}✅ $1${NC}"; }
+success() { echo -e "${GREEN}[SUCCESS] $1${NC}"; }
 info() { echo -e "${BLUE}ℹ️  $1${NC}"; }
 warn() { echo -e "${YELLOW}⚠️  $1${NC}"; }
 

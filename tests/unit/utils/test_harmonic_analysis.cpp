@@ -8,6 +8,8 @@
 #include <numeric>
 #include <vector>
 
+#include <gtest/gtest.h>
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -418,7 +420,8 @@ bool testTonalQualityAssessment() {
     }
 }
 
-int main() {
+// Convert to GTest format - remove main() function to avoid conflict with gtest_main
+TEST(HarmonicAnalysisTest, ComprehensiveHarmonicTesting) {
     std::cout << "=== Phase 1 Enhanced Analyzers - Direct Harmonic Analysis Test ===" << std::endl;
     std::cout << "Testing spectral analysis and harmonic detection algorithms" << std::endl;
 
@@ -452,9 +455,9 @@ int main() {
         std::cout << "   - Add formant detection and tracking" << std::endl;
         std::cout << "   - Implement harmonic-to-noise ratio calculation" << std::endl;
         std::cout << "   - Test with wildlife call spectral characteristics" << std::endl;
-        return 0;
+        EXPECT_TRUE(allTestsPassed);
     } else {
         std::cout << "❌ SOME TESTS FAILED - Algorithm needs refinement" << std::endl;
-        return 1;
+        EXPECT_TRUE(allTestsPassed);
     }
 }

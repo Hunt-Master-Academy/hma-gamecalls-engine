@@ -414,7 +414,7 @@ generate_detailed_report() {
 
         local problem_files=$((empty_files + stub_files + minimal_files))
         if [[ $problem_files -eq 0 ]]; then
-            echo "✅ All active test files have meaningful content!"
+            echo "[SUCCESS] All active test files have meaningful content!"
         else
             echo "❌ $problem_files files need attention:"
             echo "   - Remove or consolidate empty files"
@@ -482,7 +482,7 @@ main() {
     print_header "UNIFIED TEST ANALYSIS - $(echo $analysis_type | tr '[:lower:]' '[:upper:]')"
 
     echo "📅 Analysis Date: $(date)" | tee "$REPORT_FILE"
-    echo "🎯 Analysis Type: $analysis_type" | tee -a "$REPORT_FILE"
+    echo "Analysis Type: $analysis_type" | tee -a "$REPORT_FILE"
     echo "📍 Project: Huntmaster Engine" | tee -a "$REPORT_FILE"
     echo "" | tee -a "$REPORT_FILE"
 

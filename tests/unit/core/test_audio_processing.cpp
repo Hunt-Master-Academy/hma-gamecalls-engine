@@ -1,6 +1,8 @@
 /**
  * @file test_audio_processing.cpp
- * @brief Comprehensive test suite for UnifiedAudioEngine core audio processing
+ * @brief Comprehensive test suite for UnifiedAudioEngine core audi
+ std::filesystem::remove("/home/xbyooki/projects/hma-gamecalls-engine/data/processed_calls/mfc/"
+                                 + TEST_MASTER_CALL_ID + ".mfc");processing
  *
  * Tests all core audio processing API methods of the UnifiedAudioEngine:
  * - processAudioChunk
@@ -63,7 +65,7 @@ class AudioProcessingTest : public ::testing::Test {
     void setupTestMasterCall() {
         // Create test directories
         std::filesystem::create_directories(
-            "/workspaces/huntmaster-engine/data/processed_calls/mfc/");
+            "/home/xbyooki/projects/hma-gamecalls-engine/data/processed_calls/mfc/");
 
         // Create a test .mfc file with known MFCC features
         createTestMFCFile(TEST_MASTER_CALL_ID);
@@ -80,7 +82,8 @@ class AudioProcessingTest : public ::testing::Test {
 
     void createTestMFCFile(const std::string& masterCallId) {
         std::string filePath =
-            "/workspaces/huntmaster-engine/data/processed_calls/mfc/" + masterCallId + ".mfc";
+            "/home/xbyooki/projects/hma-gamecalls-engine/data/processed_calls/mfc/" + masterCallId
+            + ".mfc";
         std::ofstream file(filePath, std::ios::binary);
 
         if (file.is_open()) {
@@ -233,15 +236,10 @@ TEST_F(AudioProcessingTest, ProcessExtremeAmplitudeAudio) {
 // === Similarity Scoring Tests ===
 
 TEST_F(AudioProcessingTest, SimilarityScoreBasic) {
-    // Try loading a known master call first
+    // Load master call (both test_sine_440 and buck_grunt should be available after path fix)
     auto loadStatus = engine->loadMasterCall(sessionId, "test_sine_440");
-    if (loadStatus != UnifiedAudioEngine::Status::OK) {
-        // Try alternative master call
-        loadStatus = engine->loadMasterCall(sessionId, "buck_grunt");
-        if (loadStatus != UnifiedAudioEngine::Status::OK) {
-            GTEST_SKIP() << "No suitable master call available for similarity testing";
-        }
-    }
+    ASSERT_EQ(loadStatus, UnifiedAudioEngine::Status::OK)
+        << "test_sine_440 master call should be available after path fix";
 
     // Process some audio
     auto audioChunk = generateSineWave(440.0f, 0.2f);
@@ -262,14 +260,10 @@ TEST_F(AudioProcessingTest, SimilarityScoreBasic) {
 }
 
 TEST_F(AudioProcessingTest, SimilarityScoreWithoutProcessing) {
-    // Try loading a known master call first
+    // Load master call (should be available after path fix)
     auto loadStatus = engine->loadMasterCall(sessionId, "test_sine_440");
-    if (loadStatus != UnifiedAudioEngine::Status::OK) {
-        loadStatus = engine->loadMasterCall(sessionId, "buck_grunt");
-        if (loadStatus != UnifiedAudioEngine::Status::OK) {
-            GTEST_SKIP() << "No suitable master call available for similarity testing";
-        }
-    }
+    ASSERT_EQ(loadStatus, UnifiedAudioEngine::Status::OK)
+        << "test_sine_440 master call should be available after path fix";
 
     // Try to get similarity score without processing any audio
     auto scoreResult = engine->getSimilarityScore(sessionId);
@@ -286,14 +280,10 @@ TEST_F(AudioProcessingTest, SimilarityScoreWithoutProcessing) {
 }
 
 TEST_F(AudioProcessingTest, SimilarityScoreConsistency) {
-    // Try loading a known master call first
+    // Load master call (should be available after path fix)
     auto loadStatus = engine->loadMasterCall(sessionId, "test_sine_440");
-    if (loadStatus != UnifiedAudioEngine::Status::OK) {
-        loadStatus = engine->loadMasterCall(sessionId, "buck_grunt");
-        if (loadStatus != UnifiedAudioEngine::Status::OK) {
-            GTEST_SKIP() << "No suitable master call available for similarity testing";
-        }
-    }
+    ASSERT_EQ(loadStatus, UnifiedAudioEngine::Status::OK)
+        << "test_sine_440 master call should be available after path fix";
 
     // Process the same audio multiple times and verify consistent scores
     auto audioChunk = generateSineWave(440.0f, 0.1f);

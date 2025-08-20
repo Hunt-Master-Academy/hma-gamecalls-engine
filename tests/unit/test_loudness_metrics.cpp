@@ -34,11 +34,10 @@ class LoudnessMetricsTest : public ::testing::Test {
             feats[i][0] = static_cast<float>(i + 1);
         ASSERT_EQ(engine->testInjectMasterCallFeatures(sid, feats), UnifiedAudioEngine::Status::OK);
 #else
-        // In non-test builds, attempt to load a default master call; if not present, skip.
+        // In non-test builds, attempt to load a default master call
         auto st = engine->loadMasterCall(sid, "test_sine_440");
-        if (st != UnifiedAudioEngine::Status::OK) {
-            GTEST_SKIP() << "No master call available";
-        }
+        ASSERT_EQ(st, UnifiedAudioEngine::Status::OK)
+            << "test_sine_440 master call should be available after path fix";
 #endif
     }
     void TearDown() override {

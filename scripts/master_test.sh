@@ -50,7 +50,7 @@ LOG_MAIN="$TEST_OUTPUT_DIR/master_test_${TIMESTAMP}.log"
 COVERAGE_LOG="$TEST_OUTPUT_DIR/coverage_${TIMESTAMP}.log"
 
 log() { echo -e "$@" | tee -a "$LOG_MAIN"; }
-ok() { echo -e "${GREEN}✅ $1${NC}" | tee -a "$LOG_MAIN"; ((PASSED+=1)); }
+ok() { echo -e "${GREEN}[PASS] $1${NC}" | tee -a "$LOG_MAIN"; ((PASSED+=1)); }
 fail() { echo -e "${RED}❌ $1${NC}" | tee -a "$LOG_MAIN"; ((FAILED+=1)); }
 skip() { echo -e "${YELLOW}⏭️  $1${NC}" | tee -a "$LOG_MAIN"; ((SKIPPED+=1)); }
 hdr() { echo -e "${BLUE}================================================${NC}\n${BLUE}  $1${NC}\n${BLUE}================================================${NC}" | tee -a "$LOG_MAIN"; }

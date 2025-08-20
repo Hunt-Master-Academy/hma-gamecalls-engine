@@ -41,39 +41,70 @@ if [[ ! -x "$TEST_BIN" ]]; then
     exit 1
 fi
 
-# Proactively clean stale gcov data to avoid checksum overwrite errors after rebuilds
-echo "Cleaning stale coverage data (.gcda) in $BUILD_DIR..."
-find "$BUILD_DIR" -type f -name '*.gcda' -delete 2>/dev/null || true
+# Check for existing coverage data and optionally clean if requested
+EXISTING_GCDA=$(find "$BUILD_DIR" -name '*.gcda' | wc -l)
+if [[ "$EXISTING_GCDA" -gt 0 ]]; then
+    echo "Found $EXISTING_GCDA existing .gcda files. Using existing coverage data."
+    echo "To clean and regenerate, set CLEAN_COVERAGE=1"
+fi
 
-# 2) Run tests to generate .gcda data
-echo "Running tests with coverage instrumentation..."
-if ! timeout 90 "$TEST_BIN" --gtest_brief=yes; then
-    echo "ERROR: Tests failed (see output above). Proceeding to collect coverage anyway."
+if [[ "${CLEAN_COVERAGE:-0}" == "1" ]]; then
+    echo "Cleaning stale coverage data (.gcda) in $BUILD_DIR..."
+    find "$BUILD_DIR" -type f -name '*.gcda' -delete 2>/dev/null || true
+fi
+
+# 2) Run tests to generate .gcda data (only if we don't have existing data or if cleaned)
+if [[ "$EXISTING_GCDA" -eq 0 ]] || [[ "${CLEAN_COVERAGE:-0}" == "1" ]]; then
+    echo "Running tests with coverage instrumentation..."
+    export GCOV_PREFIX_STRIP=0
+    export GCOV_PREFIX="$BUILD_DIR"
+    if ! timeout 90 "$TEST_BIN" --gtest_brief=yes; then
+        echo "ERROR: Tests failed (see output above). Proceeding to collect coverage anyway."
+    fi
+else
+    echo "Skipping test execution - using existing coverage data"
+fi
+
+# Ensure gcda files are written to disk before gcovr
+echo "Syncing coverage data to disk..."
+sync
+sleep 1
+
+# Verify that coverage data was generated
+GCDA_COUNT=$(find "$BUILD_DIR" -name '*.gcda' | wc -l)
+echo "Coverage data files found: $GCDA_COUNT .gcda files"
+if [[ "$GCDA_COUNT" -eq 0 ]]; then
+    echo "WARNING: No coverage data files (.gcda) found. Tests may not have generated coverage."
 fi
 
 # 3) Generate coverage reports (prefer gcovr; fallback to basic gcov if needed)
 echo "Generating coverage reports..."
 if command -v gcovr >/dev/null 2>&1; then
-    # Run from build dir so gcovr finds .gcno/.gcda easily
+    # Generate reports with corrected gcovr parameters
     (
-        cd "$BUILD_DIR"
-        # Text + XML + HTML reports
-        gcovr -r "$PROJECT_ROOT/src" \
-            --object-directory . \
+        cd "$PROJECT_ROOT"
+        gcovr --root src \
+            --gcov-object-directory "$BUILD_DIR_REL" \
+            --gcov-ignore-errors=no_working_dir_found \
             --exclude '.*_deps.*' \
             --exclude '.*/tests/.*' \
+            --exclude '.*CMake.*' \
             --txt >"$TXT_LOG" 2>&1 || true
 
-        gcovr -r "$PROJECT_ROOT/src" \
-            --object-directory . \
+        gcovr --root src \
+            --gcov-object-directory "$BUILD_DIR_REL" \
+            --gcov-ignore-errors=no_working_dir_found \
             --exclude '.*_deps.*' \
             --exclude '.*/tests/.*' \
+            --exclude '.*CMake.*' \
             --xml -o "$XML_OUT" >/dev/null 2>&1 || true
 
-        gcovr -r "$PROJECT_ROOT/src" \
-            --object-directory . \
+        gcovr --root src \
+            --gcov-object-directory "$BUILD_DIR_REL" \
+            --gcov-ignore-errors=no_working_dir_found \
             --exclude '.*_deps.*' \
             --exclude '.*/tests/.*' \
+            --exclude '.*CMake.*' \
             --html --html-details -o "$HTML_DIR/index.html" >/dev/null 2>&1 || true
     )
 

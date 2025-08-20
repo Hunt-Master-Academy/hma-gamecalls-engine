@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites tests="6" failures="0" disabled="0" errors="0" time="0.275" timestamp="2025-08-19T20:41:27.627" name="AllTests">
+  <testsuite name="ValidationUnifiedTest" tests="6" failures="0" disabled="0" skipped="1" errors="0" time="0.275" timestamp="2025-08-19T20:41:27.627">
+    <testcase name="MFCCDeterministic" file="/home/xbyooki/projects/hma-gamecalls-engine/tests/unit/utils/test_validation_unified.cpp" line="48" status="run" result="skipped" time="0" timestamp="2025-08-19T20:41:27.627" classname="ValidationUnifiedTest">
+      <skipped message="/home/xbyooki/projects/hma-gamecalls-engine/tests/unit/utils/test_validation_unified.cpp:70&#x0A;buck_grunt master call not available"><![CDATA[/home/xbyooki/projects/hma-gamecalls-engine/tests/unit/utils/test_validation_unified.cpp:70
+buck_grunt master call not available]]></skipped>
+    </testcase>
+    <testcase name="SessionLifecycleValidation" file="/home/xbyooki/projects/hma-gamecalls-engine/tests/unit/utils/test_validation_unified.cpp" line="127" status="run" result="completed" time="0" timestamp="2025-08-19T20:41:27.628" classname="ValidationUnifiedTest" />
+    <testcase name="InvalidSessionHandling" file="/home/xbyooki/projects/hma-gamecalls-engine/tests/unit/utils/test_validation_unified.cpp" line="179" status="run" result="completed" time="0" timestamp="2025-08-19T20:41:27.628" classname="ValidationUnifiedTest" />
+    <testcase name="MultipleSessionsTest" file="/home/xbyooki/projects/hma-gamecalls-engine/tests/unit/utils/test_validation_unified.cpp" line="216" status="run" result="completed" time="0.054" timestamp="2025-08-19T20:41:27.628" classname="ValidationUnifiedTest" />
+    <testcase name="AudioProcessingValidation" file="/home/xbyooki/projects/hma-gamecalls-engine/tests/unit/utils/test_validation_unified.cpp" line="287" status="run" result="completed" time="0.218" timestamp="2025-08-19T20:41:27.683" classname="ValidationUnifiedTest" />
+    <testcase name="ErrorHandlingValidation" file="/home/xbyooki/projects/hma-gamecalls-engine/tests/unit/utils/test_validation_unified.cpp" line="339" status="run" result="completed" time="0" timestamp="2025-08-19T20:41:27.902" classname="ValidationUnifiedTest" />
+  </testsuite>
+</testsuites>

@@ -90,9 +90,7 @@ TEST_F(DTWUnifiedTest, BasicDTWFunctionality) {
                   << std::endl;
         auto destroyResult = engine->destroySession(sessionId);
         (void)destroyResult;
-        // Use synthetic test data instead of skipping
-        log_info("Master call not available, generating synthetic test data");
-        ASSERT_TRUE(true) << "Continuing with synthetic data generation";
+        GTEST_SKIP() << "buck_grunt master call not available";
         return;
     }
     std::cout << "  Successfully loaded buck_grunt master call" << std::endl;
@@ -105,9 +103,7 @@ TEST_F(DTWUnifiedTest, BasicDTWFunctionality) {
     if (audioData.empty()) {
         auto destroyResult = engine->destroySession(sessionId);
         (void)destroyResult;
-        // Generate synthetic audio data
-        log_info("Audio file not found, using synthetic fallback data");
-        ASSERT_TRUE(true) << "Synthetic audio data generation successful";
+        GTEST_SKIP() << "buck_grunt.wav file not found";
         return;
     }
 
@@ -160,9 +156,7 @@ TEST_F(DTWUnifiedTest, DTWWithChunkedProcessing) {
     if (loadResult != UnifiedAudioEngine::Status::OK) {
         auto destroyResult = engine->destroySession(sessionId);
         (void)destroyResult;
-        // Use synthetic test data instead of skipping
-        log_info("Master call not available, generating synthetic test data");
-        ASSERT_TRUE(true) << "Continuing with synthetic data generation";
+        GTEST_SKIP() << "buck_grunt master call not available";
         return;
     }
 
@@ -174,9 +168,7 @@ TEST_F(DTWUnifiedTest, DTWWithChunkedProcessing) {
     if (audioData.empty()) {
         auto destroyResult = engine->destroySession(sessionId);
         (void)destroyResult;
-        // Generate synthetic audio data
-        log_info("Audio file not found, using synthetic fallback data");
-        ASSERT_TRUE(true) << "Synthetic audio data generation successful";
+        GTEST_SKIP() << "buck_grunt.wav file not found";
         return;
     }
 
@@ -244,9 +236,7 @@ TEST_F(DTWUnifiedTest, DTWConsistencyTest) {
         if (loadResult != UnifiedAudioEngine::Status::OK) {
             auto destroyResult = engine->destroySession(sessionId);
             (void)destroyResult;
-            // Use synthetic test data instead of skipping
-            log_info("Master call not available, generating synthetic test data");
-            ASSERT_TRUE(true) << "Continuing with synthetic data generation";
+            GTEST_SKIP() << "buck_grunt master call not available";
             return;
         }
 
@@ -258,9 +248,7 @@ TEST_F(DTWUnifiedTest, DTWConsistencyTest) {
         if (audioData.empty()) {
             auto destroyResult = engine->destroySession(sessionId);
             (void)destroyResult;
-            // Generate synthetic audio data
-            log_info("Audio file not found, using synthetic fallback data");
-            ASSERT_TRUE(true) << "Synthetic audio data generation successful";
+            GTEST_SKIP() << "buck_grunt.wav file not found";
             return;
         }
 
@@ -327,9 +315,7 @@ TEST_F(DTWUnifiedTest, SelfSimilarityTest) {
     if (loadResult != UnifiedAudioEngine::Status::OK) {
         auto destroyResult = engine->destroySession(sessionId);
         (void)destroyResult;
-        // Use synthetic test data instead of skipping
-        log_info("Master call not available, generating synthetic test data");
-        ASSERT_TRUE(true) << "Continuing with synthetic data generation";
+        GTEST_SKIP() << "buck_grunt master call not available";
         return;
     }
 
@@ -341,9 +327,7 @@ TEST_F(DTWUnifiedTest, SelfSimilarityTest) {
     if (audioData.empty()) {
         auto destroyResult = engine->destroySession(sessionId);
         (void)destroyResult;
-        // Generate synthetic audio data
-        log_info("Audio file not found, using synthetic fallback data");
-        ASSERT_TRUE(true) << "Synthetic audio data generation successful";
+        GTEST_SKIP() << "buck_grunt.wav file not found";
         return;
     }
 

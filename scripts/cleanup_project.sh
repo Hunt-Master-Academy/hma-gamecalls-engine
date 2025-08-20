@@ -154,7 +154,7 @@ print_success "Updated .gitignore with cleanup patterns"
 print_step "Phase 6: Final State Analysis"
 
 echo ""
-echo "🎯 CLEANUP RESULTS:"
+echo "CLEANUP RESULTS:"
 echo "===================="
 
 NEW_COVERAGE_FILES=$(find coverage_* -type f 2>/dev/null | wc -l || echo "0")
@@ -174,7 +174,7 @@ du -sh src/ include/ tests/ tools/ scripts/ data/ docs/ 2>/dev/null | sort -hr
 echo ""
 print_success "PROJECT CLEANUP COMPLETED!"
 echo ""
-echo "🚀 NEXT STEPS:"
+echo "NEXT STEPS:"
 echo "  1. Review cleaned project structure"
 echo "  2. Run build test to verify functionality"
 echo "  3. Update documentation as needed"

@@ -7,6 +7,7 @@ lib/
 # IDE and editor files
 .vscode/settings.json
 .vscode/launch.json
+.vscode/ipch/
 .idea/
 *.swp
 *.swo

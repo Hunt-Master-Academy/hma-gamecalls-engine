@@ -1,0 +1,23 @@
+# CODEOWNERS
+
+# Global owners
+* @hunt-master-academy/game-calls-team
+
+# Core engine components
+/src/core/ @hunt-master-academy/core-team @hunt-master-academy/game-calls-team
+/src/audio/ @hunt-master-academy/audio-team @hunt-master-academy/game-calls-team
+
+# Security and memory management
+/src/security/ @hunt-master-academy/security-team
+/src/memory/ @hunt-master-academy/security-team @hunt-master-academy/core-team
+
+# Web/UI components  
+/web/ @hunt-master-academy/frontend-team @hunt-master-academy/game-calls-team
+
+# Build and CI
+/CMakeLists.txt @hunt-master-academy/platform-team
+/.github/ @hunt-master-academy/platform-team
+/tests/ @hunt-master-academy/game-calls-team
+
+# Documentation
+/docs/ @hunt-master-academy/game-calls-team

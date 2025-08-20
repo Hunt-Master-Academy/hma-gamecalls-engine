@@ -67,12 +67,8 @@ TEST_F(MFCCValidationTest, SimilarityScoreValidation) {
 
     // Test that a master call compared against itself gives a high similarity score
     auto loadResult = engine->loadMasterCall(sessionId, "buck_grunt");
-    if (loadResult != UnifiedAudioEngine::Status::OK) {
-        auto destroyResult = engine->destroySession(sessionId);
-        EXPECT_EQ(destroyResult, UnifiedAudioEngine::Status::OK);
-        GTEST_SKIP() << "buck_grunt master call not available";
-        return;
-    }
+    ASSERT_EQ(loadResult, UnifiedAudioEngine::Status::OK)
+        << "buck_grunt master call should be available after path fix";
 
     // Since we can't directly access the master call audio, we'll test with a perfect sine wave
     // This tests the basic functionality of the similarity scoring

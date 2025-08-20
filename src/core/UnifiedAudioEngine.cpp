@@ -351,9 +351,10 @@ class UnifiedAudioEngine::Impl {
     std::atomic<SessionId> nextSessionId_{1};
 
     // Configuration paths
-    std::string masterCallsPath_{"/workspaces/huntmaster-engine/data/master_calls/"};
-    std::string featuresPath_{"/workspaces/huntmaster-engine/data/processed_calls/mfc/"};
-    std::string recordingsPath_{"/workspaces/huntmaster-engine/data/recordings/"};
+    std::string masterCallsPath_{"/home/xbyooki/projects/hma-gamecalls-engine/data/master_calls/"};
+    std::string featuresPath_{
+        "/home/xbyooki/projects/hma-gamecalls-engine/data/processed_calls/mfc/"};
+    std::string recordingsPath_{"/home/xbyooki/projects/hma-gamecalls-engine/data/recordings/"};
 
     // Helper methods
     SessionState* getSession(SessionId sessionId);
