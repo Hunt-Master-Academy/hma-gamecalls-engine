@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Calls Engine - Lesson Test</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=PT+Serif:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-forest-green: #2c4a3b;
+            --color-copper-brown: #b87333;
+            --color-canvas: #fdfbf8;
+            --color-white: #ffffff;
+            --color-slate-gray: #1f2937;
+            --color-moss-gray: #7a8471;
+            --color-burnt-orange: #ff6b35;
+            --color-signal-red: #ff5144;
+            --font-heading: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-body: 'PT Serif', Georgia, serif;
+            --sidebar-width: 260px;
+            --map-height: 66.666vh;
+            --content-height: 33.333vh;
+        }
+        body {
+            font-family: var(--font-body);
+            background: var(--color-canvas);
+            color: var(--color-slate-gray);
+        }
+        header {
+            background: var(--color-copper-brown);
+            color: var(--color-white);
+            padding: 1rem 2rem;
+            font-family: var(--font-heading);
+        }
+        main {
+            max-width: 900px;
+            margin: 2rem auto;
+            background: var(--color-white);
+            box-shadow: 0 2px 8px rgba(44,74,59,0.08);
+            border-radius: 12px;
+            padding: 2rem;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .lesson-section {
+            margin-bottom: 2rem;
+        }
+        .test-controls {
+            margin-top: 2rem;
+        }
+        button {
+            background: var(--color-burnt-orange);
+            color: var(--color-white);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-size: 1.125rem;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Game Calls Engine - Lesson Test</h1>
+    </header>
+    <main>
+        <section class="lesson-section">
+            <h2>Lesson: Species Call Identification</h2>
+            <p>Test your ability to identify game calls and their purpose.</p>
+            <!-- Add lesson content/questions here -->
+        </section>
+        <section class="lesson-section">
+            <h2>Audio Analysis</h2>
+            <div style="height:var(--content-height);background:var(--color-moss-gray);border-radius:8px;"></div>
+            <!-- Audio widget placeholder -->
+        </section>
+        <section class="test-controls">
+            <button>Submit Answers</button>
+        </section>
+    </main>
+</body>
+</html>
