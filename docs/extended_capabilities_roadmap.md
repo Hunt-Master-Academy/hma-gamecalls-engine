@@ -6,9 +6,9 @@
 
 ---
 
-## 📋 Current State Summary
+## Current State Summary
 
-### ✅ **Phase Complete: Core MVP + Enhanced Analyzers**
+### **Phase Complete: Core MVP + Enhanced Analyzers**
 - **Core Engine:** Production stable (121/121 tests passing)
 - **Enhanced Analyzers:** Pitch, Harmonic, Cadence integrated with confidence smoothing
 - **Test Suite:** Reorganized and archived (0 skips, comprehensive coverage)
@@ -16,15 +16,15 @@
 - **Security:** 100% complete and stable
 - **Calibration:** Deterministic A-F grading bands implemented
 
-### 🎯 **Readiness Gates: All GREEN**
-1. ✅ Current phase exit criteria fully met (MVP todo Section 17)
-2. ✅ All new metrics documented & frozen (no structural changes for 2+ sprints)
-3. ✅ Performance guard adherence verified under stress
-4. ✅ Calibration variance within target (<10% of band width drift)
+### **Readiness Gates: All GREEN**
+1. Current phase exit criteria fully met (MVP todo Section 17)
+2. All new metrics documented & frozen (no structural changes for 2+ sprints)
+3. Performance guard adherence verified under stress
+4. Calibration variance within target (<10% of band width drift)
 
 ---
 
-## 🚀 Extended Capability Development Priority Sequence
+## Extended Capability Development Priority Sequence
 
 ### **Phase 1: Pitch Mastery Suite** (IMMEDIATE PRIORITY)
 **Objective:** Deep pitch stability coaching with micro-level analysis
@@ -36,29 +36,29 @@
 - [ ] Pitch stability confidence grading refinement
 
 #### **Dependencies:**
-- ✅ Calibrated pitchGrade stability (COMPLETE)
-- ✅ Enhanced PitchTracker with YIN algorithm (COMPLETE)
+- Calibrated pitchGrade stability (COMPLETE)
+- Enhanced PitchTracker with YIN algorithm (COMPLETE)
 
 #### **Implementation Plan:**
 1. **Micro-Drift Detection** (Days 1-3)
-   - Implement short-window pitch tracking overlay
-   - Add drift rate calculation (cents/second)
-   - Create stability score based on variance analysis
+ - Implement short-window pitch tracking overlay
+ - Add drift rate calculation (cents/second)
+ - Create stability score based on variance analysis
 
 2. **Onset Glide Analysis** (Days 4-6)
-   - Add attack phase pitch trajectory tracking
-   - Implement glide characterization (smooth vs. rough)
-   - Create onset quality metrics
+ - Add attack phase pitch trajectory tracking
+ - Implement glide characterization (smooth vs. rough)
+ - Create onset quality metrics
 
 3. **Vibrato Quality Assessment** (Days 7-9)
-   - Extend existing vibrato detection with quality metrics
-   - Add regularity and depth consistency scoring
-   - Implement vibrato coaching recommendations
+ - Extend existing vibrato detection with quality metrics
+ - Add regularity and depth consistency scoring
+ - Implement vibrato coaching recommendations
 
 4. **Testing & Validation** (Days 10-12)
-   - Create synthetic test cases for each feature
-   - Add performance guards (<2ms additional overhead)
-   - Validate against real-world master calls
+ - Create synthetic test cases for each feature
+ - Add performance guards (<2ms additional overhead)
+ - Validate against real-world master calls
 
 #### **Acceptance Criteria:**
 - Micro-drift detection accurate to ±5 cents
@@ -78,8 +78,8 @@
 - [ ] Rhythm consistency coaching
 
 #### **Dependencies:**
-- ✅ Stable cadenceGrade & segment timing (COMPLETE)
-- ✅ Enhanced CadenceAnalyzer with onset detection (COMPLETE)
+- Stable cadenceGrade & segment timing (COMPLETE)
+- Enhanced CadenceAnalyzer with onset detection (COMPLETE)
 
 ---
 
@@ -93,8 +93,8 @@
 - [ ] Tonal quality coaching recommendations
 
 #### **Dependencies:**
-- ✅ HarmonicAnalyzer v1 + normalized loudness (COMPLETE)
-- ✅ Loudness normalization framework (COMPLETE)
+- HarmonicAnalyzer v1 + normalized loudness (COMPLETE)
+- Loudness normalization framework (COMPLETE)
 
 ---
 
@@ -108,12 +108,12 @@
 - [ ] Context-aware similarity thresholds
 
 #### **Dependencies:**
-- ✅ finalizeSessionAnalysis completeness (COMPLETE)
-- ✅ Component reliability statistics (COMPLETE)
+- finalizeSessionAnalysis completeness (COMPLETE)
+- Component reliability statistics (COMPLETE)
 
 ---
 
-## 🛠️ Implementation Guidelines
+## Implementation Guidelines
 
 ### **Development Standards:**
 1. **Performance First:** All new features must maintain <12ms streaming path
@@ -127,13 +127,13 @@
 // Extended capability factory pattern
 class PitchMasterySuite {
 public:
-    static Result<std::unique_ptr<PitchMasterySuite>> create(
-        const PitchMasteryConfig& config);
+ static Result<std::unique_ptr<PitchMasterySuite>> create(
+ const PitchMasteryConfig& config);
 
-    // Micro-analysis methods
-    Result<MicroDriftMetrics> analyzeDrift(std::span<const float> pitchTrajectory);
-    Result<OnsetGlideMetrics> analyzeOnsetGlide(std::span<const float> audio);
-    Result<VibratoQualityMetrics> analyzeVibratoQuality(const VibratoData& vibrato);
+ // Micro-analysis methods
+ Result<MicroDriftMetrics> analyzeDrift(std::span<const float> pitchTrajectory);
+ Result<OnsetGlideMetrics> analyzeOnsetGlide(std::span<const float> audio);
+ Result<VibratoQualityMetrics> analyzeVibratoQuality(const VibratoData& vibrato);
 };
 ```
 
@@ -145,7 +145,7 @@ public:
 
 ---
 
-## 📊 Success Metrics
+## Success Metrics
 
 ### **Quantitative Targets:**
 - **Performance:** New features add <2ms to processing path
@@ -161,7 +161,7 @@ public:
 
 ---
 
-## 🔄 Development Workflow
+## Development Workflow
 
 ### **Sprint Planning:**
 1. **Feature Selection:** Choose next capability from priority sequence
@@ -179,7 +179,7 @@ public:
 
 ---
 
-## 📚 References
+## References
 
 - **Primary Authority:** `docs/mvp_todo.md` (Section 21: Extended Capability Backlog)
 - **Architecture Context:** `docs/architecture.md`
@@ -188,7 +188,7 @@ public:
 
 ---
 
-## 🎯 Next Actions
+## Next Actions
 
 ### **Immediate (This Sprint):**
 1. **Pitch Mastery Suite Design:** Create detailed architecture for micro-drift analysis

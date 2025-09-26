@@ -1,4 +1,4 @@
-🔍 Issue Analysis
+ Issue Analysis
 1. Event Listener Memory Leaks
 Multiple "potential listener LEAK detected" errors with 175-400+ listeners
 Affecting text file models, semantic tokens, and editor instances
@@ -12,7 +12,7 @@ Text file editor models are creating excessive listeners for:
 onDidChangeReadonly
 onDidChangeFilesAssociation
 onDidChange events
-📋 Troubleshooting Plan
+ Troubleshooting Plan
 Step 1: Immediate Actions
 
 # 1. Clear VS Code cache and restartrm -rf ~/.vscode-server/data/CachedData/*rm -rf ~/.vscode-server/data/CachedExtensionVSIXs/*# 2. Check for problematic extensionscode --list-extensions --show-versions# 3. Start VS Code with minimal extensionscode --disable-extensions
@@ -47,7 +47,7 @@ Limit Extensions - Disable unnecessary extensions in containers:
 
 
 // filepath: .devcontainer/devcontainer.json{  "customizations": {    "vscode": {      "extensions": [        "ms-vscode.cpptools",        "ms-vscode.cmake-tools",        "GitHub.copilot",        "GitHub.copilot-chat"      ],      "settings": {        "extensions.ignoreRecommendations": true      }    }  }}
-🚀 Immediate Actions
+ Immediate Actions
 Apply VS Code settings:
 
 
@@ -65,15 +65,15 @@ Reload VS Code window:
 Press Ctrl+Shift+P
 Type "Developer: Reload Window"
 Press Enter
-📊 Expected Outcomes
+ Expected Outcomes
 After applying these fixes:
 
-✅ Reduced event listener count (should stay under 100)
-✅ No more listener leak warnings
-✅ Improved VS Code responsiveness
-✅ Fewer network timeout errors
-✅ Better container development experience
-🔄 If Issues Persist
+ Reduced event listener count (should stay under 100)
+ No more listener leak warnings
+ Improved VS Code responsiveness
+ Fewer network timeout errors
+ Better container development experience
+ If Issues Persist
 Check specific extensions:
 
 

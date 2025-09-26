@@ -33,41 +33,41 @@ Status: Core MVP Production Ready | Enhanced Analyzers Phase 1 Integrated | Test
 huntmaster-engine/
 ├── CMakeLists.txt
 ├── LICENSE
-├── README.md                        # (Root summary or redirect if present)
+├── README.md # (Root summary or redirect if present)
 ├── docs/
-│   ├── README.md                    # Engine overview (synced 2025-08-09)
-│   ├── mvp_todo.md                  # Authoritative roadmap / status
-│   ├── architecture.md              # System & phase architecture
-│   ├── PROJECT_STRUCTURE.md         # (This file)
-│   ├── DEBUGGING.md
-│   ├── DEPLOYMENT.md
-│   ├── TESTING.md
-│   └── (additional focused docs)
+│ ├── README.md # Engine overview (synced 2025-08-09)
+│ ├── mvp_todo.md # Authoritative roadmap / status
+│ ├── architecture.md # System & phase architecture
+│ ├── PROJECT_STRUCTURE.md # (This file)
+│ ├── DEBUGGING.md
+│ ├── DEPLOYMENT.md
+│ ├── TESTING.md
+│ └── (additional focused docs)
 ├── include/
-│   └── huntmaster/
-│       ├── core/                    # Public core engine headers
-│       ├── security/                # Security / validation APIs
-│       └── utils/                   # Shared utilities
+│ └── huntmaster/
+│ ├── core/ # Public core engine headers
+│ ├── security/ # Security / validation APIs
+│ └── utils/ # Shared utilities
 ├── src/
-│   ├── core/                        # Engine implementations (UnifiedAudioEngine, analyzers, scoring)
-│   ├── security/
-│   └── utils/
+│ ├── core/ # Engine implementations (UnifiedAudioEngine, analyzers, scoring)
+│ ├── security/
+│ └── utils/
 ├── tests/
-│   ├── CMakeLists.txt
-│   ├── unit/
-│   ├── integration/
-│   ├── lib/                         # Test utilities (TestFixtureBase, generators)
-│   └── benchmarks/
-├── tools/                           # CLI & diagnostic tools (auto-discovered)
+│ ├── CMakeLists.txt
+│ ├── unit/
+│ ├── integration/
+│ ├── lib/ # Test utilities (TestFixtureBase, generators)
+│ └── benchmarks/
+├── tools/ # CLI & diagnostic tools (auto-discovered)
 ├── data/
-│   ├── master_calls/                # Reference/master call audio (hierarchical species dirs)
-│   ├── processed_calls/             # Normalized / prepared assets
-│   ├── test_audio/
-│   └── recordings/
-├── web/                             # WASM bridge + alpha testing interface
-├── scripts/                         # Automation (build, test orchestration, cleanup)
-├── archive/                         # Historical reports / legacy docs (frozen)
-└── cmake/                           # (If present) shared CMake modules
+│ ├── master_calls/ # Reference/master call audio (hierarchical species dirs)
+│ ├── processed_calls/ # Normalized / prepared assets
+│ ├── test_audio/
+│ └── recordings/
+├── web/ # WASM bridge + alpha testing interface
+├── scripts/ # Automation (build, test orchestration, cleanup)
+├── archive/ # Historical reports / legacy docs (frozen)
+└── cmake/ # (If present) shared CMake modules
 ```
 
 Legacy higher-volume / historical documents relocated under `archive/` to reduce noise. Only actively maintained design & roadmap docs remain in `docs/`.

@@ -28,37 +28,37 @@ Achieve 90% test coverage and production-ready quality assurance for the cross-p
 **Authority:** mvp_todo.md Stream A.1 - TestUtils.h Infrastructure
 
 - [x] **TEST-INFRA-001:** Create TestUtils.h header infrastructure
-  - **File:** `tests/lib/TestUtils.h` **COMPLETE**
-  - **Impact:** +1,500 lines coverage - 10+ high-impact tests now unblocked
-  - **Status:** Infrastructure complete with TestPaths, TestDataGenerator, TestResourceManager
+ - **File:** `tests/lib/TestUtils.h` **COMPLETE**
+ - **Impact:** +1,500 lines coverage - 10+ high-impact tests now unblocked
+ - **Status:** Infrastructure complete with TestPaths, TestDataGenerator, TestResourceManager
 
 - [x] **TEST-INFRA-002:** Create TestFixtureBase.h foundation
-  - **File:** Integrated in `tests/lib/TestUtils.h` **COMPLETE**
-  - **Provides:** Common setup/teardown patterns for UnifiedAudioEngine tests
-  - **Status:** TestFixtureBase class implemented and working
+ - **File:** Integrated in `tests/lib/TestUtils.h` **COMPLETE**
+ - **Provides:** Common setup/teardown patterns for UnifiedAudioEngine tests
+ - **Status:** TestFixtureBase class implemented and working
 
 - [x] **TEST-INFRA-003:** Implement test audio generators
-  - **Functions:** `generateSineWave()`, `generateWhiteNoise()`, `generateChirp()` **COMPLETE**
-  - **Purpose:** Deterministic synthetic test data
-  - **Status:** All audio generators implemented and tested
+ - **Functions:** `generateSineWave()`, `generateWhiteNoise()`, `generateChirp()` **COMPLETE**
+ - **Purpose:** Deterministic synthetic test data
+ - **Status:** All audio generators implemented and tested
 
 ### Sprint A.2: High-Impact Test Integration
 **Authority:** mvp_todo.md Stream A.2 - High-Impact Test Integration
 
 - [x] **TEST-SECURITY-001:** Integrate security component tests
-  - **Files:** `test_memory_guard.cpp`, `test_access_controller.cpp`, `test_input_validator.cpp` **COMPLETE**
-  - **Impact:** +500 lines security coverage (117/118 tests passing)
-  - **Status:** Successfully integrated into CMakeLists.txt and building/running
+ - **Files:** `test_memory_guard.cpp`, `test_access_controller.cpp`, `test_input_validator.cpp` **COMPLETE**
+ - **Impact:** +500 lines security coverage (117/118 tests passing)
+ - **Status:** Successfully integrated into CMakeLists.txt and building/running
 
 - [x] **TEST-AUDIO-001:** Integrate core audio processing tests
-  - **Files:** `test_realtime_scorer.cpp` (+402 lines), `test_spectrogram_processor.cpp` (+219 lines) **COMPLETE**
-  - **Impact:** +621 lines audio core coverage (37/39 tests passing)
-  - **Status:** Successfully integrated with TestUtils.h infrastructure
+ - **Files:** `test_realtime_scorer.cpp` (+402 lines), `test_spectrogram_processor.cpp` (+219 lines) **COMPLETE**
+ - **Impact:** +621 lines audio core coverage (37/39 tests passing)
+ - **Status:** Successfully integrated with TestUtils.h infrastructure
 
 - [x] **TEST-SESSION-001:** Integrate session state tests
-  - **Files:** `test_session_state_comprehensive.cpp` (+400 lines) **COMPLETE**
-  - **Impact:** +400 lines session management coverage
-  - **Status:** Successfully integrated into test suite
+ - **Files:** `test_session_state_comprehensive.cpp` (+400 lines) **COMPLETE**
+ - **Impact:** +400 lines session management coverage
+ - **Status:** Successfully integrated into test suite
 
 ---
 
@@ -71,22 +71,22 @@ Achieve 90% test coverage and production-ready quality assurance for the cross-p
 **Authority:** mvp_todo.md Stream A.3 - Coverage Infrastructure Debug
 
 - [x] **COV-INFRA-001:** Debug coverage collection issue **COMPLETE**
-  - **Problem:** Tests run successfully but coverage reports 0% - RESOLVED
-  - **Solution:** Fixed gcovr parameters, added --gcov-object-directory and error handling
-  - **Files:** `scripts/measure_coverage.sh` - Updated with proper gcovr configuration
-  - **Result:** Coverage collection operational, reporting 15%+ when tests run properly
+ - **Problem:** Tests run successfully but coverage reports 0% - RESOLVED
+ - **Solution:** Fixed gcovr parameters, added --gcov-object-directory and error handling
+ - **Files:** `scripts/measure_coverage.sh` - Updated with proper gcovr configuration
+ - **Result:** Coverage collection operational, reporting 15%+ when tests run properly
 
 - [x] **COV-INFRA-002:** Implement robust coverage reporting **COMPLETE**
-  - **Tools:** gcovr with XML/HTML output working, TXT logs functional
-  - **Implementation:** Real-time coverage tracking with detailed file-by-file breakdown
-  - **Output:** Coverage reports generated in `coverage_reports/` directory
-  - **Formats:** TXT, XML, HTML with timestamp organization
+ - **Tools:** gcovr with XML/HTML output working, TXT logs functional
+ - **Implementation:** Real-time coverage tracking with detailed file-by-file breakdown
+ - **Output:** Coverage reports generated in `coverage_reports/` directory
+ - **Formats:** TXT, XML, HTML with timestamp organization
 
 - [x] **COV-INFRA-003:** Coverage quality gates **COMPLETE**
-  - **Gates:** Coverage thresholds implemented (90% target), warning system operational
-  - **Integration:** Script supports ENFORCE_COVERAGE flag for CI/CD blocking
-  - **Monitoring:** Coverage progression tracked with clear SUCCESS/WARNING reporting
-  - **Infrastructure:** Ready for 90% coverage goal enforcement
+ - **Gates:** Coverage thresholds implemented (90% target), warning system operational
+ - **Integration:** Script supports ENFORCE_COVERAGE flag for CI/CD blocking
+ - **Monitoring:** Coverage progression tracked with clear SUCCESS/WARNING reporting
+ - **Infrastructure:** Ready for 90% coverage goal enforcement
 
 **Work Stream B Summary:**
 - **Coverage collection pipeline fully operational** (gcovr integration, proper build configuration)
@@ -99,16 +99,16 @@ Achieve 90% test coverage and production-ready quality assurance for the cross-p
 **Authority:** mvp_todo.md - Convert similarity test skips to deterministic asserts
 
 - [x] **TEST-LEGACY-001:** Convert similarity test skip patterns **STARTED**
-  - **Files:** `dtw_tests.cpp`, `dtw_tests_unified.cpp`, `test_finalize_session.cpp`
-  - **Method:** Use readiness API (`getRealtimeSimilarityState()`) instead of arbitrary sleeps
-  - **Status:** DTW tests updated to use readiness API for deterministic timing
-  - **Goal:** Eliminate non-deterministic test behavior
+ - **Files:** `dtw_tests.cpp`, `dtw_tests_unified.cpp`, `test_finalize_session.cpp`
+ - **Method:** Use readiness API (`getRealtimeSimilarityState()`) instead of arbitrary sleeps
+ - **Status:** DTW tests updated to use readiness API for deterministic timing
+ - **Goal:** Eliminate non-deterministic test behavior
 
 - [ ] **TEST-LEGACY-002:** Implement synthetic master call injection
-  - **Purpose:** Ensure deterministic separation between self/diff scores
-  - **Method:** Controlled MFCC frame perturbation in test helpers via TestDataGenerator
-  - **Status:** Integration with TestUtils.h synthetic data generation in progress
-  - **Dependencies:** Test compilation issues need resolution
+ - **Purpose:** Ensure deterministic separation between self/diff scores
+ - **Method:** Controlled MFCC frame perturbation in test helpers via TestDataGenerator
+ - **Status:** Integration with TestUtils.h synthetic data generation in progress
+ - **Dependencies:** Test compilation issues need resolution
 
 ---
 
@@ -120,31 +120,31 @@ Achieve 90% test coverage and production-ready quality assurance for the cross-p
 **Authority:** mvp_todo.md - Security Framework (COMPLETE, maintain coverage)
 
 - [x] **SEC-TEST-001:** Memory guard and protection tests **STARTED**
-  - **Files:** `test_memory_guard.cpp` **INTEGRATED**
-  - **Coverage:** Memory allocation tracking, leak detection, buffer overflow protection
-  - **Status:** Successfully integrated into build system and running
-  - **Impact:** +150 lines basic security coverage
+ - **Files:** `test_memory_guard.cpp` **INTEGRATED**
+ - **Coverage:** Memory allocation tracking, leak detection, buffer overflow protection
+ - **Status:** Successfully integrated into build system and running
+ - **Impact:** +150 lines basic security coverage
 
 - [x] **SEC-TEST-002:** Access control and validation tests **STARTED**
-  - **Files:** `test_access_controller.cpp`, `test_input_validator.cpp` **INTEGRATED**
-  - **Coverage:** Session isolation, input sanitization, privilege validation
-  - **Status:** Successfully integrated and running
-  - **Impact:** +250 lines access control coverage
+ - **Files:** `test_access_controller.cpp`, `test_input_validator.cpp` **INTEGRATED**
+ - **Coverage:** Session isolation, input sanitization, privilege validation
+ - **Status:** Successfully integrated and running
+ - **Impact:** +250 lines access control coverage
 
 ### Sprint C.2: Cryptographic & Audit Components [PENDING]
 **Authority:** mvp_todo.md - Security Framework validation
 
 - [ ] **SEC-TEST-003:** Cryptographic manager tests **PENDING**
-  - **Files:** `test_crypto_manager.cpp` (available but not integrated)
-  - **Coverage:** Secure key management, encryption/decryption validation
-  - **Blocker:** Requires crypto manager implementation linkage
-  - **Impact:** +200 lines crypto coverage (when implemented)
+ - **Files:** `test_crypto_manager.cpp` (available but not integrated)
+ - **Coverage:** Secure key management, encryption/decryption validation
+ - **Blocker:** Requires crypto manager implementation linkage
+ - **Impact:** +200 lines crypto coverage (when implemented)
 
 - [ ] **SEC-TEST-004:** Audit logging and monitoring tests **PENDING**
-  - **Files:** `test_audit_logger.cpp` (available in codebase)
-  - **Coverage:** Security event logging, compliance tracking
-  - **Status:** Ready for integration when audit logger implementation available
-  - **Impact:** +150 lines audit coverage
+ - **Files:** `test_audit_logger.cpp` (available in codebase)
+ - **Coverage:** Security event logging, compliance tracking
+ - **Status:** Ready for integration when audit logger implementation available
+ - **Impact:** +150 lines audit coverage
 
 ---
 

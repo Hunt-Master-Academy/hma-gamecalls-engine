@@ -75,9 +75,9 @@ logger.setGlobalLogLevel(huntmaster::LogLevel::ERROR); // baseline
 
 // Temporarily elevate specific components
 logger.setComponentLogLevel(huntmaster::Component::UNIFIED_ENGINE,
-                            huntmaster::LogLevel::INFO);
+ huntmaster::LogLevel::INFO);
 logger.setComponentLogLevel(huntmaster::Component::PERFORMANCE,
-                            huntmaster::LogLevel::DEBUG);
+ huntmaster::LogLevel::DEBUG);
 ```cpp
 
 ### 5.2 File Logging
@@ -93,8 +93,8 @@ logger.enableThreadIds(true);
 
 ```cpp
 {
-    AutoProfiler p("processAudioChunk");
-    engine->processAudioChunk(session, span);
+ AutoProfiler p("processAudioChunk");
+ engine->processAudioChunk(session, span);
 }
 ```
 
@@ -155,10 +155,10 @@ Add logging only after minimal overhead validated.
 
 ```cpp
 if (logger.isEnabled(huntmaster::Component::REALTIME_SCORER,
-                     huntmaster::LogLevel::DEBUG)) {
-    logger.log(huntmaster::Component::REALTIME_SCORER,
-               huntmaster::LogLevel::DEBUG,
-               "Frames=" + std::to_string(state.framesObserved));
+ huntmaster::LogLevel::DEBUG)) {
+ logger.log(huntmaster::Component::REALTIME_SCORER,
+ huntmaster::LogLevel::DEBUG,
+ "Frames=" + std::to_string(state.framesObserved));
 }
 ```
 
@@ -180,7 +180,7 @@ Sample bootstrap:
 
 ```cpp
 if (const char* lvl = std::getenv("HUNTMASTER_LOG_LEVEL")) {
-    logger.setGlobalLogLevel(parseLogLevel(lvl));
+ logger.setGlobalLogLevel(parseLogLevel(lvl));
 }
 ```
 

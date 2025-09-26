@@ -65,9 +65,9 @@ EXPECT_EQ(st, UnifiedAudioEngine::Status::OK);
 
 auto simR = engine->getSimilarityScore(s);
 if (simR.isOk()) {
-    float score = simR.value;
+ float score = simR.value;
 } else {
-    // EXPECT_* or ASSERT_* depending on test intent
+ // EXPECT_* or ASSERT_* depending on test intent
 }
 ```
 Never access `value` without `.isOk()`.
@@ -78,22 +78,22 @@ Never access `value` without `.isOk()`.
 ```cpp
 class EngineFixture : public ::testing::Test {
 protected:
-    void SetUp() override {
-        auto r = UnifiedAudioEngine::create();
-        ASSERT_TRUE(r.isOk());
-        engine = std::move(r.value);
+ void SetUp() override {
+ auto r = UnifiedAudioEngine::create();
+ ASSERT_TRUE(r.isOk());
+ engine = std::move(r.value);
 
-        auto sr = engine->createSession(44100.f);
-        ASSERT_TRUE(sr.isOk());
-        session = sr.value;
-    }
-    void TearDown() override {
-        if (engine) {
-            engine->destroySession(session);
-        }
-    }
-    std::unique_ptr<UnifiedAudioEngine> engine;
-    SessionId session{};
+ auto sr = engine->createSession(44100.f);
+ ASSERT_TRUE(sr.isOk());
+ session = sr.value;
+ }
+ void TearDown() override {
+ if (engine) {
+ engine->destroySession(session);
+ }
+ }
+ std::unique_ptr<UnifiedAudioEngine> engine;
+ SessionId session{};
 };
 ```
 
@@ -248,26 +248,26 @@ Do not gate deployment on coverage until finalize stage is merged.
 Planned suites to accompany finalize/readiness/overlay/calibration features (see mvp_todo.md):
 
 - Finalize Stage
-    - Segment extraction: multi-burst and trailing-silence selection
-    - Refined DTW: similarityAtFinalize monotonic vs provisional
-    - Loudness normalization: RMS error ≤ 2%
+ - Segment extraction: multi-burst and trailing-silence selection
+ - Refined DTW: similarityAtFinalize monotonic vs provisional
+ - Loudness normalization: RMS error ≤ 2%
 - Readiness
-    - Deterministic threshold loop: reliable within N frames at given sampleRate
-    - Negative path: stays unreliable below threshold
+ - Deterministic threshold loop: reliable within N frames at given sampleRate
+ - Negative path: stays unreliable below threshold
 - Overlay Export
-    - Decimation length ratio within tolerance; drift < 1 frame per block
-    - Offset handling (when setOverlayOffset is added)
+ - Decimation length ratio within tolerance; drift < 1 frame per block
+ - Offset handling (when setOverlayOffset is added)
 - Calibration Grades
-    - Boundary fixtures for pitch/harmonic/cadence A–F transitions
-    - Stability after readiness: grade variance < target band
+ - Boundary fixtures for pitch/harmonic/cadence A–F transitions
+ - Stability after readiness: grade variance < target band
 
 - Mic Calibration Advisor
-    - Synthetic noise/music fixtures to validate noise floor and headroom calculation
-    - Recommendation bands map deterministically to documented thresholds
+ - Synthetic noise/music fixtures to validate noise floor and headroom calculation
+ - Recommendation bands map deterministically to documented thresholds
 
 - Latency/Drift Calibrator
-    - Synthetic offset fixtures to validate ms error ≤ 1 ms
-    - Synthetic drift (ppm) fixtures to validate ppm error ≤ 10 ppm
+ - Synthetic offset fixtures to validate ms error ≤ 1 ms
+ - Synthetic drift (ppm) fixtures to validate ppm error ≤ 10 ppm
 
 Acceptance snapshot (add when APIs land):
 

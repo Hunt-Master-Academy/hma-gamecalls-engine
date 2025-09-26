@@ -133,7 +133,7 @@ target_link_libraries(RunEngineTests PRIVATE UnifiedAudioEngine GTest::gtest_mai
 target_compile_definitions(RunEngineTests PRIVATE HUNTMASTER_TEST_HOOKS=1)
 target_include_directories(RunEngineTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 
-message("  -- Enhanced Analyzer test runner 'RunEngineTests' configured")
+message(" -- Enhanced Analyzer test runner 'RunEngineTests' configured")
 
 # Core optimized audio recording tests (commented out - missing file)
 # add_executable(RecorderTests

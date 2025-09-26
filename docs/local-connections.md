@@ -14,19 +14,19 @@ Compose file path
 
 Required .env keys (hma-infra/.env)
 - PostgreSQL
-  - POSTGRES_DB
-  - POSTGRES_USER
-  - POSTGRES_PASSWORD
+ - POSTGRES_DB
+ - POSTGRES_USER
+ - POSTGRES_PASSWORD
 - Redis
-  - REDIS_PASSWORD (optional, if configured)
+ - REDIS_PASSWORD (optional, if configured)
 - MinIO (S3)
-  - MINIO_ROOT_USER
-  - MINIO_ROOT_PASSWORD
+ - MINIO_ROOT_USER
+ - MINIO_ROOT_PASSWORD
 - Content Bridge (optional)
-  - CONTENT_MODE (local|hybrid|s3)
-  - CONTENT_BUCKET (for S3/hybrid)
-  - CDN_URL
-  - HMA_CONTENT_PATH (host path to hma-content)
+ - CONTENT_MODE (local|hybrid|s3)
+ - CONTENT_BUCKET (for S3/hybrid)
+ - CDN_URL
+ - HMA_CONTENT_PATH (host path to hma-content)
 
 Services (Docker network names → host ports)
 - Postgres: service=postgres, internal=5432, host-port=discover via command below
@@ -36,21 +36,21 @@ Services (Docker network names → host ports)
 
 Discover host-mapped ports
 - PostgreSQL (host port)
-  docker compose -f docker/docker-compose.yml port postgres 5432
+ docker compose -f docker/docker-compose.yml port postgres 5432
 - Redis (host port)
-  docker compose -f docker/docker-compose.yml port redis 6379
+ docker compose -f docker/docker-compose.yml port redis 6379
 
 PostgreSQL connection
 
 From host (psql/engines on host):
 - Connection string (Gamecalls schema)
-  postgresql://POSTGRES_USER:POSTGRES_PASSWORD@localhost:HOST_PORT/POSTGRES_DB?options=-c%20search_path=game_calls
+ postgresql://POSTGRES_USER:POSTGRES_PASSWORD@localhost:HOST_PORT/POSTGRES_DB?options=-c%20search_path=game_calls
 - Connection string (Hunt-Strategy schema)
-  postgresql://POSTGRES_USER:POSTGRES_PASSWORD@localhost:HOST_PORT/POSTGRES_DB?options=-c%20search_path=hunt_strategy
+ postgresql://POSTGRES_USER:POSTGRES_PASSWORD@localhost:HOST_PORT/POSTGRES_DB?options=-c%20search_path=hunt_strategy
 
 From another container on the same Docker network:
 - Connection string (set search_path at connect time)
-  postgresql://POSTGRES_USER:POSTGRES_PASSWORD@postgres:5432/POSTGRES_DB?options=-c%20search_path=game_calls
+ postgresql://POSTGRES_USER:POSTGRES_PASSWORD@postgres:5432/POSTGRES_DB?options=-c%20search_path=game_calls
 
 Set search_path in session (psql):
 - docker compose -f docker/docker-compose.yml exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SET search_path TO game_calls; \\dt"
@@ -58,15 +58,15 @@ Set search_path in session (psql):
 
 Recommended least-privilege roles (optional)
 - SQL (run once)
-  CREATE ROLE gamecalls_rw LOGIN PASSWORD 'choose-strong-pass';
-  GRANT USAGE ON SCHEMA game_calls TO gamecalls_rw;
-  GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA game_calls TO gamecalls_rw;
-  ALTER DEFAULT PRIVILEGES IN SCHEMA game_calls GRANT SELECT,INSERT,UPDATE,DELETE ON TABLES TO gamecalls_rw;
+ CREATE ROLE gamecalls_rw LOGIN PASSWORD 'choose-strong-pass';
+ GRANT USAGE ON SCHEMA game_calls TO gamecalls_rw;
+ GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA game_calls TO gamecalls_rw;
+ ALTER DEFAULT PRIVILEGES IN SCHEMA game_calls GRANT SELECT,INSERT,UPDATE,DELETE ON TABLES TO gamecalls_rw;
 
-  CREATE ROLE huntstrategy_rw LOGIN PASSWORD 'choose-strong-pass';
-  GRANT USAGE ON SCHEMA hunt_strategy TO huntstrategy_rw;
-  GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA hunt_strategy TO huntstrategy_rw;
-  ALTER DEFAULT PRIVILEGES IN SCHEMA hunt_strategy GRANT SELECT,INSERT,UPDATE,DELETE ON TABLES TO huntstrategy_rw;
+ CREATE ROLE huntstrategy_rw LOGIN PASSWORD 'choose-strong-pass';
+ GRANT USAGE ON SCHEMA hunt_strategy TO huntstrategy_rw;
+ GRANT SELECT,INSERT,UPDATE,DELETE ON ALL TABLES IN SCHEMA hunt_strategy TO huntstrategy_rw;
+ ALTER DEFAULT PRIVILEGES IN SCHEMA hunt_strategy GRANT SELECT,INSERT,UPDATE,DELETE ON TABLES TO huntstrategy_rw;
 
 Redis connection
 
@@ -112,11 +112,11 @@ Common:
 - HUNTSTRATEGY_DB_SCHEMA=hunt_strategy
 - REDIS_URL=redis://HOST:PORT
 - Optional S3:
-  - S3_ENDPOINT=http://localhost:9000
-  - S3_REGION=us-east-1
-  - S3_ACCESS_KEY_ID=$MINIO_ROOT_USER
-  - S3_SECRET_ACCESS_KEY=$MINIO_ROOT_PASSWORD
-  - S3_BUCKET=hma-content-alpha
+ - S3_ENDPOINT=http://localhost:9000
+ - S3_REGION=us-east-1
+ - S3_ACCESS_KEY_ID=$MINIO_ROOT_USER
+ - S3_SECRET_ACCESS_KEY=$MINIO_ROOT_PASSWORD
+ - S3_BUCKET=hma-content-alpha
 
 Ready-to-copy helpers (Linux)
 
@@ -125,7 +125,7 @@ Export .env and compute host port:
 - HOST_PG_PORT=$(docker compose -f docker/docker-compose.yml port postgres 5432 | awk -F: '{print $2}')
 
 Construct connection strings:
-- echo "Gamecalls:  postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$HOST_PG_PORT/$POSTGRES_DB?options=-c%20search_path=game_calls"
+- echo "Gamecalls: postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$HOST_PG_PORT/$POSTGRES_DB?options=-c%20search_path=game_calls"
 - echo "HuntStrategy: postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:$HOST_PG_PORT/$POSTGRES_DB?options=-c%20search_path=hunt_strategy"
 
 Verification
@@ -142,13 +142,13 @@ Basic query:
 Troubleshooting
 
 - Check container health:
-  docker compose -f docker/docker-compose.yml ps
+ docker compose -f docker/docker-compose.yml ps
 
 - Logs:
-  docker compose -f docker/docker-compose.yml logs -f postgres
+ docker compose -f docker/docker-compose.yml logs -f postgres
 
 - Network readiness from a container:
-  docker compose -f docker/docker-compose.yml exec postgres pg_isready -h postgres -p 5432 -U "$POSTGRES_USER"
+ docker compose -f docker/docker-compose.yml exec postgres pg_isready -h postgres -p 5432 -U "$POSTGRES_USER"
 
 Notes
 - This guide targets local development. Disable SSL locally (sslmode=disable).
@@ -165,8 +165,8 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 if [[ ! -f .env ]]; then
-  echo "Missing .env in hma-infra. Aborting." >&2
-  exit 1
+ echo "Missing .env in hma-infra. Aborting." >&2
+ exit 1
 fi
 
 set -a
@@ -199,9 +199,9 @@ Generated: $(date)
 - Password: ${POSTGRES_PASSWORD:-}
 - From containers: host=postgres port=5432
 - Gamecalls URL:
-  postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${HOST_PG_PORT:-5432}/${POSTGRES_DB}?options=-c%20search_path=game_calls
+ postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${HOST_PG_PORT:-5432}/${POSTGRES_DB}?options=-c%20search_path=game_calls
 - Hunt-Strategy URL:
-  postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${HOST_PG_PORT:-5432}/${POSTGRES_DB}?options=-c%20search_path=hunt_strategy
+ postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${HOST_PG_PORT:-5432}/${POSTGRES_DB}?options=-c%20search_path=hunt_strategy
 
 ## Redis
 - Host: localhost
@@ -218,8 +218,8 @@ Generated: $(date)
 
 ## Content Bridge
 - Health: http://localhost:${HOST_CONTENT_BRIDGE_PORT:-8090}/health
-- Audio:  http://localhost:${HOST_CONTENT_BRIDGE_PORT:-8090}/api/audio
-- Icons:  http://localhost:${HOST_CONTENT_BRIDGE_PORT:-8090}/api/icons
+- Audio: http://localhost:${HOST_CONTENT_BRIDGE_PORT:-8090}/api/audio
+- Icons: http://localhost:${HOST_CONTENT_BRIDGE_PORT:-8090}/api/icons
 - Research: http://localhost:${HOST_CONTENT_BRIDGE_PORT:-8090}/api/research
 - Manifest: http://localhost:${HOST_CONTENT_BRIDGE_PORT:-8090}/api/manifest
 - Mode: ${CONTENT_MODE:-local}

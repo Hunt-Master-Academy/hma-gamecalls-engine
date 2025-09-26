@@ -94,7 +94,7 @@ VAD → Levels → MFCC → RealtimeScorer → (Pitch/Harmonic/Cadence) → Summ
 
 ```cpp
 auto engineR = UnifiedAudioEngine::create();
-auto engine  = std::move(engineR.value);
+auto engine = std::move(engineR.value);
 auto sessionR = engine->createSession(44100.f);
 SessionId session = sessionR.value;
 

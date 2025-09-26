@@ -94,7 +94,7 @@ Example bootstrap:
 
 ```cpp
 if (const char* lvl = std::getenv("HUNTMASTER_LOG_LEVEL")) {
-    logger.setGlobalLogLevel(parseLogLevel(lvl));
+ logger.setGlobalLogLevel(parseLogLevel(lvl));
 }
 ```
 
@@ -199,11 +199,11 @@ Snapshot strategy: add lightweight “dump summary” tool invocation that print
 
 1. Maintain previous stable artifact (N-1) in release store.
 2. Rollback triggers:
-   - Performance guard fail in production
-   - Similarity correctness drift reported
+ - Performance guard fail in production
+ - Similarity correctness drift reported
 3. Post-rollback:
-   - Enable targeted logging
-   - Reproduce issue in staging using captured audio
+ - Enable targeted logging
+ - Reproduce issue in staging using captured audio
 
 ---
 

@@ -51,8 +51,8 @@ The main profiling interface that provides:
 
 // Create profiler with custom thresholds
 PerformanceThresholds thresholds;
-thresholds.maxRealTimeRatio = 0.5f;  // 50% of real-time
-thresholds.maxChunkLatency = 10.0f;  // 10ms max per chunk
+thresholds.maxRealTimeRatio = 0.5f; // 50% of real-time
+thresholds.maxChunkLatency = 10.0f; // 10ms max per chunk
 PerformanceProfiler profiler(thresholds);
 
 // Start profiling a session
@@ -60,8 +60,8 @@ profiler.startProfiling(sessionId);
 
 // Profile specific components
 {
-    PROFILE_COMPONENT(profiler, sessionId, "MFCC_Processing");
-    // Your MFCC processing code here
+ PROFILE_COMPONENT(profiler, sessionId, "MFCC_Processing");
+ // Your MFCC processing code here
 }
 
 // Get performance metrics
@@ -80,9 +80,9 @@ PerformanceBenchmark benchmark(engine.get());
 
 // Configure benchmark parameters
 PerformanceBenchmark::BenchmarkConfig config;
-config.testDurations = {1, 5, 10, 30};  // seconds
-config.chunkSizes = {256, 512, 1024};   // samples
-config.sampleRates = {44100.0f};        // Hz
+config.testDurations = {1, 5, 10, 30}; // seconds
+config.chunkSizes = {256, 512, 1024}; // samples
+config.sampleRates = {44100.0f}; // Hz
 
 // Run comprehensive benchmark
 auto results = benchmark.runComprehensiveBenchmark(config);
@@ -98,13 +98,13 @@ Automatic component profiling using RAII pattern:
 
 ```cpp
 void processAudioChunk(SessionId sessionId, std::span<const float> audio) {
-    PROFILE_COMPONENT(profiler, sessionId, "AudioProcessing");
+ PROFILE_COMPONENT(profiler, sessionId, "AudioProcessing");
 
-    // Your processing code is automatically profiled
-    // Timing starts when entering scope, ends when leaving
-    performMFCCExtraction(audio);
-    performDTWComparison();
-    performVADAnalysis();
+ // Your processing code is automatically profiled
+ // Timing starts when entering scope, ends when leaving
+ performMFCCExtraction(audio);
+ performDTWComparison();
+ performVADAnalysis();
 }
 ```
 
@@ -179,10 +179,10 @@ Enable continuous performance monitoring with alerts:
 ```cpp
 profiler.enableRealTimeMonitoring(true);
 profiler.setCallbackOnAlert([](const PerformanceAlert& alert) {
-    std::cout << "PERFORMANCE ALERT: " << alert.description << std::endl;
-    for (const auto& suggestion : alert.suggestions) {
-        std::cout << "  Suggestion: " << suggestion << std::endl;
-    }
+ std::cout << "PERFORMANCE ALERT: " << alert.description << std::endl;
+ for (const auto& suggestion : alert.suggestions) {
+ std::cout << " Suggestion: " << suggestion << std::endl;
+ }
 });
 ```
 
@@ -249,16 +249,16 @@ std::vector<float> audioData = loadAudioFile("test.wav");
 const size_t chunkSize = 512;
 
 for (size_t i = 0; i < audioData.size(); i += chunkSize) {
-    auto chunk = std::span<const float>(audioData.data() + i,
-                                       std::min(chunkSize, audioData.size() - i));
+ auto chunk = std::span<const float>(audioData.data() + i,
+ std::min(chunkSize, audioData.size() - i));
 
-    auto startTime = std::chrono::high_resolution_clock::now();
-    auto status = engine->processAudioChunk(sessionId, chunk);
-    auto endTime = std::chrono::high_resolution_clock::now();
+ auto startTime = std::chrono::high_resolution_clock::now();
+ auto status = engine->processAudioChunk(sessionId, chunk);
+ auto endTime = std::chrono::high_resolution_clock::now();
 
-    // Record performance metrics
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
-    profiler.recordChunkProcessed(sessionId, chunk.size(), duration.count() / 1000.0f);
+ // Record performance metrics
+ auto duration = std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+ profiler.recordChunkProcessed(sessionId, chunk.size(), duration.count() / 1000.0f);
 }
 
 // Get results
@@ -279,19 +279,19 @@ PerformanceProfiler profiler;
 
 // Create multiple sessions
 for (int i = 0; i < 5; ++i) {
-    auto sessionResult = engine->createSession(44100.0f);
-    SessionId sessionId = *sessionResult;
-    sessions.push_back(sessionId);
-    profiler.startProfiling(sessionId);
+ auto sessionResult = engine->createSession(44100.0f);
+ SessionId sessionId = *sessionResult;
+ sessions.push_back(sessionId);
+ profiler.startProfiling(sessionId);
 }
 
 // Process audio concurrently
 for (SessionId sessionId : sessions) {
-    std::thread([&profiler, &engine, sessionId]() {
-        // Process audio in parallel
-        auto audioData = generateTestAudio();
-        processAudioWithProfiling(profiler, engine.get(), sessionId, audioData);
-    }).detach();
+ std::thread([&profiler, &engine, sessionId]() {
+ // Process audio in parallel
+ auto audioData = generateTestAudio();
+ processAudioWithProfiling(profiler, engine.get(), sessionId, audioData);
+ }).detach();
 }
 
 // Get system overview
@@ -345,11 +345,11 @@ Customize performance thresholds for your specific requirements:
 
 ```cpp
 PerformanceThresholds thresholds;
-thresholds.maxRealTimeRatio = 0.3f;        // Must process 3x faster than real-time
-thresholds.maxChunkLatency = 5.0f;         // 5ms maximum per chunk
+thresholds.maxRealTimeRatio = 0.3f; // Must process 3x faster than real-time
+thresholds.maxChunkLatency = 5.0f; // 5ms maximum per chunk
 thresholds.maxMemoryUsage = 50 * 1024 * 1024; // 50MB maximum
-thresholds.minSimilarityScore = 0.01f;     // Minimum quality threshold
-thresholds.maxCpuUsage = 20.0f;            // 20% CPU maximum
+thresholds.minSimilarityScore = 0.01f; // Minimum quality threshold
+thresholds.maxCpuUsage = 20.0f; // 20% CPU maximum
 ```
 
 ### Benchmark Configuration
@@ -361,10 +361,10 @@ PerformanceBenchmark::BenchmarkConfig config;
 config.testDurations = {1, 5, 10, 30, 60}; // Test durations in seconds
 config.chunkSizes = {128, 256, 512, 1024, 2048}; // Chunk sizes to test
 config.sampleRates = {22050.0f, 44100.0f, 48000.0f}; // Sample rates
-config.numRuns = 10;                        // Number of runs for averaging
-config.enableMemoryProfiling = true;       // Enable memory analysis
-config.enableLatencyProfiling = true;      // Enable latency analysis
-config.enableQualityValidation = true;     // Enable quality validation
+config.numRuns = 10; // Number of runs for averaging
+config.enableMemoryProfiling = true; // Enable memory analysis
+config.enableLatencyProfiling = true; // Enable latency analysis
+config.enableQualityValidation = true; // Enable quality validation
 ```
 
 ## Output Files
@@ -375,24 +375,24 @@ The profiling tools generate several output files for analysis:
 
 ```json
 {
-  "sessionId": 12345,
-  "realTimeRatio": 0.25,
-  "avgChunkProcessingTime": 2.5,
-  "peakMemoryUsage": 52428800,
-  "totalChunksProcessed": 1000,
-  "avgSimilarityScore": 0.75,
-  "components": {
-    "mfcc": {
-      "totalTime": 15000,
-      "avgTime": 15,
-      "callCount": 1000
-    },
-    "dtw": {
-      "totalTime": 45000,
-      "avgTime": 45,
-      "callCount": 1000
-    }
-  }
+ "sessionId": 12345,
+ "realTimeRatio": 0.25,
+ "avgChunkProcessingTime": 2.5,
+ "peakMemoryUsage": 52428800,
+ "totalChunksProcessed": 1000,
+ "avgSimilarityScore": 0.75,
+ "components": {
+ "mfcc": {
+ "totalTime": 15000,
+ "avgTime": 15,
+ "callCount": 1000
+ },
+ "dtw": {
+ "totalTime": 45000,
+ "avgTime": 45,
+ "callCount": 1000
+ }
+ }
 }
 ```
 
@@ -400,15 +400,15 @@ The profiling tools generate several output files for analysis:
 
 ```json
 [
-  {
-    "testName": "RealTime_5s_512_44100",
-    "performanceCategory": "Good",
-    "realTimeRatio": 0.35,
-    "avgProcessingTime": 1750.5,
-    "peakMemoryUsage": 45678912,
-    "passedRealTimeThreshold": true,
-    "avgSimilarityScore": 0.82
-  }
+ {
+ "testName": "RealTime_5s_512_44100",
+ "performanceCategory": "Good",
+ "realTimeRatio": 0.35,
+ "avgProcessingTime": 1750.5,
+ "peakMemoryUsage": 45678912,
+ "passedRealTimeThreshold": true,
+ "avgSimilarityScore": 0.82
+ }
 ]
 ```
 
@@ -418,20 +418,20 @@ The profiling tools generate several output files for analysis:
 
 1. **High Memory Usage**
 
-   - Check for memory leaks in session management
-   - Implement buffer pooling
-   - Reduce feature vector caching
+ - Check for memory leaks in session management
+ - Implement buffer pooling
+ - Reduce feature vector caching
 
 2. **High Latency**
 
-   - Optimize MFCC frame sizes
-   - Reduce DTW window ratios
-   - Enable SIMD optimizations
+ - Optimize MFCC frame sizes
+ - Reduce DTW window ratios
+ - Enable SIMD optimizations
 
 3. **Poor Quality Scores**
-   - Check master call loading
-   - Validate audio preprocessing
-   - Verify feature extraction parameters
+ - Check master call loading
+ - Validate audio preprocessing
+ - Verify feature extraction parameters
 
 ### Debug Mode
 
@@ -441,9 +441,9 @@ Enable detailed debug output:
 // Enable comprehensive logging
 profiler.enableRealTimeMonitoring(true);
 profiler.setCallbackOnAlert([](const PerformanceAlert& alert) {
-    // Log all performance alerts
-    std::cout << "[" << alert.timestamp.time_since_epoch().count() << "] "
-              << alert.description << std::endl;
+ // Log all performance alerts
+ std::cout << "[" << alert.timestamp.time_since_epoch().count() << "] "
+ << alert.description << std::endl;
 });
 ```
 

@@ -21,20 +21,20 @@
 
 ## MVP TODO Items Progress
 
-### ✅ COMPLETED Items
+### COMPLETED Items
 - Core engine & enhanced analyzers are stable
 - Finalize stage implementation (basic)
 - Enhanced summary integration path
 - Similarity readiness API basic structure
 - Calibration grade mapping (basic boundaries)
 
-### 🔄 IN PROGRESS Items (TODOs Added Today)
+### IN PROGRESS Items (TODOs Added Today)
 - **LoudnessNormalizationAccuracy**: Added TODOs in `test_loudness_metrics.cpp`
 - **SegmentSelectionEdgeCases**: Added TODOs in `test_finalize_session.cpp`
 - **MicCalibrationAdvisor_HeadroomBounds**: Added TODOs in `test_calibration_grades.cpp`
 - **LatencyDriftCalibrator_SyntheticOffsetAndDrift**: Added TODOs in `test_calibration_grades.cpp`
 
-### ❌ PENDING Items (Need Implementation)
+### PENDING Items (Need Implementation)
 1. **Comprehensive test coverage for core components**
 2. **Performance revalidation** (<12ms streaming path)
 3. **Documentation sync** (headers + architecture)
@@ -58,11 +58,11 @@
 - **Current**: 17% coverage
 - **Target**: 90%+
 - **Actions**:
-  - Add comprehensive session management tests
-  - Add master call loading/unloading tests
-  - Add audio processing pipeline tests
-  - Add enhanced analyzers functionality tests
-  - Add error handling and edge case tests
+ - Add comprehensive session management tests
+ - Add master call loading/unloading tests
+ - Add audio processing pipeline tests
+ - Add enhanced analyzers functionality tests
+ - Add error handling and edge case tests
 
 ### Priority 2: Analyzer Components Testing
 - **HarmonicAnalyzer**: 0% → 90%+ (CRITICAL)

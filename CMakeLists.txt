@@ -17,7 +17,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Default to Release build if not specified
 if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE Release)
+ set(CMAKE_BUILD_TYPE Release)
 endif()
 
 # ==============================================================================
@@ -44,14 +44,14 @@ include_directories(${PROJECT_INCLUDE_DIR})
 
 # Add compiler-specific options
 if(MSVC)
-    add_compile_options(/W4 /permissive-)
+ add_compile_options(/W4 /permissive-)
 else()
-    add_compile_options(-Wall -Wextra -Wpedantic)
-    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-        add_compile_options(-g -O0)
-    else()
-        add_compile_options(-O3)
-    endif()
+ add_compile_options(-Wall -Wextra -Wpedantic)
+ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+ add_compile_options(-g -O0)
+ else()
+ add_compile_options(-O3)
+ endif()
 endif()
 
 # ==============================================================================
@@ -62,30 +62,30 @@ include(FetchContent)
 
 # Google Test
 FetchContent_Declare(
-    googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG release-1.12.1
+ googletest
+ GIT_REPOSITORY https://github.com/google/googletest.git
+ GIT_TAG release-1.12.1
 )
 
 # Google Benchmark
 FetchContent_Declare(
-    benchmark
-    GIT_REPOSITORY https://github.com/google/benchmark.git
-    GIT_TAG v1.7.1
+ benchmark
+ GIT_REPOSITORY https://github.com/google/benchmark.git
+ GIT_TAG v1.7.1
 )
 
 # KissFFT
 FetchContent_Declare(
-    kissfft
-    GIT_REPOSITORY https://github.com/mborgerding/kissfft.git
-    GIT_TAG master
+ kissfft
+ GIT_REPOSITORY https://github.com/mborgerding/kissfft.git
+ GIT_TAG master
 )
 
 # nlohmann/json (header-only)
 FetchContent_Declare(
-    nlohmann_json
-    GIT_REPOSITORY https://github.com/nlohmann/json.git
-    GIT_TAG v3.11.3
+ nlohmann_json
+ GIT_REPOSITORY https://github.com/nlohmann/json.git
+ GIT_TAG v3.11.3
 )
 
 # Disable benchmark testing and KissFFT tools
@@ -100,11 +100,11 @@ FetchContent_MakeAvailable(googletest benchmark kissfft nlohmann_json)# ========
 
 # Detect if we're building for WebAssembly
 if(EMSCRIPTEN)
-    message(STATUS "Building for WebAssembly (Emscripten)")
-    set(BUILDING_FOR_WASM TRUE)
+ message(STATUS "Building for WebAssembly (Emscripten)")
+ set(BUILDING_FOR_WASM TRUE)
 else()
-    message(STATUS "Building for native platform")
-    set(BUILDING_FOR_WASM FALSE)
+ message(STATUS "Building for native platform")
+ set(BUILDING_FOR_WASM FALSE)
 endif()
 
 # ==============================================================================
@@ -116,18 +116,18 @@ add_subdirectory(src)
 
 # Add tests directory (if not building for WASM)
 if(NOT BUILDING_FOR_WASM)
-    add_subdirectory(tests)
+ add_subdirectory(tests)
 
-    if(HUNTMASTER_BUILD_TOOLS)
-        add_subdirectory(tools)
-    else()
-        message(STATUS "Skipping tools build (HUNTMASTER_BUILD_TOOLS=OFF)")
-    endif()
+ if(HUNTMASTER_BUILD_TOOLS)
+ add_subdirectory(tools)
+ else()
+ message(STATUS "Skipping tools build (HUNTMASTER_BUILD_TOOLS=OFF)")
+ endif()
 
-    # Micro-benchmark harness (always build; fast)
-    add_executable(huntmaster_bench tools/benchmarks/micro_bench.cpp)
-    target_link_libraries(huntmaster_bench PRIVATE UnifiedAudioEngine benchmark::benchmark pthread)
-    target_include_directories(huntmaster_bench PRIVATE ${PROJECT_INCLUDE_DIR})
+ # Micro-benchmark harness (always build; fast)
+ add_executable(huntmaster_bench tools/benchmarks/micro_bench.cpp)
+ target_link_libraries(huntmaster_bench PRIVATE UnifiedAudioEngine benchmark::benchmark pthread)
+ target_include_directories(huntmaster_bench PRIVATE ${PROJECT_INCLUDE_DIR})
 endif()
 
 # KissFFT is now available via FetchContent
@@ -138,8 +138,8 @@ endif()
 
 # Install headers
 install(DIRECTORY ${PROJECT_INCLUDE_DIR}/
-    DESTINATION include
-    FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
+ DESTINATION include
+ FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp"
 )
 
 # ==============================================================================
