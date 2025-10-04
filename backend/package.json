@@ -1,0 +1,29 @@
+{
+  "name": "hma-gamecalls-engine-api",
+  "version": "1.0.0",
+  "description": "REST API for HMA Game Calls Engine",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "test": "jest"
+  },
+  "keywords": ["huntmaster", "gamecalls", "audio", "api"],
+  "author": "Hunt Master Academy",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "compression": "^1.7.4",
+    "winston": "^3.10.0",
+    "multer": "^1.4.5-lts.1",
+    "uuid": "^9.0.0",
+    "joi": "^17.9.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0",
+    "jest": "^29.5.0",
+    "supertest": "^6.3.3"
+  }
+}
