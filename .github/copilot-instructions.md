@@ -649,3 +649,47 @@ Remember: This is a production audio engine where correctness and real-time perf
 -   **Status**: All project status updates go in MVP todo first
 -   **CRITICAL**: Never create new documents unless specifically requested by user
 -   **CRITICAL**: Never delete `docs/mvp_todo.md` unless specifically requested by user
+
+## Documentation Standards - HMA Wiki
+
+**🚨 CRITICAL: All comprehensive documentation must be created in the HMA Documentation Wiki.**
+
+**Wiki Location**: `/home/xbyooki/projects/hma-docs/`
+
+**Allowed in THIS project directory**:
+- ✅ `README.md` - Project overview with links to wiki
+- ✅ `docs/mvp_todo.md` - Project task tracking (authoritative source)
+- ✅ `docs/dev_phases/*.md` - Phase-specific implementation breakdowns
+- ✅ Code comments and inline documentation
+- ✅ API doc comments (Doxygen style)
+
+**MUST be created in HMA Wiki** (NOT in this project):
+- ❌ Architecture documentation → Use `/hma-docs/architecture/`
+- ❌ User guides → Use `/hma-docs/field-guide/`
+- ❌ API reference docs → Use `/hma-docs/api-reference/`
+- ❌ Audio analysis guides → Use `/hma-docs/field-guide/game-calls/`
+- ❌ Feature specifications → Use appropriate wiki section
+- ❌ Status updates → Use `/hma-docs/archive/status-updates/`
+- ❌ Testing logs → Use `/hma-docs/archive/testing-logs/`
+- ❌ Integration docs → Use `/hma-docs/architecture/`
+
+**When creating new documentation**:
+1. Check if topic exists in wiki
+2. If yes: Update existing wiki doc, don't create duplicate
+3. If no: Create in wiki with proper naming: `lowercase-with-hyphens.md`
+4. Update wiki section README to link to new doc
+5. Link from this project's README to wiki location
+
+**Example**:
+```bash
+# ❌ WRONG - Don't create comprehensive docs here
+/home/xbyooki/projects/hma-gamecalls-engine/AUDIO_ANALYSIS_GUIDE.md
+
+# ✅ CORRECT - Create in wiki
+/home/xbyooki/projects/hma-docs/field-guide/game-calls/audio-analysis.md
+
+# Then link from project README
+See [Audio Analysis Guide](../hma-docs/field-guide/game-calls/audio-analysis.md)
+```
+
+**Wiki Documentation**: See `/home/xbyooki/projects/hma-docs/README.md` for complete wiki structure and navigation.
