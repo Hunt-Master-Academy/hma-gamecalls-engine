@@ -1,6 +1,35 @@
 # Hunt Master Academy Game Calls Engine – Architecture & Status
-Last Updated: August 13, 2025
+Last Updated: October 19, 2025
 Status: MVP COMPLETE | Enhanced Analyzers Phase 1 Integrated | UX Alignment & Calibration Mapping
+
+---
+
+## 🆕 Microservices Architecture Planning
+
+**NEW DOCUMENTATION**: The GameCalls Engine is being designed for microservices deployment to serve both Hunt Master Academy (educational) and Hunt Master Field Guide (mobile field app).
+
+📚 **Key Resources**:
+- **[Microservices Architecture Guide](MICROSERVICES_ARCHITECTURE_GUIDE.md)** - Complete REST API design, implementation roadmap, and technical specifications
+- **[Hunt Strategy Comparison](HUNT_STRATEGY_COMPARISON.md)** - Side-by-side comparison with Hunt Strategy Engine's proven microservices pattern
+- **Reference Implementation**: `/home/xbyooki/projects/hma-hunt-strategy-engine/backend/` (Node.js + Express wrapper)
+
+**Target Architecture**:
+```
+C++ Core Engine (UnifiedAudioEngine)
+         ↓
+   Node-API Bindings
+         ↓
+REST API Wrapper (Node.js + Express, Port 5005)
+         ↓
+HMA API Gateway (Port 3000)
+         ↓
+    ┌─────────────┴──────────────┐
+    ▼                            ▼
+HMA Academy Web           HMFG Mobile Apps
+(Lessons & Courses)       (Field Operations)
+```
+
+**Status**: Planning phase - See roadmap in MICROSERVICES_ARCHITECTURE_GUIDE.md
 
 ---
 
