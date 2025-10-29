@@ -1,30 +1,70 @@
+// [20251028-API-001] Sessions Service with Node-API bindings integration
 /**
  * Sessions Service
  * Manages audio analysis sessions and real-time processing
- * Interfaces with the C++ UnifiedAudioEngine for session management
+ * Interfaces with the C++ UnifiedAudioEngine via Node-API bindings
  */
 
 const { ApiError } = require('../middleware/errorHandler');
 const { v4: uuidv4 } = require('uuid');
+const path = require('path');
+const fs = require('fs').promises;
+const os = require('os');
 
+// [20251028-API-002] Load GameCalls Engine native bindings
+const gameCallsEngine = require('../../../bindings/node-api/lib/index');
+
+// [20251028-STORAGE-011] Load MinIO service for master call storage
+const minioService = require('./minioService');
+
+// [20251028-API-003] Session state cache (maps UUID to native session ID)
+// TODO: Replace with Redis in production for distributed session management
 class SessionsService {
 
-    // In-memory session storage (in production, this would be Redis or database)
+    // In-memory session storage mapping UUID → native sessionId + metadata
     static sessions = new Map();
+    
+    // Track if engine is initialized
+    static engineInitialized = false;
+
+    // [20251028-API-004] Initialize engine on first use
+    static async ensureEngineInitialized() {
+        if (!this.engineInitialized) {
+            await gameCallsEngine.initialize();
+            this.engineInitialized = true;
+        }
+    }
 
     /**
-     * Create new analysis session
+     * [20251028-API-005] Create new analysis session with C++ engine
      */
     static async createSession(masterCallId, options = {}) {
         try {
-            // TODO: Interface with C++ UnifiedAudioEngine::createSession()
+            await this.ensureEngineInitialized();
             
+            // [20251028-STORAGE-012] Download master call from MinIO to temp location
+            const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'gamecalls-'));
+            const masterCallPath = path.join(tempDir, `${masterCallId}.wav`);
+            
+            await minioService.downloadMasterCall(masterCallId, masterCallPath);
+            console.log(`📥 Downloaded master call: ${masterCallPath}`);
+            
+            // [20251028-API-007] Create session in C++ engine via Node-API bindings
+            const nativeSessionId = await gameCallsEngine.createSession(masterCallPath, {
+                sampleRate: options.sampleRate || 44100,
+                enableEnhancedAnalysis: options.enableEnhancedAnalysis !== false
+            });
+            
+            // [20251028-API-008] Generate public UUID for API consumers
             const sessionId = uuidv4();
             const now = new Date().toISOString();
 
             const session = {
                 id: sessionId,
+                nativeSessionId, // Internal C++ engine session ID
                 masterCallId,
+                masterCallPath, // Temp file location
+                tempDir, // For cleanup
                 status: 'created',
                 sampleRate: options.sampleRate || 44100,
                 bufferSize: options.bufferSize || 1024,
@@ -41,7 +81,7 @@ class SessionsService {
                     harmonic: { score: 0, confidence: 0 },
                     cadence: { score: 0, confidence: 0 },
                     loudness: { rms: 0, peak: 0, normalization: 1.0 },
-                    readiness: false
+                    readiness: 'not_ready'
                 },
                 analysis: {
                     segments: [],
@@ -56,6 +96,9 @@ class SessionsService {
             };
 
             this.sessions.set(sessionId, session);
+            
+            // [20251028-API-009] TODO: Cache session in Redis with TTL
+            // await redis.set(`session:${sessionId}`, JSON.stringify(session), 'EX', 3600);
 
             return session;
 
@@ -111,56 +154,66 @@ class SessionsService {
     }
 
     /**
-     * Process audio data for session (real-time)
+     * [20251028-API-010] Process audio data for session via C++ engine
      */
     static async processAudioData(sessionId, audioData) {
         try {
-            // TODO: Interface with C++ RealTimeAudioProcessor
-            
             const session = await this.getSession(sessionId);
 
             if (session.status !== 'recording') {
                 throw ApiError.badRequest('INVALID_SESSION_STATE', 'Session must be in recording state to process audio');
             }
 
-            // Mock real-time analysis updates
-            const mockAnalysis = {
-                similarity: Math.random() * 0.8 + 0.1, // 0.1 - 0.9
+            // [20251028-API-011] Convert audio data to Float32Array if needed
+            let audioBuffer;
+            if (audioData instanceof Float32Array) {
+                audioBuffer = audioData;
+            } else if (Buffer.isBuffer(audioData)) {
+                // Convert Buffer to Float32Array (assumes 32-bit float PCM)
+                audioBuffer = new Float32Array(audioData.buffer, audioData.byteOffset, audioData.length / 4);
+            } else if (Array.isArray(audioData)) {
+                audioBuffer = new Float32Array(audioData);
+            } else {
+                throw new Error('Invalid audio data format. Expected Float32Array, Buffer, or Array');
+            }
+
+            // [20251028-API-012] Process through C++ engine via Node-API bindings
+            const results = await gameCallsEngine.processAudio(session.nativeSessionId, audioBuffer);
+
+            // [20251028-API-013] Update session metrics with real analysis
+            session.metrics = {
+                similarity: results.similarityScore,
                 pitch: {
-                    score: Math.random() * 0.9 + 0.1,
-                    confidence: Math.random() * 0.8 + 0.2,
-                    frequency: 120 + Math.random() * 200
+                    score: results.pitch.pitch,
+                    confidence: results.pitch.confidence,
+                    frequency: results.pitch.pitch
                 },
                 harmonic: {
-                    score: Math.random() * 0.8 + 0.1,
-                    confidence: Math.random() * 0.7 + 0.3,
-                    harmonics: Math.floor(Math.random() * 5) + 2
+                    score: results.harmonic.harmonicity,
+                    confidence: results.harmonic.harmonicity,
+                    spectralCentroid: results.harmonic.spectralCentroid
                 },
                 cadence: {
-                    score: Math.random() * 0.7 + 0.2,
-                    confidence: Math.random() * 0.6 + 0.4,
-                    bpm: 60 + Math.random() * 120
+                    score: results.cadence.tempo,
+                    confidence: results.cadence.rhythmStrength,
+                    bpm: results.cadence.tempo
                 },
                 loudness: {
-                    rms: Math.random() * 0.5 + 0.1,
-                    peak: Math.random() + 0.5,
-                    normalization: 0.8 + Math.random() * 0.4
+                    rms: results.levels.rms,
+                    peak: results.levels.peak,
+                    normalization: 1.0
                 },
-                vadActive: Math.random() > 0.3,
-                timestamp: new Date().toISOString()
-            };
-
-            // Update session with new analysis
-            session.metrics = {
-                ...session.metrics,
-                ...mockAnalysis,
-                readiness: mockAnalysis.similarity > 0.6 && mockAnalysis.vadActive
+                readiness: results.readiness,
+                vadActive: results.readiness === 'ready'
             };
 
             session.updatedAt = new Date().toISOString();
             this.sessions.set(sessionId, session);
 
-            return mockAnalysis;
+            return {
+                ...results,
+                timestamp: new Date().toISOString()
+            };
 
         } catch (error) {
             if (error instanceof ApiError) throw error;
@@ -169,39 +222,42 @@ class SessionsService {
     }
 
     /**
-     * Stop and finalize session analysis
+     * [20251028-API-014] Stop and finalize session analysis via C++ engine
      */
     static async stopSession(sessionId) {
         try {
-            // TODO: Interface with C++ finalizeSessionAnalysis()
-            
             const session = await this.getSession(sessionId);
 
             if (session.status !== 'recording') {
                 throw ApiError.badRequest('INVALID_SESSION_STATE', 'Session must be in recording state to stop');
             }
 
-            // Mock finalized analysis
-            const finalAnalysis = {
-                overallScore: Math.random() * 0.8 + 0.2,
-                segments: [
-                    {
-                        startTime: 0.5,
-                        endTime: 2.1,
-                        score: Math.random() * 0.9 + 0.1,
-                        isBestSegment: true
-                    },
-                    {
-                        startTime: 3.2,
-                        endTime: 4.8,
-                        score: Math.random() * 0.7 + 0.2,
-                        isBestSegment: false
-                    }
-                ],
+            // [20251028-API-015] Run finalization in C++ engine (segment selection, refined DTW)
+            const finalAnalysis = await gameCallsEngine.finalizeSession(session.nativeSessionId);
+
+            // [20251028-API-016] Convert C++ analysis to API format
+            const analysis = {
+                overallScore: finalAnalysis.overallScore,
+                similarityScore: finalAnalysis.similarityScore,
+                confidence: finalAnalysis.confidence,
+                segments: [{
+                    startTime: finalAnalysis.segment.startMs / 1000,
+                    endTime: finalAnalysis.segment.endMs / 1000,
+                    duration: finalAnalysis.segment.durationMs / 1000,
+                    isBestSegment: true
+                }],
+                enhanced: {
+                    pitch: finalAnalysis.enhanced.pitch,
+                    harmonic: finalAnalysis.enhanced.harmonic,
+                    cadence: finalAnalysis.enhanced.cadence,
+                    loudness: finalAnalysis.enhanced.loudness
+                },
+                processingTimeMs: finalAnalysis.processingTimeMs,
                 feedback: {
-                    strengths: ['Good pitch control', 'Consistent timing'],
-                    improvements: ['Work on volume consistency', 'Extend call duration'],
-                    grade: Math.random() > 0.5 ? 'B+' : 'A-'
+                    // TODO: Generate feedback based on scores
+                    strengths: [],
+                    improvements: [],
+                    grade: this.calculateGrade(finalAnalysis.overallScore)
                 }
             };
 
@@ -210,10 +266,14 @@ class SessionsService {
             session.updatedAt = new Date().toISOString();
             session.analysis = {
                 ...session.analysis,
-                ...finalAnalysis
+                ...analysis
             };
 
             this.sessions.set(sessionId, session);
+            
+            // [20251028-STORAGE-013] Store analysis results in MinIO
+            await minioService.storeAnalysisResults(sessionId, analysis);
+            console.log(`💾 Stored analysis results for session: ${sessionId}`);
 
             return session;
 
@@ -222,15 +282,37 @@ class SessionsService {
             throw new Error(`Failed to stop session: ${error.message}`);
         }
     }
+    
+    /**
+     * [20251028-API-017] Calculate letter grade from score
+     */
+    static calculateGrade(score) {
+        if (score >= 0.9) return 'A';
+        if (score >= 0.8) return 'B';
+        if (score >= 0.7) return 'C';
+        if (score >= 0.6) return 'D';
+        return 'F';
+    }
 
     /**
-     * Delete session and cleanup resources
+     * [20251028-API-018] Delete session and cleanup C++ engine resources
      */
     static async deleteSession(sessionId) {
         try {
-            // TODO: Cleanup C++ engine resources
-            
             const session = await this.getSession(sessionId);
+            
+            // [20251028-API-019] Destroy C++ engine session
+            await gameCallsEngine.destroySession(session.nativeSessionId);
+            
+            // [20251028-STORAGE-014] Cleanup temp files
+            if (session.tempDir) {
+                try {
+                    await fs.rm(session.tempDir, { recursive: true, force: true });
+                    console.log(`🗑️  Cleaned up temp directory: ${session.tempDir}`);
+                } catch (error) {
+                    console.error(`Warning: Failed to cleanup temp directory: ${error.message}`);
+                }
+            }
             
             this.sessions.delete(sessionId);
 

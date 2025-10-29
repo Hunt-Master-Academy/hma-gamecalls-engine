@@ -1,3 +1,4 @@
+// [20251028-API-022] GameCalls Engine REST API with Node-API bindings
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -5,6 +6,7 @@ const compression = require('compression');
 const path = require('path');
 
 // Import routes
+const healthRoutes = require('./routes/health');
 const gameCallsRoutes = require('./routes/gamecalls');
 const sessionsRoutes = require('./routes/sessions');
 const analysisRoutes = require('./routes/analysis');
@@ -12,12 +14,12 @@ const { errorHandler } = require('./middleware/errorHandler');
 const logger = require('./middleware/logger');
 
 const app = express();
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5005;  // [20251028-API-023] Changed from 5001 to 5005 per architecture spec
 
 // Middleware
 app.use(helmet());
 app.use(cors({
-  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:8000', 'http://localhost:3000'],
+  origin: process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:8000', 'http://localhost:3000', 'http://localhost:3004'],
   credentials: true
 }));
 app.use(compression());
@@ -25,34 +27,17 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(logger);
 
-// Health check
-app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0',
-    service: 'hma-gamecalls-engine'
-  });
-});
+// [20251028-API-024] Health check with engine binding status
+app.use('/health', healthRoutes);
 
 // API Routes
 app.use('/calls', gameCallsRoutes);
 app.use('/sessions', sessionsRoutes);
 app.use('/analysis', analysisRoutes);
 
-// Game Calls API health check with endpoints
+// Legacy endpoint (backwards compatibility)
 app.get('/gamecalls/health', (req, res) => {
-    res.json({
-        status: 'ok',
-        service: 'hma-gamecalls-engine',
-        version: '1.0.0',
-        endpoints: {
-            calls: '/calls',
-            sessions: '/sessions',
-            analysis: '/analysis'
-        },
-        timestamp: new Date().toISOString()
-    });
+    res.redirect('/health');
 });
 
 // 404 handler
@@ -74,4 +59,5 @@ app.listen(PORT, () => {
   console.log(`🎵 API base: http://localhost:${PORT}/calls`);
   console.log(`🎤 Sessions: http://localhost:${PORT}/sessions`);
   console.log(`📊 Analysis: http://localhost:${PORT}/analysis`);
+  console.log(`🔧 C++ Engine: Node-API bindings loaded`);
 });
