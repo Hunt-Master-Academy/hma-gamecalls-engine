@@ -1,12 +1,6 @@
 /**
  * Game Calls Service
  * Handles master call management, loading, and metadata operations
- * Interfaces with the C++ Huntmaster Audio Engine for actual processing
- */
-
-/**
- * Game Calls Service
- * Handles master call management, loading, and metadata operations
  * Interfaces with PostgreSQL database and MinIO storage
  */
 
@@ -96,117 +90,221 @@ class GameCallsService {
     }
 
     /**
-     * Get specific master call by ID
+     * Get individual master call by ID with full details
+     * [20251029-API-008] Real database implementation
      */
     static async getCall(callId) {
         try {
-            // TODO: Interface with C++ engine UnifiedAudioEngine for call loading
-            
-            const mockCalls = await this.listCalls({ pageSize: 1000 });
-            const call = mockCalls.calls.find(c => c.id === callId);
+            const query = `
+                SELECT 
+                    id, name, species, call_type, difficulty,
+                    audio_file_path, duration_seconds, sample_rate, file_size_bytes, audio_format,
+                    waveform_data_path, waveform_generated,
+                    description, usage_notes, season, context, tags,
+                    quality_score, validated, usage_count, success_rate,
+                    is_public, is_premium,
+                    created_at, updated_at
+                FROM master_calls
+                WHERE id = $1 AND deleted_at IS NULL
+            `;
 
-            if (!call) {
+            const result = await databaseService.raw(query, [callId]);
+
+            if (result.rows.length === 0) {
                 throw ApiError.notFound('CALL_NOT_FOUND', `Master call with ID ${callId} not found`);
             }
 
-            // Add extended metadata for individual call requests
+            const call = result.rows[0];
+
+            // [20251029-API-009] Generate presigned URL for audio file
+            let audioUrl = null;
+            if (minioService.isAvailable()) {
+                try {
+                    audioUrl = await minioService.getPresignedUrl(
+                        'gamecalls-master-calls',
+                        call.audio_file_path.replace('master-calls/', ''),
+                        60 * 60 // 1 hour expiry
+                    );
+                } catch (error) {
+                    console.warn(`Failed to generate audio URL for ${callId}:`, error.message);
+                }
+            }
+
+            // [20251029-API-010] Increment usage count
+            await databaseService.raw(
+                'UPDATE master_calls SET usage_count = usage_count + 1 WHERE id = $1',
+                [callId]
+            );
+
             return {
                 ...call,
-                analysis: {
-                    fundamentalFrequency: call.species === 'whitetail_deer' ? 120 : call.species === 'wild_turkey' ? 300 : 200,
-                    harmonics: call.difficulty === 'advanced' ? 5 : 3,
-                    cadencePattern: call.callType === 'sequence' ? [0.5, 0.3, 0.7, 0.4] : [1.0],
-                    pitchRange: {
-                        min: call.species === 'elk' ? 80 : 150,
-                        max: call.species === 'elk' ? 400 : 800
-                    }
-                },
-                waveform: {
-                    peaks: Array.from({length: 100}, (_, i) => Math.sin(i * 0.1) * Math.random()),
-                    sampleRate: call.sampleRate,
-                    duration: call.duration
-                }
+                audioUrl,
+                // Convert snake_case to camelCase for API response
+                callType: call.call_type,
+                audioFilePath: call.audio_file_path,
+                durationSeconds: parseFloat(call.duration_seconds),
+                sampleRate: call.sample_rate,
+                fileSizeBytes: parseInt(call.file_size_bytes),
+                audioFormat: call.audio_format,
+                waveformDataPath: call.waveform_data_path,
+                waveformGenerated: call.waveform_generated,
+                usageNotes: call.usage_notes,
+                qualityScore: parseFloat(call.quality_score),
+                usageCount: call.usage_count,
+                successRate: parseFloat(call.success_rate),
+                isPremium: call.is_premium,
+                isPublic: call.is_public,
+                createdAt: call.created_at,
+                updatedAt: call.updated_at
             };
 
         } catch (error) {
             if (error instanceof ApiError) throw error;
-            throw new Error(`Failed to get call: ${error.message}`);
+            throw ApiError.internal('GET_CALL_FAILED', `Failed to get call: ${error.message}`);
         }
     }
 
     /**
      * Get call species and categories for filtering
+     * [20251029-API-011] Real database implementation
      */
     static async getCallCategories() {
         try {
-            // TODO: Load from actual call database
-            
+            // [20251029-API-012] Query actual species counts
+            const speciesQuery = `
+                SELECT 
+                    species, 
+                    COUNT(*) as call_count
+                FROM master_calls
+                WHERE deleted_at IS NULL AND is_public = TRUE
+                GROUP BY species
+                ORDER BY call_count DESC
+            `;
+            const speciesResult = await databaseService.raw(speciesQuery);
+
+            // [20251029-API-013] Query actual call types
+            const callTypesQuery = `
+                SELECT 
+                    call_type, 
+                    COUNT(*) as call_count
+                FROM master_calls
+                WHERE deleted_at IS NULL AND is_public = TRUE
+                GROUP BY call_type
+                ORDER BY call_count DESC
+            `;
+            const callTypesResult = await databaseService.raw(callTypesQuery);
+
+            // [20251029-API-014] Query all unique tags
+            const tagsQuery = `
+                SELECT DISTINCT unnest(tags) as tag
+                FROM master_calls
+                WHERE deleted_at IS NULL AND is_public = TRUE
+                ORDER BY tag
+            `;
+            const tagsResult = await databaseService.raw(tagsQuery);
+
             return {
-                species: [
-                    { id: 'whitetail_deer', name: 'Whitetail Deer', callCount: 12 },
-                    { id: 'wild_turkey', name: 'Wild Turkey', callCount: 18 },
-                    { id: 'elk', name: 'Elk', callCount: 8 },
-                    { id: 'mallard_duck', name: 'Mallard Duck', callCount: 15 },
-                    { id: 'canada_goose', name: 'Canada Goose', callCount: 6 },
-                    { id: 'coyote', name: 'Coyote', callCount: 10 }
-                ],
-                callTypes: [
-                    { id: 'grunt', name: 'Grunt', description: 'Low frequency vocalizations' },
-                    { id: 'yelp', name: 'Yelp', description: 'Sharp, quick calls' },
-                    { id: 'bugle', name: 'Bugle', description: 'Long, melodic calls' },
-                    { id: 'quack', name: 'Quack', description: 'Duck vocalizations' },
-                    { id: 'honk', name: 'Honk', description: 'Goose calls' },
-                    { id: 'howl', name: 'Howl', description: 'Long predator calls' }
-                ],
+                species: speciesResult.rows.map(row => ({
+                    id: row.species,
+                    name: this._formatSpeciesName(row.species),
+                    callCount: parseInt(row.call_count)
+                })),
+                callTypes: callTypesResult.rows.map(row => ({
+                    id: row.call_type,
+                    name: this._formatCallTypeName(row.call_type),
+                    callCount: parseInt(row.call_count)
+                })),
                 difficulties: [
                     { id: 'beginner', name: 'Beginner', description: 'Easy to learn and practice' },
                     { id: 'intermediate', name: 'Intermediate', description: 'Moderate complexity' },
-                    { id: 'advanced', name: 'Advanced', description: 'Challenging techniques required' }
+                    { id: 'advanced', name: 'Advanced', description: 'Challenging techniques required' },
+                    { id: 'expert', name: 'Expert', description: 'Master-level techniques' }
                 ],
-                tags: [
-                    'rut', 'spring', 'winter', 'basic', 'advanced', 'sequence', 
-                    'attract', 'challenge', 'hen', 'buck', 'bull', 'gobbler'
-                ]
+                tags: tagsResult.rows.map(row => row.tag)
             };
 
         } catch (error) {
-            throw new Error(`Failed to get call categories: ${error.message}`);
+            throw ApiError.internal('GET_CATEGORIES_FAILED', `Failed to get categories: ${error.message}`);
         }
     }
 
     /**
      * Upload and process a new master call (admin function)
+     * [20251029-API-015] Real implementation with MinIO and database
      */
     static async uploadCall(audioFile, metadata) {
         try {
-            // TODO: Interface with C++ engine for audio processing and MFCC cache generation
+            const callId = `call_${metadata.species}_${metadata.callType}_${Date.now()}`;
             
-            const callId = `call_${metadata.species}_${metadata.callType}_${uuidv4().substr(0, 8)}`;
+            // [20251029-API-016] Upload audio file to MinIO
+            const audioPath = `${metadata.species}/${callId}.${metadata.audioFormat || 'wav'}`;
             
-            const newCall = {
-                id: callId,
-                name: metadata.name,
-                species: metadata.species,
-                callType: metadata.callType,
-                difficulty: metadata.difficulty || 'intermediate',
-                duration: metadata.duration || 0,
-                sampleRate: 44100,
-                description: metadata.description || '',
-                tags: metadata.tags || [],
-                audioFile: `/audio/${callId}.wav`,
-                waveformData: `/waveforms/${callId}.json`,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                status: 'processing' // Would be updated after C++ processing
-            };
+            if (minioService.isAvailable()) {
+                await minioService.uploadFile(
+                    'gamecalls-master-calls',
+                    audioPath,
+                    audioFile.buffer,
+                    {
+                        'Content-Type': `audio/${metadata.audioFormat || 'wav'}`,
+                        'x-amz-meta-species': metadata.species,
+                        'x-amz-meta-call-type': metadata.callType
+                    }
+                );
+            } else {
+                throw ApiError.serviceUnavailable('MINIO_UNAVAILABLE', 'Storage service is not available');
+            }
 
-            // TODO: Save to database and trigger C++ processing
-            
-            return newCall;
+            // [20251029-API-017] Insert into database
+            const insertQuery = `
+                INSERT INTO master_calls (
+                    id, name, species, call_type, difficulty,
+                    audio_file_path, duration_seconds, sample_rate, file_size_bytes, audio_format,
+                    description, usage_notes, season, context, tags,
+                    created_by
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+                RETURNING *
+            `;
+
+            const values = [
+                callId,
+                metadata.name,
+                metadata.species,
+                metadata.callType,
+                metadata.difficulty || 'intermediate',
+                `master-calls/${audioPath}`,
+                metadata.durationSeconds || 0,
+                metadata.sampleRate || 44100,
+                audioFile.size,
+                metadata.audioFormat || 'wav',
+                metadata.description || '',
+                metadata.usageNotes || '',
+                metadata.season || null,
+                metadata.context || null,
+                metadata.tags || [],
+                metadata.createdBy || 'system'
+            ];
+
+            const result = await databaseService.raw(insertQuery, values);
+
+            return result.rows[0];
 
         } catch (error) {
-            throw new Error(`Failed to upload call: ${error.message}`);
+            if (error instanceof ApiError) throw error;
+            throw ApiError.internal('UPLOAD_CALL_FAILED', `Failed to upload call: ${error.message}`);
         }
+    }
+
+    // [20251029-API-018] Helper functions for formatting
+    static _formatSpeciesName(species) {
+        return species.split('_').map(word => 
+            word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
+    }
+
+    static _formatCallTypeName(callType) {
+        return callType.split('_').map(word =>
+            word.charAt(0).toUpperCase() + word.slice(1)
+        ).join(' ');
     }
 }
 
