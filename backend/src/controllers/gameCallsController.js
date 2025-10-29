@@ -138,19 +138,54 @@ class GameCallsController {
     /**
      * GET /calls/:id/audio
      * Stream audio file for a master call
+     * [20251029-AUDIO-001] Implemented audio streaming with MinIO backend
      */
     static async streamAudio(req, res) {
         try {
             const { id } = req.params;
 
-            // TODO: Implement audio file streaming
-            // For now, return a placeholder response
-            
-            res.status(501).json({
-                code: 'NOT_IMPLEMENTED',
-                message: 'Audio streaming not yet implemented',
-                endpoint: `GET /calls/${id}/audio`,
-                timestamp: new Date().toISOString()
+            if (!id) {
+                throw ApiError.badRequest('MISSING_ID', 'Call ID is required');
+            }
+
+            // Get audio stream and metadata from service
+            const audioData = await GameCallsService.streamAudio(id);
+
+            // Set appropriate headers for audio streaming
+            res.setHeader('Content-Type', audioData.contentType || 'audio/wav');
+            res.setHeader('Content-Length', audioData.contentLength);
+            res.setHeader('Accept-Ranges', 'bytes');
+            res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+            res.setHeader('Content-Disposition', `inline; filename="${audioData.filename}"`);
+
+            // Handle Range requests for seeking (HTTP 206 Partial Content)
+            const range = req.headers.range;
+            if (range) {
+                const parts = range.replace(/bytes=/, '').split('-');
+                const start = parseInt(parts[0], 10);
+                const end = parts[1] ? parseInt(parts[1], 10) : audioData.contentLength - 1;
+                const chunkSize = (end - start) + 1;
+
+                res.status(206);
+                res.setHeader('Content-Range', `bytes ${start}-${end}/${audioData.contentLength}`);
+                res.setHeader('Content-Length', chunkSize);
+
+                // MinIO will handle the byte range automatically
+                audioData.stream.pipe(res);
+            } else {
+                // Stream full file
+                audioData.stream.pipe(res);
+            }
+
+            // Handle stream errors
+            audioData.stream.on('error', (error) => {
+                console.error('[streamAudio] Stream error:', error);
+                if (!res.headersSent) {
+                    res.status(500).json({
+                        code: 'STREAM_ERROR',
+                        message: 'Error streaming audio file'
+                    });
+                }
             });
 
         } catch (error) {

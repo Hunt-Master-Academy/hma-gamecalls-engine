@@ -165,6 +165,63 @@ class GameCallsService {
     }
 
     /**
+     * Stream audio file for a master call
+     * [20251029-AUDIO-002] Implemented audio streaming from MinIO with Range support
+     */
+    static async streamAudio(callId) {
+        try {
+            // [20251029-AUDIO-003] Get call metadata from database
+            const query = `
+                SELECT 
+                    id, name, audio_file_path, file_size_bytes, audio_format
+                FROM master_calls
+                WHERE id = $1 AND deleted_at IS NULL
+            `;
+
+            const result = await databaseService.raw(query, [callId]);
+
+            if (result.rows.length === 0) {
+                throw ApiError.notFound('CALL_NOT_FOUND', `Master call with ID ${callId} not found`);
+            }
+
+            const call = result.rows[0];
+
+            // [20251029-AUDIO-004] Check MinIO availability
+            if (!minioService.isAvailable()) {
+                throw ApiError.serviceUnavailable('MINIO_UNAVAILABLE', 'Storage service is not available');
+            }
+
+            // [20251029-AUDIO-005] Get audio stream from MinIO
+            const objectPath = call.audio_file_path.replace('master-calls/', '');
+            const stream = await minioService.getObjectStream('gamecalls-master-calls', objectPath);
+
+            // [20251029-AUDIO-006] Determine content type based on audio format
+            const audioFormatMap = {
+                'wav': 'audio/wav',
+                'mp3': 'audio/mpeg',
+                'mpeg': 'audio/mpeg',
+                'm4a': 'audio/mp4',
+                'ogg': 'audio/ogg',
+                'flac': 'audio/flac'
+            };
+
+            const contentType = audioFormatMap[call.audio_format] || 'audio/wav';
+            const filename = `${call.name.replace(/\s+/g, '_')}.${call.audio_format}`;
+
+            return {
+                stream,
+                contentType,
+                contentLength: parseInt(call.file_size_bytes),
+                filename
+            };
+
+        } catch (error) {
+            if (error instanceof ApiError) throw error;
+            throw ApiError.internal('STREAM_AUDIO_FAILED', `Failed to stream audio: ${error.message}`);
+        }
+    }
+
+    /**
      * Get call species and categories for filtering
      * [20251029-API-011] Real database implementation
      */

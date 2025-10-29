@@ -13,8 +13,32 @@ const analysisRoutes = require('./routes/analysis');
 const { errorHandler } = require('./middleware/errorHandler');
 const logger = require('./middleware/logger');
 
+// [20251029-AUDIO-010] Import services for initialization
+const minioService = require('./services/minioService');
+const databaseService = require('./services/databaseService');
+
 const app = express();
 const PORT = process.env.PORT || 5005;  // [20251028-API-023] Changed from 5001 to 5005 per architecture spec
+
+// [20251029-AUDIO-011] Initialize services at startup
+async function initializeServices() {
+    try {
+        console.log('🔧 Initializing services...');
+        
+        // Initialize database
+        await databaseService.initialize();
+        console.log('✅ Database service initialized');
+        
+        // Initialize MinIO
+        minioService.initialize();
+        await minioService.ensureBuckets();
+        console.log('✅ MinIO service initialized');
+        
+    } catch (error) {
+        console.error('❌ Service initialization failed:', error.message);
+        // Continue anyway - services will show unavailable in API responses
+    }
+}
 
 // Middleware
 app.use(helmet());
@@ -52,12 +76,22 @@ app.use('*', (req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Game Calls Engine API running on port ${PORT}`);
-  console.log(`📍 Health check: http://localhost:${PORT}/health`);
-  console.log(`🎵 API base: http://localhost:${PORT}/calls`);
-  console.log(`🎤 Sessions: http://localhost:${PORT}/sessions`);
-  console.log(`📊 Analysis: http://localhost:${PORT}/analysis`);
-  console.log(`🔧 C++ Engine: Node-API bindings loaded`);
+// [20251029-AUDIO-012] Start server with service initialization
+async function startServer() {
+    await initializeServices();
+    
+    app.listen(PORT, () => {
+        console.log(`🚀 Game Calls Engine API running on port ${PORT}`);
+        console.log(`📍 Health check: http://localhost:${PORT}/health`);
+        console.log(`🎵 API base: http://localhost:${PORT}/calls`);
+        console.log(`🎤 Sessions: http://localhost:${PORT}/sessions`);
+        console.log(`📊 Analysis: http://localhost:${PORT}/analysis`);
+        console.log(`🔧 C++ Engine: Node-API bindings loaded`);
+    });
+}
+
+// Start the server
+startServer().catch(err => {
+    console.error('❌ Failed to start server:', err);
+    process.exit(1);
 });

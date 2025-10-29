@@ -294,6 +294,91 @@ class MinIOService {
     }
 
     /**
+     * [20251029-AUDIO-007] Generic method to get object stream from MinIO
+     * @param {string} bucketName - Bucket name
+     * @param {string} objectName - Object path/key
+     * @returns {Promise<Stream>} Readable stream of the object
+     */
+    async getObjectStream(bucketName, objectName) {
+        try {
+            this.initialize();
+
+            // Check if object exists first
+            await this.client.statObject(bucketName, objectName);
+
+            // Get object as stream
+            const stream = await this.client.getObject(bucketName, objectName);
+            
+            return stream;
+
+        } catch (error) {
+            if (error.code === 'NotFound') {
+                throw ApiError.notFound('OBJECT_NOT_FOUND', `Object ${objectName} not found in bucket ${bucketName}`);
+            }
+            throw ApiError.internal('STREAM_FAILED', `Failed to get object stream: ${error.message}`);
+        }
+    }
+
+    /**
+     * [20251029-AUDIO-008] Generic method to upload file to MinIO
+     * @param {string} bucketName - Bucket name
+     * @param {string} objectName - Object path/key
+     * @param {Buffer} buffer - File data
+     * @param {object} metadata - Optional metadata
+     * @returns {Promise<string>} Object name
+     */
+    async uploadFile(bucketName, objectName, buffer, metadata = {}) {
+        try {
+            this.initialize();
+
+            await this.client.putObject(
+                bucketName,
+                objectName,
+                buffer,
+                buffer.length,
+                metadata
+            );
+
+            console.log(`✅ Uploaded file: ${bucketName}/${objectName}`);
+            return objectName;
+
+        } catch (error) {
+            throw ApiError.internal('UPLOAD_FAILED', `Failed to upload file: ${error.message}`);
+        }
+    }
+
+    /**
+     * [20251029-AUDIO-009] Generic method to get presigned URL
+     * @param {string} bucketName - Bucket name
+     * @param {string} objectName - Object path/key
+     * @param {number} expirySeconds - URL expiry time
+     * @returns {Promise<string>} Presigned URL
+     */
+    async getPresignedUrl(bucketName, objectName, expirySeconds = 3600) {
+        try {
+            this.initialize();
+
+            // Check if object exists
+            await this.client.statObject(bucketName, objectName);
+
+            // Generate presigned URL
+            const url = await this.client.presignedGetObject(
+                bucketName,
+                objectName,
+                expirySeconds
+            );
+
+            return url;
+
+        } catch (error) {
+            if (error.code === 'NotFound') {
+                throw ApiError.notFound('OBJECT_NOT_FOUND', `Object ${objectName} not found`);
+            }
+            throw ApiError.internal('URL_GENERATION_FAILED', `Failed to generate URL: ${error.message}`);
+        }
+    }
+
+    /**
      * Check if MinIO service is available
      */
     isAvailable() {

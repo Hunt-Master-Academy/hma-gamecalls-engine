@@ -20,6 +20,7 @@ ApiError.notFound = (code, message, details) => new ApiError(404, code, message,
 ApiError.conflict = (code, message, details) => new ApiError(409, code, message, details);
 ApiError.unprocessableEntity = (code, message, details) => new ApiError(422, code, message, details);
 ApiError.internal = (code, message, details) => new ApiError(500, code, message, details);
+ApiError.serviceUnavailable = (code, message, details) => new ApiError(503, code, message, details);
 
 const errorHandler = (err, req, res, next) => {
     // Log the error
