@@ -196,7 +196,8 @@ class SessionsController {
                 throw ApiError.badRequest('MISSING_AUDIO_DATA', 'Audio samples data is required');
             }
 
-            const analysis = await SessionsService.processAudioData(id, audioData);
+            // [20251029-FIX-001] Extract samples array from request body
+            const analysis = await SessionsService.processAudioData(id, audioData.samples);
 
             res.json({
                 analysis,
