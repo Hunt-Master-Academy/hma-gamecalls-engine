@@ -11,8 +11,15 @@ const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
 
-// [20251028-API-002] Load GameCalls Engine native bindings
-const gameCallsEngine = require('../../../bindings/node-api/lib/index');
+// [20251028-API-002] Load GameCalls Engine native bindings (with mock fallback)
+let gameCallsEngine;
+try {
+    gameCallsEngine = require('../../../bindings/node-api/lib/index');
+    console.log('✅ Using native C++ GameCalls Engine bindings');
+} catch (error) {
+    console.warn('⚠️  Native bindings not found, using mock engine');
+    gameCallsEngine = require('./mockGameCallsEngine');
+}
 
 // [20251028-STORAGE-011] Load MinIO service for master call storage
 const minioService = require('./minioService');

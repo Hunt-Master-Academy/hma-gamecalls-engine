@@ -2,7 +2,14 @@
 // Extended health check showing C++ engine binding status
 
 const express = require('express');
-const gameCallsEngine = require('../../../bindings/node-api/lib/index');
+
+// [20251029-MOCK-002] Load engine with mock fallback
+let gameCallsEngine;
+try {
+    gameCallsEngine = require('../../../bindings/node-api/lib/index');
+} catch (error) {
+    gameCallsEngine = require('../services/mockGameCallsEngine');
+}
 
 const router = express.Router();
 

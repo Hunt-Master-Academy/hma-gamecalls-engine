@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "nodemon src/index.js",
     "start": "node src/index.js",
-    "test": "jest",
-    "postinstall": "cd ../bindings/node-api && npm install && npm run build"
+    "test": "jest"
   },
   "keywords": [
     "huntmaster",
