@@ -19,41 +19,56 @@ const upload = multer({
         files: 1
     },
     fileFilter: (req, file, cb) => {
-        const allowedMimeTypes = ['audio/wav', 'audio/mpeg', 'audio/mp4', 'audio/ogg'];
-        if (allowedMimeTypes.includes(file.mimetype)) {
+        console.log(`[Upload] Received file: ${file.originalname}, mimetype: ${file.mimetype}`);
+        // [20251029-UPLOAD-001] Accept common audio MIME types + octet-stream (for CLI uploads)
+        const allowedMimeTypes = [
+            'audio/wav', 'audio/x-wav', 'audio/mpeg', 'audio/mp3', 
+            'audio/mp4', 'audio/m4a', 'audio/ogg', 'audio/flac',
+            'application/octet-stream'  // CLI tools often use this
+        ];
+        
+        // Additional check: validate WAV by file extension if mimetype is generic
+        const isWavFile = file.originalname.toLowerCase().endsWith('.wav');
+        const isAudioMime = allowedMimeTypes.includes(file.mimetype);
+        
+        if (isAudioMime || (file.mimetype === 'application/octet-stream' && isWavFile)) {
             cb(null, true);
         } else {
-            cb(new ApiError.badRequest('INVALID_FILE_TYPE', 'Only audio files are allowed'), false);
+            cb(ApiError.badRequest('INVALID_FILE_TYPE', `Only audio files are allowed. Received: ${file.mimetype}`), false);
         }
     }
 });
 
 // Validation middleware for call metadata
 const validateCallMetadata = (req, res, next) => {
-    const { name, species, callType } = req.body;
+    try {
+        const { name, species, callType } = req.body;
 
-    if (!name || typeof name !== 'string') {
-        throw ApiError.badRequest('INVALID_NAME', 'Call name is required and must be a string');
+        if (!name || typeof name !== 'string') {
+            throw ApiError.badRequest('INVALID_NAME', 'Call name is required and must be a string');
+        }
+
+        if (name.length > 100) {
+            throw ApiError.badRequest('NAME_TOO_LONG', 'Call name cannot exceed 100 characters');
+        }
+
+        if (!species || typeof species !== 'string') {
+            throw ApiError.badRequest('INVALID_SPECIES', 'Species is required and must be a string');
+        }
+
+        if (!callType || typeof callType !== 'string') {
+            throw ApiError.badRequest('INVALID_CALL_TYPE', 'Call type is required and must be a string');
+        }
+
+        const validDifficulties = ['beginner', 'intermediate', 'advanced'];
+        if (req.body.difficulty && !validDifficulties.includes(req.body.difficulty)) {
+            throw ApiError.badRequest('INVALID_DIFFICULTY', `Difficulty must be one of: ${validDifficulties.join(', ')}`);
+        }
+
+        next();
+    } catch (error) {
+        next(error);
     }
-
-    if (name.length > 100) {
-        throw ApiError.badRequest('NAME_TOO_LONG', 'Call name cannot exceed 100 characters');
-    }
-
-    if (!species || typeof species !== 'string') {
-        throw ApiError.badRequest('INVALID_SPECIES', 'Species is required and must be a string');
-    }
-
-    if (!callType || typeof callType !== 'string') {
-        throw ApiError.badRequest('INVALID_CALL_TYPE', 'Call type is required and must be a string');
-    }
-
-    const validDifficulties = ['beginner', 'intermediate', 'advanced'];
-    if (req.body.difficulty && !validDifficulties.includes(req.body.difficulty)) {
-        throw ApiError.badRequest('INVALID_DIFFICULTY', `Difficulty must be one of: ${validDifficulties.join(', ')}`);
-    }
-
-    next();
 };
 
 // Routes

@@ -115,11 +115,7 @@ class GameCallsController {
                 throw ApiError.badRequest('MISSING_METADATA', 'Name, species, and callType are required');
             }
 
-            // Validate audio file format
-            const allowedFormats = ['audio/wav', 'audio/mpeg', 'audio/mp4', 'audio/ogg'];
-            if (!allowedFormats.includes(req.file.mimetype)) {
-                throw ApiError.badRequest('INVALID_AUDIO_FORMAT', 'Supported formats: WAV, MP3, M4A, OGG');
-            }
+            // [20251029-UPLOAD-002] File already validated by multer fileFilter
 
             const newCall = await GameCallsService.uploadCall(req.file, metadata);
 
