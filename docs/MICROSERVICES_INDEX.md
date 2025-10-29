@@ -1,13 +1,89 @@
 # 🎯 GameCalls Engine - Microservices Documentation Index
 
-**Last Updated:** October 19, 2025  
-**Status:** ✅ Complete - Ready for Implementation
+**Last Updated:** October 28, 2025  
+**Status:** ✅ Complete - Ready for Implementation  
+**Role-Based Navigation for Game Call Audio Analysis Microservice**
+
+---
+
+## � Quick Links by Role
+
+### **For Product Managers / Stakeholders**
+Start here to understand what the GameCalls Engine does and why:
+- **[README.md](../README.md)** - Quick overview of audio analysis features
+- **[MICROSERVICES_IMPLEMENTATION_SUMMARY.md](./MICROSERVICES_IMPLEMENTATION_SUMMARY.md)** - Executive summary and 14-week roadmap
+- **[Integration with HMA Ecosystem](#integration-context)** - How it fits into Academy & Field Guide
+
+**Key Question**: *What game call analysis features are available?*
+**Answer**: Real-time call analysis, similarity scoring, master call comparisons, coaching feedback, session recording
+
+---
+
+### **For Backend Developers**
+Jump straight to implementation details:
+- **[MICROSERVICES_ARCHITECTURE_GUIDE.md](./MICROSERVICES_ARCHITECTURE_GUIDE.md)** - Complete technical specification
+  - C++ Core Components (UnifiedAudioEngine, MFCC, DTW, VAD)
+  - Node-API Binding Layer
+  - REST API Endpoints
+  - Data Models
+- **[HUNT_STRATEGY_COMPARISON.md](./HUNT_STRATEGY_COMPARISON.md)** - Learn from proven patterns
+- **[Implementation Roadmap](#roadmap)** - 14-week plan
+- **[Technology Stack](#tech-stack)** - C++20, Express.js, Node-API, Redis
+
+**Key Question**: *How do I build the session analysis API?*
+**Answer**: See MICROSERVICES_ARCHITECTURE_GUIDE.md → "Session Management Endpoints" + UnifiedAudioEngine reference
+
+---
+
+### **For Frontend Developers (HMA Academy / HMFG Mobile)**
+Learn how to consume the GameCalls Engine APIs:
+- **[REST API Specification](./MICROSERVICES_ARCHITECTURE_GUIDE.md#proposed-gamecalls-rest-api-design)** - All endpoints with request/response examples
+- **[Data Models](./MICROSERVICES_ARCHITECTURE_GUIDE.md#data-models)** - Session state, analysis results
+- **[Integration Examples](./MICROSERVICES_ARCHITECTURE_GUIDE.md#integration-examples)** - Academy lessons, HMFG field use
+
+**Key Question**: *How do I analyze a student's game call in a lesson?*
+**Answer**: `POST /api/v1/academy/lessons/:lessonId/analyze-call` with audio data
+
+---
+
+### **For DevOps / Infrastructure**
+Set up and deploy the service:
+- **[Docker Configuration](./MICROSERVICES_ARCHITECTURE_GUIDE.md#deployment-architecture)** - Dockerfile, docker-compose integration
+- **[Performance Targets](./MICROSERVICES_ARCHITECTURE_GUIDE.md#success-criteria)** - SLAs and scalability metrics
+- **[Monitoring & Observability](#monitoring)** - Health checks, metrics, logging
+
+**Key Question**: *What port does GameCalls Engine use?*
+**Answer**: Port 5005 (configured in docker-compose, previously incorrectly listed as 4100)
+
+---
+
+### **For C++ Engineers**
+Implement the core audio processing logic:
+- **[Core Features](./MICROSERVICES_ARCHITECTURE_GUIDE.md#current-state-c-core-engine)** - C++ component specifications
+  - UnifiedAudioEngine, MFCCProcessor, DTWComparator, VoiceActivityDetector, RealtimeScorer
+- **[Public API](../include/huntmaster/core/UnifiedAudioEngine.h)** - C++ header reference
+- **[Technology Stack](./MICROSERVICES_ARCHITECTURE_GUIDE.md#technical-considerations)** - C++20, CMake, Google Test
+- **[Testing Strategy](#testing-approach)** - Unit test examples
+
+**Key Question**: *How do I calculate similarity scores between calls?*
+**Answer**: See UnifiedAudioEngine::getSimilarityScore() and DTWComparator in architecture docs
+
+---
+
+### **For QA / Testers**
+Understand testing requirements:
+- **[Testing Strategy](./MICROSERVICES_ARCHITECTURE_GUIDE.md#success-criteria)** - Unit, integration, contract tests
+- **[Performance Targets](./MICROSERVICES_ARCHITECTURE_GUIDE.md#success-criteria)** - Response time SLAs, load requirements
+- **[API Specification](./MICROSERVICES_ARCHITECTURE_GUIDE.md#proposed-gamecalls-rest-api-design)** - Endpoints to test
+
+**Key Question**: *What are the performance SLAs?*
+**Answer**: Session creation < 100ms, audio processing < 200ms (P95), similarity scoring < 500ms (P95)
 
 ---
 
 ## 📚 Complete Documentation Suite
 
-This directory now contains comprehensive guidance for transforming the GameCalls Engine from a standalone C++ library into a microservices architecture that serves both **Hunt Master Academy** (educational platform) and **Hunt Master Field Guide** (mobile field app).
+This directory contains comprehensive guidance for transforming the GameCalls Engine from a standalone C++ library into a microservices architecture that serves both **Hunt Master Academy** (educational platform) and **Hunt Master Field Guide** (mobile field app).
 
 ---
 
@@ -306,7 +382,139 @@ Follow checklist in **MICROSERVICES_QUICK_START.md** Week 1-2 section:
 
 ---
 
-## 📞 Getting Help
+## � Document Structure
+
+```
+hma-gamecalls-engine/
+├── README.md                                  ← Start here for overview
+├── docs/
+│   ├── MICROSERVICES_ARCHITECTURE_GUIDE.md   ← Complete technical spec (800 lines)
+│   ├── MICROSERVICES_IMPLEMENTATION_SUMMARY.md ← Executive summary (450 lines)
+│   ├── HUNT_STRATEGY_COMPARISON.md           ← Pattern comparison (400 lines)
+│   ├── MICROSERVICES_ARCHITECTURE_DIAGRAMS.md ← Visual diagrams (550 lines)
+│   ├── MICROSERVICES_QUICK_START.md          ← Implementation checklist (300 lines)
+│   ├── MICROSERVICES_INDEX.md                ← This file (navigation)
+│   └── architecture.md                        ← C++ core architecture (458 lines)
+├── include/huntmaster/core/
+│   └── UnifiedAudioEngine.h                   ← C++ public API
+├── src/
+│   ├── core/UnifiedAudioEngine.cpp            ← C++ implementation
+│   ├── index.ts                               ← Express.js server (future Phase 1)
+│   ├── routes/                                ← API endpoints (future Phase 1-2)
+│   ├── services/                              ← Business logic (future Phase 2-3)
+│   └── clients/                               ← Integration clients (future Phase 5)
+└── tests/
+    └── unit/core/                             ← C++ unit tests
+```
+
+---
+
+## 🎯 Implementation Sequence
+
+**Recommended order for building the GameCalls Engine microservices:**
+
+### Phase 1: Backend REST API Foundation (Weeks 1-2)
+1. Read: **HUNT_STRATEGY_COMPARISON.md** - Understand proven patterns
+2. Read: **MICROSERVICES_ARCHITECTURE_GUIDE.md** → "Learning from Hunt Strategy Engine"
+3. Implement: Express.js server scaffolding with health endpoints
+4. Set up: Docker integration with hma-infra
+
+### Phase 2: Core Session Management (Weeks 3-4)
+1. Read: **MICROSERVICES_ARCHITECTURE_GUIDE.md** → "Proposed GameCalls REST API Design"
+2. Implement: Node-API bindings for UnifiedAudioEngine (C++ ↔ JavaScript)
+3. Add: Session CRUD endpoints (create, get, update, delete)
+4. Test: Session lifecycle management
+
+### Phase 3: Audio Processing Pipeline (Weeks 5-8)
+1. Read: **MICROSERVICES_ARCHITECTURE_GUIDE.md** → "Audio Processing Endpoints"
+2. Implement: Audio chunk upload and processing
+3. Add: Master call loading and comparison
+4. Implement: Real-time similarity scoring
+
+### Phase 4: Analysis & Feedback (Weeks 9-11)
+1. Read: **MICROSERVICES_ARCHITECTURE_GUIDE.md** → "Analysis Endpoints"
+2. Implement: Enhanced analysis results
+3. Add: Coaching feedback generation
+4. Implement: Session finalization with scoring history
+
+### Phase 5: HMA Academy Integration (Weeks 12-14)
+1. Read: **MICROSERVICES_ARCHITECTURE_GUIDE.md** → "Integration Examples"
+2. Implement: Academy lesson endpoints
+3. Add: Progress tracking integration
+4. Test: End-to-end lesson workflows
+
+---
+
+## 🔗 Integration Context
+
+### Where GameCalls Engine Fits in HMA Ecosystem
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    HMA ECOSYSTEM                            │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  HMA Academy (Education)         HMFG (Field Guide)        │
+│  ┌──────────────────┐            ┌──────────────────┐      │
+│  │ Lesson: "Turkey  │            │ Real-time call   │      │
+│  │ Calling 101"     │            │ analysis in      │      │
+│  │                  │            │ field            │      │
+│  └────────┬─────────┘            └────────┬─────────┘      │
+│           │                               │                │
+│           └───────────────┬───────────────┘                │
+│                           ↓                                │
+│              ┌─────────────────────────┐                   │
+│              │   API Gateway (3000)     │                   │
+│              └────────────┬─────────────┘                   │
+│                           ↓                                │
+│              ┌─────────────────────────┐                   │
+│              │ GameCalls Engine (5005) │                   │
+│              │  - REST API Layer       │                   │
+│              │  - Node-API Bindings    │                   │
+│              │  - C++ Core Engine      │                   │
+│              │    • MFCC Processing    │                   │
+│              │    • DTW Comparison     │                   │
+│              │    • VAD Detection      │                   │
+│              │    • Session Mgmt       │                   │
+│              └─────────────────────────┘                   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Service Communication Pattern
+
+```
+Frontend Request Flow:
+1. Student uses lesson interface → React frontend (3004)
+2. Frontend calls → API Gateway (3000)
+3. Gateway routes → GameCalls Engine (5005)
+4. Engine processes → C++ UnifiedAudioEngine
+5. Results return → Gateway → Frontend
+
+Mobile Request Flow (HMFG):
+1. Hunter records call → React Native app
+2. App calls → API Gateway (3000) OR Direct (5005)
+3. Gateway routes → GameCalls Engine (5005)
+4. Real-time feedback → Mobile app
+5. Offline: Store locally, sync later
+```
+
+### Port Assignments
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| API Gateway | 3000 | Main entry point |
+| Brain Service | 3001 | Core orchestration |
+| Web Frontend | 3004 | Student portal |
+| **GameCalls Engine** | **5005** | **Audio analysis microservice** |
+| Hunt Strategy | 5006 | Prediction backend |
+| Stealth Engine | 5007 | Concealment analysis (future) |
+| Tracking Engine | 5008 | Blood trail analysis (future) |
+| Gear Engine | 5009 | Equipment management (future) |
+
+---
+
+## �📞 Getting Help
 
 ### Where to Find Answers
 | Question Type | Document | Section |
