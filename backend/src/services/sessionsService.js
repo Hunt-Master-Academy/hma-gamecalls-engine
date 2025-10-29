@@ -10,6 +10,7 @@ const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
+const GameCallsService = require('./gameCallsService');
 
 // [20251028-API-002] Load GameCalls Engine native bindings (with mock fallback)
 let gameCallsEngine;
@@ -47,16 +48,35 @@ class SessionsService {
 
     /**
      * [20251028-API-005] Create new analysis session with C++ engine
+     * [20251029-TEST-002] Updated to use GameCallsService for master call retrieval
      */
     static async createSession(masterCallId, options = {}) {
         try {
             await this.ensureEngineInitialized();
             
-            // [20251028-STORAGE-012] Download master call from MinIO to temp location
+            // [20251029-TEST-003] Get master call metadata from database
+            const masterCall = await GameCallsService.getCall(masterCallId);
+            if (!masterCall) {
+                throw new Error(`Master call ${masterCallId} not found`);
+            }
+            
+            // [20251029-TEST-004] Download master call from MinIO to temp location
             const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'gamecalls-'));
             const masterCallPath = path.join(tempDir, `${masterCallId}.wav`);
             
-            await minioService.downloadMasterCall(masterCallId, masterCallPath);
+            // Get audio file from MinIO using the stored path
+            const audioPath = masterCall.audioFilePath.replace('master-calls/', '');
+            const stream = await minioService.getObjectStream('gamecalls-master-calls', audioPath);
+            
+            // Write stream to temp file
+            const writeStream = require('fs').createWriteStream(masterCallPath);
+            await new Promise((resolve, reject) => {
+                stream.pipe(writeStream);
+                stream.on('error', reject);
+                writeStream.on('finish', resolve);
+                writeStream.on('error', reject);
+            });
+            
             console.log(`📥 Downloaded master call: ${masterCallPath}`);
             
             // [20251028-API-007] Create session in C++ engine via Node-API bindings
