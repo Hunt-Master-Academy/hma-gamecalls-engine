@@ -17,11 +17,14 @@ const gameCallsEngine = require('../../../bindings/node-api/lib/index');
 // [20251028-STORAGE-011] Load MinIO service for master call storage
 const minioService = require('./minioService');
 
+// [20251028-CACHE-014] Load Redis service for distributed session caching
+const redisService = require('./redisService');
+
 // [20251028-API-003] Session state cache (maps UUID to native session ID)
-// TODO: Replace with Redis in production for distributed session management
+// [20251028-CACHE-015] Using Redis for distributed deployment, Map as fallback
 class SessionsService {
 
-    // In-memory session storage mapping UUID → native sessionId + metadata
+    // In-memory fallback (used when Redis unavailable)
     static sessions = new Map();
     
     // Track if engine is initialized
@@ -97,8 +100,8 @@ class SessionsService {
 
             this.sessions.set(sessionId, session);
             
-            // [20251028-API-009] TODO: Cache session in Redis with TTL
-            // await redis.set(`session:${sessionId}`, JSON.stringify(session), 'EX', 3600);
+            // [20251028-CACHE-016] Cache session in Redis with TTL
+            await redisService.setSession(sessionId, session, 3600);
 
             return session;
 
@@ -112,11 +115,23 @@ class SessionsService {
      */
     static async getSession(sessionId) {
         try {
-            const session = this.sessions.get(sessionId);
+            // [20251028-CACHE-017] Try Redis first
+            let session = await redisService.getSession(sessionId);
+            
+            if (session) {
+                console.log(`✅ Session cache HIT: ${sessionId}`);
+                return session;
+            }
+            
+            // [20251028-CACHE-018] Fallback to in-memory Map
+            session = this.sessions.get(sessionId);
 
             if (!session) {
                 throw ApiError.notFound('SESSION_NOT_FOUND', `Session with ID ${sessionId} not found`);
             }
+            
+            // Repopulate Redis cache
+            await redisService.setSession(sessionId, session, 3600);
 
             return session;
 
@@ -144,6 +159,12 @@ class SessionsService {
             session.updatedAt = new Date().toISOString();
 
             this.sessions.set(sessionId, session);
+            
+            // [20251028-CACHE-019] Update Redis cache
+            await redisService.updateSession(sessionId, { 
+                status: 'recording', 
+                startedAt: session.startedAt 
+            });
 
             return session;
 
@@ -209,6 +230,9 @@ class SessionsService {
 
             session.updatedAt = new Date().toISOString();
             this.sessions.set(sessionId, session);
+            
+            // [20251028-CACHE-020] Update metrics in Redis cache
+            await redisService.updateSession(sessionId, { metrics: session.metrics });
 
             return {
                 ...results,
@@ -274,6 +298,14 @@ class SessionsService {
             // [20251028-STORAGE-013] Store analysis results in MinIO
             await minioService.storeAnalysisResults(sessionId, analysis);
             console.log(`💾 Stored analysis results for session: ${sessionId}`);
+            
+            // [20251028-CACHE-021] Update Redis with final state and cache analysis
+            await redisService.updateSession(sessionId, {
+                status: 'completed',
+                completedAt: session.completedAt,
+                analysis: session.analysis
+            });
+            await redisService.setAnalysisResults(sessionId, analysis, 86400); // 24 hour cache
 
             return session;
 
@@ -315,6 +347,9 @@ class SessionsService {
             }
             
             this.sessions.delete(sessionId);
+            
+            // [20251028-CACHE-022] Remove from Redis cache
+            await redisService.deleteSession(sessionId);
 
             return { success: true };
 
@@ -350,6 +385,30 @@ class SessionsService {
      */
     static async listSessions() {
         try {
+            // [20251028-CACHE-023] Try Redis first for distributed deployment
+            const redisSessionIds = await redisService.listSessions();
+            
+            if (redisSessionIds.length > 0) {
+                const sessions = await Promise.all(
+                    redisSessionIds.map(id => redisService.getSession(id))
+                );
+                
+                const sessionList = sessions.filter(Boolean).map(session => ({
+                    id: session.id,
+                    masterCallId: session.masterCallId,
+                    status: session.status,
+                    createdAt: session.createdAt,
+                    startedAt: session.startedAt,
+                    completedAt: session.completedAt
+                }));
+                
+                return {
+                    sessions: sessionList,
+                    total: sessionList.length
+                };
+            }
+            
+            // Fallback to in-memory Map
             const sessionList = Array.from(this.sessions.values()).map(session => ({
                 id: session.id,
                 masterCallId: session.masterCallId,
