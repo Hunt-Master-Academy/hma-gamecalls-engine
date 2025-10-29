@@ -351,6 +351,25 @@ class GameCallsService {
         }
     }
 
+    /**
+     * Update waveform data path in database
+     * [20251029-WAVEFORM-020] Store waveform path after generation
+     */
+    static async updateWaveformPath(callId, waveformPath) {
+        try {
+            const query = `
+                UPDATE master_calls
+                SET waveform_data_path = $1, waveform_generated = TRUE, updated_at = NOW()
+                WHERE id = $2
+            `;
+
+            await databaseService.raw(query, [waveformPath, callId]);
+
+        } catch (error) {
+            throw ApiError.internal('UPDATE_WAVEFORM_FAILED', `Failed to update waveform path: ${error.message}`);
+        }
+    }
+
     // [20251029-API-018] Helper functions for formatting
     static _formatSpeciesName(species) {
         return species.split('_').map(word => 

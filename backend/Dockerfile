@@ -6,8 +6,10 @@ FROM node:22-bullseye-slim
 WORKDIR /app
 
 # Install runtime dependencies
+# [20251029-WAVEFORM-021] Added ffmpeg for waveform generation
 RUN apt-get update && apt-get install -y \
     wget \
+    ffmpeg \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy package files
@@ -21,7 +23,8 @@ COPY src ./src
 COPY migrations ./migrations
 
 # Create temp directory for audio processing
-RUN mkdir -p /tmp/gamecalls && chmod 1777 /tmp/gamecalls
+# [20251029-WAVEFORM-022] Temp dir for waveform generation
+RUN mkdir -p /tmp/gamecalls-waveforms && chmod 1777 /tmp/gamecalls-waveforms
 
 # Set environment
 ENV NODE_ENV=production

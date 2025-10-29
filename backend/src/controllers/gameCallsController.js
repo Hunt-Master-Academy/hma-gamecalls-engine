@@ -6,6 +6,7 @@
 
 const { ApiError } = require('../middleware/errorHandler');
 const GameCallsService = require('../services/gameCallsService');
+const WaveformService = require('../services/waveformService');
 
 class GameCallsController {
 
@@ -193,17 +194,47 @@ class GameCallsController {
     /**
      * GET /calls/:id/waveform
      * Get waveform data for visualization
+     * [20251029-WAVEFORM-015] Generate or retrieve cached waveform data
      */
     static async getWaveform(req, res) {
         try {
             const { id } = req.params;
-            const { decimation = 1000 } = req.query;
+            const { samples = 1000, regenerate = false } = req.query;
 
             const call = await GameCallsService.getCall(id);
 
+            // [20251029-WAVEFORM-016] Check if waveform already exists
+            if (call.waveformDataPath && !regenerate) {
+                try {
+                    const waveformData = await WaveformService.loadWaveform(call.waveformDataPath);
+                    return res.json({
+                        waveform: waveformData,
+                        cached: true,
+                        timestamp: new Date().toISOString()
+                    });
+                } catch (error) {
+                    console.warn(`Failed to load cached waveform for ${id}, regenerating...`);
+                }
+            }
+
+            // [20251029-WAVEFORM-017] Generate new waveform
+            const audioPath = call.audioFilePath.replace('master-calls/', '');
+            const waveformData = await WaveformService.generateWaveform(
+                audioPath,
+                'gamecalls-master-calls',
+                parseInt(samples)
+            );
+
+            // [20251029-WAVEFORM-018] Store waveform in MinIO
+            const waveformPath = await WaveformService.storeWaveform(id, waveformData);
+
+            // [20251029-WAVEFORM-019] Update database with waveform path
+            await GameCallsService.updateWaveformPath(id, waveformPath);
+
             res.json({
-                waveform: call.waveform,
-                decimation: parseInt(decimation),
+                waveform: waveformData,
+                cached: false,
+                generated: true,
                 timestamp: new Date().toISOString()
             });
 
