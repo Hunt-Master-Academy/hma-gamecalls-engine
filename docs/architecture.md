@@ -1,6 +1,35 @@
 # Hunt Master Academy Game Calls Engine – Architecture & Status
-Last Updated: August 13, 2025
+Last Updated: October 19, 2025
 Status: MVP COMPLETE | Enhanced Analyzers Phase 1 Integrated | UX Alignment & Calibration Mapping
+
+---
+
+## 🆕 Microservices Architecture Planning
+
+**NEW DOCUMENTATION**: The GameCalls Engine is being designed for microservices deployment to serve both Hunt Master Academy (educational) and Hunt Master Field Guide (mobile field app).
+
+📚 **Key Resources**:
+- **[Microservices Architecture Guide](MICROSERVICES_ARCHITECTURE_GUIDE.md)** - Complete REST API design, implementation roadmap, and technical specifications
+- **[Hunt Strategy Comparison](HUNT_STRATEGY_COMPARISON.md)** - Side-by-side comparison with Hunt Strategy Engine's proven microservices pattern
+- **Reference Implementation**: `/home/xbyooki/projects/hma-hunt-strategy-engine/backend/` (Node.js + Express wrapper)
+
+**Target Architecture**:
+```
+C++ Core Engine (UnifiedAudioEngine)
+         ↓
+   Node-API Bindings
+         ↓
+REST API Wrapper (Node.js + Express, Port 5005)
+         ↓
+HMA API Gateway (Port 3000)
+         ↓
+    ┌─────────────┴──────────────┐
+    ▼                            ▼
+HMA Academy Web           HMFG Mobile Apps
+(Lessons & Courses)       (Field Operations)
+```
+
+**Status**: Planning phase - See roadmap in MICROSERVICES_ARCHITECTURE_GUIDE.md
 
 ---
 
@@ -106,11 +135,11 @@ Status: MVP COMPLETE | Enhanced Analyzers Phase 1 Integrated | UX Alignment & Ca
 
 ```cpp
 struct SimilarityRealtimeState {
- uint32_t framesObserved;
- uint32_t minFramesRequired;
- bool usingRealtimePath;
- bool reliable;
- float provisionalScore;
+    uint32_t framesObserved;
+    uint32_t minFramesRequired;
+    bool usingRealtimePath;
+    bool reliable;
+    float provisionalScore;
 };
 
 Result<SimilarityRealtimeState> getRealtimeSimilarityState(SessionId);
@@ -128,7 +157,7 @@ float normalizationScalar;
 float similarityAtFinalize;
 uint64_t segmentStartMs;
 uint64_t segmentDurationMs;
-char pitchGrade; // 'A'..'F'
+char pitchGrade;      // 'A'..'F'
 char harmonicGrade;
 char cadenceGrade;
 ```
@@ -165,17 +194,17 @@ Purpose
 Planned Components
 
 - LoudnessCalibration
- - Computes peakLevelDbFS, rmsDbFS, noiseFloorDbFS, headroomDb
- - Recommends input gain: {increase|decrease|ok}
+    - Computes peakLevelDbFS, rmsDbFS, noiseFloorDbFS, headroomDb
+    - Recommends input gain: {increase|decrease|ok}
 - LatencyDriftCalibrator
- - Estimates alignmentOffsetMs and driftPpm via loopback/clap test
- - Provides compensation hints to DTWComparator window/band
+    - Estimates alignmentOffsetMs and driftPpm via loopback/clap test
+    - Provides compensation hints to DTWComparator window/band
 - EnvironmentProfiler
- - Captures ambient profile (noiseFloorDbFS, spectralTilt, bandEnergy)
- - Optional RNNoise path behind build/runtime flags (default: disabled)
+    - Captures ambient profile (noiseFloorDbFS, spectralTilt, bandEnergy)
+    - Optional RNNoise path behind build/runtime flags (default: disabled)
 - ScoreContributions
- - RealtimeScorer exposes contributions {mfcc,pitch,harmonic,cadence,loudness}
- - Provides why[]: stable factor IDs for UI mapping
+    - RealtimeScorer exposes contributions {mfcc,pitch,harmonic,cadence,loudness}
+    - Provides why[]: stable factor IDs for UI mapping
 
 Public API (planned, additive)
 
@@ -193,9 +222,9 @@ Realtime similarity (implemented)
 - loadMasterCall(session, masterIdOrUri) → Status
 - enableEnhancedAnalyzers(session, true) → Status (optional)
 - Loop per chunk:
- - processAudioChunk(session, span<const float>) → Status
- - getRealtimeSimilarityState(session) → Result<State{framesObserved,minFramesRequired,ready}>
- - If ready: getSimilarityScore(session), getEnhancedSummary(session), exportOverlayData(session)
+    - processAudioChunk(session, span<const float>) → Status
+    - getRealtimeSimilarityState(session) → Result<State{framesObserved,minFramesRequired,ready}>
+    - If ready: getSimilarityScore(session), getEnhancedSummary(session), exportOverlayData(session)
 - destroySession(session) → Status
 
 Finalize path (implemented)
@@ -211,42 +240,42 @@ Mermaid overview
 
 ```mermaid
 flowchart TD
- subgraph Realtime[Realtime Similarity (Implemented)]
- A1[createSession] --> A2[loadMasterCall]
- A2 --> A3[enableEnhancedAnalyzers (opt)]
- A3 --> A4[processAudioChunk (loop)]
- A4 --> A5{getRealtimeSimilarityState.ready?}
- A5 -- no --> A4
- A5 -- yes --> A6[getSimilarityScore]
- A6 --> A7[getEnhancedSummary]
- A7 --> A8[exportOverlayData]
- end
+    subgraph Realtime[Realtime Similarity (Implemented)]
+        A1[createSession] --> A2[loadMasterCall]
+        A2 --> A3[enableEnhancedAnalyzers (opt)]
+        A3 --> A4[processAudioChunk (loop)]
+        A4 --> A5{getRealtimeSimilarityState.ready?}
+        A5 -- no --> A4
+        A5 -- yes --> A6[getSimilarityScore]
+        A6 --> A7[getEnhancedSummary]
+        A7 --> A8[exportOverlayData]
+    end
 
- subgraph Finalize[Finalize Path (Implemented)]
- F1[processAudioChunk (all audio)]
- F1 --> F2[finalizeSessionAnalysis]
- end
+    subgraph Finalize[Finalize Path (Implemented)]
+        F1[processAudioChunk (all audio)]
+        F1 --> F2[finalizeSessionAnalysis]
+    end
 
- subgraph Calibration[Analysis & Calibration (Planned)]
- C1[Mic Gain Advisor] --> C1a[getCalibrationSummary]
- C2[Latency/Drift] --> C2a[begin → submit → finalize]
- C3[Environment] --> C3a[captureAmbientProfile → setNoiseSuppressionEnabled]
- end
+    subgraph Calibration[Analysis & Calibration (Planned)]
+        C1[Mic Gain Advisor] --> C1a[getCalibrationSummary]
+        C2[Latency/Drift] --> C2a[begin → submit → finalize]
+        C3[Environment] --> C3a[captureAmbientProfile → setNoiseSuppressionEnabled]
+    end
 ```
 
 
 ```cpp
 struct LoudnessCalibrationSummary {
- float peakLevelDbFS;
- float rmsDbFS;
- float noiseFloorDbFS;
- float headroomDb;
- enum class Recommendation { Increase, Decrease, Ok } recommendation;
+        float peakLevelDbFS;
+        float rmsDbFS;
+        float noiseFloorDbFS;
+        float headroomDb;
+        enum class Recommendation { Increase, Decrease, Ok } recommendation;
 };
 
 struct LatencyDriftReport {
- float alignmentOffsetMs; // may be positive or negative
- float driftPpm; // parts per million
+        float alignmentOffsetMs; // may be positive or negative
+        float driftPpm;          // parts per million
 };
 
 Result<LoudnessCalibrationSummary> getCalibrationSummary(SessionId);
