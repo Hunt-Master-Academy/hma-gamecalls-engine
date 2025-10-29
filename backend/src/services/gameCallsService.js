@@ -4,115 +4,94 @@
  * Interfaces with the C++ Huntmaster Audio Engine for actual processing
  */
 
+/**
+ * Game Calls Service
+ * Handles master call management, loading, and metadata operations
+ * Interfaces with PostgreSQL database and MinIO storage
+ */
+
 const { ApiError } = require('../middleware/errorHandler');
 const { v4: uuidv4 } = require('uuid');
+const minioService = require('./minioService');
+const databaseService = require('./databaseService');
 
 class GameCallsService {
 
     /**
      * List available master calls with filtering and pagination
+     * [20251029-API-004] Real database implementation
      */
     static async listCalls({ page = 1, pageSize = 50, species, callType, difficulty, tags }) {
         try {
-            // TODO: Interface with C++ engine for actual master call loading
-            // For now, return mock data that matches expected format
+            const offset = (page - 1) * pageSize;
+            const limit = Math.min(pageSize, 100); // Max 100 per page
 
-            const mockCalls = [
-                {
-                    id: 'call_deer_grunt_001',
-                    name: 'Basic Deer Grunt',
-                    species: 'whitetail_deer',
-                    callType: 'grunt',
-                    difficulty: 'beginner',
-                    duration: 2.5,
-                    sampleRate: 44100,
-                    description: 'Standard buck grunt call for attracting deer during rut season',
-                    tags: ['rut', 'buck', 'attract', 'basic'],
-                    audioFile: '/audio/deer_grunt_basic.wav',
-                    waveformData: '/waveforms/deer_grunt_basic.json',
-                    createdAt: '2025-01-01T10:00:00Z',
-                    updatedAt: '2025-01-01T10:00:00Z'
-                },
-                {
-                    id: 'call_turkey_yelp_001',
-                    name: 'Hen Turkey Yelp',
-                    species: 'wild_turkey',
-                    callType: 'yelp',
-                    difficulty: 'intermediate',
-                    duration: 3.2,
-                    sampleRate: 44100,
-                    description: 'Classic hen turkey yelp sequence for spring gobbler hunting',
-                    tags: ['spring', 'hen', 'gobbler', 'sequence'],
-                    audioFile: '/audio/turkey_yelp_hen.wav',
-                    waveformData: '/waveforms/turkey_yelp_hen.json',
-                    createdAt: '2025-01-02T14:20:00Z',
-                    updatedAt: '2025-01-02T14:20:00Z'
-                },
-                {
-                    id: 'call_elk_bugle_001',
-                    name: 'Bull Elk Bugle',
-                    species: 'elk',
-                    callType: 'bugle',
-                    difficulty: 'advanced',
-                    duration: 4.8,
-                    sampleRate: 44100,
-                    description: 'Mature bull elk bugle with chuckles - challenging call',
-                    tags: ['bull', 'rut', 'challenge', 'advanced'],
-                    audioFile: '/audio/elk_bugle_bull.wav',
-                    waveformData: '/waveforms/elk_bugle_bull.json',
-                    createdAt: '2025-01-03T09:15:00Z',
-                    updatedAt: '2025-01-03T09:15:00Z'
-                },
-                {
-                    id: 'call_duck_quack_001',
-                    name: 'Mallard Hen Quack',
-                    species: 'mallard_duck',
-                    callType: 'quack',
-                    difficulty: 'beginner',
-                    duration: 1.8,
-                    sampleRate: 44100,
-                    description: 'Basic mallard hen quack - foundation waterfowl call',
-                    tags: ['waterfowl', 'hen', 'basic', 'mallard'],
-                    audioFile: '/audio/duck_quack_mallard.wav',
-                    waveformData: '/waveforms/duck_quack_mallard.json',
-                    createdAt: '2025-01-04T16:30:00Z',
-                    updatedAt: '2025-01-04T16:30:00Z'
-                }
-            ];
-
-            // Apply filtering
-            let filteredCalls = mockCalls;
+            // [20251029-API-005] Build dynamic query with filters
+            let query = `
+                SELECT 
+                    id, name, species, call_type, difficulty,
+                    duration_seconds, sample_rate, description,
+                    tags, season, context, quality_score,
+                    usage_count, success_rate, is_premium,
+                    created_at, updated_at
+                FROM master_calls
+                WHERE deleted_at IS NULL
+            `;
+            
+            const params = [];
+            let paramIndex = 1;
 
             if (species) {
-                filteredCalls = filteredCalls.filter(call => call.species === species);
+                query += ` AND species = $${paramIndex++}`;
+                params.push(species);
             }
 
             if (callType) {
-                filteredCalls = filteredCalls.filter(call => call.callType === callType);
+                query += ` AND call_type = $${paramIndex++}`;
+                params.push(callType);
             }
 
             if (difficulty) {
-                filteredCalls = filteredCalls.filter(call => call.difficulty === difficulty);
+                query += ` AND difficulty = $${paramIndex++}`;
+                params.push(difficulty);
             }
 
             if (tags && tags.length > 0) {
-                filteredCalls = filteredCalls.filter(call =>
-                    tags.some(tag => call.tags.includes(tag))
-                );
+                query += ` AND tags && $${paramIndex++}`; // Array overlap operator
+                params.push(tags);
             }
 
-            // Apply pagination
-            const startIndex = (page - 1) * pageSize;
-            const endIndex = startIndex + pageSize;
-            const paginatedCalls = filteredCalls.slice(startIndex, endIndex);
+            // [20251029-API-006] Order by quality and usage
+            query += ` ORDER BY quality_score DESC, usage_count DESC`;
+            query += ` LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+            params.push(limit, offset);
+
+            // [20251029-API-007] Execute query and count total
+            const result = await databaseService.raw(query, params);
+            
+            const countQuery = `
+                SELECT COUNT(*) as total
+                FROM master_calls
+                WHERE deleted_at IS NULL
+                ${species ? 'AND species = $1' : ''}
+                ${callType ? `AND call_type = $${species ? 2 : 1}` : ''}
+                ${difficulty ? `AND difficulty = $${[species, callType].filter(Boolean).length + 1}` : ''}
+            `;
+            
+            const countParams = [species, callType, difficulty].filter(Boolean);
+            const countResult = await databaseService.raw(countQuery, countParams);
+            const total = parseInt(countResult.rows[0].total);
 
             return {
-                calls: paginatedCalls,
-                total: filteredCalls.length
+                calls: result.rows,
+                total,
+                page,
+                pageSize: limit,
+                totalPages: Math.ceil(total / limit)
             };
 
         } catch (error) {
-            throw new Error(`Failed to list calls: ${error.message}`);
+            throw ApiError.internal('LIST_CALLS_FAILED', `Failed to list calls: ${error.message}`);
         }
     }
 
