@@ -1,0 +1,41 @@
+{
+  "name": "@hma/gamecalls-engine-bindings",
+  "version": "1.0.0",
+  "description": "Node-API native bindings for Hunt Master Academy GameCalls Engine (C++20)",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "gypfile": true,
+  "scripts": {
+    "install": "node-gyp rebuild",
+    "build": "node-gyp rebuild",
+    "build:debug": "node-gyp rebuild --debug",
+    "clean": "node-gyp clean",
+    "test": "node test/test_bindings.js",
+    "test:session": "node test/test_session.js",
+    "test:audio": "node test/test_audio_processing.js"
+  },
+  "keywords": [
+    "huntmaster",
+    "gamecalls",
+    "audio",
+    "analysis",
+    "native",
+    "napi",
+    "node-addon"
+  ],
+  "author": "Hunt Master Academy",
+  "license": "MIT",
+  "devDependencies": {
+    "bindings": "^1.5.0",
+    "node-addon-api": "^7.1.1",
+    "node-gyp": "^10.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hunt-Master-Academy/hma-gamecalls-engine.git",
+    "directory": "bindings/node-api"
+  }
+}

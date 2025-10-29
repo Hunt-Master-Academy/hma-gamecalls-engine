@@ -1,0 +1,36 @@
+# [20251028-BINDINGS-048] .gitignore for Node-API bindings
+
+# Build artifacts
+build/
+*.node
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+
+# Node modules
+node_modules/
+package-lock.json
+yarn.lock
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage/
+.nyc_output/
