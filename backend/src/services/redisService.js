@@ -16,10 +16,19 @@ class RedisService {
 
     /**
      * [20251028-CACHE-002] Initialize Redis client
+     * [20251029-TEST-005] Skip Redis in test environment (NODE_ENV=test)
      */
     initialize() {
         if (this.client) {
             return; // Already initialized
+        }
+
+        // [20251029-TEST-006] Disable Redis for smoke tests
+        if (process.env.NODE_ENV === 'test' || process.env.SKIP_REDIS === 'true') {
+            console.log('⚠️  Redis DISABLED (test mode)');
+            this.isConnected = false;
+            this.client = null;
+            return;
         }
 
         const host = process.env.REDIS_HOST || 'redis';
@@ -67,6 +76,11 @@ class RedisService {
         try {
             this.initialize();
 
+            // [20251029-TEST-007] Skip if no client available
+            if (!this.client) {
+                return;
+            }
+
             const key = `gamecalls:session:${sessionId}`;
             const value = JSON.stringify(sessionData);
 
@@ -87,6 +101,11 @@ class RedisService {
     async getSession(sessionId) {
         try {
             this.initialize();
+
+            // [20251029-TEST-008] Return null if no client available
+            if (!this.client) {
+                return null;
+            }
 
             const key = `gamecalls:session:${sessionId}`;
             const value = await this.client.get(key);
@@ -113,6 +132,11 @@ class RedisService {
         try {
             this.initialize();
 
+            // [20251029-TEST-009] Skip if no client available
+            if (!this.client) {
+                return true; // Pretend success in test mode
+            }
+
             const existing = await this.getSession(sessionId);
             if (!existing) {
                 console.warn(`Cannot update non-existent session: ${sessionId}`);
@@ -138,6 +162,11 @@ class RedisService {
         try {
             this.initialize();
 
+            // [20251029-TEST-010] Skip if no client available
+            if (!this.client) {
+                return;
+            }
+
             const key = `gamecalls:session:${sessionId}`;
             await this.client.del(key);
             console.log(`🗑️  Removed session from cache: ${sessionId}`);
@@ -154,6 +183,11 @@ class RedisService {
     async listSessions() {
         try {
             this.initialize();
+
+            // [20251029-TEST-011] Return empty array if no client available
+            if (!this.client) {
+                return [];
+            }
 
             const pattern = 'gamecalls:session:*';
             const keys = await this.client.keys(pattern);

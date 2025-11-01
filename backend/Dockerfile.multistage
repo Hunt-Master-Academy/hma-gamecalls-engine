@@ -1,0 +1,153 @@
+# [20251030-DOCKER-005] GameCalls Engine Multi-Stage Production Build
+# Stage 1: Build C++ UnifiedAudioEngine (Ubuntu 22.04 for modern C++20 support)
+# Stage 2: Build Node-API bindings (Debian Bullseye with Node 22)
+# Stage 3: Production runtime (Debian Bullseye Slim)
+
+# =============================================================================
+# Stage 1: Build C++ UnifiedAudioEngine library
+# =============================================================================
+FROM ubuntu:22.04 AS cpp-builder
+
+WORKDIR /build
+
+# Install C++ build dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    git \
+    libsndfile1-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy C++ engine source (all directories to satisfy CMake dependencies)
+COPY src ./src
+COPY include ./include
+COPY tests ./tests
+COPY test_data ./test_data
+COPY tools ./tools
+COPY data ./data
+COPY CMakeLists.txt ./
+COPY cmake ./cmake
+COPY libs ./libs
+
+# Build only the UnifiedAudioEngineNoDiag library (no tests, no diagnostics)
+RUN mkdir -p build && cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
+          -DBUILD_SHARED_LIBS=OFF \
+          -DBUILD_TESTING=OFF \
+          -DHUNTMASTER_BUILD_TOOLS=OFF \
+          .. && \
+    cmake --build . --target UnifiedAudioEngineNoDiag -j$(nproc) && \
+    echo "✅ C++ UnifiedAudioEngine built successfully"
+
+# =============================================================================
+# Stage 2: Build Node-API bindings against C++ library
+# =============================================================================
+FROM ubuntu:22.04 AS binding-builder
+
+WORKDIR /build
+
+# Install Node.js 22 and build tools
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cmake \
+    python3 \
+    libsndfile1-dev \
+    libasound2-dev \
+    curl \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy C++ engine build artifacts from stage 1
+COPY --from=cpp-builder /build/build ./cpp-build
+COPY --from=cpp-builder /build/src ./src
+COPY --from=cpp-builder /build/include ./include
+
+# [20251030-FIX-006] Create symlink so binding.gyp relative paths work
+RUN ln -s /build/cpp-build /build/build
+
+# Copy Node-API binding source
+COPY bindings/node-api ./bindings/node-api
+
+# Copy backend package.json for npm dependencies
+COPY backend/package*.json ./backend/
+
+# Install npm dependencies and build Node-API addon  
+RUN cd backend && npm ci && \
+    cd ../bindings/node-api && \
+    npm install && \
+    npx node-gyp configure --debug=false && \
+    npx node-gyp build --release && \
+    echo "✅ Node-API bindings built successfully"
+
+# Verify the binding was created
+RUN ls -lh /build/bindings/node-api/build/Release/gamecalls_engine.node && \
+    echo "✅ Verified gamecalls_engine.node exists"
+
+# =============================================================================
+# Stage 3: Production runtime with Node.js on Ubuntu 22.04
+# =============================================================================
+FROM ubuntu:22.04
+
+WORKDIR /app
+
+# Install Node.js 22 and runtime dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    ffmpeg \
+    libsndfile1 \
+    && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy package files
+COPY backend/package*.json ./
+
+# Install production dependencies only
+RUN npm ci --only=production && \
+    echo "✅ Node.js production dependencies installed"
+
+# Create bindings directory structure
+RUN mkdir -p bindings/node-api/build/Release bindings/node-api/lib
+
+# Copy compiled Node-API binding from stage 2
+COPY --from=binding-builder /build/bindings/node-api/build/Release/gamecalls_engine.node ./bindings/node-api/build/Release/
+COPY --from=binding-builder /build/bindings/node-api/lib ./bindings/node-api/lib
+COPY --from=binding-builder /build/bindings/node-api/package*.json ./bindings/node-api/
+COPY --from=binding-builder /build/bindings/node-api/lib/*.js ./bindings/node-api/lib/
+COPY --from=binding-builder /build/bindings/node-api/lib/*.d.ts ./bindings/node-api/lib/
+
+# Copy kissfft shared library from C++ build
+COPY --from=cpp-builder /build/build/_deps/kissfft-build/libkissfft-float.so* /usr/local/lib/
+
+# Update library cache
+RUN ldconfig && \
+    echo "✅ Shared libraries configured"
+
+# Copy backend source code
+COPY backend/src ./src
+COPY backend/migrations ./migrations
+COPY backend/docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+
+# Create temp directory for audio processing
+RUN mkdir -p /tmp/gamecalls-waveforms && chmod 1777 /tmp/gamecalls-waveforms
+
+# Verify binding can be loaded
+RUN node -e "console.log('Testing binding load...'); try { const binding = require('./bindings/node-api/lib/index'); console.log('✅ Binding loaded successfully:', binding.getEngineInfo ? binding.getEngineInfo() : 'OK'); } catch(e) { console.error('❌ Failed to load binding:', e.message); process.exit(1); }"
+
+# Set environment
+ENV NODE_ENV=production
+ENV PORT=5005
+ENV USE_REAL_ENGINE=true
+
+# Expose port
+EXPOSE 5005
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
+    CMD wget --spider -q http://localhost:5005/health || exit 1
+
+# Start server
+CMD ["node", "src/index.js"]

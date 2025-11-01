@@ -16,12 +16,25 @@ namespace gamecalls_bindings {
 
 // [20251028-BINDINGS-012] Session state and metadata
 struct SessionState {
-    uint32_t sessionId;
+    uint32_t sessionId;     // Wrapper-level session ID (increments globally)
+    uint32_t cppSessionId;  // [20251102-FIX-009] C++ engine session ID (per-engine instance)
     std::shared_ptr<huntmaster::UnifiedAudioEngine> engine;
     std::string masterCallPath;
     float sampleRate;
     bool enhancedAnalysisEnabled;
     std::chrono::steady_clock::time_point createdAt;
+};
+
+// [20251102-FIX-008] Result structures for observable JS returns
+struct DestroyResult {
+    bool destroyed;
+    int cppSessionsDestroyed;
+    int activeWrappers;
+};
+
+struct SessionsInfo {
+    int activeWrappers;
+    uint32_t nextWrapperId;
 };
 
 // [20251028-BINDINGS-013] Thread-safe session management
@@ -34,14 +47,23 @@ class SessionWrapper {
     // Get session engine instance
     static std::shared_ptr<huntmaster::UnifiedAudioEngine> GetEngine(uint32_t sessionId);
 
-    // Get similarity score for session
-    static huntmaster::SimilarityScore GetSimilarityScore(uint32_t sessionId);
+    // [20251102-FIX-011] Get C++ session ID from wrapper session ID
+    static uint32_t GetCppSessionId(uint32_t wrapperSessionId);
 
-    // Finalize session analysis
-    static huntmaster::FinalAnalysis FinalizeSession(uint32_t sessionId);
+    // [20251029-BINDINGS-FIX-001] Get similarity score for session - FIXED: Use
+    // RealtimeScoringResult from UnifiedAudioEngine
+    static huntmaster::RealtimeScoringResult GetSimilarityScore(uint32_t sessionId);
 
-    // Destroy session and cleanup resources
-    static void DestroySession(uint32_t sessionId);
+    // [20251029-BINDINGS-FIX-002] Finalize session analysis - FIXED: Use EnhancedAnalysisSummary
+    // instead of non-existent FinalAnalysis
+    static huntmaster::UnifiedAudioEngine::EnhancedAnalysisSummary
+    FinalizeSession(uint32_t sessionId);
+
+    // [20251102-FIX-009] Destroy session and return detailed results for JS observability
+    static DestroyResult DestroySession(uint32_t sessionId);
+
+    // [20251102-FIX-010] Get active sessions info for debugging
+    static SessionsInfo GetActiveSessionsInfo();
 
     // Check if session exists
     static bool SessionExists(uint32_t sessionId);

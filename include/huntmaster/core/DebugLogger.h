@@ -150,6 +150,24 @@ class DebugLogger {
     mutable std::mutex logMutex_;
 };
 
+// [20251229-BINDINGS-FIX-023] Conditional logging macros - disable when DISABLE_LOGGING is defined
+#ifdef DISABLE_LOGGING
+// No-op macros when logging is disabled (for Node-API bindings safety)
+#define LOG_ERROR(component, message) ((void)0)
+#define LOG_WARN(component, message) ((void)0)
+#define LOG_INFO(component, message) ((void)0)
+#define LOG_DEBUG(component, message) ((void)0)
+#define LOG_TRACE(component, message) ((void)0)
+#define LOG_IF_ERROR(component, message) ((void)0)
+#define LOG_IF_WARN(component, message) ((void)0)
+#define LOG_IF_INFO(component, message) ((void)0)
+#define LOG_IF_DEBUG(component, message) ((void)0)
+#define LOG_IF_TRACE(component, message) ((void)0)
+#define LOG_STREAM(component, level) \
+    if (false)                       \
+    std::cout
+
+#else
 // Convenience macros for cleaner logging
 #define LOG_ERROR(component, message) \
     huntmaster::DebugLogger::getInstance().error(component, message, __FILE__, __LINE__, __func__)
@@ -195,6 +213,8 @@ class DebugLogger {
 // Stream-style logging macros
 #define LOG_STREAM(component, level) \
     huntmaster::LogStream(component, level, __FILE__, __LINE__, __func__)
+
+#endif  // DISABLE_LOGGING
 
 /**
  * @brief Stream-style logging helper

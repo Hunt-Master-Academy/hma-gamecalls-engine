@@ -112,9 +112,8 @@ Napi::Value GetSimilarityScore(const Napi::CallbackInfo& info) {
     }
 }
 
-// [20251028-BINDINGS-007] Finalize session analysis (segment selection, refined DTW)
-// Args: sessionId (number)
-// Returns: final analysis (object)
+// [20251029-BINDINGS-FIX-019] Finalize session analysis (segment selection, refined DTW) - FIXED
+// call Args: sessionId (number) Returns: EnhancedAnalysisSummary object with comprehensive results
 Napi::Value FinalizeSession(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
@@ -126,8 +125,8 @@ Napi::Value FinalizeSession(const Napi::CallbackInfo& info) {
     uint32_t sessionId = info[0].As<Napi::Number>().Uint32Value();
 
     try {
-        auto finalResults = SessionWrapper::FinalizeSession(sessionId);
-        return TypeConverters::FinalAnalysisToObject(env, finalResults);
+        auto summary = SessionWrapper::FinalizeSession(sessionId);
+        return TypeConverters::EnhancedAnalysisSummaryToObject(env, summary);
     } catch (const std::exception& e) {
         Napi::Error::New(env, std::string("Session finalization failed: ") + e.what())
             .ThrowAsJavaScriptException();
@@ -137,7 +136,7 @@ Napi::Value FinalizeSession(const Napi::CallbackInfo& info) {
 
 // [20251028-BINDINGS-008] Destroy session and free resources
 // Args: sessionId (number)
-// Returns: boolean (success)
+// [20251102-FIX-006] Returns: { destroyed: boolean, wrapperId: number, activeSessions: number }
 Napi::Value DestroySession(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
@@ -149,8 +148,15 @@ Napi::Value DestroySession(const Napi::CallbackInfo& info) {
     uint32_t sessionId = info[0].As<Napi::Number>().Uint32Value();
 
     try {
-        SessionWrapper::DestroySession(sessionId);
-        return Napi::Boolean::New(env, true);
+        auto result = SessionWrapper::DestroySession(sessionId);
+
+        Napi::Object resultObj = Napi::Object::New(env);
+        resultObj.Set("destroyed", Napi::Boolean::New(env, result.destroyed));
+        resultObj.Set("wrapperId", Napi::Number::New(env, sessionId));
+        resultObj.Set("cppSessionsDestroyed", Napi::Number::New(env, result.cppSessionsDestroyed));
+        resultObj.Set("activeWrappers", Napi::Number::New(env, result.activeWrappers));
+
+        return resultObj;
     } catch (const std::exception& e) {
         Napi::Error::New(env, std::string("Failed to destroy session: ") + e.what())
             .ThrowAsJavaScriptException();
@@ -158,15 +164,34 @@ Napi::Value DestroySession(const Napi::CallbackInfo& info) {
     }
 }
 
-// [20251028-BINDINGS-009] Get engine version and build info
+// [20251029-BINDINGS-FIX-020] Get engine version and build info - FIXED CMAKE_BUILD_TYPE
 Napi::Value GetEngineInfo(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
 
     Napi::Object infoObj = Napi::Object::New(env);
     infoObj.Set("version", "1.0.0");
-    infoObj.Set("buildType", CMAKE_BUILD_TYPE);
+// [20251029-BINDINGS-FIX-021] Use preprocessor check for DEBUG instead of CMAKE_BUILD_TYPE
+// CMAKE variables don't exist in node-gyp build context
+#ifdef DEBUG
+    infoObj.Set("buildType", "Debug");
+#else
+    infoObj.Set("buildType", "Release");
+#endif
     infoObj.Set("cppStandard", "C++20");
     infoObj.Set("apiVersion", NAPI_VERSION);
+
+    return infoObj;
+}
+
+// [20251102-FIX-007] Get active sessions count for debugging
+Napi::Value GetActiveSessionsInfo(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    auto sessionInfo = SessionWrapper::GetActiveSessionsInfo();
+
+    Napi::Object infoObj = Napi::Object::New(env);
+    infoObj.Set("activeWrappers", Napi::Number::New(env, sessionInfo.activeWrappers));
+    infoObj.Set("nextWrapperId", Napi::Number::New(env, sessionInfo.nextWrapperId));
 
     return infoObj;
 }
@@ -185,10 +210,17 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
 
     // Utility
     exports.Set("getEngineInfo", Napi::Function::New(env, GetEngineInfo));
+    exports.Set("getActiveSessionsInfo", Napi::Function::New(env, GetActiveSessionsInfo));
 
     return exports;
 }
 
 }  // namespace gamecalls_bindings
 
-NODE_API_MODULE(gamecalls_engine, gamecalls_bindings::Init)
+// [20251029-BINDINGS-FIX-022] Global scope wrapper for NODE_API_MODULE compatibility
+// NODE_API_MODULE macro cannot handle namespace qualifiers directly
+Napi::Object InitModule(Napi::Env env, Napi::Object exports) {
+    return gamecalls_bindings::Init(env, exports);
+}
+
+NODE_API_MODULE(gamecalls_engine, InitModule)

@@ -246,7 +246,8 @@ class UnifiedAudioEngine::Impl {
 
         // Voice Activity Detection state
         VADConfig vadConfig;
-        bool vadEnabled = false;  // Disable VAD by default for wildlife call analysis
+        bool vadEnabled = true;  // [20251031-FIX-026] Enable VAD by default to filter silence/noise
+                                 // in wildlife call analysis
 
         // DTW Configuration state
         float dtwWindowRatio = 0.1f;
@@ -303,7 +304,8 @@ class UnifiedAudioEngine::Impl {
                 static_cast<float>(internalVadConfig.pre_buffer.count()) / 1000.0f;
             vadConfig.post_buffer =
                 static_cast<float>(internalVadConfig.post_buffer.count()) / 1000.0f;
-            vadConfig.enabled = false;  // Disable VAD by default for wildlife call analysis
+            vadConfig.enabled = true;  // [20251031-FIX-026] Enable VAD by default to filter
+                                       // silence/noise in wildlife call analysis
 
             // Initialize audio components
             audioPlayer = std::make_unique<AudioPlayer>();
@@ -780,6 +782,11 @@ UnifiedAudioEngine::Result<SessionId> UnifiedAudioEngine::Impl::createSession(fl
     std::unique_lock lock(sessionsMutex_);
     const SessionId sessionId = nextSessionId_++;
 
+    // [20251031-DEBUG-001] Log current session count for diagnostics
+    LOG_INFO(Component::UNIFIED_ENGINE,
+             "Creating session " + std::to_string(sessionId)
+                 + " | Current active sessions: " + std::to_string(sessions_.size()));
+
     // Check for session limit
     if (sessions_.size() >= 1000) {  // Reasonable limit
         ComponentErrorHandler::UnifiedEngineErrors::logResourceLimitError(
@@ -842,8 +849,15 @@ UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::destroySession(SessionId se
         }
 
         sessions_.erase(it);
+
+        // [20251102-FIX-004] Clear accumulated errors from global logger
+        // Prevents memory fragmentation from unbounded error accumulation
+        // across multiple sessions (max 1000 errors before fragmentation)
+        ErrorLogger::getInstance().clearRecentErrors();
+
         LOG_INFO(Component::UNIFIED_ENGINE,
-                 "Session destroyed successfully: " + std::to_string(sessionId));
+                 "Session destroyed successfully: " + std::to_string(sessionId)
+                     + " | Active sessions remaining: " + std::to_string(sessions_.size()));
         return Status::OK;
 
     } catch (const std::exception& e) {
@@ -915,7 +929,16 @@ UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::loadMasterCall(SessionId se
     }
 
     // Load and process audio file
-    const std::string audioFilePath = masterCallsPath_ + masterCallIdStr + ".wav";
+    // [20251029-FIX-001] Support absolute paths (for downloaded temp files)
+    std::string audioFilePath;
+    if (masterCallIdStr[0] == '/' || masterCallIdStr[0] == '\\') {
+        // Absolute path - use as-is
+        audioFilePath = masterCallIdStr;
+    } else {
+        // Relative ID - prepend master calls path and add .wav extension
+        audioFilePath = masterCallsPath_ + masterCallIdStr + ".wav";
+    }
+
     unsigned int channels, sampleRate;
     drwav_uint64 totalPCMFrameCount;
     float* rawData = drwav_open_file_and_read_pcm_frames_f32(
@@ -982,9 +1005,10 @@ UnifiedAudioEngine::Status UnifiedAudioEngine::Impl::loadMasterCall(SessionId se
 UnifiedAudioEngine::Status
 UnifiedAudioEngine::Impl::processAudioChunk(SessionId sessionId,
                                             std::span<const float> audioBuffer) {
-    LOG_TRACE(Component::UNIFIED_ENGINE,
-              "Processing audio chunk - Session: " + std::to_string(sessionId)
-                  + ", Buffer size: " + std::to_string(audioBuffer.size()));
+    // [20251102-DEBUG-002] Enhanced logging for debugging audio processing failures
+    LOG_INFO(Component::UNIFIED_ENGINE,
+             "🔍 processAudioChunk ENTRY - Session: " + std::to_string(sessionId)
+                 + ", Buffer size: " + std::to_string(audioBuffer.size()));
 
     // Validate input parameters
     if (audioBuffer.empty()) {
@@ -1006,6 +1030,7 @@ UnifiedAudioEngine::Impl::processAudioChunk(SessionId sessionId,
         if (std::isnan(audioBuffer[i]) || std::isinf(audioBuffer[i])) {
             ComponentErrorHandler::UnifiedEngineErrors::logProcessingError(
                 "audio_validation", "Invalid audio data detected (NaN or Inf)");
+            LOG_ERROR(Component::UNIFIED_ENGINE, "❌ RETURNING INVALID_PARAMS - NaN/Inf detected");
             return Status::INVALID_PARAMS;
         }
     }
@@ -1014,8 +1039,22 @@ UnifiedAudioEngine::Impl::processAudioChunk(SessionId sessionId,
     if (!session) {
         ComponentErrorHandler::UnifiedEngineErrors::logSessionError(
             std::to_string(sessionId), "Session not found during audio processing");
+        LOG_ERROR(Component::UNIFIED_ENGINE,
+                  "❌ RETURNING SESSION_NOT_FOUND - Session " + std::to_string(sessionId)
+                      + " does not exist");
         return Status::SESSION_NOT_FOUND;
     }
+
+    LOG_INFO(Component::UNIFIED_ENGINE, "✅ Session found, components check:");
+    LOG_INFO(Component::UNIFIED_ENGINE,
+             "   - realtimeScorer: "
+                 + std::string(session->realtimeScorer ? "INITIALIZED" : "NULL"));
+    LOG_INFO(Component::UNIFIED_ENGINE,
+             "   - mfccProcessor: " + std::string(session->mfccProcessor ? "INITIALIZED" : "NULL"));
+    LOG_INFO(Component::UNIFIED_ENGINE,
+             "   - vad: " + std::string(session->vad ? "INITIALIZED" : "NULL"));
+    LOG_INFO(Component::UNIFIED_ENGINE,
+             "   - masterCallFeatures size: " + std::to_string(session->masterCallFeatures.size()));
 
     try {
         // Add debug logging for audio processing
@@ -1025,15 +1064,19 @@ UnifiedAudioEngine::Impl::processAudioChunk(SessionId sessionId,
 
         // Process audio with RealtimeScorer for comprehensive scoring
         if (session->realtimeScorer) {
+            LOG_DEBUG(Component::UNIFIED_ENGINE, "🎯 Calling realtimeScorer->processAudio...");
             auto result =
                 session->realtimeScorer->processAudio(audioBuffer, 1);  // Assume mono for now
             if (!result) {
                 ComponentErrorHandler::UnifiedEngineErrors::logProcessingError(
                     "REALTIME_SCORER_FAILED", "RealtimeScorer processing failed");
                 LOG_WARN(Component::UNIFIED_ENGINE,
-                         "RealtimeScorer processing failed for session "
-                             + std::to_string(sessionId));
+                         "⚠️  RealtimeScorer processing failed for session "
+                             + std::to_string(sessionId)
+                             + " - CONTINUING with traditional processing");
                 // Continue with traditional processing
+            } else {
+                LOG_DEBUG(Component::UNIFIED_ENGINE, "✅ RealtimeScorer processed successfully");
             }
         }
 
@@ -1095,22 +1138,32 @@ UnifiedAudioEngine::Impl::processAudioChunk(SessionId sessionId,
         ComponentErrorHandler::UnifiedEngineErrors::logProcessingError(
             "AUDIO_CHUNK_PROCESSING_ERROR",
             "Exception during audio chunk processing: " + std::string(e.what()));
+        LOG_ERROR(Component::UNIFIED_ENGINE,
+                  "❌ RETURNING PROCESSING_ERROR - Exception: " + std::string(e.what()));
         return Status::PROCESSING_ERROR;
     }
 
     // Extract features from the accumulated audio segments
     if (!session->currentSegmentBuffer.empty()) {
         try {
+            LOG_DEBUG(Component::UNIFIED_ENGINE,
+                      "🔧 Extracting MFCC features from "
+                          + std::to_string(session->currentSegmentBuffer.size()) + " samples");
             extractMFCCFeatures(*session);
+            LOG_DEBUG(Component::UNIFIED_ENGINE, "✅ MFCC extraction successful");
         } catch (const std::exception& e) {
             ComponentErrorHandler::MFCCProcessorErrors::logFeatureExtractionError(
                 512, "MFCC feature extraction failed: " + std::string(e.what()));
+            LOG_ERROR(Component::UNIFIED_ENGINE,
+                      "❌ RETURNING PROCESSING_ERROR - MFCC extraction failed: "
+                          + std::string(e.what()));
             return Status::PROCESSING_ERROR;
         }
     }
 
-    LOG_TRACE(Component::UNIFIED_ENGINE,
-              "Audio chunk processed successfully for session " + std::to_string(sessionId));
+    LOG_INFO(Component::UNIFIED_ENGINE,
+             "✅ processAudioChunk SUCCESS - Session " + std::to_string(sessionId)
+                 + " processed successfully");
     return Status::OK;
 }
 
@@ -1190,7 +1243,16 @@ UnifiedAudioEngine::Impl::getSimilarityScore(SessionId sessionId) {
         float distance =
             session->dtwComparator->compare(session->masterCallFeatures, session->sessionFeatures);
         if (std::isfinite(distance)) {
-            float dtwSim = 1.0f / (1.0f + distance);
+            // [20251102-FIX-025] Improved DTW distance-to-similarity conversion
+            // OLD: 1/(1+distance) - very small distances yield ~100% similarity
+            // NEW: Scale distance and use sigmoid-like curve for better discrimination
+
+            // Scale distance to expected range (empirically calibrated)
+            float scaledDistance = distance * 2.0f;  // Adjust multiplier based on typical distances
+
+            // Use exponential decay for more gradual similarity falloff
+            float dtwSim = std::exp(-scaledDistance);
+
             candidateDTWSim = std::clamp(dtwSim, 0.0f, 1.0f);
         }
     }
@@ -1285,11 +1347,17 @@ UnifiedAudioEngine::Impl::getSimilarityScore(SessionId sessionId) {
                         double c = dot / (nM * std::sqrt(nS));
                         c = std::clamp(c, -1.0, 1.0);
                         double val = 0.5 * (c + 1.0);
+                        // [20251102-FIX-018] Reject weak cosine matches to prevent false positives
+                        // Cosine < 0.3 means vectors are nearly orthogonal (different call types)
+                        if (c < 0.3) {
+                            val = 0.0;  // Don't count weak matches
+                        }
                         if (val > bestLocal)
                             bestLocal = val;
                     }
                 }
-                if (bestLocal > -1.5) {
+                // [20251102-FIX-019] Require stronger local match threshold (was -1.5, now 0.4)
+                if (bestLocal > 0.4) {
                     local.push_back(bestLocal);
                     ++used;
                 }
@@ -1315,18 +1383,23 @@ UnifiedAudioEngine::Impl::getSimilarityScore(SessionId sessionId) {
             }
         }
         if (bestAdj >= 0.0) {
-            // More aggressive shaping for strong subsequence matches:
-            //  - Slightly lower gamma to inflate mid-range trimmed means
-            //  - Stronger coverage uplift to reward full coverage
-            double gamma = (bestCoverage > 0.95 ? 0.45 : 0.50);
+            // [20251102-FIX-020] Reduce aggressive score inflation to improve discrimination
+            // OLD: gamma=0.45/0.50 (inflates), coverageUplift up to 1.60x, expansion 1.25x
+            // NEW: gamma=0.75 (penalizes weak), coverageUplift max 1.15x, no expansion
+            double gamma = 0.75;  // Higher gamma penalizes weaker matches
             double raw = std::pow(bestAdj, gamma);
-            double coverageUplift = 0.95 + 0.65 * std::clamp(bestCoverage, 0.0, 1.0);  // up to 1.60
+
+            // Reduced coverage uplift: 1.0 to 1.15x instead of 0.95 to 1.60x
+            double coverageUplift = 1.0 + 0.15 * std::clamp(bestCoverage, 0.0, 1.0);
             raw *= coverageUplift;
-            // Mild nonlinear push toward upper band while preserving ordering
-            if (raw > 0.55) {
-                double excess = raw - 0.55;
-                raw = 0.55 + excess * 1.25;  // expand headroom
-            }
+
+            // [20251102-FIX-021] Removed expansion multiplier - was pushing 0.55+ scores to 100%
+            // OLD CODE (REMOVED):
+            // if (raw > 0.55) {
+            //     double excess = raw - 0.55;
+            //     raw = 0.55 + excess * 1.25;  // expand headroom
+            // }
+
             raw = std::clamp(raw, 0.0, 1.0);
             candidateSubsequenceSim = static_cast<float>(raw);
         }
@@ -1334,26 +1407,46 @@ UnifiedAudioEngine::Impl::getSimilarityScore(SessionId sessionId) {
 
     float best =
         std::max({candidateOffsetSim, candidateDTWSim, candidateMeanSim, candidateSubsequenceSim});
+
+    // [20251102-FIX-022] Reduce subsequence dominance - blend more conservatively
     if (candidateSubsequenceSim >= 0.0f) {
         float nonSub = std::max({candidateOffsetSim, candidateDTWSim, candidateMeanSim});
         float gap = candidateSubsequenceSim - nonSub;
-        if (nonSub >= 0.0f && gap > 0.05f) {
-            // If subsequence clearly dominates, let it drive almost entirely
-            if (gap > 0.25f) {
-                best = candidateSubsequenceSim;  // trust dominant subsequence
+
+        // OLD: Trusted subsequence completely if gap > 0.25, weighted 85% if gap > 0.05
+        // NEW: More conservative blending, require larger gap to trust subsequence
+        if (nonSub >= 0.0f && gap > 0.10f) {
+            if (gap > 0.35f) {
+                // Only trust dominant subsequence if gap is very large (35%+)
+                best = candidateSubsequenceSim;
             } else {
-                float w = 0.85f;
+                // More balanced blend (70/30 instead of 85/15)
+                float w = 0.70f;
                 best = w * candidateSubsequenceSim + (1.0f - w) * nonSub;
             }
         }
-        if (nonSub < 0.20f && candidateSubsequenceSim > 0.30f) {  // degraded baseline signals
-            best = std::max(best, 0.95f * candidateSubsequenceSim + 0.05f * nonSub);
-        }
-        // Ensure we never suppress a good subsequence result below 90% of its value
-        if (candidateSubsequenceSim > 0.45f) {
-            best = std::max(best, candidateSubsequenceSim * 0.9f);
+
+        // [20251102-FIX-023] Removed degraded baseline uplift - was boosting weak matches
+        // OLD CODE (REMOVED):
+        // if (nonSub < 0.20f && candidateSubsequenceSim > 0.30f) {
+        //     best = std::max(best, 0.95f * candidateSubsequenceSim + 0.05f * nonSub);
+        // }
+
+        // [20251102-FIX-024] Reduced subsequence floor from 90% to 80% to allow other components
+        if (candidateSubsequenceSim > 0.50f) {
+            best = std::max(best, candidateSubsequenceSim * 0.80f);
         }
     }
+
+    // [20251102-DEBUG-001] Log similarity components for debugging
+#ifndef HUNTMASTER_DISABLE_DIAGNOSTIC_COMPONENTS
+    LOG_DEBUG(Component::UNIFIED_ENGINE,
+              std::string("Similarity components [Session ") + std::to_string(sessionId)
+                  + "]: " + "Offset=" + std::to_string(candidateOffsetSim) + ", DTW="
+                  + std::to_string(candidateDTWSim) + ", Mean=" + std::to_string(candidateMeanSim)
+                  + ", Subsequence=" + std::to_string(candidateSubsequenceSim)
+                  + " → BEST=" + std::to_string(best));
+#endif
 
     if (best < 0.0f)
         return {0.0f, Status::INSUFFICIENT_DATA};

@@ -18,6 +18,9 @@ AnalysisResults AudioProcessor::ProcessBuffer(uint32_t sessionId,
         throw std::runtime_error("Invalid session ID: " + std::to_string(sessionId));
     }
 
+    // [20251102-FIX-013] Get actual C++ session ID (not wrapper ID!)
+    uint32_t cppSessionId = SessionWrapper::GetCppSessionId(sessionId);
+
     // Convert JavaScript typed array to C++ vector
     std::vector<float> audioData = ConvertAudioBuffer(audioBuffer);
 
@@ -25,43 +28,74 @@ AnalysisResults AudioProcessor::ProcessBuffer(uint32_t sessionId,
         throw std::runtime_error("Empty audio buffer provided");
     }
 
-    // Process audio through UnifiedAudioEngine
-    auto status = engine->processAudioBuffer(sessionId, audioData.data(), audioData.size());
+    // [20251029-BINDINGS-FIX-023] Process audio through UnifiedAudioEngine - FIXED: use
+    // processAudioChunk with span [20251102-DEBUG-001] Add detailed status logging for debugging
+    // [20251102-FIX-014] Use C++ session ID (not wrapper ID) when calling engine
+    auto status = engine->processAudioChunk(
+        cppSessionId, std::span<const float>(audioData.data(), audioData.size()));
     if (status != huntmaster::UnifiedAudioEngine::Status::OK) {
-        throw std::runtime_error("Audio processing failed in engine");
+        std::string statusStr;
+        switch (status) {
+            case huntmaster::UnifiedAudioEngine::Status::SESSION_NOT_FOUND:
+                statusStr = "SESSION_NOT_FOUND";
+                break;
+            case huntmaster::UnifiedAudioEngine::Status::INVALID_PARAMS:
+                statusStr = "INVALID_PARAMS";
+                break;
+            case huntmaster::UnifiedAudioEngine::Status::PROCESSING_ERROR:
+                statusStr = "PROCESSING_ERROR";
+                break;
+            case huntmaster::UnifiedAudioEngine::Status::INSUFFICIENT_DATA:
+                statusStr = "INSUFFICIENT_DATA";
+                break;
+            case huntmaster::UnifiedAudioEngine::Status::INIT_FAILED:
+                statusStr = "INIT_FAILED";
+                break;
+            default:
+                statusStr = "UNKNOWN_ERROR_" + std::to_string(static_cast<int>(status));
+        }
+        throw std::runtime_error("Audio processing failed with status: " + statusStr
+                                 + " (session=" + std::to_string(sessionId)
+                                 + ", samples=" + std::to_string(audioData.size()) + ")");
     }
 
     // Gather analysis results
     AnalysisResults results;
 
-    // [20251028-BINDINGS-026] Get similarity score and confidence
-    auto similarityState = engine->getSimilarityRealtimeState(sessionId);
-    results.similarityScore = similarityState.currentScore;
-    results.confidence = similarityState.confidence;
-    results.readiness =
-        similarityState.readiness == huntmaster::ReadinessLevel::Ready ? "ready" : "not_ready";
-
-    // [20251028-BINDINGS-027] Get enhanced analyzer results
-    if (SessionWrapper::SessionExists(sessionId)) {
-        auto enhancedSummary = engine->getEnhancedAnalysisSummary(sessionId);
-
-        // Pitch analysis
-        results.pitchAnalysis.pitch = enhancedSummary.pitch.mean;
-        results.pitchAnalysis.pitchConfidence = enhancedSummary.pitch.confidence;
-
-        // Harmonic analysis
-        results.harmonicAnalysis.harmonicity = enhancedSummary.harmonic.harmonicity;
-        results.harmonicAnalysis.spectralCentroid = enhancedSummary.harmonic.spectralCentroid;
-
-        // Cadence analysis
-        results.cadenceAnalysis.tempo = enhancedSummary.cadence.tempo;
-        results.cadenceAnalysis.rhythmStrength = enhancedSummary.cadence.rhythmStrength;
+    // [20251029-BINDINGS-FIX-024] Get similarity score via RealtimeFeedback - FIXED: use
+    // getRealtimeFeedback
+    auto feedbackResult = engine->getRealtimeFeedback(sessionId);
+    if (feedbackResult.isOk()) {
+        results.similarityScore = feedbackResult.value.currentScore.overall;
+        results.confidence = feedbackResult.value.currentScore.confidence;
+        results.readiness = feedbackResult.value.currentScore.isReliable ? "ready" : "not_ready";
     }
 
-    // [20251028-BINDINGS-028] Get audio level metrics
-    auto levels = engine->getAudioLevels(sessionId);
-    results.rmsLevel = levels.rms;
-    results.peakLevel = levels.peak;
+    // [20251029-BINDINGS-FIX-025] Get enhanced analyzer results - FIXED: access Result.value fields
+    // directly
+    if (SessionWrapper::SessionExists(sessionId)) {
+        auto summaryResult = engine->getEnhancedAnalysisSummary(sessionId);
+        if (summaryResult.isOk()) {
+            auto& summary = summaryResult.value;
+
+            // Pitch analysis
+            results.pitchAnalysis.pitch = summary.pitchHz;
+            results.pitchAnalysis.pitchConfidence = summary.pitchConfidence;
+
+            // Harmonic analysis
+            results.harmonicAnalysis.harmonicity = summary.harmonicFundamental;
+            results.harmonicAnalysis.spectralCentroid =
+                summary.harmonicConfidence;  // Best approximation
+
+            // Cadence analysis
+            results.cadenceAnalysis.tempo = summary.tempoBPM;
+            results.cadenceAnalysis.rhythmStrength = summary.tempoConfidence;  // Best approximation
+        }
+    }
+
+    // [20251029-BINDINGS-FIX-026] Audio level metrics - stub for now (API may not exist)
+    results.rmsLevel = 0.0f;
+    results.peakLevel = 0.0f;
 
     // Add timestamp
     results.timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(

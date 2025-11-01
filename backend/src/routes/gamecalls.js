@@ -7,6 +7,7 @@ const express = require('express');
 const multer = require('multer');
 const router = express.Router();
 const { ApiError } = require('../middleware/errorHandler');
+const asyncHandler = require('../middleware/asyncHandler');
 
 // Import Controllers
 const GameCallsController = require('../controllers/gameCallsController');
@@ -21,8 +22,9 @@ const upload = multer({
     fileFilter: (req, file, cb) => {
         console.log(`[Upload] Received file: ${file.originalname}, mimetype: ${file.mimetype}`);
         // [20251029-UPLOAD-001] Accept common audio MIME types + octet-stream (for CLI uploads)
+        // [20251030-UPLOAD-002] Added audio/wave (some systems use this instead of audio/wav)
         const allowedMimeTypes = [
-            'audio/wav', 'audio/x-wav', 'audio/mpeg', 'audio/mp3', 
+            'audio/wav', 'audio/x-wav', 'audio/wave', 'audio/mpeg', 'audio/mp3', 
             'audio/mp4', 'audio/m4a', 'audio/ogg', 'audio/flac',
             'application/octet-stream'  // CLI tools often use this
         ];
@@ -77,39 +79,39 @@ const validateCallMetadata = (req, res, next) => {
  * GET /calls/categories
  * Get available species, call types, and filtering options
  */
-router.get('/categories', GameCallsController.getCategories);
+router.get('/categories', asyncHandler(GameCallsController.getCategories));
 
 /**
  * GET /calls
  * List all master calls with filtering and pagination
  * Query params: page, pageSize, species, callType, difficulty, tags
  */
-router.get('/', GameCallsController.listCalls);
+router.get('/', asyncHandler(GameCallsController.listCalls));
 
 /**
  * POST /calls/upload
  * Upload new master call (admin only)
  * Body: multipart/form-data with audio file and metadata
  */
-router.post('/upload', upload.single('audio'), validateCallMetadata, GameCallsController.uploadCall);
+router.post('/upload', upload.single('audio'), validateCallMetadata, asyncHandler(GameCallsController.uploadCall));
 
 /**
  * GET /calls/:id
  * Get specific master call by ID with detailed analysis data
  */
-router.get('/:id', GameCallsController.getCall);
+router.get('/:id', asyncHandler(GameCallsController.getCall));
 
 /**
  * GET /calls/:id/audio
  * Stream audio file for a master call
  */
-router.get('/:id/audio', GameCallsController.streamAudio);
+router.get('/:id/audio', asyncHandler(GameCallsController.streamAudio));
 
 /**
  * GET /calls/:id/waveform
  * Get waveform data for visualization
  * Query params: decimation (default: 1000)
  */
-router.get('/:id/waveform', GameCallsController.getWaveform);
+router.get('/:id/waveform', asyncHandler(GameCallsController.getWaveform));
 
 module.exports = router;

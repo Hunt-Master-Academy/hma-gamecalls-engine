@@ -3,12 +3,26 @@
 
 const express = require('express');
 
-// [20251029-MOCK-002] Load engine with mock fallback
+// [20251030-ENGINE-006] Load real C++ engine (mock removed)
+const path = require('path');
 let gameCallsEngine;
+let engineLoadError;
+
 try {
-    gameCallsEngine = require('../../../bindings/node-api/lib/index');
+    // [20251102-DOCKER-002] Support both Docker and host environments for bindings path
+    let bindingsPath;
+    if (process.env.NODE_ENV === 'production' || process.env.DOCKER_CONTAINER === 'true') {
+        // Running in Docker container
+        bindingsPath = path.join('/app', 'bindings/node-api/build/Release/gamecalls_engine.node');
+    } else {
+        // Running on host (for development)
+        bindingsPath = path.join(__dirname, '../../../bindings/node-api/build/Release/gamecalls_engine.node');
+    }
+    
+    gameCallsEngine = require(bindingsPath);
 } catch (error) {
-    gameCallsEngine = require('../services/mockGameCallsEngine');
+    engineLoadError = error.message;
+    console.error('❌ Failed to load C++ engine for health check:', error.message);
 }
 
 const router = express.Router();
@@ -20,15 +34,19 @@ const router = express.Router();
 router.get('/', async (req, res) => {
     try {
         let engineInfo = null;
-        let engineStatus = 'unknown';
+        let engineStatus = engineLoadError ? 'unavailable' : 'unknown';
         
-        try {
-            // [20251028-API-021] Try to get engine info to verify bindings work
-            engineInfo = await gameCallsEngine.getEngineInfo();
-            engineStatus = 'available';
-        } catch (error) {
-            engineStatus = 'unavailable';
-            engineInfo = { error: error.message };
+        if (gameCallsEngine) {
+            try {
+                // [20251028-API-021] Try to get engine info to verify bindings work
+                engineInfo = await gameCallsEngine.getEngineInfo();
+                engineStatus = 'available';
+            } catch (error) {
+                engineStatus = 'error';
+                engineInfo = { error: error.message };
+            }
+        } else {
+            engineInfo = { error: engineLoadError || 'Engine not loaded' };
         }
         
         res.json({

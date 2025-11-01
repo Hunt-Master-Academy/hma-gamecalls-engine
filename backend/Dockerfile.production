@@ -1,0 +1,58 @@
+# [20251030-DOCKER-002] GameCalls Engine Production Dockerfile
+# Uses pre-built C++ engine from host build directory
+# [20251030-FIX-002] Use Debian Bookworm for newer libstdc++ (GLIBCXX_3.4.32)
+
+FROM node:22-bookworm-slim
+
+WORKDIR /app
+
+# Install runtime dependencies
+# [20251029-WAVEFORM-021] Added ffmpeg for waveform generation
+# [20251030-DOCKER-002] Added libsndfile for C++ engine audio loading
+RUN apt-get update && apt-get install -y \
+    wget \
+    ffmpeg \
+    libsndfile1 \
+    && rm -rf /var/lib/apt/lists/* 
+# Copy package files
+COPY backend/package*.json ./
+
+# Install Node.js dependencies (production only)
+RUN npm ci --only=production
+
+# Create bindings directory structure
+RUN mkdir -p bindings/node-api/lib
+
+# Copy pre-compiled C++ engine bindings from host
+COPY bindings/node-api/build/Release/gamecalls_engine.node ./bindings/node-api/lib/index.node
+
+# Copy kissfft shared libraries
+COPY build/_deps/kissfft-build/libkissfft-float.so* /usr/local/lib/
+
+# [20251030-FIX-004] Copy host libstdc++ for GLIBCXX_3.4.32+ compatibility
+COPY build/libstdc++.so.6 /usr/local/lib/libstdc++.so.6.0.33
+
+# Update library cache
+RUN ldconfig
+
+# Copy backend source code
+COPY backend/src ./src
+COPY backend/migrations ./migrations
+
+# Create temp directory for audio processing
+RUN mkdir -p /tmp/gamecalls-waveforms && chmod 1777 /tmp/gamecalls-waveforms
+
+# Set environment
+ENV NODE_ENV=production
+ENV PORT=5005
+ENV USE_REAL_ENGINE=true
+
+# Expose port
+EXPOSE 5005
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
+    CMD wget --spider -q http://localhost:5005/health || exit 1
+
+# Start server
+CMD ["node", "src/index.js"]

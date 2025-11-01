@@ -47,6 +47,13 @@ app.use(cors({
   credentials: true
 }));
 app.use(compression());
+
+// [20251030-FIX-002] Raw body parser for audio uploads (binary data)
+app.use('/sessions/:id/audio', express.raw({ 
+    type: 'application/octet-stream', 
+    limit: '50mb' 
+}));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(logger);

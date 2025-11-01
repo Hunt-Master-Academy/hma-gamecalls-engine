@@ -33,29 +33,24 @@ class SessionsController {
      * Create new analysis session
      */
     static async createSession(req, res) {
-        try {
-            const { masterCallId, sampleRate, bufferSize, enableEnhancedAnalysis, ...options } = req.body;
+        const { masterCallId, sampleRate, bufferSize, enableEnhancedAnalysis, ...options } = req.body;
 
-            if (!masterCallId) {
-                throw ApiError.badRequest('MISSING_MASTER_CALL', 'Master call ID is required');
-            }
-
-            const session = await SessionsService.createSession(masterCallId, {
-                sampleRate,
-                bufferSize,
-                enableEnhancedAnalysis,
-                ...options
-            });
-
-            res.status(201).json({
-                session,
-                timestamp: new Date().toISOString()
-            });
-
-        } catch (error) {
-            if (error instanceof ApiError) throw error;
-            throw ApiError.internal('CREATE_SESSION_FAILED', `Failed to create session: ${error.message}`);
+        if (!masterCallId) {
+            throw ApiError.badRequest('MISSING_MASTER_CALL', 'Master call ID is required');
         }
+
+        // [20251030-FIX-004] Let ApiErrors propagate naturally (404, 400, etc.)
+        const session = await SessionsService.createSession(masterCallId, {
+            sampleRate,
+            bufferSize,
+            enableEnhancedAnalysis,
+            ...options
+        });
+
+        res.status(201).json({
+            session,
+            timestamp: new Date().toISOString()
+        });
     }
 
     /**
@@ -114,25 +109,20 @@ class SessionsController {
      * Stop and finalize session analysis
      */
     static async stopSession(req, res) {
-        try {
-            const { id } = req.params;
+        const { id } = req.params;
 
-            if (!id) {
-                throw ApiError.badRequest('MISSING_ID', 'Session ID is required');
-            }
-
-            const session = await SessionsService.stopSession(id);
-
-            res.json({
-                session,
-                message: 'Session completed successfully',
-                timestamp: new Date().toISOString()
-            });
-
-        } catch (error) {
-            if (error instanceof ApiError) throw error;
-            throw ApiError.internal('STOP_SESSION_FAILED', `Failed to stop session: ${error.message}`);
+        if (!id) {
+            throw ApiError.badRequest('MISSING_ID', 'Session ID is required');
         }
+
+        // [20251030-FIX-005] Let service handle errors naturally
+        const session = await SessionsService.stopSession(id);
+
+        res.json({
+            session,
+            message: 'Session completed successfully',
+            timestamp: new Date().toISOString()
+        });
     }
 
     /**
@@ -192,12 +182,25 @@ class SessionsController {
                 throw ApiError.badRequest('MISSING_ID', 'Session ID is required');
             }
 
-            if (!audioData || !audioData.samples) {
+            // [20251030-FIX-001] Support both raw buffer (tests) and { samples: [...] } format
+            let samples;
+            if (Buffer.isBuffer(audioData)) {
+                // Raw audio buffer from tests or direct uploads
+                // Convert Int16 PCM to Float32 normalized [-1.0, 1.0]
+                const int16Array = new Int16Array(audioData.buffer, audioData.byteOffset, audioData.length / 2);
+                samples = new Float32Array(int16Array.length);
+                for (let i = 0; i < int16Array.length; i++) {
+                    samples[i] = int16Array[i] / 32768.0; // Normalize to [-1.0, 1.0]
+                }
+                console.log(`🎵 Converted ${int16Array.length} Int16 samples to Float32 for session ${id}`);
+            } else if (audioData && Array.isArray(audioData.samples)) {
+                // Structured format with samples array
+                samples = new Float32Array(audioData.samples);
+            } else {
                 throw ApiError.badRequest('MISSING_AUDIO_DATA', 'Audio samples data is required');
             }
 
-            // [20251029-FIX-001] Extract samples array from request body
-            const analysis = await SessionsService.processAudioData(id, audioData.samples);
+            const analysis = await SessionsService.processAudioData(id, samples);
 
             res.json({
                 analysis,

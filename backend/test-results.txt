@@ -1,0 +1,1063 @@
+
+> hma-gamecalls-engine-api@1.0.0 test
+> jest
+
+node:internal/child_process/serialization:164
+    const string = JSONStringify(message) + '\n';
+                   ^
+
+TypeError: Converting circular structure to JSON
+    --> starting at object with constructor 'Object'
+    |     property 'res' -> object with constructor 'Object'
+    --- property 'req' closes the circle
+    at stringify (<anonymous>)
+    at writeChannelMessage (node:internal/child_process/serialization:164:20)
+    at process.target._send (node:internal/child_process:851:17)
+    at process.target.send (node:internal/child_process:751:19)
+    at reportSuccess (/home/xbyooki/projects/hma-gamecalls-engine/backend/node_modules/jest-worker/build/workers/processChild.js:82:11)
+
+Node.js v22.14.0
+FAIL test/smoke.test.js
+  ● Console
+
+    console.log
+      [dotenv@17.2.3] injecting env (16) from .env -- tip: ⚙️  enable debug logging with { debug: true }
+
+      at _log (node_modules/dotenv/lib/main.js:142:11)
+
+    console.warn
+      ⚠️  Using MOCK GameCalls Engine bindings
+
+      25 |     console.log('✅ Using REAL C++ GameCalls Engine bindings');
+      26 | } catch (error) {
+    > 27 |     console.warn('⚠️  Using MOCK GameCalls Engine bindings');
+         |             ^
+      28 |     console.warn('⚠️  Native bindings not found, using mock engine');
+      29 |     console.warn('   Error:', error.message);
+      30 |     gameCallsEngine = require('./mockGameCallsEngine');
+
+      at Object.warn (src/services/sessionsService.js:27:13)
+      at Object.require (test/smoke.test.js:14:25)
+
+    console.warn
+      ⚠️  Native bindings not found, using mock engine
+
+      26 | } catch (error) {
+      27 |     console.warn('⚠️  Using MOCK GameCalls Engine bindings');
+    > 28 |     console.warn('⚠️  Native bindings not found, using mock engine');
+         |             ^
+      29 |     console.warn('   Error:', error.message);
+      30 |     gameCallsEngine = require('./mockGameCallsEngine');
+      31 |     usingRealEngine = false;
+
+      at Object.warn (src/services/sessionsService.js:28:13)
+      at Object.require (test/smoke.test.js:14:25)
+
+    console.warn
+         Error: Cannot find module '/home/xbyooki/projects/hma-gamecalls-engine/backend/bindings/node-api/lib/index' from 'src/services/sessionsService.js'
+
+      27 |     console.warn('⚠️  Using MOCK GameCalls Engine bindings');
+      28 |     console.warn('⚠️  Native bindings not found, using mock engine');
+    > 29 |     console.warn('   Error:', error.message);
+         |             ^
+      30 |     gameCallsEngine = require('./mockGameCallsEngine');
+      31 |     usingRealEngine = false;
+      32 | }
+
+      at Object.warn (src/services/sessionsService.js:29:13)
+      at Object.require (test/smoke.test.js:14:25)
+
+    console.log
+      ⚠️  Using MOCK GameCalls Engine bindings
+
+      at new log (src/services/mockGameCallsEngine.js:12:17)
+
+    console.log
+      ✅ PostgreSQL connected: localhost:5432/hma_academy
+
+      at DatabaseService.log [as initialize] (src/services/databaseService.js:23:17)
+
+    console.log
+      
+      🎯 Using master call: wild_turkey - purr (ID: call_turkey_purr_001)
+
+      at Object.log (test/smoke.test.js:40:17)
+
+    console.log
+      
+      ✅ Master call loaded:
+
+      at Object.log (test/smoke.test.js:62:13)
+
+    console.log
+         Name: Turkey Purr
+
+      at Object.log (test/smoke.test.js:63:13)
+
+    console.log
+         Species: wild_turkey
+
+      at Object.log (test/smoke.test.js:64:13)
+
+    console.log
+         Call Type: purr
+
+      at Object.log (test/smoke.test.js:65:13)
+
+    console.log
+         Duration: 4s
+
+      at Object.log (test/smoke.test.js:66:13)
+
+    console.log
+         Audio Path: master-calls/turkey/call_turkey_purr_001.wav
+
+      at Object.log (test/smoke.test.js:67:13)
+
+    console.log
+      ✅ Mock engine initialized
+
+      at MockGameCallsEngine.log [as initialize] (src/services/mockGameCallsEngine.js:17:17)
+
+    console.log
+      ✅ MinIO client initialized: localhost:9000
+
+      at MinIOService.log [as initialize] (src/services/minioService.js:43:17)
+
+    console.log
+      📥 Downloaded master call: /tmp/gamecalls-ZLg12r/call_turkey_purr_001.wav
+
+      at Function.log [as createSession] (src/services/sessionsService.js:92:21)
+
+    console.log
+      📝 Mock session created: 1761793208195
+
+      at MockGameCallsEngine.log [as createSession] (src/services/mockGameCallsEngine.js:38:17)
+
+    console.log
+      💾 Persisted session 29f3c8f0-afe8-4a64-85ac-679f71971b9f to database
+
+      at Function.log [as createSession] (src/services/sessionsService.js:168:25)
+
+    console.log
+      ⚠️  Redis DISABLED (test mode)
+
+      at RedisService.log [as initialize] (src/services/redisService.js:28:21)
+
+    console.log
+      
+      ✅ Session created:
+
+      at Object.log (test/smoke.test.js:83:17)
+
+    console.log
+         Session ID: 29f3c8f0-afe8-4a64-85ac-679f71971b9f
+
+      at Object.log (test/smoke.test.js:84:17)
+
+    console.log
+         Status: created
+
+      at Object.log (test/smoke.test.js:85:17)
+
+    console.log
+         Engine Type: C++ Native
+
+      at Object.log (test/smoke.test.js:86:17)
+
+    console.log
+      ⚠️  Redis DISABLED (test mode)
+
+      at RedisService.log [as initialize] (src/services/redisService.js:28:21)
+
+    console.log
+      ⚠️  Redis DISABLED (test mode)
+
+      at RedisService.log [as initialize] (src/services/redisService.js:28:21)
+
+    console.log
+      ⚠️  Redis DISABLED (test mode)
+
+      at RedisService.log [as initialize] (src/services/redisService.js:28:21)
+
+    console.log
+      
+      ✅ Session started:
+
+      at Object.log (test/smoke.test.js:95:17)
+
+    console.log
+         Status: recording
+
+      at Object.log (test/smoke.test.js:96:17)
+
+    console.log
+      ⚠️  Redis DISABLED (test mode)
+
+      at RedisService.log [as initialize] (src/services/redisService.js:28:21)
+
+    console.log
+      ⚠️  Redis DISABLED (test mode)
+
+      at RedisService.log [as initialize] (src/services/redisService.js:28:21)
+
+    console.log
+      🔊 Processing 8192 samples for session 1761793208195
+
+      at Function.log [as processAudioData] (src/services/sessionsService.js:285:21)
+
+    console.log
+      ⚠️  Redis DISABLED (test mode)
+
+      at RedisService.log [as initialize] (src/services/redisService.js:28:21)
+
+    console.log
+      
+      ✅ Audio processed with REAL engine:
+
+      at Object.log (test/smoke.test.js:111:17)
+
+    console.log
+         Overall Similarity: 0.8879
+
+      at Object.log (test/smoke.test.js:112:17)
+
+    console.log
+         MFCC: 0.8879
+
+      at Object.log (test/smoke.test.js:113:17)
+
+    console.log
+         Volume: 0.3816
+
+      at Object.log (test/smoke.test.js:114:17)
+
+    console.log
+         Timing: 0.0000
+
+      at Object.log (test/smoke.test.js:115:17)
+
+    console.log
+         Pitch: 446.2136
+
+      at Object.log (test/smoke.test.js:116:17)
+
+    console.log
+         Confidence: 0.0000
+
+      at Object.log (test/smoke.test.js:117:17)
+
+    console.log
+         Is Reliable: true
+
+      at Object.log (test/smoke.test.js:118:17)
+
+    console.log
+         Is Match: true
+
+      at Object.log (test/smoke.test.js:119:17)
+
+    console.log
+         Samples Analyzed: 8192
+
+      at Object.log (test/smoke.test.js:120:17)
+
+    console.log
+      
+      ✅ Confirmed: Using REAL C++ engine (not mock)
+
+      at Object.log (test/smoke.test.js:128:17)
+
+    console.log
+      ⚠️  Redis DISABLED (test mode)
+
+      at RedisService.log [as initialize] (src/services/redisService.js:28:21)
+
+    console.log
+      ⚠️  Redis DISABLED (test mode)
+
+      at RedisService.log [as initialize] (src/services/redisService.js:28:21)
+
+    console.log
+      ⚠️  Redis DISABLED (test mode)
+
+      at RedisService.log [as initialize] (src/services/redisService.js:28:21)
+
+    console.log
+      ⚠️  Redis DISABLED (test mode)
+
+      at RedisService.log [as initialize] (src/services/redisService.js:28:21)
+
+    console.log
+      💾 Updated session 29f3c8f0-afe8-4a64-85ac-679f71971b9f status to completed in database
+
+      at Function.log [as stopSession] (src/services/sessionsService.js:420:25)
+
+    console.log
+      ✅ Stored analysis results: analysis/29f3c8f0-afe8-4a64-85ac-679f71971b9f/results.json
+
+      at MinIOService.log [as storeAnalysisResults] (src/services/minioService.js:217:21)
+
+    console.log
+      💾 Stored analysis results for session: 29f3c8f0-afe8-4a64-85ac-679f71971b9f
+
+      at Function.log [as stopSession] (src/services/sessionsService.js:427:21)
+
+    console.log
+      💾 Persisted analysis to database for session: 29f3c8f0-afe8-4a64-85ac-679f71971b9f
+
+      at Function.log [as stopSession] (src/services/sessionsService.js:432:21)
+
+    console.log
+      ⚠️  Redis DISABLED (test mode)
+
+      at RedisService.log [as initialize] (src/services/redisService.js:28:21)
+
+    console.log
+      
+      ✅ Session stopped:
+
+      at Object.log (test/smoke.test.js:179:17)
+
+    console.log
+         Status: completed
+
+      at Object.log (test/smoke.test.js:180:17)
+
+  ● GameCalls Engine Processing Pipeline - Smoke Test › should finalize session and get comprehensive analysis
+
+    expect(received).toBeDefined()
+
+    Received: undefined
+
+      138 |         
+      139 |         // Verify enhanced analysis fields exist
+    > 140 |         expect(analysis.pitch).toBeDefined();
+          |                                ^
+      141 |         expect(analysis.harmonic).toBeDefined();
+      142 |         expect(analysis.cadence).toBeDefined();
+      143 |         expect(analysis.finalize).toBeDefined();
+
+      at Object.toBeDefined (test/smoke.test.js:140:32)
+
+node:internal/child_process/serialization:164
+    const string = JSONStringify(message) + '\n';
+                   ^
+
+TypeError: Converting circular structure to JSON
+    --> starting at object with constructor 'Object'
+    |     property 'res' -> object with constructor 'Object'
+    --- property 'req' closes the circle
+    at stringify (<anonymous>)
+    at writeChannelMessage (node:internal/child_process/serialization:164:20)
+    at process.target._send (node:internal/child_process:851:17)
+    at process.target.send (node:internal/child_process:751:19)
+    at reportSuccess (/home/xbyooki/projects/hma-gamecalls-engine/backend/node_modules/jest-worker/build/workers/processChild.js:82:11)
+
+Node.js v22.14.0
+FAIL test/error-handling.test.js
+  ● Console
+
+    console.log
+      ✓ 404 error for invalid call ID
+
+      at Object.log (test/error-handling.test.js:22:21)
+
+    console.log
+      ✓ 404 error for malformed UUID
+
+      at Object.log (test/error-handling.test.js:31:21)
+
+    console.log
+      ✓ 400 error for missing masterCallId
+
+      at Object.log (test/error-handling.test.js:48:21)
+
+    console.log
+      ✓ 404 error for non-existent session
+
+      at Object.log (test/error-handling.test.js:67:21)
+
+    console.log
+      ✓ 404 error when starting non-existent session
+
+      at Object.log (test/error-handling.test.js:75:21)
+
+    console.log
+      ✓ 404 error when sending audio to non-existent session
+
+      at Object.log (test/error-handling.test.js:88:21)
+
+    console.log
+      ✓ 404 error when stopping non-existent session
+
+      at Object.log (test/error-handling.test.js:96:21)
+
+    console.log
+      ✓ Error when sending audio to non-started session
+
+      at Object.log (test/error-handling.test.js:143:21)
+
+    console.log
+      ✓ Session started successfully
+
+      at Object.log (test/error-handling.test.js:149:21)
+
+    console.log
+      ✓ Error when starting already-started session
+
+      at Object.log (test/error-handling.test.js:157:21)
+
+    console.log
+      ✓ Handled missing Content-Type header
+
+      at Object.log (test/error-handling.test.js:249:21)
+
+    console.log
+      ✓ Handled invalid query filters
+
+      at Object.log (test/error-handling.test.js:327:21)
+
+    console.log
+      ✓ Rejected non-JSON request body
+
+      at Object.log (test/error-handling.test.js:367:21)
+
+  ● GameCalls Engine Error Handling › Invalid Session Operations › POST /sessions - Should return 404 for non-existent master call
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 404
+    Received: 500
+
+      55 |             });
+      56 |             
+    > 57 |             expect(response.status).toBe(404);
+         |                                     ^
+      58 |             expect(response.data).toHaveProperty('code'); expect(response.data).toHaveProperty('message');
+      59 |             console.log('✓ 404 error for non-existent master call in session creation');
+      60 |         });
+
+      at Object.toBe (test/error-handling.test.js:57:37)
+
+  ● GameCalls Engine Error Handling › Session State Violations › POST /sessions/:id/stop - Should stop successfully
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      160 |         test('POST /sessions/:id/stop - Should stop successfully', async () => {
+      161 |             const response = await api.post(`/sessions/${sessionId}/stop`);
+    > 162 |             expect(response.status).toBe(200);
+          |                                     ^
+      163 |             console.log('✓ Session stopped successfully');
+      164 |         });
+      165 |         
+
+      at Object.toBe (test/error-handling.test.js:162:37)
+
+  ● GameCalls Engine Error Handling › Session State Violations › POST /sessions/:id/audio - Should return 404 after session stopped
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 404
+    Received: 500
+
+      173 |             
+      174 |             // Should fail because session has been stopped
+    > 175 |             expect(response.status).toBe(404);
+          |                                     ^
+      176 |             console.log('✓ Error when sending audio to stopped session');
+      177 |         });
+      178 |     });
+
+      at Object.toBe (test/error-handling.test.js:175:37)
+
+  ● GameCalls Engine Error Handling › Malformed Audio Data › POST /sessions/:id/audio - Should handle empty buffer
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: 500
+    Received array: [200, 400]
+
+      220 |             
+      221 |             // Should either reject (400) or handle gracefully (200 with low score)
+    > 222 |             expect([200, 400]).toContain(response.status);
+          |                                ^
+      223 |             console.log('✓ Handled empty audio buffer');
+      224 |         });
+      225 |         
+
+      at Object.toContain (test/error-handling.test.js:222:32)
+
+  ● GameCalls Engine Error Handling › Malformed Audio Data › POST /sessions/:id/audio - Should handle very small buffer
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: 500
+    Received array: [200, 400]
+
+      233 |             
+      234 |             // Should either reject or handle gracefully
+    > 235 |             expect([200, 400]).toContain(response.status);
+          |                                ^
+      236 |             console.log('✓ Handled very small audio buffer');
+      237 |         });
+      238 |         
+
+      at Object.toContain (test/error-handling.test.js:235:32)
+
+  ● GameCalls Engine Error Handling › Malformed Audio Data › POST /sessions/:id/audio - Should handle very large buffer
+
+    expect(received).toContain(expected) // indexOf
+
+    Expected value: 500
+    Received array: [200, 400, 413]
+
+      263 |             
+      264 |             // Should either process or reject with appropriate error
+    > 265 |             expect([200, 400, 413]).toContain(response.status);
+          |                                     ^
+      266 |             if (response.status === 413) {
+      267 |                 console.log('✓ Rejected oversized audio buffer (413 Payload Too Large)');
+      268 |             } else {
+
+      at Object.toContain (test/error-handling.test.js:265:37)
+
+  ● GameCalls Engine Error Handling › Concurrent Session Limits › Should handle multiple concurrent sessions
+
+    expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      297 |             const successfulSessions = responses.filter(r => r.status === 200);
+      298 |             
+    > 299 |             expect(successfulSessions.length).toBeGreaterThan(0);
+          |                                               ^
+      300 |             console.log(`✓ Created ${successfulSessions.length}/5 concurrent sessions`);
+      301 |             
+      302 |             // Cleanup all sessions
+
+      at Object.toBeGreaterThan (test/error-handling.test.js:299:47)
+
+  ● GameCalls Engine Error Handling › Content-Type Validation › POST /sessions/:id/audio - Should accept application/octet-stream
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: 200
+    Received: 500
+
+      376 |             );
+      377 |             
+    > 378 |             expect(response.status).toBe(200);
+          |                                     ^
+      379 |             console.log('✓ Accepted application/octet-stream for audio');
+      380 |         });
+      381 |     });
+
+      at Object.toBe (test/error-handling.test.js:378:37)
+
+node:internal/child_process/serialization:164
+    const string = JSONStringify(message) + '\n';
+                   ^
+
+TypeError: Converting circular structure to JSON
+    --> starting at object with constructor 'Object'
+    |     property 'res' -> object with constructor 'Object'
+    --- property 'req' closes the circle
+    at stringify (<anonymous>)
+    at writeChannelMessage (node:internal/child_process/serialization:164:20)
+    at process.target._send (node:internal/child_process:851:17)
+    at process.target.send (node:internal/child_process:751:19)
+    at reportSuccess (/home/xbyooki/projects/hma-gamecalls-engine/backend/node_modules/jest-worker/build/workers/processChild.js:82:11)
+
+Node.js v22.14.0
+node:internal/child_process/serialization:164
+    const string = JSONStringify(message) + '\n';
+                   ^
+
+TypeError: Converting circular structure to JSON
+    --> starting at object with constructor 'Object'
+    |     property 'res' -> object with constructor 'Object'
+    --- property 'req' closes the circle
+    at stringify (<anonymous>)
+    at writeChannelMessage (node:internal/child_process/serialization:164:20)
+    at process.target._send (node:internal/child_process:851:17)
+    at process.target.send (node:internal/child_process:751:19)
+    at reportSuccess (/home/xbyooki/projects/hma-gamecalls-engine/backend/node_modules/jest-worker/build/workers/processChild.js:82:11)
+
+Node.js v22.14.0
+node:internal/child_process/serialization:164
+    const string = JSONStringify(message) + '\n';
+                   ^
+
+TypeError: Converting circular structure to JSON
+    --> starting at object with constructor 'Object'
+    |     property 'res' -> object with constructor 'Object'
+    --- property 'req' closes the circle
+    at stringify (<anonymous>)
+    at writeChannelMessage (node:internal/child_process/serialization:164:20)
+    at process.target._send (node:internal/child_process:851:17)
+    at process.target.send (node:internal/child_process:751:19)
+    at reportSuccess (/home/xbyooki/projects/hma-gamecalls-engine/backend/node_modules/jest-worker/build/workers/processChild.js:82:11)
+
+Node.js v22.14.0
+node:internal/child_process/serialization:164
+    const string = JSONStringify(message) + '\n';
+                   ^
+
+TypeError: Converting circular structure to JSON
+    --> starting at object with constructor 'Object'
+    |     property 'res' -> object with constructor 'Object'
+    --- property 'req' closes the circle
+    at stringify (<anonymous>)
+    at writeChannelMessage (node:internal/child_process/serialization:164:20)
+    at process.target._send (node:internal/child_process:851:17)
+    at process.target.send (node:internal/child_process:751:19)
+    at reportSuccess (/home/xbyooki/projects/hma-gamecalls-engine/backend/node_modules/jest-worker/build/workers/processChild.js:82:11)
+
+Node.js v22.14.0
+FAIL test/api-integration.test.js
+  ● Test suite failed to run
+
+    Jest worker encountered 4 child process exceptions, exceeding retry limit
+
+      at ChildProcessWorker.initialize (node_modules/jest-worker/build/workers/ChildProcessWorker.js:181:21)
+
+node:internal/child_process/serialization:164
+    const string = JSONStringify(message) + '\n';
+                   ^
+
+TypeError: Converting circular structure to JSON
+    --> starting at object with constructor 'Object'
+    |     property 'res' -> object with constructor 'Object'
+    --- property 'req' closes the circle
+    at stringify (<anonymous>)
+    at writeChannelMessage (node:internal/child_process/serialization:164:20)
+    at process.target._send (node:internal/child_process:851:17)
+    at process.target.send (node:internal/child_process:751:19)
+    at reportSuccess (/home/xbyooki/projects/hma-gamecalls-engine/backend/node_modules/jest-worker/build/workers/processChild.js:82:11)
+
+Node.js v22.14.0
+node:internal/child_process/serialization:164
+    const string = JSONStringify(message) + '\n';
+                   ^
+
+TypeError: Converting circular structure to JSON
+    --> starting at object with constructor 'Object'
+    |     property 'res' -> object with constructor 'Object'
+    --- property 'req' closes the circle
+    at stringify (<anonymous>)
+    at writeChannelMessage (node:internal/child_process/serialization:164:20)
+    at process.target._send (node:internal/child_process:851:17)
+    at process.target.send (node:internal/child_process:751:19)
+    at reportSuccess (/home/xbyooki/projects/hma-gamecalls-engine/backend/node_modules/jest-worker/build/workers/processChild.js:82:11)
+
+Node.js v22.14.0
+FAIL test/analysis-persistence.test.js
+  ● Test suite failed to run
+
+    Jest worker encountered 4 child process exceptions, exceeding retry limit
+
+      at ChildProcessWorker.initialize (node_modules/jest-worker/build/workers/ChildProcessWorker.js:181:21)
+
+FAIL test/audio-upload.test.js (5.933 s)
+  ● Console
+
+    console.log
+      📤 Upload response status: 201
+
+      at Object.log (test/audio-upload.test.js:60:21)
+
+    console.log
+      ✓ Audio uploaded successfully
+
+      at Object.log (test/audio-upload.test.js:74:21)
+
+    console.log
+        Call ID: call_elk_bugle_1761793207812
+
+      at Object.log (test/audio-upload.test.js:75:21)
+
+    console.log
+        Audio path: master-calls/elk/call_elk_bugle_1761793207812.wav
+
+      at Object.log (test/audio-upload.test.js:76:21)
+
+    console.log
+      ✓ Correctly rejects upload without audio file
+
+      at Object.log (test/audio-upload.test.js:93:21)
+
+    console.log
+        Error code: INVALID_NAME
+
+      at Object.log (test/audio-upload.test.js:94:21)
+
+    console.log
+      ✓ Correctly rejects upload with missing metadata
+
+      at Object.log (test/audio-upload.test.js:112:21)
+
+    console.warn
+      ⚠️  Could not access presigned URL: timeout of 5000ms exceeded
+
+      173 |                 }
+      174 |             } catch (error) {
+    > 175 |                 console.warn(`⚠️  Could not access presigned URL: ${error.message}`);
+          |                         ^
+      176 |                 console.warn('   This may be expected if running outside Docker network');
+      177 |             }
+      178 |         });
+
+      at Object.warn (test/audio-upload.test.js:175:25)
+
+    console.warn
+         This may be expected if running outside Docker network
+
+      174 |             } catch (error) {
+      175 |                 console.warn(`⚠️  Could not access presigned URL: ${error.message}`);
+    > 176 |                 console.warn('   This may be expected if running outside Docker network');
+          |                         ^
+      177 |             }
+      178 |         });
+      179 |     });
+
+      at Object.warn (test/audio-upload.test.js:176:25)
+
+    console.log
+      ✓ Waveform caching working
+
+      at Object.log (test/audio-upload.test.js:229:21)
+
+    console.log
+        First request: 12ms
+
+      at Object.log (test/audio-upload.test.js:230:21)
+
+    console.log
+        Second request: 12ms
+
+      at Object.log (test/audio-upload.test.js:231:21)
+
+    console.log
+      ✓ Database record created
+
+      at Object.log (test/audio-upload.test.js:259:21)
+
+    console.log
+        Species: elk
+
+      at Object.log (test/audio-upload.test.js:260:21)
+
+    console.log
+        Call Type: bugle
+
+      at Object.log (test/audio-upload.test.js:261:21)
+
+    console.log
+        Created: 2025-10-30T03:00:07.841Z
+
+      at Object.log (test/audio-upload.test.js:262:21)
+
+    console.log
+      ✓ Uploaded call appears in list
+
+      at Object.log (test/audio-upload.test.js:279:21)
+
+    console.log
+        Total calls: 15
+
+      at Object.log (test/audio-upload.test.js:280:21)
+
+    console.log
+      
+      📌 Test call uploaded: call_elk_bugle_1761793207812
+
+      at Object.log (test/audio-upload.test.js:292:21)
+
+    console.log
+         (Not automatically deleted - clean up manually if needed)
+
+      at Object.log (test/audio-upload.test.js:293:21)
+
+  ● Audio Upload and Waveform Generation › MinIO Storage Verification › Should store audio file in MinIO bucket
+
+    Audio file not found in MinIO: The request signature we calculated does not match the signature you provided. Check your key and signing method.
+
+      144 |                 console.log(`  Size: ${stat.size} bytes`);
+      145 |             } catch (error) {
+    > 146 |                 throw new Error(`Audio file not found in MinIO: ${error.message}`);
+          |                       ^
+      147 |             }
+      148 |         });
+      149 |         
+
+      at Object.<anonymous> (test/audio-upload.test.js:146:23)
+
+  ● Audio Upload and Waveform Generation › MinIO Storage Verification › Should generate presigned URL for audio access
+
+    thrown: "Exceeded timeout of 5000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      148 |         });
+      149 |         
+    > 150 |         test('Should generate presigned URL for audio access', async () => {
+          |         ^
+      151 |             if (!uploadedCallId) {
+      152 |                 return;
+      153 |             }
+
+      at test (test/audio-upload.test.js:150:9)
+      at describe (test/audio-upload.test.js:120:5)
+      at Object.describe (test/audio-upload.test.js:25:1)
+
+  ● Audio Upload and Waveform Generation › Waveform Generation › Should generate waveform data for uploaded audio
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      195 |             expect(waveformResponse.status).toBe(200);
+      196 |             expect(waveformResponse.data).toHaveProperty('waveform');
+    > 197 |             expect(Array.isArray(waveformResponse.data.waveform)).toBe(true);
+          |                                                                   ^
+      198 |             expect(waveformResponse.data.waveform.length).toBeGreaterThan(0);
+      199 |             
+      200 |             // Validate waveform data points
+
+      at Object.toBe (test/audio-upload.test.js:197:67)
+
+PASS test/load-testing.test.js (9.935 s)
+  ● Console
+
+    console.warn
+      ⚠️  Redis module not available - cache tests will be skipped
+
+      16 |     });
+      17 | } catch (err) {
+    > 18 |     console.warn('⚠️  Redis module not available - cache tests will be skipped');
+         |             ^
+      19 | }
+      20 |
+      21 | const API_BASE = process.env.API_BASE_URL || 'http://localhost:5005';
+
+      at Object.warn (test/load-testing.test.js:18:13)
+
+    console.log
+      ✓ Concurrent session creation test
+
+      at Object.log (test/load-testing.test.js:76:21)
+
+    console.log
+        Requested: 10
+
+      at Object.log (test/load-testing.test.js:77:21)
+
+    console.log
+        Successful: 10
+
+      at Object.log (test/load-testing.test.js:78:21)
+
+    console.log
+        Failed: 0
+
+      at Object.log (test/load-testing.test.js:79:21)
+
+    console.log
+      ✓ Concurrent audio processing test
+
+      at Object.log (test/load-testing.test.js:122:21)
+
+    console.log
+        Concurrent requests: 5
+
+      at Object.log (test/load-testing.test.js:123:21)
+
+    console.log
+        Successful: 0
+
+      at Object.log (test/load-testing.test.js:124:21)
+
+    console.log
+        Rejected (4xx/5xx): 5
+
+      at Object.log (test/load-testing.test.js:125:21)
+
+    console.log
+        Network errors: 0
+
+      at Object.log (test/load-testing.test.js:126:21)
+
+    console.log
+      ✓ Session limit test
+
+      at Object.log (test/load-testing.test.js:154:21)
+
+    console.log
+        Created 20 sessions before limit
+
+      at Object.log (test/load-testing.test.js:155:21)
+
+    console.log
+      ✓ Session cleanup test passed
+
+      at Object.log (test/load-testing.test.js:198:21)
+
+    console.log
+        Session e18e237b-2ecc-43e9-9df1-e1636976edce state: accessible
+
+      at Object.log (test/load-testing.test.js:199:21)
+
+    console.log
+      ✓ Temporary file cleanup test
+
+      at Object.log (test/load-testing.test.js:216:21)
+
+    console.log
+        (Manual verification needed for /tmp/gamecalls-* directories)
+
+      at Object.log (test/load-testing.test.js:217:21)
+
+    console.log
+      ✓ Memory pressure test
+
+      at Object.log (test/load-testing.test.js:248:21)
+
+    console.log
+        Created 5 sessions with large buffers
+
+      at Object.log (test/load-testing.test.js:249:21)
+
+    console.warn
+      ⚠️  Skipping - Redis not available
+
+      267 |         test('Should cache session data in Redis', async () => {
+      268 |             if (!redisClient) {
+    > 269 |                 console.warn('⚠️  Skipping - Redis not available');
+          |                         ^
+      270 |                 return;
+      271 |             }
+      272 |             
+
+      at Object.warn (test/load-testing.test.js:269:25)
+
+    console.warn
+      ⚠️  Skipping - Redis not available
+
+      296 |         test('Should expire cache entries after TTL', async () => {
+      297 |             if (!redisClient) {
+    > 298 |                 console.warn('⚠️  Skipping - Redis not available');
+          |                         ^
+      299 |                 return;
+      300 |             }
+      301 |             
+
+      at Object.warn (test/load-testing.test.js:298:25)
+
+    console.warn
+      ⚠️  Skipping - Redis not available
+
+      320 |         test('Should update cache on session state changes', async () => {
+      321 |             if (!redisClient) {
+    > 322 |                 console.warn('⚠️  Skipping - Redis not available');
+          |                         ^
+      323 |                 return;
+      324 |             }
+      325 |             
+
+      at Object.warn (test/load-testing.test.js:322:25)
+
+    console.warn
+      ⚠️  Skipping - Redis not available
+
+      353 |         test('Should clear cache entries on session deletion', async () => {
+      354 |             if (!redisClient) {
+    > 355 |                 console.warn('⚠️  Skipping - Redis not available');
+          |                         ^
+      356 |                 return;
+      357 |             }
+      358 |             
+
+      at Object.warn (test/load-testing.test.js:355:25)
+
+    console.log
+      ✓ Performance benchmark - GET /calls
+
+      at Object.log (test/load-testing.test.js:411:21)
+
+    console.log
+        Requests: 50
+
+      at Object.log (test/load-testing.test.js:412:21)
+
+    console.log
+        Average: 4.80ms
+
+      at Object.log (test/load-testing.test.js:413:21)
+
+    console.log
+        Min: 4ms
+
+      at Object.log (test/load-testing.test.js:414:21)
+
+    console.log
+        Max: 13ms
+
+      at Object.log (test/load-testing.test.js:415:21)
+
+    console.log
+      ✓ Burst traffic test
+
+      at Object.log (test/load-testing.test.js:437:21)
+
+    console.log
+        Burst size: 20
+
+      at Object.log (test/load-testing.test.js:438:21)
+
+    console.log
+        Successful: 20
+
+      at Object.log (test/load-testing.test.js:439:21)
+
+    console.log
+        Duration: 177ms
+
+      at Object.log (test/load-testing.test.js:440:21)
+
+    console.log
+        Throughput: 112.99 req/s
+
+      at Object.log (test/load-testing.test.js:441:21)
+
+    console.log
+      ✓ Recovery from invalid audio data
+
+      at Object.log (test/load-testing.test.js:473:21)
+
+    console.log
+      ✓ Rapid lifecycle test
+
+      at Object.log (test/load-testing.test.js:497:21)
+
+    console.log
+        Cycles: 10
+
+      at Object.log (test/load-testing.test.js:498:21)
+
+    console.log
+        Successful: 10
+
+      at Object.log (test/load-testing.test.js:499:21)
+
+A worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.
+
+Test Suites: 5 failed, 1 passed, 6 total
+Tests:       12 failed, 38 passed, 50 total
+Snapshots:   0 total
+Time:        10.56 s
+Ran all test suites.

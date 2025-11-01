@@ -21,7 +21,8 @@
       ],
       'defines': [
         'NAPI_VERSION=8',
-        'NAPI_DISABLE_CPP_EXCEPTIONS'
+        'NAPI_DISABLE_CPP_EXCEPTIONS',
+        'DISABLE_LOGGING=1'
       ],
       'cflags!': [ '-fno-exceptions' ],
       'cflags_cc!': [ '-fno-exceptions' ],
@@ -35,18 +36,20 @@
         ['OS=="linux"', {
           'libraries': [
             '-L<(module_root_dir)/../../build/src',
-            '-lhuntmaster_core',
+            '-lUnifiedAudioEngineNoDiag',
             '-lasound',
-            '-lpthread'
+            '-lpthread',
+            '-lkissfft-float'
           ],
           'ldflags': [
-            '-Wl,-rpath,<(module_root_dir)/../../build/src'
+            '-Wl,-rpath,<(module_root_dir)/../../build/src',
+            '-L<(module_root_dir)/../../build/_deps/kissfft-build'
           ]
         }],
         ['OS=="mac"', {
           'libraries': [
             '-L<(module_root_dir)/../../build/src',
-            '-lhuntmaster_core'
+            '-lUnifiedAudioEngineNoDiag'
           ],
           'xcode_settings': {
             'GCC_ENABLE_CPP_EXCEPTIONS': 'YES',
@@ -60,7 +63,7 @@
         }],
         ['OS=="win"', {
           'libraries': [
-            '-l<(module_root_dir)/../../build/src/Release/huntmaster_core.lib'
+            '-l<(module_root_dir)/../../build/src/Release/UnifiedAudioEngineNoDiag.lib'
           ],
           'msvs_settings': {
             'VCCLCompilerTool': {

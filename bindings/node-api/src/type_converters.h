@@ -17,13 +17,15 @@ class TypeConverters {
     // Convert AnalysisResults to JavaScript object
     static Napi::Object AnalysisResultsToObject(Napi::Env env, const AnalysisResults& results);
 
-    // Convert SimilarityScore to JavaScript object
+    // [20251029-BINDINGS-FIX-003] Convert RealtimeScoringResult to JavaScript object - FIXED: Use
+    // type from UnifiedAudioEngine
     static Napi::Object SimilarityScoreToObject(Napi::Env env,
-                                                const huntmaster::SimilarityScore& score);
+                                                const huntmaster::RealtimeScoringResult& score);
 
-    // Convert FinalAnalysis to JavaScript object
-    static Napi::Object FinalAnalysisToObject(Napi::Env env,
-                                              const huntmaster::FinalAnalysis& analysis);
+    // [20251029-BINDINGS-FIX-004] Convert EnhancedAnalysisSummary to JavaScript object - FIXED: Use
+    // actual type from engine
+    static Napi::Object EnhancedAnalysisSummaryToObject(
+        Napi::Env env, const huntmaster::UnifiedAudioEngine::EnhancedAnalysisSummary& summary);
 };
 
 }  // namespace gamecalls_bindings

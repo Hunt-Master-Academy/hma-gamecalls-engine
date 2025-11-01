@@ -4,6 +4,7 @@
 #include "session_wrapper.h"
 
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
 
 namespace gamecalls_bindings {
@@ -19,17 +20,14 @@ uint32_t SessionWrapper::CreateSession(const std::string& masterCallPath,
                                        bool enableEnhancedAnalysis) {
     std::lock_guard<std::mutex> lock(sessionsMutex_);
 
-    // Verify master call file exists
-    std::ifstream masterFile(masterCallPath, std::ios::binary);
-    if (!masterFile.good()) {
-        throw std::runtime_error("Master call file not found: " + masterCallPath);
-    }
+    // [20251229-BINDINGS-FIX-008] Pass master call ID directly to engine
+    // Engine will construct full path: masterCallsPath_ + masterCallId + ".wav"
+    // No need to verify file exists here - engine handles that internally
 
     // Create UnifiedAudioEngine instance
     auto engineResult = huntmaster::UnifiedAudioEngine::create();
-    if (!engineResult.ok) {
-        throw std::runtime_error("Failed to create UnifiedAudioEngine: "
-                                 + std::string(engineResult.error));
+    if (!engineResult.isOk()) {
+        throw std::runtime_error("Failed to create UnifiedAudioEngine");
     }
 
     auto engine = std::move(engineResult.value);
@@ -40,6 +38,9 @@ uint32_t SessionWrapper::CreateSession(const std::string& masterCallPath,
         throw std::runtime_error("Failed to create engine session");
     }
 
+    std::cerr << "🎯 Created C++ session ID: " << sessionResult.value << " in engine instance"
+              << std::endl;
+
     // Load master call
     auto loadStatus = engine->loadMasterCall(sessionResult.value, masterCallPath);
     if (loadStatus != huntmaster::UnifiedAudioEngine::Status::OK) {
@@ -48,13 +49,15 @@ uint32_t SessionWrapper::CreateSession(const std::string& masterCallPath,
 
     // Enable enhanced analysis if requested
     if (enableEnhancedAnalysis) {
-        engine->setEnhancedAnalysisEnabled(sessionResult.value, true);
+        engine->setEnhancedAnalyzersEnabled(sessionResult.value, true);
     }
 
     // Store session state
     uint32_t sessionId = nextSessionId_++;
     SessionState state;
     state.sessionId = sessionId;
+    state.cppSessionId =
+        sessionResult.value;  // [20251102-FIX-010] Store actual C++ engine session ID
     state.engine = std::move(engine);
     state.masterCallPath = masterCallPath;
     state.sampleRate = sampleRate;
@@ -78,36 +81,63 @@ std::shared_ptr<huntmaster::UnifiedAudioEngine> SessionWrapper::GetEngine(uint32
     return it->second.engine;
 }
 
-// [20251028-BINDINGS-017] Get current similarity score
-huntmaster::SimilarityScore SessionWrapper::GetSimilarityScore(uint32_t sessionId) {
-    auto engine = GetEngine(sessionId);
+// [20251102-FIX-012] Get C++ session ID from wrapper session ID
+uint32_t SessionWrapper::GetCppSessionId(uint32_t wrapperSessionId) {
+    std::lock_guard<std::mutex> lock(sessionsMutex_);
 
-    // Get latest similarity metrics from engine
-    auto state = engine->getSimilarityRealtimeState(sessionId);
+    auto it = sessions_.find(wrapperSessionId);
+    if (it == sessions_.end()) {
+        throw std::runtime_error("Wrapper session not found: " + std::to_string(wrapperSessionId));
+    }
 
-    huntmaster::SimilarityScore score;
-    score.score = state.currentScore;
-    score.confidence = state.confidence;
-    score.readiness = state.readiness;
-
-    return score;
+    return it->second.cppSessionId;
 }
 
-// [20251028-BINDINGS-018] Finalize session analysis
-huntmaster::FinalAnalysis SessionWrapper::FinalizeSession(uint32_t sessionId) {
+// [20251029-BINDINGS-FIX-005] Get current similarity score - FIXED implementation
+// Uses getRealtimeFeedback to retrieve current RealtimeScoringResult
+huntmaster::RealtimeScoringResult SessionWrapper::GetSimilarityScore(uint32_t sessionId) {
     auto engine = GetEngine(sessionId);
+    uint32_t cppSessionId = GetCppSessionId(sessionId);  // [20251102-FIX-015] Use C++ session ID
 
-    // Run finalization process (segment selection, refined DTW)
-    auto finalizeResult = engine->finalizeSessionAnalysis(sessionId);
-    if (finalizeResult.status != huntmaster::UnifiedAudioEngine::Status::OK) {
+    // [20251029-BINDINGS-FIX-006] Get real-time feedback from engine (contains currentScore)
+    auto feedbackResult = engine->getRealtimeFeedback(cppSessionId);
+
+    if (!feedbackResult.isOk()) {
+        throw std::runtime_error("Failed to get real-time feedback");
+    }
+
+    // Return the current score from feedback (RealtimeScoringResult type)
+    return feedbackResult.value.currentScore;
+}
+
+// [20251029-BINDINGS-FIX-007] Finalize session analysis - FIXED implementation
+// Triggers finalizeSessionAnalysis and returns EnhancedAnalysisSummary
+huntmaster::UnifiedAudioEngine::EnhancedAnalysisSummary
+SessionWrapper::FinalizeSession(uint32_t sessionId) {
+    auto engine = GetEngine(sessionId);
+    uint32_t cppSessionId = GetCppSessionId(sessionId);  // [20251102-FIX-016] Use C++ session ID
+
+    // [20251029-BINDINGS-FIX-008] Trigger finalization (idempotent - OK if already finalized)
+    auto status = engine->finalizeSessionAnalysis(cppSessionId);
+
+    if (status != huntmaster::UnifiedAudioEngine::Status::OK
+        && status != huntmaster::UnifiedAudioEngine::Status::ALREADY_FINALIZED) {
         throw std::runtime_error("Session finalization failed");
     }
 
-    return finalizeResult.analysis;
+    // [20251029-BINDINGS-FIX-009] Retrieve comprehensive analysis results
+    auto summaryResult = engine->getEnhancedAnalysisSummary(cppSessionId);
+
+    if (!summaryResult.isOk()) {
+        throw std::runtime_error("Failed to get enhanced analysis summary");
+    }
+
+    return summaryResult.value;
 }
 
 // [20251028-BINDINGS-019] Destroy session and cleanup
-void SessionWrapper::DestroySession(uint32_t sessionId) {
+// [20251102-FIX-009] Destroy session with detailed return for JS observability
+DestroyResult SessionWrapper::DestroySession(uint32_t sessionId) {
     std::lock_guard<std::mutex> lock(sessionsMutex_);
 
     auto it = sessions_.find(sessionId);
@@ -115,8 +145,55 @@ void SessionWrapper::DestroySession(uint32_t sessionId) {
         throw std::runtime_error("Session not found: " + std::to_string(sessionId));
     }
 
-    // Engine cleanup happens automatically via shared_ptr destruction
+    // [20251102-FIX-005] CRITICAL: Destroy C++ engine session before removing wrapper
+    // Each SessionWrapper owns a UnifiedAudioEngine instance, which contains internal sessions.
+    // We need to explicitly destroy the internal C++ session to trigger cleanup:
+    // - ErrorLogger.clearRecentErrors()
+    // - SessionState resource release
+    // - Remove from engine's sessions_ map
+    int cppSessionsDestroyed = 0;
+    std::cerr << "🗑️  DestroySession wrapper=" << sessionId << std::endl;
+    try {
+        // Get all active sessions in this engine instance (should be just 1)
+        auto activeSessions = it->second.engine->getActiveSessions();
+        std::cerr << "   Active C++ sessions in this engine: " << activeSessions.size()
+                  << std::endl;
+        for (const auto& engineSessionId : activeSessions) {
+            std::cerr << "   Destroying C++ session: " << engineSessionId << std::endl;
+            auto status = it->second.engine->destroySession(engineSessionId);
+            if (status != huntmaster::UnifiedAudioEngine::Status::OK) {
+                std::cerr << "   ⚠️  Warning: Failed to destroy engine session " << engineSessionId
+                          << std::endl;
+            } else {
+                std::cerr << "   ✅ Destroyed C++ session: " << engineSessionId << std::endl;
+                cppSessionsDestroyed++;
+            }
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "   ⚠️  Warning: Exception during engine session cleanup: " << e.what()
+                  << std::endl;
+    }
+
+    // Now remove wrapper session (shared_ptr destructor will cleanup engine instance)
     sessions_.erase(it);
+
+    DestroyResult result;
+    result.destroyed = true;
+    result.cppSessionsDestroyed = cppSessionsDestroyed;
+    result.activeWrappers = sessions_.size();
+
+    return result;
+}
+
+// [20251102-FIX-010] Get active sessions info
+SessionsInfo SessionWrapper::GetActiveSessionsInfo() {
+    std::lock_guard<std::mutex> lock(sessionsMutex_);
+
+    SessionsInfo info;
+    info.activeWrappers = sessions_.size();
+    info.nextWrapperId = nextSessionId_;
+
+    return info;
 }
 
 // [20251028-BINDINGS-020] Check if session exists

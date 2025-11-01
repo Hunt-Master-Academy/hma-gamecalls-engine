@@ -114,20 +114,21 @@ endif()
 # Add source directory (core library)
 add_subdirectory(src)
 
-# Add tests directory (if not building for WASM)
-if(NOT BUILDING_FOR_WASM)
+# Add tests directory (if not building for WASM and BUILD_TESTING is enabled)
+if(NOT BUILDING_FOR_WASM AND BUILD_TESTING)
  add_subdirectory(tests)
+endif()
 
+if(NOT BUILDING_FOR_WASM)
  if(HUNTMASTER_BUILD_TOOLS)
  add_subdirectory(tools)
- else()
- message(STATUS "Skipping tools build (HUNTMASTER_BUILD_TOOLS=OFF)")
- endif()
-
- # Micro-benchmark harness (always build; fast)
+ # Micro-benchmark harness (only build if tools enabled)
  add_executable(huntmaster_bench tools/benchmarks/micro_bench.cpp)
  target_link_libraries(huntmaster_bench PRIVATE UnifiedAudioEngine benchmark::benchmark pthread)
  target_include_directories(huntmaster_bench PRIVATE ${PROJECT_INCLUDE_DIR})
+ else()
+ message(STATUS "Skipping tools build (HUNTMASTER_BUILD_TOOLS=OFF)")
+ endif()
 endif()
 
 # KissFFT is now available via FetchContent

@@ -6,6 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const { ApiError } = require('../middleware/errorHandler');
+const asyncHandler = require('../middleware/asyncHandler');
 
 // Import Controllers
 const SessionsController = require('../controllers/sessionsController');
@@ -35,50 +36,50 @@ const validateSessionRequest = (req, res, next) => {
  * GET /sessions
  * List all active sessions
  */
-router.get('/', SessionsController.listSessions);
+router.get('/', asyncHandler(SessionsController.listSessions));
 
 /**
  * POST /sessions
  * Create new analysis session
  * Body: { masterCallId, sampleRate?, bufferSize?, enableEnhancedAnalysis?, ...options }
  */
-router.post('/', validateSessionRequest, SessionsController.createSession);
+router.post('/', validateSessionRequest, asyncHandler(SessionsController.createSession));
 
 /**
  * GET /sessions/:id
  * Get specific session details
  */
-router.get('/:id', SessionsController.getSession);
+router.get('/:id', asyncHandler(SessionsController.getSession));
 
 /**
  * POST /sessions/:id/start
  * Start recording/analysis for session
  */
-router.post('/:id/start', SessionsController.startSession);
+router.post('/:id/start', asyncHandler(SessionsController.startSession));
 
 /**
  * POST /sessions/:id/stop
  * Stop and finalize session analysis
  */
-router.post('/:id/stop', SessionsController.stopSession);
+router.post('/:id/stop', asyncHandler(SessionsController.stopSession));
 
 /**
  * DELETE /sessions/:id
  * Delete session and cleanup resources
  */
-router.delete('/:id', SessionsController.deleteSession);
+router.delete('/:id', asyncHandler(SessionsController.deleteSession));
 
 /**
  * GET /sessions/:id/metrics
  * Get real-time session metrics
  */
-router.get('/:id/metrics', SessionsController.getSessionMetrics);
+router.get('/:id/metrics', asyncHandler(SessionsController.getSessionMetrics));
 
 /**
  * POST /sessions/:id/audio
  * Process audio data for session (real-time)
  * Body: { samples: Float32Array, sampleRate: number, timestamp: string }
  */
-router.post('/:id/audio', SessionsController.processAudio);
+router.post('/:id/audio', asyncHandler(SessionsController.processAudio));
 
 module.exports = router;

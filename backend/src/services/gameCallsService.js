@@ -15,7 +15,7 @@ class GameCallsService {
      * List available master calls with filtering and pagination
      * [20251029-API-004] Real database implementation
      */
-    static async listCalls({ page = 1, pageSize = 50, species, callType, difficulty, tags }) {
+    static async listCalls({ page = 1, pageSize = 50, species, callType, difficulty, tags, sortBy = 'quality_score', sortOrder = 'DESC' }) {
         try {
             const offset = (page - 1) * pageSize;
             const limit = Math.min(pageSize, 100); // Max 100 per page
@@ -27,7 +27,7 @@ class GameCallsService {
                     duration_seconds, sample_rate, description,
                     tags, season, context, quality_score,
                     usage_count, success_rate, is_premium,
-                    created_at, updated_at
+                    audio_file_path, created_at, updated_at
                 FROM master_calls
                 WHERE deleted_at IS NULL
             `;
@@ -55,8 +55,16 @@ class GameCallsService {
                 params.push(tags);
             }
 
-            // [20251029-API-006] Order by quality and usage
-            query += ` ORDER BY quality_score DESC, usage_count DESC`;
+            // [20251030-API-010] Allow custom sorting (default to quality_score)
+            const validSortFields = ['quality_score', 'usage_count', 'duration_seconds', 'created_at', 'name'];
+            const sortField = validSortFields.includes(sortBy) ? sortBy : 'quality_score';
+            const sortDirection = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+            
+            query += ` ORDER BY ${sortField} ${sortDirection}`;
+            if (sortField !== 'quality_score') {
+                query += `, quality_score DESC`; // Secondary sort by quality
+            }
+            
             query += ` LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
             params.push(limit, offset);
 

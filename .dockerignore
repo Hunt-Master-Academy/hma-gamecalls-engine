@@ -1,10 +1,17 @@
+# [20251030-DOCKER-003] Exclude build artifacts except production bindings
 build/
+!build/_deps/kissfft-build/libkissfft-float.so*
+!build/libstdc++.so.6
 build-*/
 .ccache/
 .vscode/ipch/
 *.o
 *.a
+# Allow .so and .node files in specific paths (Node-API bindings, kissfft)
 *.so
+!bindings/node-api/build/Release/*.so
+!bindings/node-api/build/Release/*.node
+!build/_deps/kissfft-build/*.so*
 *.gcda
 *.gcno
 *.gcov
