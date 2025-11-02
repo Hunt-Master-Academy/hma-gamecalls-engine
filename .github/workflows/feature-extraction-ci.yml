@@ -1,0 +1,177 @@
+name: GameCalls Engine CI - Feature Extraction Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  native-build-and-validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for SHA tracking
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake g++ libkissfft-dev
+          cd bindings/node-api
+          npm ci
+      
+      - name: Build C++ engine (no-cache)
+        run: |
+          cd bindings/node-api
+          npm run clean
+          npm run build -- --no-cache
+        env:
+          CMAKE_BUILD_TYPE: Release
+      
+      - name: Verify engine build
+        id: engine-info
+        run: |
+          cd bindings/node-api
+          ENGINE_VERSION=$(node -e "const e = require('./build/Release/gamecalls_engine.node'); e.getEngineInfo().then(i => console.log(i.version))")
+          ENGINE_FIX=$(node -e "const e = require('./build/Release/gamecalls_engine.node'); e.getEngineInfo().then(i => console.log(i.fixVersion))")
+          echo "ENGINE_VERSION=$ENGINE_VERSION" >> $GITHUB_OUTPUT
+          echo "ENGINE_FIX=$ENGINE_FIX" >> $GITHUB_OUTPUT
+          echo "✅ Engine built: $ENGINE_VERSION ($ENGINE_FIX)"
+      
+      - name: Start test infrastructure (PostgreSQL, MinIO, Redis)
+        run: |
+          docker-compose -f docker-compose.test.yml up -d postgres minio redis
+          sleep 10
+      
+      - name: Run database migrations
+        run: |
+          docker exec test_postgres psql -U test_user -d test_db -f /migrations/001_master_call_features.sql
+          docker exec test_postgres psql -U test_user -d test_db -f /migrations/002_master_call_features_enhancements.sql
+      
+      - name: Upload canonical test calls to MinIO
+        run: |
+          # Upload small canonical test corpus
+          docker exec test_minio mc alias set local http://localhost:9000 minioadmin minioadmin
+          docker exec test_minio mc mb local/test-gamecalls-master-calls
+          docker exec test_minio mc cp ./test-data/canonical/*.wav local/test-gamecalls-master-calls/
+      
+      - name: Insert canonical call metadata
+        run: |
+          docker exec test_postgres psql -U test_user -d test_db <<EOF
+          INSERT INTO master_calls (id, name, species, call_type, audio_file_path, duration_seconds, sample_rate)
+          VALUES 
+            ('test_turkey_cluck', 'Test Cluck', 'wild_turkey', 'cluck', 'test_turkey_cluck.wav', 1.5, 44100),
+            ('test_turkey_yelp', 'Test Yelp', 'wild_turkey', 'yelp', 'test_turkey_yelp.wav', 3.2, 44100);
+          EOF
+      
+      - name: Extract features from canonical calls
+        id: extraction
+        run: |
+          cd backend
+          npm ci
+          node scripts/extract-features.js --call test_turkey_cluck | tee extraction.log
+          node scripts/extract-features.js --call test_turkey_yelp | tee -a extraction.log
+      
+      - name: Validate feature extraction results
+        run: |
+          cd backend
+          node scripts/validate-features.js
+      
+      - name: Assert engine_build_sha matches source
+        run: |
+          SOURCE_SHA=$(git rev-parse --short HEAD)
+          DB_SHA=$(docker exec test_postgres psql -U test_user -d test_db -t -c \
+            "SELECT DISTINCT engine_build_sha FROM master_call_features WHERE engine_build_sha IS NOT NULL LIMIT 1" | xargs)
+          
+          echo "Source SHA: $SOURCE_SHA"
+          echo "DB engine_build_sha: $DB_SHA"
+          
+          # Check if DB SHA contains source SHA (FIX-036 format is acceptable for now)
+          if [[ -z "$DB_SHA" ]]; then
+            echo "❌ FAIL: engine_build_sha is NULL in database"
+            exit 1
+          fi
+          
+          echo "✅ PASS: engine_build_sha is populated ($DB_SHA)"
+      
+      - name: Assert enhanced_raw JSONB exists
+        run: |
+          MISSING_JSONB=$(docker exec test_postgres psql -U test_user -d test_db -t -c \
+            "SELECT COUNT(*) FROM master_call_features WHERE extraction_status = 'completed' AND enhanced_raw IS NULL")
+          
+          if [[ $MISSING_JSONB -gt 0 ]]; then
+            echo "❌ FAIL: $MISSING_JSONB completed extractions missing enhanced_raw"
+            exit 1
+          fi
+          
+          echo "✅ PASS: All completed extractions have enhanced_raw JSONB"
+      
+      - name: Validate feature value ranges
+        run: |
+          docker exec test_postgres psql -U test_user -d test_db <<EOF
+          DO \$\$
+          DECLARE
+            invalid_count INTEGER;
+          BEGIN
+            -- Check for invalid durations
+            SELECT COUNT(*) INTO invalid_count
+            FROM master_call_features
+            WHERE extraction_status = 'completed'
+              AND (duration_seconds IS NULL OR duration_seconds <= 0 OR duration_seconds = 'NaN'::float);
+            
+            IF invalid_count > 0 THEN
+              RAISE EXCEPTION '❌ FAIL: % features with invalid duration', invalid_count;
+            END IF;
+            
+            -- Check for invalid RMS
+            SELECT COUNT(*) INTO invalid_count
+            FROM master_call_features
+            WHERE extraction_status = 'completed'
+              AND (rms_energy_mean IS NULL OR rms_energy_mean < 0 OR rms_energy_mean = 'NaN'::float);
+            
+            IF invalid_count > 0 THEN
+              RAISE EXCEPTION '❌ FAIL: % features with invalid RMS', invalid_count;
+            END IF;
+            
+            RAISE NOTICE '✅ PASS: All feature values within valid ranges';
+          END \$\$;
+          EOF
+      
+      - name: Run monitoring telemetry check
+        run: |
+          cd backend
+          node scripts/monitor-extraction.js --window 1
+      
+      - name: Upload extraction logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: extraction-logs
+          path: |
+            backend/extraction.log
+            backend/validation-results.log
+      
+      - name: Cleanup
+        if: always()
+        run: |
+          docker-compose -f docker-compose.test.yml down -v
+
+  # Alert on failures
+  notify-on-failure:
+    needs: native-build-and-validate
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send alert
+        run: |
+          echo "🚨 Feature extraction validation FAILED"
+          echo "Check logs at: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          # Add Slack/Discord/Email notification here

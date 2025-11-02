@@ -32,17 +32,20 @@ class RealtimeScorer {
   public:
     /// Configuration parameters for realtime scoring
     struct Config {
-        float sampleRate = 44100.0f;             ///< Audio sample rate in Hz
-        float updateRateMs = 100.0f;             ///< Score update rate in milliseconds
-        float mfccWeight = 0.5f;                 ///< Weight for MFCC similarity (0.0-1.0)
-        float volumeWeight = 0.2f;               ///< Weight for volume matching (0.0-1.0)
-        float timingWeight = 0.2f;               ///< Weight for timing accuracy (0.0-1.0)
-        float pitchWeight = 0.1f;                ///< Weight for pitch similarity (0.0-1.0)
-        float confidenceThreshold = 0.7f;        ///< Minimum confidence for reliable score
-        float minScoreForMatch = 0.005f;         ///< Minimum similarity score for match
-        bool enablePitchAnalysis = false;        ///< Enable pitch-based scoring (future feature)
-        size_t scoringHistorySize = 50;          ///< Number of historical scores to retain
-        float dtwDistanceScaling = 100.0f;       ///< Scaling factor for DTW distance to similarity
+        float sampleRate = 44100.0f;       ///< Audio sample rate in Hz
+        float updateRateMs = 100.0f;       ///< Score update rate in milliseconds
+        float mfccWeight = 0.5f;           ///< Weight for MFCC similarity (0.0-1.0)
+        float volumeWeight = 0.2f;         ///< Weight for volume matching (0.0-1.0)
+        float timingWeight = 0.2f;         ///< Weight for timing accuracy (0.0-1.0)
+        float pitchWeight = 0.1f;          ///< Weight for pitch similarity (0.0-1.0)
+        float confidenceThreshold = 0.7f;  ///< Minimum confidence for reliable score
+        float minScoreForMatch = 0.005f;   ///< Minimum similarity score for match
+        bool enablePitchAnalysis = false;  ///< Enable pitch-based scoring (future feature)
+        size_t scoringHistorySize = 50;    ///< Number of historical scores to retain
+        // [20251101-FIX-034] Lower DTW scaling so identical audio maps to ~99% similarity
+        // OLD: 100.0f gave ~87.5% for perfect matches (too conservative)
+        // NEW: 10.0f gives ~98.6% for perfect matches (expected for self-similarity)
+        float dtwDistanceScaling = 10.0f;        ///< Scaling factor for DTW distance to similarity
         size_t minSamplesForConfidence = 22050;  ///< Min samples for confident score (0.5s)
 
         /// Validate configuration parameters

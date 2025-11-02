@@ -3,6 +3,7 @@
 
 #include "audio_processor.h"
 
+#include <iostream>  // [20251101-V1.0-FIX] For std::cerr diagnostics
 #include <stdexcept>
 
 #include "session_wrapper.h"
@@ -26,6 +27,15 @@ AnalysisResults AudioProcessor::ProcessBuffer(uint32_t sessionId,
 
     if (audioData.empty()) {
         throw std::runtime_error("Empty audio buffer provided");
+    }
+
+    // [20251101-V1.0-SAFETY] Add diagnostic info for chunk size validation
+    const size_t chunkSize = audioData.size();
+    constexpr size_t WARN_THRESHOLD = 5'000'000;  // Warn on >5M samples (~2 min @ 44.1kHz)
+
+    if (chunkSize > WARN_THRESHOLD) {
+        std::cerr << "[WARN] Large audio chunk: " << chunkSize << " samples, session=" << sessionId
+                  << std::endl;
     }
 
     // [20251029-BINDINGS-FIX-023] Process audio through UnifiedAudioEngine - FIXED: use
@@ -54,27 +64,40 @@ AnalysisResults AudioProcessor::ProcessBuffer(uint32_t sessionId,
             default:
                 statusStr = "UNKNOWN_ERROR_" + std::to_string(static_cast<int>(status));
         }
-        throw std::runtime_error("Audio processing failed with status: " + statusStr
-                                 + " (session=" + std::to_string(sessionId)
-                                 + ", samples=" + std::to_string(audioData.size()) + ")");
+        // [20251101-V1.0-SAFETY] Enhanced error diagnostics
+        std::string errorMsg = "Audio processing failed: " + statusStr
+                               + " (session=" + std::to_string(sessionId)
+                               + ", cppSessionId=" + std::to_string(cppSessionId)
+                               + ", samples=" + std::to_string(audioData.size()) + ")";
+        std::cerr << "[ERROR] " << errorMsg << std::endl;
+        throw std::runtime_error(errorMsg);
     }
 
     // Gather analysis results
-    AnalysisResults results;
+    AnalysisResults results{};  // [20251101-V1.0-FIX] Zero-initialize all fields
 
     // [20251029-BINDINGS-FIX-024] Get similarity score via RealtimeFeedback - FIXED: use
     // getRealtimeFeedback
-    auto feedbackResult = engine->getRealtimeFeedback(sessionId);
+    // [20251101-V1.0-FIX] Use cppSessionId instead of wrapper sessionId
+    auto feedbackResult = engine->getRealtimeFeedback(cppSessionId);
     if (feedbackResult.isOk()) {
         results.similarityScore = feedbackResult.value.currentScore.overall;
         results.confidence = feedbackResult.value.currentScore.confidence;
         results.readiness = feedbackResult.value.currentScore.isReliable ? "ready" : "not_ready";
+    } else {
+        // [20251101-V1.0-DEBUG] Log why getRealtimeFeedback failed
+        std::cerr << "[ERROR] getRealtimeFeedback failed for session " << sessionId
+                  << " (cppSessionId=" << cppSessionId << ")" << std::endl;
+        results.similarityScore = 0.0f;
+        results.confidence = 0.0f;
+        results.readiness = "error";
     }
 
     // [20251029-BINDINGS-FIX-025] Get enhanced analyzer results - FIXED: access Result.value fields
     // directly
     if (SessionWrapper::SessionExists(sessionId)) {
-        auto summaryResult = engine->getEnhancedAnalysisSummary(sessionId);
+        // [20251101-V1.0-FIX] Use cppSessionId for engine calls
+        auto summaryResult = engine->getEnhancedAnalysisSummary(cppSessionId);
         if (summaryResult.isOk()) {
             auto& summary = summaryResult.value;
 

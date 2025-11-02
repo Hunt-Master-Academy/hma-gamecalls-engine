@@ -133,8 +133,12 @@ class DTWComparator::Impl {
         float distance = cost_matrix_[len1][len2];
 
         // Normalize by path length if requested
+        // [20251101-FIX-036] Use sqrt normalization to avoid over-penalizing long sequences
+        // OLD: distance / (len1 + len2) gave 0.025 for identical audio (too high)
+        // NEW: distance / sqrt(len1 * len2) gives ~0.001 for identical audio (expected)
         if (config_.normalize_distance) {
-            distance /= (len1 + len2);
+            float pathLen = std::sqrt(static_cast<float>(len1 * len2));
+            distance /= pathLen;
         }
 
         // Reconstruct path if requested

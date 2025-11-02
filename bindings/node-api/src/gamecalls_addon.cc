@@ -134,6 +134,93 @@ Napi::Value FinalizeSession(const Napi::CallbackInfo& info) {
     }
 }
 
+// [20251101-FEATURES-001] Get enhanced acoustic analysis for feature extraction
+// Args: sessionId (number)
+// Returns: Enhanced analysis object with MFCC, spectral, pitch, energy, temporal features
+Napi::Value GetEnhancedAnalysis(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (info.Length() < 1 || !info[0].IsNumber()) {
+        Napi::TypeError::New(env, "Expected sessionId as number").ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+
+    uint32_t sessionId = info[0].As<Napi::Number>().Uint32Value();
+
+    try {
+        // Get enhanced analysis summary from engine
+        auto summary = SessionWrapper::FinalizeSession(sessionId);
+
+        // Get realtime scoring result for RMS energy
+        auto scoreResult = SessionWrapper::GetSimilarityScore(sessionId);
+
+        // Build comprehensive feature object
+        Napi::Object features = Napi::Object::New(env);
+
+        // Pitch features
+        Napi::Object pitch = Napi::Object::New(env);
+        pitch.Set("f0Mean", Napi::Number::New(env, summary.pitchHz));
+        pitch.Set("f0Confidence", Napi::Number::New(env, summary.pitchConfidence));
+        features.Set("pitch", pitch);
+
+        // Harmonic features
+        Napi::Object harmonic = Napi::Object::New(env);
+        harmonic.Set("fundamentalFreq", Napi::Number::New(env, summary.harmonicFundamental));
+        harmonic.Set("confidence", Napi::Number::New(env, summary.harmonicConfidence));
+        features.Set("harmonic", harmonic);
+
+        // Temporal/Cadence features
+        Napi::Object temporal = Napi::Object::New(env);
+        temporal.Set("tempoBpm", Napi::Number::New(env, summary.tempoBPM));
+        temporal.Set("tempoConfidence", Napi::Number::New(env, summary.tempoConfidence));
+        temporal.Set("segmentStartMs", Napi::Number::New(env, summary.segmentStartMs));
+        temporal.Set("segmentDurationMs", Napi::Number::New(env, summary.segmentDurationMs));
+        features.Set("temporal", temporal);
+
+        // Energy features (from realtime scorer)
+        Napi::Object energy = Napi::Object::New(env);
+        energy.Set("normalizationScalar", Napi::Number::New(env, summary.normalizationScalar));
+        energy.Set("loudnessDeviation", Napi::Number::New(env, summary.loudnessDeviation));
+        features.Set("energy", energy);
+
+        // Similarity/Quality metrics
+        Napi::Object quality = Napi::Object::New(env);
+        quality.Set("similarityScore", Napi::Number::New(env, summary.similarityAtFinalize));
+        quality.Set("overallScore", Napi::Number::New(env, scoreResult.overall));
+        quality.Set("mfccScore", Napi::Number::New(env, scoreResult.mfcc));
+        quality.Set("volumeScore", Napi::Number::New(env, scoreResult.volume));
+        quality.Set("timingScore", Napi::Number::New(env, scoreResult.timing));
+        quality.Set("pitchScore", Napi::Number::New(env, scoreResult.pitch));
+        quality.Set("confidence", Napi::Number::New(env, scoreResult.confidence));
+        features.Set("quality", quality);
+
+        // Metadata
+        features.Set("samplesAnalyzed", Napi::Number::New(env, scoreResult.samplesAnalyzed));
+        features.Set("valid", Napi::Boolean::New(env, summary.valid));
+        features.Set("finalized", Napi::Boolean::New(env, summary.finalized));
+
+        // Grades (if available)
+        if (summary.pitchGrade != '\0') {
+            std::string gradeStr(1, summary.pitchGrade);
+            features.Set("pitchGrade", Napi::String::New(env, gradeStr));
+        }
+        if (summary.harmonicGrade != '\0') {
+            std::string gradeStr(1, summary.harmonicGrade);
+            features.Set("harmonicGrade", Napi::String::New(env, gradeStr));
+        }
+        if (summary.cadenceGrade != '\0') {
+            std::string gradeStr(1, summary.cadenceGrade);
+            features.Set("cadenceGrade", Napi::String::New(env, gradeStr));
+        }
+
+        return features;
+    } catch (const std::exception& e) {
+        Napi::Error::New(env, std::string("Failed to get enhanced analysis: ") + e.what())
+            .ThrowAsJavaScriptException();
+        return env.Undefined();
+    }
+}
+
 // [20251028-BINDINGS-008] Destroy session and free resources
 // Args: sessionId (number)
 // [20251102-FIX-006] Returns: { destroyed: boolean, wrapperId: number, activeSessions: number }
@@ -170,6 +257,10 @@ Napi::Value GetEngineInfo(const Napi::CallbackInfo& info) {
 
     Napi::Object infoObj = Napi::Object::New(env);
     infoObj.Set("version", "1.0.0");
+    // [20251101-FIX-033] Add build metadata for verification
+    infoObj.Set("buildTimestamp", Napi::String::New(env, __DATE__ " " __TIME__));
+    infoObj.Set("fixVersion", Napi::String::New(env, "FIX-036"));     // Updated to FIX-036
+    infoObj.Set("dtwNormalization", Napi::String::New(env, "sqrt"));  // NEW: Verify DTW fix
 // [20251029-BINDINGS-FIX-021] Use preprocessor check for DEBUG instead of CMAKE_BUILD_TYPE
 // CMAKE variables don't exist in node-gyp build context
 #ifdef DEBUG
@@ -207,6 +298,9 @@ Napi::Object Init(Napi::Env env, Napi::Object exports) {
     exports.Set("processAudio", Napi::Function::New(env, ProcessAudio));
     exports.Set("getSimilarityScore", Napi::Function::New(env, GetSimilarityScore));
     exports.Set("finalizeSession", Napi::Function::New(env, FinalizeSession));
+
+    // [20251101-FEATURES-002] Feature extraction
+    exports.Set("getEnhancedAnalysis", Napi::Function::New(env, GetEnhancedAnalysis));
 
     // Utility
     exports.Set("getEngineInfo", Napi::Function::New(env, GetEngineInfo));

@@ -38,26 +38,26 @@ uint32_t SessionWrapper::CreateSession(const std::string& masterCallPath,
         throw std::runtime_error("Failed to create engine session");
     }
 
-    std::cerr << "🎯 Created C++ session ID: " << sessionResult.value << " in engine instance"
+    uint32_t cppSessionId = sessionResult.value;
+    std::cerr << "🎯 Created C++ session ID: " << cppSessionId << " in engine instance"
               << std::endl;
 
     // Load master call
-    auto loadStatus = engine->loadMasterCall(sessionResult.value, masterCallPath);
+    auto loadStatus = engine->loadMasterCall(cppSessionId, masterCallPath);
     if (loadStatus != huntmaster::UnifiedAudioEngine::Status::OK) {
         throw std::runtime_error("Failed to load master call: " + masterCallPath);
     }
 
     // Enable enhanced analysis if requested
     if (enableEnhancedAnalysis) {
-        engine->setEnhancedAnalyzersEnabled(sessionResult.value, true);
+        engine->setEnhancedAnalyzersEnabled(cppSessionId, true);
     }
 
     // Store session state
     uint32_t sessionId = nextSessionId_++;
     SessionState state;
     state.sessionId = sessionId;
-    state.cppSessionId =
-        sessionResult.value;  // [20251102-FIX-010] Store actual C++ engine session ID
+    state.cppSessionId = cppSessionId;  // [20251102-FIX-010] Store actual C++ engine session ID
     state.engine = std::move(engine);
     state.masterCallPath = masterCallPath;
     state.sampleRate = sampleRate;
