@@ -68,8 +68,9 @@ WORKDIR /app
 # Install runtime dependencies
 # [20251029-WAVEFORM-021] Added ffmpeg for waveform generation
 # [20251030-DOCKER-002] Added libsndfile for C++ engine audio loading
+# [20251108-HEALTHCHECK-001] Added curl for healthcheck
 RUN apt-get update && apt-get install -y \
-    wget \
+    curl \
     ffmpeg \
     libsndfile1 \
     && rm -rf /var/lib/apt/lists/*
@@ -104,8 +105,9 @@ ENV USE_REAL_ENGINE=true
 EXPOSE 5005
 
 # Health check
+# [20251108-HEALTHCHECK-002] Changed from wget to curl for consistency
 HEALTHCHECK --interval=30s --timeout=10s --start-period=45s --retries=3 \
-    CMD wget --spider -q http://localhost:5005/health || exit 1
+    CMD curl -f http://localhost:5005/health || exit 1
 
 # Start server
 CMD ["node", "src/index.js"]
