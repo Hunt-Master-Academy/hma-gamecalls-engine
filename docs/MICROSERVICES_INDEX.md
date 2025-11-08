@@ -37,6 +37,7 @@ Jump straight to implementation details:
 
 ### **For Frontend Developers (HMA Academy / HMFG Mobile)**
 Learn how to consume the GameCalls Engine APIs:
+- **[Mobile User Stories](./MOBILE_USER_STORIES.md)** - Complete iOS/Android user flows from download to gameplay
 - **[REST API Specification](./MICROSERVICES_ARCHITECTURE_GUIDE.md#proposed-gamecalls-rest-api-design)** - All endpoints with request/response examples
 - **[Data Models](./MICROSERVICES_ARCHITECTURE_GUIDE.md#data-models)** - Session state, analysis results
 - **[Integration Examples](./MICROSERVICES_ARCHITECTURE_GUIDE.md#integration-examples)** - Academy lessons, HMFG field use
@@ -180,7 +181,28 @@ This directory contains comprehensive guidance for transforming the GameCalls En
 
 ---
 
-### 6. **Updated Core Architecture** 🏗️
+### 7. **Mobile Platform User Stories** 📱
+**[MOBILE_USER_STORIES.md](MOBILE_USER_STORIES.md)**  
+📄 **30-minute read** | 📱 **Mobile app requirements**
+
+**What it is**: Comprehensive user stories for iOS and Android mobile applications  
+**Who should read**: Mobile developers, product managers, UX designers  
+**What you'll learn**:
+- Complete user flows: App download → First launch → Signup → Gameplay
+- Platform-specific considerations (iOS vs Android)
+- User registration and authentication flows
+- Master call library and practice session features
+- Group creation and social features
+- Gamification and achievement systems
+- In-app purchases and monetization (optional)
+- Technical architecture recommendations
+- API integration requirements
+
+**Read this if**: You're building the mobile app and need to understand user expectations
+
+---
+
+### 8. **Updated Core Architecture** 🏗️
 **[architecture.md](architecture.md)** *(existing, now updated)*  
 📄 **Refer as needed** | 📋 **C++ core architecture**
 
@@ -256,17 +278,20 @@ Total: ~1 hour to understand integration approach
 
 ### For HMFG Mobile Team
 ```
-1. MICROSERVICES_ARCHITECTURE_DIAGRAMS.md   (10 min)
+1. MOBILE_USER_STORIES.md                     (30 min)
+   Focus: Complete user flows for iOS/Android apps
+   ↓ Understand user expectations and features
+2. MICROSERVICES_ARCHITECTURE_DIAGRAMS.md   (10 min)
    Focus: "HMFG Mobile: Hybrid Integration" diagram
    ↓ Understand hybrid approach (REST + Native)
-2. MICROSERVICES_ARCHITECTURE_GUIDE.md      (20 min)
+3. MICROSERVICES_ARCHITECTURE_GUIDE.md      (20 min)
    Focus: "HMFG Mobile (React Native)" section
    ↓ See integration code examples
-3. Decision: REST vs Native for each feature (30 min)
+4. Decision: REST vs Native for each feature (30 min)
    Lessons: REST (consistent with Academy)
    Field: Native (real-time, offline)
 
-Total: ~1 hour to understand mobile integration strategy
+Total: ~90 minutes to understand mobile integration strategy and user requirements
 ```
 
 ---
@@ -382,12 +407,13 @@ Follow checklist in **MICROSERVICES_QUICK_START.md** Week 1-2 section:
 
 ---
 
-## � Document Structure
+## 📂 Document Structure
 
 ```
 hma-gamecalls-engine/
 ├── README.md                                  ← Start here for overview
 ├── docs/
+│   ├── MOBILE_USER_STORIES.md                 ← Mobile platform user flows (NEW)
 │   ├── MICROSERVICES_ARCHITECTURE_GUIDE.md   ← Complete technical spec (800 lines)
 │   ├── MICROSERVICES_IMPLEMENTATION_SUMMARY.md ← Executive summary (450 lines)
 │   ├── HUNT_STRATEGY_COMPARISON.md           ← Pattern comparison (400 lines)
@@ -542,6 +568,7 @@ Mobile Request Flow (HMFG):
 
 | Document | Lines | Status | Purpose |
 |----------|-------|--------|---------|
+| **MOBILE_USER_STORIES.md** | 1,050 | ✅ Complete | Mobile platform requirements |
 | **MICROSERVICES_IMPLEMENTATION_SUMMARY.md** | 450 | ✅ Complete | Executive summary |
 | **HUNT_STRATEGY_COMPARISON.md** | 400 | ✅ Complete | Pattern reference |
 | **MICROSERVICES_ARCHITECTURE_DIAGRAMS.md** | 550 | ✅ Complete | Visual guide |
@@ -549,7 +576,7 @@ Mobile Request Flow (HMFG):
 | **MICROSERVICES_QUICK_START.md** | 300 | ✅ Complete | Implementation checklist |
 | **architecture.md** | 458 | ✅ Updated | C++ core architecture |
 
-**Total Documentation**: ~3,000 lines of comprehensive guidance
+**Total Documentation**: ~4,000+ lines of comprehensive guidance
 
 ---
 
