@@ -1,10 +1,10 @@
 name: GameCalls Engine CI - Feature Extraction Validation
 
+# DISABLED: Automatic triggers suspended - engine not ready for automatic build execution
+# Manual trigger available via workflow_dispatch when needed for testing
+
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch: # Manual trigger only
 
 jobs:
   native-build-and-validate:

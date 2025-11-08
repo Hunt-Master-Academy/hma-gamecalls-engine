@@ -1,23 +1,14 @@
 name: CI
 
+# DISABLED: Automatic triggers suspended - engine not ready for automatic build execution
+# Manual trigger available via workflow_dispatch when needed for testing
+
 # NOTE: Legacy multi-platform + WASM + static analysis workflow replaced by lean cost-controlled CI.
 # Legacy definition preserved in git history (see previous commits) and removed here to avoid
 # unnecessary runner minutes. This workflow focuses on: fast build/test on pushes & PRs (Linux only),
 # optional manual ASan & coverage on demand.
 
 on:
-  push:
-    branches: [ main ]
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - '.github/ISSUE_TEMPLATE/**'
-  pull_request:
-    branches: [ main ]
-    paths-ignore:
-      - 'docs/**'
-      - '**.md'
-      - '.github/ISSUE_TEMPLATE/**'
   workflow_dispatch:
     inputs:
       run_asan:
