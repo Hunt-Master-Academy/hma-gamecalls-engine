@@ -30,6 +30,8 @@ Immediate Focus: Pitch mastery suite implementation (micro-drift, onset glide, v
 | Testing Strategy | [testing.md](testing.md) |
 | Debug & Instrumentation | [debugging.md](debugging.md) |
 | Deployment & Packaging | [deployment.md](deployment.md) |
+| Mobile User Stories | [MOBILE_USER_STORIES.md](MOBILE_USER_STORIES.md) |
+| Microservices Architecture | [MICROSERVICES_ARCHITECTURE_GUIDE.md](MICROSERVICES_ARCHITECTURE_GUIDE.md) |
 | Root Platform Context | [../README.md](../README.md) |
 
 ---
